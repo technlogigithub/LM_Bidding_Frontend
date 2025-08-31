@@ -9,7 +9,7 @@ import '../../widgets/constant.dart';
 
 
 class ClientCreateProfile extends StatefulWidget {
-  const ClientCreateProfile({Key? key}) : super(key: key);
+  const ClientCreateProfile({super.key});
 
   @override
   State<ClientCreateProfile> createState() => _ClientCreateProfileState();

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/screen/client%20screen/client%20home/client_home.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../app_config/app_config.dart';
-import '../welcome screen/welcome_screen.dart';
 import '../widgets/constant.dart';
 
 class OnBoard extends StatefulWidget {
   const OnBoard({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<OnBoard> createState() => _OnBoardState();
@@ -116,12 +116,19 @@ class _OnBoardState extends State<OnBoard> {
                               currentIndexPage < 2;
                               currentIndexPage < 2
                                   ? pageController.nextPage(duration: const Duration(microseconds: 3000), curve: Curves.bounceInOut)
-                                  : Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const WelcomeScreen(),
-                                      ),
-                                    );
+                                  : 
+                                  // Navigator.push(
+                                  //     context,
+                                  //     MaterialPageRoute(
+                                  //       builder: (context) => const WelcomeScreen(),
+                                  //     ),
+                                  //   );
+                                   Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ClientHome(),
+                              ),
+                            );
                             },
                           );
                         },

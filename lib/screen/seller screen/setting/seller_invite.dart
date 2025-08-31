@@ -8,7 +8,7 @@ import '../../widgets/constant.dart';
 import '../../widgets/icons.dart';
 
 class SellerInvite extends StatefulWidget {
-  const SellerInvite({Key? key}) : super(key: key);
+  const SellerInvite({super.key});
 
   @override
   State<SellerInvite> createState() => _SellerInviteState();

@@ -11,7 +11,7 @@ import '../../widgets/icons.dart';
 import 'client_otp_verification.dart';
 
 class ClientSignUp extends StatefulWidget {
-  const ClientSignUp({Key? key}) : super(key: key);
+  const ClientSignUp({super.key});
 
   @override
   State<ClientSignUp> createState() => _ClientSignUpState();

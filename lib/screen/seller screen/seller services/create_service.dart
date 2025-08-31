@@ -8,7 +8,7 @@ import '../seller home/my service/service_details.dart';
 import 'create_new_service.dart';
 
 class CreateService extends StatefulWidget {
-  const CreateService({Key? key}) : super(key: key);
+  const CreateService({super.key});
 
   @override
   State<CreateService> createState() => _CreateServiceState();

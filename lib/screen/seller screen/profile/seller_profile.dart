@@ -16,7 +16,7 @@ import '../withdraw_money/seller_withdraw_history.dart';
 import '../withdraw_money/seller_withdraw_money.dart';
 
 class SellerProfile extends StatefulWidget {
-  const SellerProfile({Key? key}) : super(key: key);
+  const SellerProfile({super.key});
 
   @override
   State<SellerProfile> createState() => _SellerProfileState();
@@ -164,6 +164,9 @@ class _SellerProfileState extends State<SellerProfile> {
                     color: kLightNeutralColor,
                   ),
                 ),
+                
+                
+                
                 Theme(
                   data: ThemeData(dividerColor: Colors.transparent),
                   child: ExpansionTile(
@@ -226,6 +229,9 @@ class _SellerProfileState extends State<SellerProfile> {
                     ],
                   ),
                 ),
+               
+               
+               
                 ListTile(
                   onTap: () => const SellerTransaction().launch(context),
                   visualDensity: const VisualDensity(vertical: -3),

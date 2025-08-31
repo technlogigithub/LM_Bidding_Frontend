@@ -11,7 +11,7 @@ import '../../widgets/data.dart';
 import '../seller popUp/seller_popup.dart';
 
 class SetupSellerProfile extends StatefulWidget {
-  const SetupSellerProfile({Key? key}) : super(key: key);
+  const SetupSellerProfile({super.key});
 
   @override
   State<SetupSellerProfile> createState() => _SetupSellerProfileState();

@@ -6,7 +6,7 @@ import '../../widgets/constant.dart';
 import 'add_credit_card.dart';
 
 class SellerAddPaymentMethod extends StatefulWidget {
-  const SellerAddPaymentMethod({Key? key}) : super(key: key);
+  const SellerAddPaymentMethod({super.key});
 
   @override
   State<SellerAddPaymentMethod> createState() => _SellerAddPaymentMethodState();

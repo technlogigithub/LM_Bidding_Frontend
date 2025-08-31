@@ -10,7 +10,7 @@ import '../../widgets/constant.dart';
 import '../seller popUp/seller_popup.dart';
 
 class SellerOrderDetails extends StatefulWidget {
-  const SellerOrderDetails({Key? key}) : super(key: key);
+  const SellerOrderDetails({super.key});
 
   @override
   State<SellerOrderDetails> createState() => _SellerOrderDetailsState();

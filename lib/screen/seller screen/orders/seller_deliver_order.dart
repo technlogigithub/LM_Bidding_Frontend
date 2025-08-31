@@ -7,7 +7,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class SellerDeliverOrder extends StatefulWidget {
-  const SellerDeliverOrder({Key? key}) : super(key: key);
+  const SellerDeliverOrder({super.key});
 
   @override
   State<SellerDeliverOrder> createState() => _SellerDeliverOrderState();

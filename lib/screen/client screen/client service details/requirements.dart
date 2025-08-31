@@ -9,7 +9,7 @@ import '../../widgets/constant.dart';
 import '../client popup/client_popup.dart';
 
 class Requirements extends StatefulWidget {
-  const Requirements({Key? key}) : super(key: key);
+  const Requirements({super.key});
 
   @override
   State<Requirements> createState() => _RequirementsState();

@@ -6,7 +6,7 @@ import '../../widgets/icons.dart';
 import '../seller popUp/seller_popup.dart';
 
 class BuyerRequestDetails extends StatefulWidget {
-  const BuyerRequestDetails({Key? key}) : super(key: key);
+  const BuyerRequestDetails({super.key});
 
   @override
   State<BuyerRequestDetails> createState() => _BuyerRequestDetailsState();

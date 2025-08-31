@@ -1,6 +1,8 @@
 // import 'package:country_code_picker/country_code_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:freelancer/screen/seller%20screen/seller%20authentication/seller_log_in.dart';
 import 'package:freelancer/screen/seller%20screen/seller%20authentication/verification.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -10,7 +12,7 @@ import '../../widgets/constant.dart';
 import '../../widgets/icons.dart';
 
 class SellerSignUp extends StatefulWidget {
-  const SellerSignUp({Key? key}) : super(key: key);
+  const SellerSignUp({super.key});
 
   @override
   State<SellerSignUp> createState() => _SellerSignUpState();
@@ -270,20 +272,34 @@ class _SellerSignUpState extends State<SellerSignUp> {
                   ),
                 ),
                 const SizedBox(height: 20.0),
-                Center(
-                  child: RichText(
-                    text: TextSpan(
-                      text: 'Already have an account? ',
-                      style: kTextStyle.copyWith(color: kSubTitleColor),
-                      children: [
-                        TextSpan(
-                          text: 'Log In',
-                          style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+               Center(
+  child: RichText(
+    text: TextSpan(
+      text: 'Already have an account? ',
+      style: kTextStyle.copyWith(color: kSubTitleColor),
+      children: [
+        TextSpan(
+          text: 'Log In',
+          style: kTextStyle.copyWith(
+            color: kPrimaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+            Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SellerLogIn()),
+                          
+                        );
+              
+              print("Log In tapped");
+            },
+        ),
+      ],
+    ),
+  ),
+)
               ],
             ),
           ),

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
-import 'package:freelancer/screen/seller%20screen/seller%20authentication/seller_log_in.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
 
 import '../app_config/app_config.dart';
 import '../client screen/client_authentication/client_sign_up.dart';
-import '../seller screen/seller authentication/seller_sign_up.dart';
 import '../widgets/button_global.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({Key? key}) : super(key: key);
+  const WelcomeScreen({super.key});
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -190,7 +188,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       ? Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SellerSignUp(),
+                            builder: (context) => const ClientSignUp(),
                           ),
                         )
                       : Navigator.push(
@@ -211,7 +209,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           ? Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const SellerLogIn(),
+                                builder: (context) => const ClientLogIn(),
                               ),
                             )
                           : Navigator.push(

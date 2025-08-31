@@ -6,7 +6,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class SellerForgotPassword extends StatefulWidget {
-  const SellerForgotPassword({Key? key}) : super(key: key);
+  const SellerForgotPassword({super.key});
 
   @override
   State<SellerForgotPassword> createState() => _SellerForgotPasswordState();

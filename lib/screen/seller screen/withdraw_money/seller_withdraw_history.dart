@@ -5,7 +5,7 @@ import '../../widgets/constant.dart';
 import '../seller popUp/seller_popup.dart';
 
 class SellerWithDrawHistory extends StatefulWidget {
-  const SellerWithDrawHistory({Key? key}) : super(key: key);
+  const SellerWithDrawHistory({super.key});
 
   @override
   State<SellerWithDrawHistory> createState() => _SellerWithDrawHistoryState();

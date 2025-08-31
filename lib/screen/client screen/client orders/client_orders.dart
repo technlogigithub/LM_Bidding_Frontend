@@ -6,7 +6,7 @@ import '../../widgets/constant.dart';
 import 'client_order_details.dart';
 
 class ClientOrderList extends StatefulWidget {
-  const ClientOrderList({Key? key}) : super(key: key);
+  const ClientOrderList({super.key});
 
   @override
   State<ClientOrderList> createState() => _ClientOrderListState();

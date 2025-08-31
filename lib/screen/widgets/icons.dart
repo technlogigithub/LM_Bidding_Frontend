@@ -4,12 +4,12 @@ import 'constant.dart';
 
 class SocialIcon extends StatelessWidget {
   const SocialIcon({
-    Key? key,
+    super.key,
     required this.bgColor,
     required this.iconColor,
     required this.icon,
     required this.borderColor,
-  }) : super(key: key);
+  });
   final IconData icon;
   final Color bgColor;
   final Color iconColor;
@@ -35,7 +35,7 @@ class SocialIcon extends StatelessWidget {
 
 // ignore: must_be_immutable
 class Button extends StatelessWidget {
-  Button({Key? key, required this.containerBg, required this.borderColor, required this.buttonText, required this.textColor, required this.onPressed}) : super(key: key);
+  Button({super.key, required this.containerBg, required this.borderColor, required this.buttonText, required this.textColor, required this.onPressed});
 
   final Color containerBg;
   final Color borderColor;

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:freelancer/screen/welcome%20screen/welcome_screen.dart';
+import 'package:freelancer/screen/client%20screen/client_authentication/client_otp_verification.dart';
+import 'package:freelancer/screen/client%20screen/client_authentication/client_sign_up.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../app_config/app_config.dart';
 import '../../widgets/button_global.dart';
 import '../../widgets/constant.dart';
 import '../../widgets/icons.dart';
-import '../client home/client_home.dart';
 import 'client_forgot_password.dart';
 
 class ClientLogIn extends StatefulWidget {
-  const ClientLogIn({Key? key}) : super(key: key);
+  const ClientLogIn({super.key});
 
   @override
   State<ClientLogIn> createState() => _ClientLogInState();
@@ -133,7 +133,7 @@ class _ClientLogInState extends State<ClientLogIn> {
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                   onPressed: () {
-                    const ClientHome().launch(context);
+                    const ClientOtpVerification().launch(context);
                   },
                   buttonTextColor: kWhite),
               const SizedBox(height: 20.0),
@@ -196,7 +196,7 @@ class _ClientLogInState extends State<ClientLogIn> {
               const SizedBox(height: 20.0),
               Center(
                 child: GestureDetector(
-                  onTap: () => const WelcomeScreen().launch(context),
+                  onTap: () => const ClientSignUp().launch(context),
                   child: RichText(
                     text: TextSpan(
                       text: 'Don’t have an account? ',

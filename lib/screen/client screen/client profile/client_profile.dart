@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:freelancer/screen/seller%20screen/add%20payment%20method/seller_add_payment_method.dart';
+import 'package:freelancer/screen/seller%20screen/buyer%20request/seller_buyer_request.dart';
+import 'package:freelancer/screen/seller%20screen/withdraw_money/seller_withdraw_history.dart';
+import 'package:freelancer/screen/seller%20screen/withdraw_money/seller_withdraw_money.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../widgets/constant.dart';
@@ -15,7 +19,7 @@ import '../transaction/transaction.dart';
 import 'client_profile_details.dart';
 
 class ClientProfile extends StatefulWidget {
-  const ClientProfile({Key? key}) : super(key: key);
+  const ClientProfile({super.key});
 
   @override
   State<ClientProfile> createState() => _ClientProfileState();
@@ -136,6 +140,61 @@ class _ClientProfileState extends State<ClientProfile> {
                     color: kLightNeutralColor,
                   ),
                 ),
+                  ListTile(
+                  onTap: () => const SellerBuyerReq().launch(context),
+                  visualDensity: const VisualDensity(vertical: -3),
+                  horizontalTitleGap: 10,
+                  contentPadding: const EdgeInsets.only(bottom: 20),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFD0F1FF),
+                    ),
+                    child: const Icon(
+                      IconlyBold.paper,
+                      color: Color(0xFF06AEF3),
+                    ),
+                  ),
+                  title: Text(
+                    'Buyer Request',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: kTextStyle.copyWith(color: kNeutralColor),
+                  ),
+                  trailing: const Icon(
+                    FeatherIcons.chevronRight,
+                    color: kLightNeutralColor,
+                  ),
+                ),
+                ListTile(
+                  onTap: () => const SellerAddPaymentMethod().launch(context),
+                  visualDensity: const VisualDensity(vertical: -3),
+                  horizontalTitleGap: 10,
+                  contentPadding: const EdgeInsets.only(bottom: 12),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFFFE5E3),
+                    ),
+                    child: const Icon(
+                      IconlyBold.ticketStar,
+                      color: Color(0xFFFF3B30),
+                    ),
+                  ),
+                  title: Text(
+                    'Add Payment method',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: kTextStyle.copyWith(color: kNeutralColor),
+                  ),
+                  trailing: const Icon(
+                    FeatherIcons.chevronRight,
+                    color: kLightNeutralColor,
+                  ),
+                ),
+                
                 Theme(
                   data: ThemeData(dividerColor: Colors.transparent),
                   child: ExpansionTile(
@@ -198,6 +257,72 @@ class _ClientProfileState extends State<ClientProfile> {
                     ],
                   ),
                 ),
+               
+                
+                 Theme(
+                  data: ThemeData(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    childrenPadding: EdgeInsets.zero,
+                    tilePadding: const EdgeInsets.only(bottom: 10),
+                    collapsedIconColor: kLightNeutralColor,
+                    iconColor: kLightNeutralColor,
+                    title: Text(
+                      'Withdraw',
+                      style: kTextStyle.copyWith(color: kNeutralColor),
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFE2EED8),
+                      ),
+                      child:  Icon(
+                        IconlyBold.wallet,
+                        color: kPrimaryColor,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      FeatherIcons.chevronDown,
+                      color: kLightNeutralColor,
+                    ),
+                    children: [
+                      ListTile(
+                        visualDensity: const VisualDensity(vertical: -3),
+                        horizontalTitleGap: 10,
+                        contentPadding: const EdgeInsets.only(left: 60),
+                        title: Text(
+                          'Withdraw Amount',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: kTextStyle.copyWith(color: kNeutralColor),
+                        ),
+                        trailing: const Icon(
+                          FeatherIcons.chevronRight,
+                          color: kLightNeutralColor,
+                        ),
+                        onTap: () => const SellerWithdrawMoney().launch(context),
+                      ),
+                      ListTile(
+                        onTap: () => const SellerWithDrawHistory().launch(context),
+                        visualDensity: const VisualDensity(vertical: -3),
+                        horizontalTitleGap: 10,
+                        contentPadding: const EdgeInsets.only(left: 60),
+                        title: Text(
+                          'Withdrawal History',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: kTextStyle.copyWith(color: kNeutralColor),
+                        ),
+                        trailing: const Icon(
+                          FeatherIcons.chevronRight,
+                          color: kLightNeutralColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+               
+               
                 ListTile(
                   onTap: () => const ClientTransaction().launch(context),
                   visualDensity: const VisualDensity(vertical: -3),
@@ -207,11 +332,11 @@ class _ClientProfileState extends State<ClientProfile> {
                     padding: const EdgeInsets.all(10.0),
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(0xFFFFE5E3),
+                      color: Color(0xFFE8E1FF),
                     ),
                     child: const Icon(
                       IconlyBold.ticketStar,
-                      color: Color(0xFFFF3B30),
+                      color: Color(0xFF7E5BFF),
                     ),
                   ),
                   title: Text(
@@ -225,6 +350,8 @@ class _ClientProfileState extends State<ClientProfile> {
                     color: kLightNeutralColor,
                   ),
                 ),
+                     
+              
                 ListTile(
                   onTap: () => const ClientFavList().launch(context),
                   visualDensity: const VisualDensity(vertical: -3),
@@ -234,11 +361,11 @@ class _ClientProfileState extends State<ClientProfile> {
                     padding: const EdgeInsets.all(10.0),
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(0xFFE8E1FF),
+                      color: Color(0xFFFFE5E3),
                     ),
                     child: const Icon(
                       IconlyBold.heart,
-                      color: Color(0xFF7E5BFF),
+                      color: Color(0xFFFF3B30),
                     ),
                   ),
                   title: Text(

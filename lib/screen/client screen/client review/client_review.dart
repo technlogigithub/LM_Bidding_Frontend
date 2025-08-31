@@ -7,7 +7,7 @@ import '../../seller screen/seller popUp/seller_popup.dart';
 import '../../widgets/constant.dart';
 
 class ClientOrderReview extends StatefulWidget {
-  const ClientOrderReview({Key? key}) : super(key: key);
+  const ClientOrderReview({super.key});
 
   @override
   State<ClientOrderReview> createState() => _ClientOrderReviewState();

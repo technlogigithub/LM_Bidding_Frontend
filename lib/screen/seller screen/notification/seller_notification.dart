@@ -6,7 +6,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class SellerNotification extends StatefulWidget {
-  const SellerNotification({Key? key}) : super(key: key);
+  const SellerNotification({super.key});
 
   @override
   State<SellerNotification> createState() => _SellerNotificationState();

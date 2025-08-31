@@ -7,7 +7,7 @@ import '../../widgets/constant.dart';
 import '../client service details/client_service_details.dart';
 
 class PopularServices extends StatefulWidget {
-  const PopularServices({Key? key}) : super(key: key);
+  const PopularServices({super.key});
 
   @override
   State<PopularServices> createState() => _PopularServicesState();

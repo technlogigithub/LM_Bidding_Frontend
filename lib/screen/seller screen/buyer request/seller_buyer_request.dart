@@ -7,7 +7,7 @@ import '../seller popUp/seller_popup.dart';
 import 'buyer_request_details.dart';
 
 class SellerBuyerReq extends StatefulWidget {
-  const SellerBuyerReq({Key? key}) : super(key: key);
+  const SellerBuyerReq({super.key});
 
   @override
   State<SellerBuyerReq> createState() => _SellerBuyerReqState();

@@ -7,7 +7,7 @@ import '../../widgets/constant.dart';
 import 'client_edit_profile_details.dart';
 
 class ClientProfileDetails extends StatefulWidget {
-  const ClientProfileDetails({Key? key}) : super(key: key);
+  const ClientProfileDetails({super.key});
 
   @override
   State<ClientProfileDetails> createState() => _ClientProfileDetailsState();

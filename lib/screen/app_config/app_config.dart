@@ -14,4 +14,4 @@ class AppInfo {
   static const String onBoard3 = 'images/onboard3.png';
 }
 
-String purchaseCode = 'Enter your purchase code';
+String purchaseCode = 'fba8d4a5-c71b-476d-99c4-3b2e7f4b61cc';

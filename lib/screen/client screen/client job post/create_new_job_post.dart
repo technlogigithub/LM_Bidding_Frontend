@@ -7,7 +7,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class CreateNewJobPost extends StatefulWidget {
-  const CreateNewJobPost({Key? key}) : super(key: key);
+  const CreateNewJobPost({super.key});
 
   @override
   State<CreateNewJobPost> createState() => _CreateNewJobPostState();

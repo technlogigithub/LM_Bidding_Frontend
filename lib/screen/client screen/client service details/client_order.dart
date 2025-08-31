@@ -7,7 +7,7 @@ import '../../widgets/constant.dart';
 import 'client_add_card.dart';
 
 class ClientOrder extends StatefulWidget {
-  const ClientOrder({Key? key}) : super(key: key);
+  const ClientOrder({super.key});
 
   @override
   State<ClientOrder> createState() => _ClientOrderState();

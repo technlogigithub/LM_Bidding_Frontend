@@ -6,7 +6,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class ClientReport extends StatefulWidget {
-  const ClientReport({Key? key}) : super(key: key);
+  const ClientReport({super.key});
 
   @override
   State<ClientReport> createState() => _ClientReportState();

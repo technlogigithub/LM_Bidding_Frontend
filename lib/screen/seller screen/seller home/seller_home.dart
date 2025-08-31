@@ -9,7 +9,7 @@ import '../seller messgae/chat_list.dart';
 import '../seller services/create_service.dart';
 
 class SellerHome extends StatefulWidget {
-  const SellerHome({Key? key}) : super(key: key);
+  const SellerHome({super.key});
 
   @override
   State<SellerHome> createState() => _SellerHomeState();

@@ -7,7 +7,7 @@ import '../../widgets/constant.dart';
 import '../client popup/client_popup.dart';
 
 class JobDetails extends StatefulWidget {
-  const JobDetails({Key? key}) : super(key: key);
+  const JobDetails({super.key});
 
   @override
   State<JobDetails> createState() => _JobDetailsState();

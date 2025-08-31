@@ -6,7 +6,7 @@ import '../../widgets/constant.dart';
 import 'client_otp_verification.dart';
 
 class ClientForgotPassword extends StatefulWidget {
-  const ClientForgotPassword({Key? key}) : super(key: key);
+  const ClientForgotPassword({super.key});
 
   @override
   State<ClientForgotPassword> createState() => _ClientForgotPasswordState();

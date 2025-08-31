@@ -5,7 +5,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class ClientTransaction extends StatefulWidget {
-  const ClientTransaction({Key? key}) : super(key: key);
+  const ClientTransaction({super.key});
 
   @override
   State<ClientTransaction> createState() => _ClientTransactionState();

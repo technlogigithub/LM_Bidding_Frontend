@@ -7,7 +7,7 @@ import '../../widgets/constant.dart';
 import '../../widgets/data.dart';
 
 class SellerProfileDetails extends StatefulWidget {
-  const SellerProfileDetails({Key? key}) : super(key: key);
+  const SellerProfileDetails({super.key});
 
   @override
   State<SellerProfileDetails> createState() => _SellerProfileDetailsState();

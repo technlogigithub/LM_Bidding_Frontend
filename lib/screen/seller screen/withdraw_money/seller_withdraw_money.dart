@@ -7,7 +7,7 @@ import '../../widgets/constant.dart';
 import '../seller popUp/seller_popup.dart';
 
 class SellerWithdrawMoney extends StatefulWidget {
-  const SellerWithdrawMoney({Key? key}) : super(key: key);
+  const SellerWithdrawMoney({super.key});
 
   @override
   State<SellerWithdrawMoney> createState() => _SellerWithdrawMoneyState();

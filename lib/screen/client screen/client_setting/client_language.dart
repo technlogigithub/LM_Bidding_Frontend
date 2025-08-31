@@ -4,7 +4,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class ClientLanguage extends StatefulWidget {
-  const ClientLanguage({Key? key}) : super(key: key);
+  const ClientLanguage({super.key});
 
   @override
   State<ClientLanguage> createState() => _ClientLanguageState();

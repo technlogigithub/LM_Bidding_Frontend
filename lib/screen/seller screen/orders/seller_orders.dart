@@ -6,7 +6,7 @@ import 'package:slide_countdown/slide_countdown.dart';
 import '../../widgets/constant.dart';
 
 class SellerOrderList extends StatefulWidget {
-  const SellerOrderList({Key? key}) : super(key: key);
+  const SellerOrderList({super.key});
 
   @override
   State<SellerOrderList> createState() => _SellerOrderListState();

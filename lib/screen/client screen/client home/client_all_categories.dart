@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:freelancer/screen/client%20screen/client%20search/search_page.dart';
+import 'package:freelancer/screen/seller%20screen/notification/seller_notification.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 import '../../widgets/constant.dart';
 
 class ClientAllCategories extends StatefulWidget {
-  const ClientAllCategories({Key? key}) : super(key: key);
+  const ClientAllCategories({super.key});
 
   @override
   State<ClientAllCategories> createState() => _ClientAllCategoriesState();
@@ -105,7 +108,7 @@ class _ClientAllCategoriesState extends State<ClientAllCategories> {
                                   style: kTextStyle.copyWith(color: kSubTitleColor),
                                 ),
                                 trailing: GestureDetector(
-                                  // onTap: () => const SellerNotification().launch(context),
+                                   onTap: () => const SearchPage().launch(context),
                                   child: const Icon(
                                     FeatherIcons.chevronRight,
                                     color: kSubTitleColor,
@@ -127,7 +130,7 @@ class _ClientAllCategoriesState extends State<ClientAllCategories> {
                                   style: kTextStyle.copyWith(color: kSubTitleColor),
                                 ),
                                 trailing: GestureDetector(
-                                  // onTap: () => const SellerNotification().launch(context),
+                                   onTap: () => const SellerNotification().launch(context),
                                   child: const Icon(
                                     FeatherIcons.chevronRight,
                                     color: kSubTitleColor,
@@ -186,6 +189,9 @@ class _ClientAllCategoriesState extends State<ClientAllCategories> {
                   );
                 }),
                 const SizedBox(height: 15,),
+
+
+                
               ],
             ),
           ),

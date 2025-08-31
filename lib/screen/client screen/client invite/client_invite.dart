@@ -8,7 +8,7 @@ import '../../widgets/constant.dart';
 import '../../widgets/icons.dart';
 
 class ClientInvite extends StatefulWidget {
-  const ClientInvite({Key? key}) : super(key: key);
+  const ClientInvite({super.key});
 
   @override
   State<ClientInvite> createState() => _ClientInviteState();

@@ -6,7 +6,7 @@ import '../../widgets/constant.dart';
 import '../seller popUp/seller_popup.dart';
 
 class SellerAssPaypal extends StatefulWidget {
-  const SellerAssPaypal({Key? key}) : super(key: key);
+  const SellerAssPaypal({super.key});
 
   @override
   State<SellerAssPaypal> createState() => _SellerAssPaypalState();

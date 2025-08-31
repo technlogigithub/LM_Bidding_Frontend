@@ -4,7 +4,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class ClientPolicy extends StatefulWidget {
-  const ClientPolicy({Key? key}) : super(key: key);
+  const ClientPolicy({super.key});
 
   @override
   State<ClientPolicy> createState() => _ClientPolicyState();

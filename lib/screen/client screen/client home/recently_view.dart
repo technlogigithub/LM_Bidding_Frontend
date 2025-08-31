@@ -6,7 +6,7 @@ import '../../widgets/constant.dart';
 import '../client service details/client_service_details.dart';
 
 class RecentlyView extends StatefulWidget {
-  const RecentlyView({Key? key}) : super(key: key);
+  const RecentlyView({super.key});
 
   @override
   State<RecentlyView> createState() => _RecentlyViewState();

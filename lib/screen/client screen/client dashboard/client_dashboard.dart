@@ -5,7 +5,7 @@ import '../../widgets/constant.dart';
 import '../../widgets/data.dart';
 
 class ClientDashBoard extends StatefulWidget {
-  const ClientDashBoard({Key? key}) : super(key: key);
+  const ClientDashBoard({super.key});
 
   @override
   State<ClientDashBoard> createState() => _ClientDashBoardState();

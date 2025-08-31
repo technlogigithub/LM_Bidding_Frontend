@@ -4,7 +4,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class SellerAbout extends StatefulWidget {
-  const SellerAbout({Key? key}) : super(key: key);
+  const SellerAbout({super.key});
 
   @override
   State<SellerAbout> createState() => _SellerAboutState();

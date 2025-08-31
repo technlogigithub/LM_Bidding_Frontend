@@ -5,7 +5,7 @@ import 'package:freelancer/screen/widgets/constant.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class MyServices extends StatefulWidget {
-  const MyServices({Key? key}) : super(key: key);
+  const MyServices({super.key});
 
   @override
   State<MyServices> createState() => _MyServicesState();
@@ -182,6 +182,9 @@ class _MyServicesState extends State<MyServices> {
                         ),
                       ),
                     ),
+                 
+                 
+                 
                   ],
                 ),
               ),

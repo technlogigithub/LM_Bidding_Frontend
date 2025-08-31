@@ -9,7 +9,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../widgets/review.dart';
 
 class ServiceDetails extends StatefulWidget {
-  const ServiceDetails({Key? key}) : super(key: key);
+  const ServiceDetails({super.key});
 
   @override
   State<ServiceDetails> createState() => _ServiceDetailsState();

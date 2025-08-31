@@ -7,7 +7,7 @@ import '../../widgets/button_global.dart';
 import '../../widgets/constant.dart';
 
 class CreateCustomerOffer extends StatefulWidget {
-  const CreateCustomerOffer({Key? key}) : super(key: key);
+  const CreateCustomerOffer({super.key});
 
   @override
   State<CreateCustomerOffer> createState() => _CreateCustomerOfferState();

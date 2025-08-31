@@ -6,7 +6,7 @@ import '../../seller screen/seller popUp/seller_popup.dart';
 import '../../widgets/constant.dart';
 
 class ClientFavList extends StatefulWidget {
-  const ClientFavList({Key? key}) : super(key: key);
+  const ClientFavList({super.key});
 
   @override
   State<ClientFavList> createState() => _ClientFavListState();

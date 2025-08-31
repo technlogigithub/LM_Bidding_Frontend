@@ -11,7 +11,7 @@ import '../client popup/client_popup.dart';
 import '../client review/client_review.dart';
 
 class ClientOrderDetails extends StatefulWidget {
-  const ClientOrderDetails({Key? key}) : super(key: key);
+  const ClientOrderDetails({super.key});
 
   @override
   State<ClientOrderDetails> createState() => _ClientOrderDetailsState();

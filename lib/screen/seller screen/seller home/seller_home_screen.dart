@@ -12,7 +12,7 @@ import '../notification/seller_notification.dart';
 import 'my service/my_service.dart';
 
 class SellerHomeScreen extends StatefulWidget {
-  const SellerHomeScreen({Key? key}) : super(key: key);
+  const SellerHomeScreen({super.key});
 
   @override
   State<SellerHomeScreen> createState() => _SellerHomeScreenState();
@@ -618,11 +618,11 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
 
 class ChartLegend extends StatelessWidget {
   const ChartLegend({
-    Key? key,
+    super.key,
     required this.iconColor,
     required this.title,
     required this.value,
-  }) : super(key: key);
+  });
 
   final Color iconColor;
   final String title;

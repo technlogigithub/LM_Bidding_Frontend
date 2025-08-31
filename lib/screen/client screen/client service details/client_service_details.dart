@@ -12,7 +12,7 @@ import '../client home/recently_view.dart';
 import 'client_order.dart';
 
 class ClientServiceDetails extends StatefulWidget {
-  const ClientServiceDetails({Key? key}) : super(key: key);
+  const ClientServiceDetails({super.key});
 
   @override
   State<ClientServiceDetails> createState() => _ClientServiceDetailsState();

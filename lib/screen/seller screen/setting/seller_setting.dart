@@ -9,7 +9,7 @@ import '../../widgets/constant.dart';
 import 'language.dart';
 
 class SellerSetting extends StatefulWidget {
-  const SellerSetting({Key? key}) : super(key: key);
+  const SellerSetting({super.key});
 
   @override
   State<SellerSetting> createState() => _SellerSettingState();

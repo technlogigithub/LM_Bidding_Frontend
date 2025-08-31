@@ -6,7 +6,7 @@ import '../../widgets/constant.dart';
 import '../setup seller profile/setup_profile.dart';
 
 class OtpVerification extends StatefulWidget {
-  const OtpVerification({Key? key}) : super(key: key);
+  const OtpVerification({super.key});
 
   @override
   State<OtpVerification> createState() => _OtpVerificationState();

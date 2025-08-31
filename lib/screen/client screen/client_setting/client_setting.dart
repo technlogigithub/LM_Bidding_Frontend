@@ -9,7 +9,7 @@ import 'client_language.dart';
 import 'client_policy.dart';
 
 class ClientSetting extends StatefulWidget {
-  const ClientSetting({Key? key}) : super(key: key);
+  const ClientSetting({super.key});
 
   @override
   State<ClientSetting> createState() => _ClientSettingState();

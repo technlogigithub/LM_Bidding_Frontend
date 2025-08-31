@@ -6,7 +6,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'constant.dart';
 
 class Review extends StatefulWidget {
-  const Review({Key? key}) : super(key: key);
+  const Review({super.key});
 
   @override
   State<Review> createState() => _ReviewState();
@@ -154,8 +154,8 @@ class _ReviewState extends State<Review> with TickerProviderStateMixin {
 
 class ReviewDetails extends StatelessWidget {
   const ReviewDetails({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -236,8 +236,8 @@ class ReviewDetails extends StatelessWidget {
 
 class ReviewDetails2 extends StatelessWidget {
   const ReviewDetails2({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

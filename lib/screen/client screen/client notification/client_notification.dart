@@ -6,7 +6,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class ClientNotification extends StatefulWidget {
-  const ClientNotification({Key? key}) : super(key: key);
+  const ClientNotification({super.key});
 
   @override
   State<ClientNotification> createState() => _ClientNotificationState();

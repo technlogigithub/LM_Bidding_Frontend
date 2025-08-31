@@ -6,7 +6,7 @@ import '../../widgets/constant.dart';
 import '../profile/seller_profile.dart';
 
 class AddCreditCard extends StatefulWidget {
-  const AddCreditCard({Key? key}) : super(key: key);
+  const AddCreditCard({super.key});
 
   @override
   State<AddCreditCard> createState() => _AddCreditCardState();

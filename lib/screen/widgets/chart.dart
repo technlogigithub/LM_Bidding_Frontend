@@ -3,10 +3,10 @@ import 'package:pie_chart/pie_chart.dart';
 
 class RecordStatistics extends StatelessWidget {
   const RecordStatistics({
-    Key? key,
+    super.key,
     required this.dataMap,
     required this.colorList,
-  }) : super(key: key);
+  });
 
   final Map<String, double> dataMap;
   final List<Color> colorList;

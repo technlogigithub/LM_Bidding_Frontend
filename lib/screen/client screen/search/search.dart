@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
@@ -77,8 +78,18 @@ class CustomSearchDelegate extends SearchDelegate {
           padding: const EdgeInsets.only(left: 10.0, right: 10),
           child: Row(
             children: [
-              Text(
-                matchQuery[i].toString(),
+              GestureDetector(
+                onTap: () {
+                   Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ClientLogIn()),
+                          
+                        );
+                },
+                child: Text(
+                  matchQuery[i].toString(),
+                ),
               ),
               const Spacer(),
               IconButton(

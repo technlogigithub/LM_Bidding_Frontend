@@ -5,7 +5,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class TopSeller extends StatefulWidget {
-  const TopSeller({Key? key}) : super(key: key);
+  const TopSeller({super.key});
 
   @override
   State<TopSeller> createState() => _TopSellerState();

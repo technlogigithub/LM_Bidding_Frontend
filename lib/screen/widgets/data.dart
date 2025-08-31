@@ -6,10 +6,10 @@ import 'constant.dart';
 
 class InfoShowCase extends StatelessWidget {
   const InfoShowCase({
-    Key? key,
+    super.key,
     required this.title,
     required this.subTitle,
-  }) : super(key: key);
+  });
 
   final String title;
   final String subTitle;
@@ -50,10 +50,10 @@ class InfoShowCase extends StatelessWidget {
 
 class InfoShowCaseWithoutIcon extends StatelessWidget {
   const InfoShowCaseWithoutIcon({
-    Key? key,
+    super.key,
     required this.title,
     required this.subTitle,
-  }) : super(key: key);
+  });
 
   final String title;
   final String subTitle;
@@ -84,10 +84,10 @@ class InfoShowCaseWithoutIcon extends StatelessWidget {
 
 class InfoShowCase2 extends StatelessWidget {
   const InfoShowCase2({
-    Key? key,
+    super.key,
     required this.title,
     required this.subTitle,
-  }) : super(key: key);
+  });
 
   final String title;
   final String subTitle;
@@ -132,10 +132,10 @@ class InfoShowCase2 extends StatelessWidget {
 
 class Summary extends StatelessWidget {
   const Summary({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
-  }) : super(key: key);
+  });
 
   final String title;
   final String subtitle;
@@ -170,10 +170,10 @@ class Summary extends StatelessWidget {
 
 class SummaryWithoutIcon extends StatelessWidget {
   const SummaryWithoutIcon({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
-  }) : super(key: key);
+  });
 
   final String title;
   final String subtitle;
@@ -209,11 +209,11 @@ class SummaryWithoutIcon extends StatelessWidget {
 
 class Summary2 extends StatelessWidget {
   const Summary2({
-    Key? key,
+    super.key,
     required this.title1,
     required this.subtitle,
     required this.title2,
-  }) : super(key: key);
+  });
 
   final String title1;
   final String title2;
@@ -253,12 +253,12 @@ class Summary2 extends StatelessWidget {
 
 class LevelSummary extends StatelessWidget {
   const LevelSummary({
-    Key? key,
+    super.key,
     required this.title,
     required this.subTitle,
     required this.trailing1,
     required this.trailing2,
-  }) : super(key: key);
+  });
 
   final String title;
   final String subTitle;
@@ -327,11 +327,11 @@ class TitleModel {
 
 class DashBoardInfo extends StatelessWidget {
   const DashBoardInfo({
-    Key? key,
+    super.key,
     required this.count,
     required this.title,
     required this.image,
-  }) : super(key: key);
+  });
 
   final String count;
   final String title;

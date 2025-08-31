@@ -6,7 +6,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 
 class AddDeposit extends StatefulWidget {
-  const AddDeposit({Key? key}) : super(key: key);
+  const AddDeposit({super.key});
 
   @override
   State<AddDeposit> createState() => _AddDepositState();

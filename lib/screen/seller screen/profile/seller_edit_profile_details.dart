@@ -12,7 +12,7 @@ import '../../widgets/data.dart';
 import '../seller popUp/seller_popup.dart';
 
 class SellerEditProfile extends StatefulWidget {
-  const SellerEditProfile({Key? key}) : super(key: key);
+  const SellerEditProfile({super.key});
 
   @override
   State<SellerEditProfile> createState() => _SellerEditProfileState();

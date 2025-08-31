@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:freelancer/screen/seller%20screen/seller%20authentication/seller_forgot_password.dart';
-import 'package:freelancer/screen/welcome%20screen/welcome_screen.dart';
+import 'package:freelancer/screen/seller%20screen/seller%20authentication/seller_sign_up.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../app_config/app_config.dart';
@@ -11,7 +11,7 @@ import '../../widgets/icons.dart';
 import '../seller home/seller_home.dart';
 
 class SellerLogIn extends StatefulWidget {
-  const SellerLogIn({Key? key}) : super(key: key);
+  const SellerLogIn({super.key});
 
   @override
   State<SellerLogIn> createState() => _SellerLogInState();
@@ -196,7 +196,15 @@ class _SellerLogInState extends State<SellerLogIn> {
               const SizedBox(height: 20.0),
               Center(
                 child: GestureDetector(
-                  onTap: () => const WelcomeScreen().launch(context),
+                 // onTap: () => const WelcomeScreen().launch(context),
+                 onTap: () {
+                    Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SellerSignUp(),
+                          ),
+                        );
+                 },
                   child: RichText(
                     text: TextSpan(
                       text: 'Don’t have an account? ',

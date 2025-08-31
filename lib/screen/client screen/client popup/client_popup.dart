@@ -9,7 +9,7 @@ import '../../widgets/constant.dart';
 import '../../widgets/icons.dart';
 
 class ProcessingPopUp extends StatefulWidget {
-  const ProcessingPopUp({Key? key}) : super(key: key);
+  const ProcessingPopUp({super.key});
 
   @override
   State<ProcessingPopUp> createState() => _ProcessingPopUpState();
@@ -58,7 +58,7 @@ class _ProcessingPopUpState extends State<ProcessingPopUp> {
 }
 
 class UploadRequirementsPopUp extends StatefulWidget {
-  const UploadRequirementsPopUp({Key? key}) : super(key: key);
+  const UploadRequirementsPopUp({super.key});
 
   @override
   State<UploadRequirementsPopUp> createState() => _UploadRequirementsPopUpState();
@@ -132,7 +132,7 @@ class _UploadRequirementsPopUpState extends State<UploadRequirementsPopUp> {
 }
 
 class UploadCompletePopUp extends StatefulWidget {
-  const UploadCompletePopUp({Key? key}) : super(key: key);
+  const UploadCompletePopUp({super.key});
 
   @override
   State<UploadCompletePopUp> createState() => _UploadCompletePopUpState();
@@ -186,7 +186,7 @@ class _UploadCompletePopUpState extends State<UploadCompletePopUp> {
 }
 
 class CancelJobPopUp extends StatefulWidget {
-  const CancelJobPopUp({Key? key}) : super(key: key);
+  const CancelJobPopUp({super.key});
 
   @override
   State<CancelJobPopUp> createState() => _CancelJobPopUpState();
@@ -265,7 +265,7 @@ class _CancelJobPopUpState extends State<CancelJobPopUp> {
 }
 
 class CancelOrderPopUp extends StatefulWidget {
-  const CancelOrderPopUp({Key? key}) : super(key: key);
+  const CancelOrderPopUp({super.key});
 
   @override
   State<CancelOrderPopUp> createState() => _CancelOrderPopUpState();
