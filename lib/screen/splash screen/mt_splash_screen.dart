@@ -23,36 +23,37 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> init() async {
-    await Future.delayed(const Duration(seconds: 2)).then((value) => checkUser());
+    await Future.delayed(const Duration(seconds: 2)).then((value) =>   Navigator.push(context, MaterialPageRoute(builder: (context) => const OnBoard())));
+    // await Future.delayed(const Duration(seconds: 2)).then((value) => checkUser());
   }
-  checkUser() async {
-    await PurchaseModel().isActiveBuyer().then((value) {
-      if (value) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const OnBoard()));
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text("Not Active User"),
-            content: Text("Please use the valid purchase code to use the app."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  //Exit app
-                  if (Platform.isAndroid) {
-                    SystemNavigator.pop();
-                  } else {
-                    exit(0);
-                  }
-                },
-                child: Text("OK"),
-              ),
-            ],
-          ),
-        );
-      }
-    });
-  }
+  // checkUser() async {
+  //   await PurchaseModel().isActiveBuyer().then((value) {
+  //     if (value) {
+  //       Navigator.push(context, MaterialPageRoute(builder: (context) => const OnBoard()));
+  //     } else {
+  //       showDialog(
+  //         context: context,
+  //         builder: (context) => AlertDialog(
+  //           title: Text("Not Active User"),
+  //           content: Text("Please use the valid purchase code to use the app."),
+  //           actions: [
+  //             TextButton(
+  //               onPressed: () {
+  //                 //Exit app
+  //                 if (Platform.isAndroid) {
+  //                   SystemNavigator.pop();
+  //                 } else {
+  //                   exit(0);
+  //                 }
+  //               },
+  //               child: Text("OK"),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     }
+  //   });
+  // }
   @override
   void setState(fn) {
     if (mounted) super.setState(fn);

@@ -756,23 +756,20 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus(); // Check login status when the screen loads
+    _checkLoginStatus(); 
   }
 
-  // Check if the user is logged in using SharedPreferences
   Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      isLoggedIn = prefs.getBool('isLoggedIn') ?? false; // Default to false if not set
+      isLoggedIn = prefs.getBool('isLoggedIn') ?? false; 
     });
   }
 
-  // Function to handle restricted feature access
   void _handleRestrictedFeature(VoidCallback onLoggedIn) {
     if (isLoggedIn) {
-      onLoggedIn(); // Proceed with the feature if logged in
+      onLoggedIn(); 
     } else {
-      // Navigate to login screen if not logged in
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ClientLogIn()),

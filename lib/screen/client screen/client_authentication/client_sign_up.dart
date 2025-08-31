@@ -53,7 +53,8 @@ class _ClientSignUpState extends State<ClientSignUp> {
                   height: 85,
                   width: 110,
                   decoration: const BoxDecoration(
-                    image: DecorationImage(image: AssetImage(AppInfo.logo), fit: BoxFit.cover),
+                    image: DecorationImage(
+                        image: AssetImage(AppInfo.logo), fit: BoxFit.cover),
                   ),
                 ),
               )
@@ -70,51 +71,54 @@ class _ClientSignUpState extends State<ClientSignUp> {
                 Center(
                   child: Text(
                     'Create a New Account',
-                    style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold, fontSize: 18.0),
+                    style: kTextStyle.copyWith(
+                        color: kNeutralColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18.0),
                   ),
                 ),
                 const SizedBox(height: 20.0),
-                TextFormField(
-                  keyboardType: TextInputType.name,
-                  cursorColor: kNeutralColor,
-                  textInputAction: TextInputAction.next,
-                  decoration: kInputDecoration.copyWith(
-                    labelText: 'First Name',
-                    labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                    hintText: 'Enter your first name',
-                    hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
-                    focusColor: kNeutralColor,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 20.0),
-                TextFormField(
-                  keyboardType: TextInputType.name,
-                  cursorColor: kNeutralColor,
-                  textInputAction: TextInputAction.next,
-                  decoration: kInputDecoration.copyWith(
-                    labelText: 'Last Name',
-                    labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                    hintText: 'Enter your last name',
-                    hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
-                    focusColor: kNeutralColor,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 20.0),
-                TextFormField(
-                  keyboardType: TextInputType.emailAddress,
-                  cursorColor: kNeutralColor,
-                  textInputAction: TextInputAction.next,
-                  decoration: kInputDecoration.copyWith(
-                    labelText: 'Email',
-                    labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                    hintText: 'Enter your email',
-                    hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                    focusColor: kNeutralColor,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
+                // TextFormField(
+                //   keyboardType: TextInputType.name,
+                //   cursorColor: kNeutralColor,
+                //   textInputAction: TextInputAction.next,
+                //   decoration: kInputDecoration.copyWith(
+                //     labelText: 'First Name',
+                //     labelStyle: kTextStyle.copyWith(color: kNeutralColor),
+                //     hintText: 'Enter your first name',
+                //     hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
+                //     focusColor: kNeutralColor,
+                //     border: const OutlineInputBorder(),
+                //   ),
+                // ),
+                // const SizedBox(height: 20.0),
+                // TextFormField(
+                //   keyboardType: TextInputType.name,
+                //   cursorColor: kNeutralColor,
+                //   textInputAction: TextInputAction.next,
+                //   decoration: kInputDecoration.copyWith(
+                //     labelText: 'Last Name',
+                //     labelStyle: kTextStyle.copyWith(color: kNeutralColor),
+                //     hintText: 'Enter your last name',
+                //     hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
+                //     focusColor: kNeutralColor,
+                //     border: const OutlineInputBorder(),
+                //   ),
+                // ),
+                // const SizedBox(height: 20.0),
+                // TextFormField(
+                //   keyboardType: TextInputType.emailAddress,
+                //   cursorColor: kNeutralColor,
+                //   textInputAction: TextInputAction.next,
+                //   decoration: kInputDecoration.copyWith(
+                //     labelText: 'Email',
+                //     labelStyle: kTextStyle.copyWith(color: kNeutralColor),
+                //     hintText: 'Enter your email',
+                //     hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
+                //     focusColor: kNeutralColor,
+                //     border: const OutlineInputBorder(),
+                //   ),
+                // ),
                 const SizedBox(height: 20.0),
                 TextFormField(
                   keyboardType: TextInputType.emailAddress,
@@ -123,7 +127,7 @@ class _ClientSignUpState extends State<ClientSignUp> {
                   decoration: kInputDecoration.copyWith(
                       labelText: 'Phone',
                       labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                      hintText: AutofillHints.countryName,
+                      hintText: 'Enter Mobile Number',
                       hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
                       focusColor: kNeutralColor,
                       border: const OutlineInputBorder(),
@@ -170,6 +174,31 @@ class _ClientSignUpState extends State<ClientSignUp> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 20.0),
+                TextFormField(
+                  cursorColor: kNeutralColor,
+                  keyboardType: TextInputType.visiblePassword,
+                  obscureText: hidePassword,
+                  textInputAction: TextInputAction.done,
+                  decoration: kInputDecoration.copyWith(
+                    border: const OutlineInputBorder(),
+                    labelText: 'Confirm Password*',
+                    labelStyle: kTextStyle.copyWith(color: kNeutralColor),
+                    hintText: 'Please confirm your password',
+                    hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          hidePassword = !hidePassword;
+                        });
+                      },
+                      icon: Icon(
+                        hidePassword ? Icons.visibility_off : Icons.visibility,
+                        color: kLightNeutralColor,
+                      ),
+                    ),
+                  ),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -194,7 +223,9 @@ class _ClientSignUpState extends State<ClientSignUp> {
                           children: [
                             TextSpan(
                               text: 'Terms of Service.',
-                              style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                              style: kTextStyle.copyWith(
+                                  color: kPrimaryColor,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -272,7 +303,7 @@ class _ClientSignUpState extends State<ClientSignUp> {
                 ),
                 const SizedBox(height: 20.0),
                 GestureDetector(
-                  onTap: ()=>const ClientLogIn().launch(context),
+                  onTap: () => const ClientLogIn().launch(context),
                   child: Center(
                     child: RichText(
                       text: TextSpan(
@@ -281,7 +312,9 @@ class _ClientSignUpState extends State<ClientSignUp> {
                         children: [
                           TextSpan(
                             text: 'Log In',
-                            style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                            style: kTextStyle.copyWith(
+                                color: kPrimaryColor,
+                                fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

@@ -83,7 +83,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
-
 import '../../seller screen/seller messgae/chat_list.dart';
 import '../client job post/client_job_post.dart';
 import '../client orders/client_orders.dart';
@@ -99,7 +98,6 @@ class ClientHome extends StatefulWidget {
 
 class _ClientHomeState extends State<ClientHome> {
   int _currentPage = 0;
-
   bool isLoggedIn = false; 
 
   static const List<Widget> _widgetOptions = <Widget>[
@@ -135,13 +133,11 @@ class _ClientHomeState extends State<ClientHome> {
 
   void _onItemTapped(int index) {
     if (index == 4  ) {
-      // Home tab → always allow
       setState(() => _currentPage = index);
     } else {
       if (isLoggedIn) {
         setState(() => _currentPage = index);
       } else {
-        // Navigate to login if not logged in
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ClientLogIn()),
@@ -193,7 +189,6 @@ class _ClientHomeState extends State<ClientHome> {
           : null,
       body: _widgetOptions.elementAt(_currentPage),
 
-      // Mobile → Bottom Navigation
       bottomNavigationBar: isWeb
           ? null
           : Container(
