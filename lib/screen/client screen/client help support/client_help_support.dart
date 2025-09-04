@@ -7,14 +7,14 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
 import '../../widgets/icons.dart';
 
-class ClientInvite extends StatefulWidget {
-  const ClientInvite({super.key});
+class ClientHelpSupport extends StatefulWidget {
+  const ClientHelpSupport({super.key});
 
   @override
-  State<ClientInvite> createState() => _ClientInviteState();
+  State<ClientHelpSupport> createState() => _ClientHelpSupportState();
 }
 
-class _ClientInviteState extends State<ClientInvite> {
+class _ClientHelpSupportState extends State<ClientHelpSupport> {
   Future<void> _copyToClipboard(String code) async {
     await Clipboard.setData(ClipboardData(text: code));
     // ignore: use_build_context_synchronously
@@ -32,7 +32,7 @@ class _ClientInviteState extends State<ClientInvite> {
         elevation: 0,
         iconTheme: const IconThemeData(color: kNeutralColor),
         title: Text(
-          'Invite',
+          'Help & Support',
           style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -68,12 +68,12 @@ class _ClientInviteState extends State<ClientInvite> {
                 ),
                 const SizedBox(height: 30.0),
                 Text(
-                  'Refer a friend',
+                  'Contact us',
                   style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold, fontSize: 18.0),
                 ),
                 const SizedBox(height: 10.0),
                 Text(
-                  'Share your code with 4 friends. When they use it for the first login, you and your friends earn ₹ 10.00',
+                  'If you need any support, feel free to connect with us.',
                   style: kTextStyle.copyWith(color: kLightNeutralColor),
                   textAlign: TextAlign.center,
                 ),
@@ -97,7 +97,7 @@ class _ClientInviteState extends State<ClientInvite> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'AHDJAEL2021RV1',
+                              '+919876543210',
                               style: kTextStyle.copyWith(color: kSubTitleColor, fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
@@ -109,7 +109,7 @@ class _ClientInviteState extends State<ClientInvite> {
                       flex: 1,
                       child: GestureDetector(
                         onTap: () {
-                          _copyToClipboard('AHDJAEL2021RV1');
+                          _copyToClipboard('+919876543210');
                         },
                         child: Container(
                           padding: const EdgeInsets.all(10),

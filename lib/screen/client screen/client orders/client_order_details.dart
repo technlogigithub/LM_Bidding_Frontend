@@ -47,7 +47,7 @@ class _ClientOrderDetailsState extends State<ClientOrderDetails> {
         elevation: 0,
         iconTheme: const IconThemeData(color: kNeutralColor),
         title: Text(
-          'Order Details',
+          'Participation Details',
           style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

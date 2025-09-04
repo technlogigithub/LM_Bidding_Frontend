@@ -44,7 +44,7 @@ class _SellerBuyerReqState extends State<SellerBuyerReq> {
         elevation: 0,
         iconTheme: const IconThemeData(color: kNeutralColor),
         title: Text(
-          'Buyer Request',
+          'Requested Post',
           style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

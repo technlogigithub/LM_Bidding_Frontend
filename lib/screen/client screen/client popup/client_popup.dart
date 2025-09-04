@@ -283,7 +283,7 @@ class _CancelOrderPopUpState extends State<CancelOrderPopUp> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Why are you Cancel Order?',
+              'Why are you Cancelling?',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),

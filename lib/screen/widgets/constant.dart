@@ -61,7 +61,7 @@ final otpInputDecoration = InputDecoration(
 bool isClient = false;
 bool isFreelancer = false;
 bool isFavorite = false;
-const String currencySign = '\$';
+const String currencySign = '\₹';
 
 //__________Gender______________________________________________________
 List<String> gender = [
@@ -241,11 +241,11 @@ List<String> gateWay = [
 String selectedGateWay = 'PayPal';
 
 List<String> currency = [
-  'USD',
-  'BDT',
+  '₹',
+  '\$',
 ];
 
-String selectedCurrency = 'USD';
+String selectedCurrency = '₹';
 
 
 List<Color> colorList = [

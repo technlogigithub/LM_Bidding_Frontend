@@ -45,7 +45,7 @@ class _ClientLogInState extends State<ClientLogIn> {
 
     if (permissionGranted) {
       String? simNumber = await MobileNumber.mobileNumber;
-      if (simNumber != null && simNumber.isNotEmpty) {
+      if (simNumber!.isNotEmpty) {
         mobileCtrl.text = simNumber;
       }
     }
@@ -58,8 +58,8 @@ class _ClientLogInState extends State<ClientLogIn> {
     String? savedMobile = await secureStorage.read(key: 'mobile');
     String? savedPassword = await secureStorage.read(key: 'password');
 
-    if (savedMobile != null) mobileCtrl.text = savedMobile;
-    if (savedPassword != null) passwordCtrl.text = savedPassword;
+    mobileCtrl.text = savedMobile!;
+    passwordCtrl.text = savedPassword!;
   }
 
   Future<void> saveCredentials() async {

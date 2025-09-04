@@ -1020,7 +1020,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                     child: Row(
                       children: [
                         Text(
-                          'Popular Services',
+                          'Live Post',
                           style: kTextStyle.copyWith(
                               color: kNeutralColor, fontWeight: FontWeight.bold),
                         ),
@@ -1242,12 +1242,241 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                       );
                     },
                   ),
+                 Padding(
+                    padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Upcoming Post',
+                          style: kTextStyle.copyWith(
+                              color: kNeutralColor, fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        GestureDetector(
+                          onTap: () 
+                          //=> _handleRestrictedFeature(() 
+                          {
+                            const PopularServices().launch(context);
+                          }
+                          ,
+                          child: Text(
+                            'View All',
+                            style: kTextStyle.copyWith(color: kLightNeutralColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  HorizontalList(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.only(
+                        top: 20, bottom: 20, left: 15.0, right: 15.0),
+                    spacing: 10.0,
+                    itemCount: 10,
+                    itemBuilder: (_, i) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: GestureDetector(
+                          onTap: () => _handleRestrictedFeature(() {
+                            const ClientServiceDetails().launch(context);
+                          }),
+                          child: Container(
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: kWhite,
+                              borderRadius: BorderRadius.circular(8.0),
+                              border: Border.all(color: kBorderColorTextField),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: kDarkWhite,
+                                  blurRadius: 5.0,
+                                  spreadRadius: 2.0,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Stack(
+                                  alignment: Alignment.topLeft,
+                                  children: [
+                                    Container(
+                                      height: 120,
+                                      width: 120,
+                                      decoration: const BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(8.0),
+                                          topLeft: Radius.circular(8.0),
+                                        ),
+                                        image: DecorationImage(
+                                            image: AssetImage('images/shot1.png'),
+                                            fit: BoxFit.cover),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        _handleRestrictedFeature(() {
+                                          setState(() {
+                                            isFavorite = !isFavorite;
+                                          });
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(5.0),
+                                        child: Container(
+                                          height: 25,
+                                          width: 25,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black12,
+                                                blurRadius: 10.0,
+                                                spreadRadius: 1.0,
+                                                offset: Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: isFavorite
+                                              ? const Center(
+                                                  child: Icon(
+                                                    Icons.favorite,
+                                                    color: Colors.red,
+                                                    size: 16.0,
+                                                  ),
+                                                )
+                                              : const Center(
+                                                  child: Icon(
+                                                    Icons.favorite_border,
+                                                    color: kNeutralColor,
+                                                    size: 16.0,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: SizedBox(
+                                          width: 190,
+                                          child: Text(
+                                            'Mobile UI UX design or app design',
+                                            style: kTextStyle.copyWith(
+                                                color: kNeutralColor,
+                                                fontWeight: FontWeight.bold),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5.0),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          const Icon(
+                                            IconlyBold.star,
+                                            color: Colors.amber,
+                                            size: 18.0,
+                                          ),
+                                          const SizedBox(width: 2.0),
+                                          Text(
+                                            '5.0',
+                                            style: kTextStyle.copyWith(
+                                                color: kNeutralColor),
+                                          ),
+                                          const SizedBox(width: 2.0),
+                                          Text(
+                                            '(520)',
+                                            style: kTextStyle.copyWith(
+                                                color: kLightNeutralColor),
+                                          ),
+                                          const SizedBox(width: 40),
+                                          RichText(
+                                            text: TextSpan(
+                                              text: 'Price: ',
+                                              style: kTextStyle.copyWith(
+                                                  color: kLightNeutralColor),
+                                              children: [
+                                                TextSpan(
+                                                  text: '$currencySign${30}',
+                                                  style: kTextStyle.copyWith(
+                                                      color: kPrimaryColor,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                      const SizedBox(height: 5.0),
+                                      Row(
+                                        children: [
+                                          Container(
+                                            height: 32,
+                                            width: 32,
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              image: DecorationImage(
+                                                  image: AssetImage(
+                                                      'images/profilepic2.png'),
+                                                  fit: BoxFit.cover),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5.0),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'William Liam',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: kTextStyle.copyWith(
+                                                    color: kNeutralColor,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                'Seller Level - 1',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: kTextStyle.copyWith(
+                                                    color: kSubTitleColor),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                
+                
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                     child: Row(
                       children: [
                         Text(
-                          'Top Sellers',
+                          'Top Poster',
                           style: kTextStyle.copyWith(
                               color: kNeutralColor, fontWeight: FontWeight.bold),
                         ),

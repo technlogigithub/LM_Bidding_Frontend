@@ -9,26 +9,44 @@ class InfoShowCase extends StatelessWidget {
     super.key,
     required this.title,
     required this.subTitle,
+    this.onEdit,
+    this.onDelete,
   });
 
   final String title;
   final String subTitle;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0), color: kWhite, border: Border.all(color: kBorderColorTextField)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        color: kWhite,
+        border: Border.all(color: kBorderColorTextField),
+      ),
       child: Column(
         children: [
           Row(
             children: [
               Text(
                 title,
-                style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                style: kTextStyle.copyWith(
+                  color: kNeutralColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Spacer(),
-              const Icon(IconlyBold.edit, color: kLightNeutralColor, size: 18.0),
+              GestureDetector(
+                onTap: onEdit,
+                child: const Icon(
+                  IconlyBold.edit,
+                  color: kLightNeutralColor,
+                  size: 18.0,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8.0),
@@ -39,7 +57,14 @@ class InfoShowCase extends StatelessWidget {
                 style: kTextStyle.copyWith(color: kLightNeutralColor),
               ),
               const Spacer(),
-              const Icon(IconlyBold.delete, color: kLightNeutralColor, size: 18.0),
+              GestureDetector(
+                onTap: onDelete,
+                child: const Icon(
+                  IconlyBold.delete,
+                  color: kLightNeutralColor,
+                  size: 18.0,
+                ),
+              ),
             ],
           ),
         ],
@@ -47,6 +72,7 @@ class InfoShowCase extends StatelessWidget {
     );
   }
 }
+
 
 class InfoShowCaseWithoutIcon extends StatelessWidget {
   const InfoShowCaseWithoutIcon({
@@ -81,32 +107,51 @@ class InfoShowCaseWithoutIcon extends StatelessWidget {
     );
   }
 }
-
 class InfoShowCase2 extends StatelessWidget {
   const InfoShowCase2({
     super.key,
     required this.title,
     required this.subTitle,
+    this.onEdit,
+    this.onDelete,
   });
 
   final String title;
   final String subTitle;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0), color: kWhite, border: Border.all(color: kBorderColorTextField)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        color: kWhite,
+        border: Border.all(color: kBorderColorTextField),
+      ),
       child: Column(
         children: [
           Row(
             children: [
               Text(
                 title,
-                style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                style: kTextStyle.copyWith(
+                  color: kNeutralColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Spacer(),
-              const Icon(IconlyBold.edit, color: kLightNeutralColor, size: 18.0),
+              IconButton(
+                onPressed: onEdit,
+                icon: const Icon(
+                  IconlyBold.edit,
+                  color: kLightNeutralColor,
+                  size: 18.0,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
             ],
           ),
           const SizedBox(height: 8.0),
@@ -118,10 +163,20 @@ class InfoShowCase2 extends StatelessWidget {
                   subTitle,
                   style: kTextStyle.copyWith(color: kLightNeutralColor),
                   maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const Spacer(),
-              const Icon(IconlyBold.delete, color: kLightNeutralColor, size: 18.0),
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(
+                  IconlyBold.delete,
+                  color: kLightNeutralColor,
+                  size: 18.0,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
             ],
           ),
         ],
@@ -129,6 +184,55 @@ class InfoShowCase2 extends StatelessWidget {
     );
   }
 }
+
+
+// class InfoShowCase2 extends StatelessWidget {
+//   const InfoShowCase2({
+//     super.key,
+//     required this.title,
+//     required this.subTitle,
+//   });
+
+//   final String title;
+//   final String subTitle;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(10.0),
+//       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0), color: kWhite, border: Border.all(color: kBorderColorTextField)),
+//       child: Column(
+//         children: [
+//           Row(
+//             children: [
+//               Text(
+//                 title,
+//                 style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+//               ),
+//               const Spacer(),
+//               const Icon(IconlyBold.edit, color: kLightNeutralColor, size: 18.0),
+//             ],
+//           ),
+//           const SizedBox(height: 8.0),
+//           Row(
+//             children: [
+//               SizedBox(
+//                 width: 280,
+//                 child: Text(
+//                   subTitle,
+//                   style: kTextStyle.copyWith(color: kLightNeutralColor),
+//                   maxLines: 2,
+//                 ),
+//               ),
+//               const Spacer(),
+//               const Icon(IconlyBold.delete, color: kLightNeutralColor, size: 18.0),
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class Summary extends StatelessWidget {
   const Summary({

@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:freelancer/screen/client%20screen/client%20service%20details/bidding_sheet.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -50,6 +51,7 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
     _scrollController?.dispose();
     super.dispose();
   }
+  String status = "bidding"; 
 
   // final CarouselController _controller = CarouselController();
   final CarouselSliderController _controller = CarouselSliderController();
@@ -58,20 +60,60 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        bottomNavigationBar: ButtonGlobalWithoutIcon(
-            buttontext: 'Order Now',
-            buttonDecoration: kButtonDecoration.copyWith(
-              color: kPrimaryColor,
-              borderRadius: BorderRadius.circular(30.0),
+      bottomNavigationBar: Builder(
+  builder: (context) {
+    String buttonText = '';
+    Color buttonColor = kNeutralColor;
+    VoidCallback? onPressed;
+
+    switch (status) {
+      case 'before_pay': // Before pay and Before start Bid
+        buttonText = 'Participate';
+        buttonColor = kNeutralColor;
+        onPressed = () {
+          const ClientOrder().launch(context);
+        };
+        break;
+
+      case 'waiting': // After pay but before start Bid
+        buttonText = 'Waiting';
+        buttonColor = khaki; // your defined rating color
+        onPressed = null; // Disabled
+        break;
+
+      case 'bidding': // After start bid till End Bid
+        buttonText = 'Bid Now';
+        buttonColor = kPrimaryColor;
+        onPressed = () {
+          showModalBottomSheet(
+            context: context,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            onPressed: () {
-              setState(
-                () {
-                  const ClientOrder().launch(context);
-                },
-              );
-            },
-            buttonTextColor: kWhite),
+            builder: (context) => const BidBottomSheet(),
+          );
+        };
+        break;
+
+      case 'closed': // After End Bid
+        buttonText = 'Closed';
+        buttonColor = kLightNeutralColor;
+        onPressed = null; // Disabled
+        break;
+    }
+
+    return ButtonGlobalWithoutIcon(
+      buttontext: buttonText,
+      buttonDecoration: kButtonDecoration.copyWith(
+        color: buttonColor,
+        borderRadius: BorderRadius.circular(30.0),
+      ),
+      onPressed: onPressed,
+      buttonTextColor: kWhite,
+    );
+  },
+),
+
         backgroundColor: kWhite,
         body: NestedScrollView(
           physics: const BouncingScrollPhysics(),

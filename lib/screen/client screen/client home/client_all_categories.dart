@@ -97,21 +97,24 @@ class _ClientAllCategoriesState extends State<ClientAllCategories> {
                                 thickness: 1.0,
                                 color: kBorderColorTextField,
                               ),
-                              ListTile(
-                                visualDensity: const VisualDensity(vertical: -4),
-                                contentPadding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                                horizontalTitleGap: 10,
-                                title: Text(
-                                  'Logo Design',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                ),
-                                trailing: GestureDetector(
-                                   onTap: () => const SearchPage().launch(context),
-                                  child: const Icon(
-                                    FeatherIcons.chevronRight,
-                                    color: kSubTitleColor,
+                            GestureDetector(
+                                     onTap: () => const SearchPage().launch(context),
+                                child: ListTile(
+                                  visualDensity: const VisualDensity(vertical: -4),
+                                  contentPadding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                                  horizontalTitleGap: 10,
+                                  title: Text(
+                                    'Logo Design',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                  ),
+                                  trailing: GestureDetector(
+                                     onTap: () => const SearchPage().launch(context),
+                                    child: const Icon(
+                                      FeatherIcons.chevronRight,
+                                      color: kSubTitleColor,
+                                    ),
                                   ),
                                 ),
                               ),

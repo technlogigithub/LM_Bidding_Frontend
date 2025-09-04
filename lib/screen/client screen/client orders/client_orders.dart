@@ -22,7 +22,7 @@ class _ClientOrderListState extends State<ClientOrderList> {
         elevation: 0,
         iconTheme: const IconThemeData(color: kNeutralColor),
         title: Text(
-          'Orders',
+          'Participations',
           style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

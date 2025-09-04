@@ -170,6 +170,7 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:freelancer/screen/client%20screen/client%20job%20post/jobsetup_screen.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
 import 'package:nb_utils/nb_utils.dart';
 
@@ -203,9 +204,14 @@ class _JobPostState extends State<JobPost> {
         padding: const EdgeInsets.only(bottom: 20.0),
         child: FloatingActionButton(
           onPressed: () {
-            Navigator.of(context).push(
+            // Navigator.of(context).push(
+            //   MaterialPageRoute(
+            //     builder: (context) => const CreateNewJobPost(),
+            //   ),
+            // );
+             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => const CreateNewJobPost(),
+                builder: (context) => const JobPostScreen(),
               ),
             );
           },

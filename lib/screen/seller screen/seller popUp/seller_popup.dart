@@ -648,7 +648,7 @@ class _CancelReasonPopUpState extends State<CancelReasonPopUp> {
             Row(
               children: [
                 Text(
-                  'Why are you Cancel Order',
+                  'Why are you Cancelling',
                   style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),

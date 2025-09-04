@@ -119,11 +119,11 @@ class _ClientHomeState extends State<ClientHome> {
     ),
     BottomNavigationBarItem(
       icon: Icon(IconlyBold.paperPlus),
-      label: "Job Apply",
+      label: "Post Now",
     ),
     BottomNavigationBarItem(
       icon: Icon(IconlyBold.document),
-      label: "Orders",
+      label: "Participate",
     ),
     BottomNavigationBarItem(
       icon: Icon(IconlyBold.profile),
@@ -132,7 +132,7 @@ class _ClientHomeState extends State<ClientHome> {
   ];
 
   void _onItemTapped(int index) {
-    if (index == 4  ) {
+    if (index == 2 ||index==4||index==3 ) {
       setState(() => _currentPage = index);
     } else {
       if (isLoggedIn) {
