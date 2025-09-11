@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
-import 'package:freelancer/screen/client%20screen/client%20profile/client_setup_profile.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
 import 'package:nb_utils/nb_utils.dart';
 

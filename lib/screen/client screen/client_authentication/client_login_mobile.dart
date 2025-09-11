@@ -1,15 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_otp_verification.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_sign_up.dart';
+import 'package:http/http.dart' as http;
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../app_config/app_config.dart';
 import '../../widgets/button_global.dart';
 import '../../widgets/constant.dart';
-import '../../widgets/icons.dart';
-import 'client_forgot_password.dart';
 
 class ClientLogInMobile extends StatefulWidget {
   const ClientLogInMobile({super.key});
@@ -20,6 +21,39 @@ class ClientLogInMobile extends StatefulWidget {
 
 class _ClientLogInMobileState extends State<ClientLogInMobile> {
   bool hidePassword = false;
+
+final  TextEditingController mobileController=TextEditingController();
+
+
+static Future<void> loginWithOtp(BuildContext context, String mobileNo) async {
+  try {
+    final response = await ApiService.postRequest(
+      "login",
+      {
+        "mobile_no": mobileNo,
+      },
+    );
+
+    print("Login Response: $response");
+
+    final otp = response['result']['otp'];
+
+    toast("OTP: $otp");
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => ClientOtpVerification(mobile: mobileNo,)),
+    );
+  } catch (e) {
+    print("Login error: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Login failed: $e")),
+    );
+  }
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +109,8 @@ class _ClientLogInMobileState extends State<ClientLogInMobile> {
               ),
               const SizedBox(height: 30.0),
               TextFormField(
-                keyboardType: TextInputType.name,
+                keyboardType: TextInputType.number,
+                controller: mobileController,
                 cursorColor: kNeutralColor,
                 textInputAction: TextInputAction.next,
                 decoration: kInputDecoration.copyWith(
@@ -88,31 +123,7 @@ class _ClientLogInMobileState extends State<ClientLogInMobile> {
                 ),
               ),
               const SizedBox(height: 20.0),
-              // TextFormField(
-              //   cursorColor: kNeutralColor,
-              //   keyboardType: TextInputType.emailAddress,
-              //   obscureText: hidePassword,
-              //   textInputAction: TextInputAction.done,
-              //   decoration: kInputDecoration.copyWith(
-              //     border: const OutlineInputBorder(),
-              //     labelText: 'Password*',
-              //     labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-              //     hintText: 'Please enter your password',
-              //     hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
-              //     suffixIcon: IconButton(
-              //       onPressed: () {
-              //         setState(() {
-              //           hidePassword = !hidePassword;
-              //         });
-              //       },
-              //       icon: Icon(
-              //         hidePassword ? Icons.visibility_off : Icons.visibility,
-              //         color: kLightNeutralColor,
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              // const SizedBox(height: 5.0),
+             
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -134,7 +145,8 @@ class _ClientLogInMobileState extends State<ClientLogInMobile> {
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                   onPressed: () {
-                    const ClientOtpVerification().launch(context);
+                    // const ClientOtpVerification().launch(context);
+                     loginWithOtp(context,mobileController.text);
                   },
                   buttonTextColor: kWhite),
               const SizedBox(height: 20.0),
@@ -146,58 +158,15 @@ class _ClientLogInMobileState extends State<ClientLogInMobile> {
                       color: kBorderColorTextField,
                     ),
                   ),
-                  // Padding(
-                  //   padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                  //   child: Text(
-                  //     'Or Sign up with',
-                  //     style: kTextStyle.copyWith(color: kSubTitleColor),
-                  //   ),
-                  // ),
-                  // const Expanded(
-                  //   child: Divider(
-                  //     thickness: 1.0,
-                  //     color: kBorderColorTextField,
-                  //   ),
-                  // ),
+                  
                 ],
               ),
-              // const SizedBox(height: 20.0),
-              // Padding(
-              //   padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //     children: const [
-              //       SocialIcon(
-              //         bgColor: kNeutralColor,
-              //         iconColor: kWhite,
-              //         icon: FontAwesomeIcons.facebookF,
-              //         borderColor: Colors.transparent,
-              //       ),
-              //       SocialIcon(
-              //         bgColor: kWhite,
-              //         iconColor: kNeutralColor,
-              //         icon: FontAwesomeIcons.google,
-              //         borderColor: kBorderColorTextField,
-              //       ),
-              //       SocialIcon(
-              //         bgColor: kWhite,
-              //         iconColor: Color(0xFF76A9EA),
-              //         icon: FontAwesomeIcons.twitter,
-              //         borderColor: kBorderColorTextField,
-              //       ),
-              //       SocialIcon(
-              //         bgColor: kWhite,
-              //         iconColor: Color(0xFFFF554A),
-              //         icon: FontAwesomeIcons.instagram,
-              //         borderColor: kBorderColorTextField,
-              //       ),
-              //     ],
-              //   ),
-              // ),
+              
               const SizedBox(height: 20.0),
               Center(
                 child: GestureDetector(
-                  onTap: () => const ClientSignUp().launch(context),
+                   onTap: () => const ClientSignUp().launch(context),
+                  
                   child: RichText(
                     text: TextSpan(
                       text: 'Don’t have an account? ',

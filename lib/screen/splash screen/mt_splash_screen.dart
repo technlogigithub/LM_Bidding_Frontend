@@ -1,11 +1,10 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 import '../app_config/app_config.dart';
-import '../model/purchase_model/purchase_model.dart';
 import 'onboard.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -20,6 +19,39 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     init();
+  }
+ List<dynamic> notifications = [];
+  bool isLoading = true;
+
+  
+   void postserviceApi() async {
+    // if (mobileCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
+    //   toast("Please enter mobile number and password");
+    //   return;
+    // }
+
+    setState(() => isLoading = true);
+
+    try {
+      final body = {
+        "mobile_no": '',
+        "password": '',
+      };
+
+      final response = await ApiService.postRequest("login-pin", body);
+      print("Login Response: $response");
+
+      toast("Login Successful");
+
+      // await saveCredentials();
+
+      // const ClientOtpVerification().launch(context);
+    } catch (e) {
+      print("Login Error: $e");
+      toast("Login Failed: $e");
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
 
   Future<void> init() async {

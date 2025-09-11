@@ -1,8 +1,12 @@
 // import 'package:country_code_picker/country_code_picker.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
+import 'package:http/http.dart' as http;
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../app_config/app_config.dart';
@@ -20,6 +24,31 @@ class ClientSignUp extends StatefulWidget {
 class _ClientSignUpState extends State<ClientSignUp> {
   bool hidePassword = true;
   bool isCheck = true;
+  static Future<dynamic> signUpApi(String mobileNo, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}api/login"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer <your_token_here>", 
+        },
+        body: jsonEncode({
+          "mobile_no": mobileNo,
+          "password": "123456",
+          "confirm_password": "123456",
+     
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception("Failed: ${response.statusCode} ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Login error: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,48 +106,7 @@ class _ClientSignUpState extends State<ClientSignUp> {
                         fontSize: 18.0),
                   ),
                 ),
-                const SizedBox(height: 20.0),
-                // TextFormField(
-                //   keyboardType: TextInputType.name,
-                //   cursorColor: kNeutralColor,
-                //   textInputAction: TextInputAction.next,
-                //   decoration: kInputDecoration.copyWith(
-                //     labelText: 'First Name',
-                //     labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                //     hintText: 'Enter your first name',
-                //     hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
-                //     focusColor: kNeutralColor,
-                //     border: const OutlineInputBorder(),
-                //   ),
-                // ),
-                // const SizedBox(height: 20.0),
-                // TextFormField(
-                //   keyboardType: TextInputType.name,
-                //   cursorColor: kNeutralColor,
-                //   textInputAction: TextInputAction.next,
-                //   decoration: kInputDecoration.copyWith(
-                //     labelText: 'Last Name',
-                //     labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                //     hintText: 'Enter your last name',
-                //     hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
-                //     focusColor: kNeutralColor,
-                //     border: const OutlineInputBorder(),
-                //   ),
-                // ),
-                // const SizedBox(height: 20.0),
-                // TextFormField(
-                //   keyboardType: TextInputType.emailAddress,
-                //   cursorColor: kNeutralColor,
-                //   textInputAction: TextInputAction.next,
-                //   decoration: kInputDecoration.copyWith(
-                //     labelText: 'Email',
-                //     labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                //     hintText: 'Enter your email',
-                //     hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                //     focusColor: kNeutralColor,
-                //     border: const OutlineInputBorder(),
-                //   ),
-                // ),
+                
                 const SizedBox(height: 20.0),
                 TextFormField(
                   keyboardType: TextInputType.emailAddress,
@@ -131,22 +119,7 @@ class _ClientSignUpState extends State<ClientSignUp> {
                       hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
                       focusColor: kNeutralColor,
                       border: const OutlineInputBorder(),
-                      // prefixIcon: Container(
-                      //   padding: const EdgeInsets.all(5),
-                      //   width: context.width(),
-                      //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(10.0), border: Border.all(color: kBorderColorTextField, width: 2.0)),
-                      //   child: CountryCodePicker(
-                      //     showOnlyCountryWhenClosed: true,
-                      //     showCountryOnly: true,
-                      //     padding: EdgeInsets.zero,
-                      //     onChanged: print,
-                      //     initialSelection: 'BD',
-                      //     showFlag: true,
-                      //     showDropDownButton: false,
-                      //     alignLeft: true,
-                      //   ),
-                      // ),
-                      // suffixIcon: const Icon(FeatherIcons.chevronDown),
+                     
                       floatingLabelBehavior: FloatingLabelBehavior.always),
                 ),
                 const SizedBox(height: 20.0),
@@ -241,7 +214,7 @@ class _ClientSignUpState extends State<ClientSignUp> {
                       borderRadius: BorderRadius.circular(30.0),
                     ),
                     onPressed: () {
-                      const ClientOtpVerification().launch(context);
+                      const ClientOtpVerification(mobile: '').launch(context);
                     },
                     buttonTextColor: kWhite),
                 const SizedBox(height: 20.0),

@@ -174,7 +174,6 @@ import 'package:freelancer/screen/client%20screen/client%20job%20post/jobsetup_s
 import 'package:freelancer/screen/widgets/constant.dart';
 import 'package:nb_utils/nb_utils.dart';
 
-import 'create_new_job_post.dart';
 import 'job_details.dart';
 
 class JobPost extends StatefulWidget {

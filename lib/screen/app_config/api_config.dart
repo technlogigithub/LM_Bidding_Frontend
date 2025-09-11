@@ -3,24 +3,42 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = "https://example.com/api/";
+  static const String baseUrl = "https://phplaravel-1517766-5835172.cloudwaysapps.com/api/";
 
   /// ------------------- GET -------------------
-  static Future<dynamic> getRequest(String endpoint) async {
-    try {
-      final response = await http.get(Uri.parse(baseUrl + endpoint));
-      return _processResponse(response);
-    } on SocketException {
-      throw Exception("No Internet Connection");
+static Future<dynamic> getRequest(
+  String endpoint, {
+  Map<String, String>? headers,
+}) async {
+  try {
+    final response = await http.get(
+      Uri.parse(baseUrl + endpoint),
+      headers: {
+        "Content-Type": "application/json",
+        if (headers != null) ...headers,
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    // Handle error response
+    if (response.statusCode != 200 || data["response"] == "error") {
+      throw Exception(data["message"] ?? "Something went wrong");
     }
+
+    return data;
+  } on SocketException {
+    throw Exception("No Internet Connection");
   }
+}
+
 
   /// ------------------- POST -------------------
   static Future<dynamic> postRequest(String endpoint, Map<String, dynamic> body) async {
     try {
       final response = await http.post(
         Uri.parse(baseUrl + endpoint),
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json","Accept": "application/json"},
         body: jsonEncode(body),
       );
       return _processResponse(response);
@@ -34,7 +52,8 @@ class ApiService {
     try {
       final response = await http.put(
         Uri.parse(baseUrl + endpoint),
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json","Accept": "application/json"},
+   
         body: jsonEncode(body),
       );
       return _processResponse(response);
@@ -104,40 +123,3 @@ class ApiService {
   }
 }
 
-
-// void testApi() async {
-//     try {
-//       /// Example: GET
-//       var getData = await ApiService.getRequest("users");
-//       print("GET Response: $getData");
-
-//       /// Example: POST
-//       var postData = await ApiService.postRequest("login", {
-//         "email": "test@gmail.com",
-//         "password": "123456"
-//       });
-//       print("POST Response: $postData");
-
-//       /// Example: DELETE
-//       var deleteData = await ApiService.deleteRequest("users/1");
-//       print("DELETE Response: $deleteData");
-
-//       /// Example: Multipart (Image Upload)
-//       File file = File("/storage/emulated/0/Download/test.png");
-//       var uploadData = await ApiService.multipartRequest(
-//         "upload",
-//         {"user_id": "123"},
-//         file,
-//         "image",
-//       );
-//       print("UPLOAD Response: $uploadData");
-
-//       setState(() {
-//         result = "All API calls successful! Check console.";
-//       });
-//     } catch (e) {
-//       setState(() {
-//         result = e.toString();
-//       });
-//     }
-//   }

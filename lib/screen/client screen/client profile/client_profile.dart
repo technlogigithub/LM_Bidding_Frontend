@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/client%20screen/client%20help%20support/client_help_support.dart';
 import 'package:freelancer/screen/client%20screen/client%20profile/client_profile_details.dart';
-import 'package:freelancer/screen/client%20screen/client%20profile/client_setup_profile.dart';
 import 'package:freelancer/screen/seller%20screen/add%20payment%20method/seller_add_payment_method.dart';
 import 'package:freelancer/screen/seller%20screen/buyer%20request/seller_buyer_request.dart';
 import 'package:freelancer/screen/seller%20screen/withdraw_money/seller_withdraw_history.dart';
@@ -29,6 +29,27 @@ class ClientProfile extends StatefulWidget {
 
 class _ClientProfileState extends State<ClientProfile> {
   @override
+  List<dynamic> notifications = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchOrders();
+  }
+  Future<void> fetchOrders() async {
+    try {
+      final res = await  ApiService.getRequest("ordersApi");
+      setState(() {
+        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      toast("Error: $e");
+    }
+  
+  }  
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kDarkWhite,

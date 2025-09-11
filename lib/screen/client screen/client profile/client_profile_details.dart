@@ -806,7 +806,7 @@ class _ClientProfileDetailsState extends State<ClientProfileDetails> {
                       const SizedBox(height: 15.0),
                     ],
                   );
-                }).toList(),
+                }),
                 const SizedBox(height: 20.0),
                 Text(
                   'Addresses',
@@ -843,7 +843,7 @@ class _ClientProfileDetailsState extends State<ClientProfileDetails> {
                       const SizedBox(height: 15.0),
                     ],
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),

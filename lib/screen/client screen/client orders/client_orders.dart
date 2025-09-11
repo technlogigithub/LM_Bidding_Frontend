@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 
@@ -13,6 +14,27 @@ class ClientOrderList extends StatefulWidget {
 }
 
 class _ClientOrderListState extends State<ClientOrderList> {
+   List<dynamic> notifications = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchOrders();
+  }
+  Future<void> fetchOrders() async {
+    try {
+      final res = await  ApiService.getRequest("ordersApi");
+      setState(() {
+        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      toast("Error: $e");
+    }
+  
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

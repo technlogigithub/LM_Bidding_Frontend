@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
+import 'package:http/http.dart' as http;
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../widgets/constant.dart';
@@ -13,6 +17,32 @@ class ClientForgotPassword extends StatefulWidget {
 }
 
 class _ClientForgotPasswordState extends State<ClientForgotPassword> {
+           static Future<dynamic> forgotPasswordApi(String mobileNo, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse("${ApiService.baseUrl}api/login"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer <your_token_here>", 
+        },
+        body: jsonEncode({
+          "mobile_no": mobileNo,
+          "password": "123456",
+          "confirm_password": "123456",
+     
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception("Failed: ${response.statusCode} ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Login error: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +96,7 @@ class _ClientForgotPasswordState extends State<ClientForgotPassword> {
               buttontext: 'Reset Password',
               buttonDecoration: kButtonDecoration.copyWith(color: kPrimaryColor),
               onPressed: () {
-                const ClientOtpVerification().launch(context);
+                const ClientOtpVerification(mobile: '').launch(context);
               },
               buttonTextColor: kWhite,
             ),

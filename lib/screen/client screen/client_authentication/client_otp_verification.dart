@@ -126,10 +126,11 @@ import 'package:pinput/pinput.dart';
 import '../../widgets/constant.dart';
 
 class ClientOtpVerification extends StatefulWidget {
-  //final String mobile;
+  final String mobile;
 
   const ClientOtpVerification({
     super.key,
+    required this.mobile,
   });
 
   @override
@@ -143,62 +144,91 @@ class _ClientOtpVerificationState extends State<ClientOtpVerification> {
     textStyle: TextStyle(
         fontSize: 20, color: kNeutralColor, fontWeight: FontWeight.w600),
   );
+  final TextEditingController pinController = TextEditingController();
 
   bool isLoading = false;
-  int _secondsRemaining = 56; // starting seconds
+  int _secondsRemaining = 56;
   Timer? _timer;
-  void _submitOtp(String pin) async {
-    setState(() => isLoading = true);
-    try {
-      final body = {
-        // "mobile_no": widget.mobile,
-        "mobile_no": 9977926348,
-        "otp": pin,
-      };
-
-      final response = await ApiService.postRequest("verify-otp", body);
-      print("OTP Verification Response: $response");
-
-      // Here you can check response status
-      // For example, if(response['status'] == 'success') ...
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ClientHome()),
-      );
-      toast("OTP Verified Successfully");
-    } catch (e) {
-      print("OTP Verification Error: $e");
-      toast("OTP Verification Failed: $e");
-    } finally {
-      setState(() => isLoading = false);
-    }
+  bool isLoggedIn = false;
+  
+   Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    });
   }
+Future<void> saveAuthToken(String token) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('auth_token', token);
+ 
+  print("Auth Token Saved: $token");
+}
+void _submitOtp(BuildContext context, String pin) async {
+  setState(() => isLoading = true);
+  try {
+    final body = {
+      "mobile_no": widget.mobile,
+      "otp": pin,
+    };
+
+    final response = await ApiService.postRequest("verify-otp", body);
+    print("OTP Verification Response: $response");
+
+    if (response['response'] == "success") {
+      final token = response['result']['token'];
+     await saveAuthToken(token);
+       final prefs = await SharedPreferences.getInstance();
+
+  await prefs.setBool('isLoggedIn', true);
+
+  setState(() {
+    isLoggedIn = true;
+  });
+      toast(response['message'] ?? "OTP Verified Successfully");
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const ClientHome()),
+        (route) => false,
+      );
+    } else {
+      toast(response['message'] ?? "Verification failed");
+    }
+  } catch (e) {
+    print("OTP Verification Error: $e");
+    toast("OTP Verification Failed: $e");
+  } finally {
+    if (mounted) setState(() => isLoading = false);
+  }
+}
+
+
 
   @override
   void initState() {
     super.initState();
+    _checkLoginStatus();
     startTimer();
   }
 
   void startTimer() {
-    _timer?.cancel(); 
-    _secondsRemaining = 56; 
+    _timer?.cancel();
+    _secondsRemaining = 56;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
         setState(() => _secondsRemaining--);
       } else {
         timer.cancel();
-       
       }
     });
   }
-@override
-void dispose() {
-  _timer?.cancel();
-  super.dispose();
-}
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -236,14 +266,14 @@ void dispose() {
                 textAlign: TextAlign.center,
               ),
               Text(
-                // widget.mobile,
-                '9977926348',
+                widget.mobile,
                 style: kTextStyle.copyWith(
                     color: kNeutralColor, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20.0),
               Pinput(
-                length: 4, // adjust OTP length
+                length: 6,
+                controller: pinController,
                 defaultPinTheme: defaultPinTheme.copyWith(
                   decoration: BoxDecoration(
                     border: Border.all(color: kBorderColorTextField),
@@ -259,11 +289,7 @@ void dispose() {
                 pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
                 showCursor: true,
                 onCompleted: (pin) {
-                  // _submitOtp(pin);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ClientHome()),
-                  );
+                  _submitOtp(context, pin);
                 },
               ),
               const SizedBox(height: 20.0),

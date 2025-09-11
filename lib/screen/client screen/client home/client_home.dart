@@ -83,6 +83,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // import
 import '../../seller screen/seller messgae/chat_list.dart';
 import '../client job post/client_job_post.dart';
 import '../client orders/client_orders.dart';
@@ -98,7 +99,7 @@ class ClientHome extends StatefulWidget {
 
 class _ClientHomeState extends State<ClientHome> {
   int _currentPage = 0;
-  bool isLoggedIn = false; 
+  bool isLoggedIn = false;
 
   static const List<Widget> _widgetOptions = <Widget>[
     ClientHomeScreen(),
@@ -131,8 +132,22 @@ class _ClientHomeState extends State<ClientHome> {
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadLoginStatus(); // shared pref check
+  }
+
+  Future<void> _loadLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    });
+    debugPrint("Login Status Loaded: $isLoggedIn");
+  }
+
   void _onItemTapped(int index) {
-    if (index == 2 ||index==4||index==3 ) {
+    if (index == 0) {
       setState(() => _currentPage = index);
     } else {
       if (isLoggedIn) {
@@ -141,7 +156,10 @@ class _ClientHomeState extends State<ClientHome> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ClientLogIn()),
-        );
+        ).then((_) {
+          // Jab login screen se wapas aaye to fir se login status check kare
+          _loadLoginStatus();
+        });
       }
     }
   }
@@ -188,7 +206,6 @@ class _ClientHomeState extends State<ClientHome> {
             )
           : null,
       body: _widgetOptions.elementAt(_currentPage),
-
       bottomNavigationBar: isWeb
           ? null
           : Container(

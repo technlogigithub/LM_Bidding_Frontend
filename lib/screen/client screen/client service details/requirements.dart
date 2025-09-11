@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
@@ -16,6 +17,27 @@ class Requirements extends StatefulWidget {
 }
 
 class _RequirementsState extends State<Requirements> {
+   List<dynamic> notifications = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchOrders();
+  }
+  Future<void> fetchOrders() async {
+    try {
+      final res = await  ApiService.getRequest("ordersApi");
+      setState(() {
+        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      toast("Error: $e");
+    }
+  
+  }
   //__________Show_upload_popup________________________________________________
   void showUploadDocPopUp() {
     showDialog(

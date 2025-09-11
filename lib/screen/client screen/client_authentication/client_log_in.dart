@@ -89,7 +89,7 @@ class _ClientLogInState extends State<ClientLogIn> {
 
       await saveCredentials();
 
-      const ClientOtpVerification().launch(context);
+      const ClientOtpVerification(mobile: '').launch(context);
     } catch (e) {
       print("Login Error: $e");
       toast("Login Failed: $e");

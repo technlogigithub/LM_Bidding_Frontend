@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
 import 'package:nb_utils/nb_utils.dart';
 
@@ -14,6 +15,27 @@ class JobDetails extends StatefulWidget {
 }
 
 class _JobDetailsState extends State<JobDetails> {
+  List<dynamic> notifications = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchOrders();
+  }
+  Future<void> fetchOrders() async {
+    try {
+      final res = await  ApiService.getRequest("ordersApi");
+      setState(() {
+        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      toast("Error: $e");
+    }
+  
+  }  
   //__________cancel_order_reason_popup________________________________________________
   void cancelOrderPopUp() {
     showDialog(

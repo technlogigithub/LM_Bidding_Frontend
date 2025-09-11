@@ -1586,7 +1586,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
   final TextEditingController _establishmentYearController = TextEditingController();
 
   // File variables for media
-  List<Map<String, dynamic>> _mediaFiles = []; // {file: File, type: String}
+  final List<Map<String, dynamic>> _mediaFiles = []; // {file: File, type: String}
 
   // Dynamic lists
   List<String> industrySpecificFields = [];
@@ -2503,7 +2503,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _creatorType,
+                          initialValue: _creatorType,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Creator Type',
                             prefixIcon: Icon(Icons.person_outline, color: kPrimaryColor),
@@ -2523,7 +2523,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _categoryId,
+                          initialValue: _categoryId,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Category',
                             prefixIcon: Icon(Icons.category, color: kPrimaryColor),
@@ -2543,7 +2543,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _subcategoryId,
+                          initialValue: _subcategoryId,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Subcategory',
                             prefixIcon: Icon(Icons.category, color: kPrimaryColor),
@@ -2563,7 +2563,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _itemId,
+                          initialValue: _itemId,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Item',
                             prefixIcon: Icon(Icons.inventory, color: kPrimaryColor),
@@ -2697,7 +2697,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         const Divider(color: kBorderColorTextField),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _condition,
+                          initialValue: _condition,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Condition',
                             prefixIcon: Icon(Icons.build, color: kPrimaryColor),
@@ -2717,7 +2717,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _type,
+                          initialValue: _type,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Type',
                             prefixIcon: Icon(Icons.swap_horiz, color: kPrimaryColor),
@@ -2737,7 +2737,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _mode,
+                          initialValue: _mode,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Mode',
                             prefixIcon: Icon(Icons.wifi, color: kPrimaryColor),
@@ -2984,7 +2984,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _bidList,
+                          initialValue: _bidList,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Bid List',
                             prefixIcon: Icon(Icons.list, color: kPrimaryColor),
@@ -3002,7 +3002,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _bidVisibility,
+                          initialValue: _bidVisibility,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Bid Visibility',
                             prefixIcon: Icon(Icons.visibility, color: kPrimaryColor),
@@ -3038,7 +3038,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _status,
+                          initialValue: _status,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Status',
                             prefixIcon: Icon(Icons.info, color: kPrimaryColor),
@@ -3171,7 +3171,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         const Divider(color: kBorderColorTextField),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _buyerSellerType,
+                          initialValue: _buyerSellerType,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Type',
                             prefixIcon: Icon(Icons.person, color: kPrimaryColor),
@@ -3191,7 +3191,7 @@ class _JobPostScreenState extends State<JobPostScreen> with SingleTickerProvider
                         ),
                         const SizedBox(height: 16.0),
                         DropdownButtonFormField<String>(
-                          value: _buyerSellerStatus,
+                          initialValue: _buyerSellerStatus,
                           decoration: kInputDecoration.copyWith(
                             labelText: 'Status',
                             prefixIcon: Icon(Icons.info, color: kPrimaryColor),

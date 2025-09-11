@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/client%20screen/client%20service%20details/bidding_sheet.dart';
 import 'package:freelancer/screen/widgets/button_global.dart';
 import 'package:freelancer/screen/widgets/constant.dart';
@@ -55,7 +56,23 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
 
   // final CarouselController _controller = CarouselController();
   final CarouselSliderController _controller = CarouselSliderController();
+ List<dynamic> notifications = [];
+  bool isLoading = true;
 
+
+  Future<void> fetchOrders() async {
+    try {
+      final res = await  ApiService.getRequest("ordersApi");
+      setState(() {
+        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      toast("Error: $e");
+    }
+  
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(

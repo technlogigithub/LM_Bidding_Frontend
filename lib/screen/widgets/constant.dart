@@ -61,7 +61,7 @@ final otpInputDecoration = InputDecoration(
 bool isClient = false;
 bool isFreelancer = false;
 bool isFavorite = false;
-const String currencySign = '\₹';
+const String currencySign = '₹';
 
 //__________Gender______________________________________________________
 List<String> gender = [
