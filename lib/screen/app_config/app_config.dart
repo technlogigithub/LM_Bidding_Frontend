@@ -1,6 +1,7 @@
 class AppInfo {
   ///------------------------app_version--------------------------
   static const String appVersion = '1.0.0';
+  static const String googleAddressKey = 'AIzaSyDGAXXijQTnnzJX2eDbn4M5Dj-aGRT7Bmg';
 
   ///------------------------Splash_screen_logo-------------------
   static const String splashLogo = 'images/app_logo.png';

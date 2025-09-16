@@ -64,6 +64,9 @@ dependencies:
   shimmer: ^3.0.0
   url_launcher: ^6.3.2
   file_picker: ^10.3.3
+  google_places_flutter: ^2.1.1
+  google_api_headers: ^4.5.8
+  google_maps_flutter: ^2.13.1
 
 dev_dependencies:
   flutter_test:
