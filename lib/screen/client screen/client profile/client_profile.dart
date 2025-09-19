@@ -3,7 +3,10 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/client%20screen/client%20help%20support/client_help_support.dart';
+import 'package:freelancer/screen/client%20screen/client%20home/client_home.dart';
 import 'package:freelancer/screen/client%20screen/client%20profile/client_profile_details.dart';
+import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
+import 'package:freelancer/screen/client%20screen/client_authentication/client_login_mobile.dart';
 import 'package:freelancer/screen/seller%20screen/add%20payment%20method/seller_add_payment_method.dart';
 import 'package:freelancer/screen/seller%20screen/buyer%20request/seller_buyer_request.dart';
 import 'package:freelancer/screen/seller%20screen/withdraw_money/seller_withdraw_history.dart';
@@ -37,19 +40,21 @@ class _ClientProfileState extends State<ClientProfile> {
     super.initState();
     fetchOrders();
   }
+
   Future<void> fetchOrders() async {
     try {
-      final res = await  ApiService.getRequest("ordersApi");
+      final res = await ApiService.getRequest("ordersApi");
       setState(() {
-        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
+        notifications = res["data"] ??
+            []; // <-- API response structure ke hisaab se adjust karna
         isLoading = false;
       });
     } catch (e) {
       setState(() => isLoading = false);
       toast("Error: $e");
     }
-  
-  }  
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kDarkWhite,
@@ -531,7 +536,54 @@ class _ClientProfileState extends State<ClientProfile> {
                     FeatherIcons.chevronRight,
                     color: kLightNeutralColor,
                   ),
-                ),
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          title: const Text("Confirm Logout"),
+                          content:
+                              const Text("Are you sure you want to log out?"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // dialog close
+                              },
+                              child: const Text("Cancel"),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: kPrimaryColor,
+                              ),
+                              onPressed: () async {
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+                                await prefs.setBool('isLoggedIn', false);
+
+                                // replace current page with login page and pass the current page as redirect
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ClientHome(
+                                     // ya jis page pe user wapas aana chahte ho
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                "Yes, Logout",
+                                style: TextStyle(color: kDarkWhite),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                )
               ],
             ),
           ),

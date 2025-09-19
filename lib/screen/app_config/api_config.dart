@@ -6,39 +6,33 @@ class ApiService {
   static const String baseUrl = "https://phplaravel-1517766-5835172.cloudwaysapps.com/api/";
 
   /// ------------------- GET -------------------
-static Future<dynamic> getRequest(
-  String endpoint, {
-  Map<String, String>? headers,
-}) async {
-  try {
-    final response = await http.get(
-      Uri.parse(baseUrl + endpoint),
-      headers: {
-        "Content-Type": "application/json",
-        if (headers != null) ...headers,
-      },
-    );
-
-    final data = jsonDecode(response.body);
-
-    // Handle error response
-    if (response.statusCode != 200 || data["response"] == "error") {
-      throw Exception(data["message"] ?? "Something went wrong");
+  static Future<dynamic> getRequest(
+    String endpoint, {
+    Map<String, String>? headers,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse(baseUrl + endpoint),
+        headers: {
+          "Content-Type": "application/json",
+          if (headers != null) ...headers,
+        },
+      );
+      return _processResponse(response);
+    } on SocketException {
+      throw Exception("No Internet Connection");
     }
-
-    return data;
-  } on SocketException {
-    throw Exception("No Internet Connection");
   }
-}
-
 
   /// ------------------- POST -------------------
   static Future<dynamic> postRequest(String endpoint, Map<String, dynamic> body) async {
     try {
       final response = await http.post(
         Uri.parse(baseUrl + endpoint),
-        headers: {"Content-Type": "application/json","Accept": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
         body: jsonEncode(body),
       );
       return _processResponse(response);
@@ -52,8 +46,10 @@ static Future<dynamic> getRequest(
     try {
       final response = await http.put(
         Uri.parse(baseUrl + endpoint),
-        headers: {"Content-Type": "application/json","Accept": "application/json"},
-   
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
         body: jsonEncode(body),
       );
       return _processResponse(response);
@@ -104,22 +100,20 @@ static Future<dynamic> getRequest(
 
   /// ------------------- RESPONSE HANDLER -------------------
   static dynamic _processResponse(http.Response response) {
-    switch (response.statusCode) {
-      case 200:
-        return jsonDecode(response.body);
-      case 400:
-        throw Exception("Bad Request: ${response.body}");
-      case 401:
-        throw Exception("Unauthorized");
-      case 403:
-        throw Exception("Forbidden");
-      case 404:
-        throw Exception("Not Found");
-      case 500:
-        throw Exception("Internal Server Error");
-      default:
-        throw Exception("Error: ${response.statusCode} ${response.body}");
+    try {
+      final data = jsonDecode(response.body);
+
+      if (data is Map<String, dynamic>) {
+        data['status_code'] = response.statusCode;
+        return data;
+      }
+
+      return {
+        "status_code": response.statusCode,
+        "data": data,
+      };
+    } catch (e) {
+      throw Exception("Invalid Response Format: ${response.body}");
     }
   }
 }
-

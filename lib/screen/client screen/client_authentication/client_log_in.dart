@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:freelancer/screen/client%20screen/client%20home/client_home.dart';
 import 'package:mobile_number/mobile_number.dart';
 import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -7,11 +8,12 @@ import '../../app_config/app_config.dart';
 import '../../widgets/button_global.dart';
 import '../../widgets/constant.dart';
 import 'client_login_mobile.dart';
-import 'client_otp_verification.dart';
 import 'client_sign_up.dart';
 
 class ClientLogIn extends StatefulWidget {
-  const ClientLogIn({super.key});
+    final Widget? redirectPage;
+  const ClientLogIn({super.key, this.redirectPage});
+
 
   @override
   State<ClientLogIn> createState() => _ClientLogInState();
@@ -22,37 +24,50 @@ class _ClientLogInState extends State<ClientLogIn> {
   final TextEditingController mobileCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
   bool isLoading = false;
-
+  bool isLoggedIn = false;
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
-   // initMobileNumber();
-   // loadSavedCredentials();
+     initMobileNumber();
+     loadSavedCredentials();
+    _checkLoginStatus();
+  }
+ Future<void> _checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    });
+  }
+
+  Future<void> saveAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+
+    print("Auth Token Saved: $token");
   }
 
   Future<void> initMobileNumber() async {
-  bool permissionGranted = await MobileNumber.hasPhonePermission;
+    bool permissionGranted = await MobileNumber.hasPhonePermission;
 
-  try {
-    if (!permissionGranted) {
-      await MobileNumber.requestPhonePermission;
+    try {
+      if (!permissionGranted) {
+        await MobileNumber.requestPhonePermission;
 
-    
-      permissionGranted = await MobileNumber.hasPhonePermission;
-    }
-
-    if (permissionGranted) {
-      String? simNumber = await MobileNumber.mobileNumber;
-      if (simNumber!.isNotEmpty) {
-        mobileCtrl.text = simNumber;
+        permissionGranted = await MobileNumber.hasPhonePermission;
       }
+
+      if (permissionGranted) {
+        String? simNumber = await MobileNumber.mobileNumber;
+        if (simNumber!.isNotEmpty) {
+          mobileCtrl.text = simNumber;
+        }
+      }
+    } catch (e) {
+      print("Cannot read SIM number: $e");
     }
-  } catch (e) {
-    print("Cannot read SIM number: $e");
   }
-}
 
   Future<void> loadSavedCredentials() async {
     String? savedMobile = await secureStorage.read(key: 'mobile');
@@ -67,36 +82,97 @@ class _ClientLogInState extends State<ClientLogIn> {
     await secureStorage.write(key: 'password', value: passwordCtrl.text);
   }
 
- 
-  void loginApiCall() async {
-    if (mobileCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
-      toast("Please enter mobile number and password");
-      return;
-    }
+//   Future<void> loginApiCall(BuildContext context) async {
+//   setState(() => isLoading = true);
 
-    setState(() => isLoading = true);
+//   try {
+//     final response = await ApiService.postRequest(
+//       "login-pin",
+//       {
+//         "mobile_no": mobileCtrl.text,
+//         "password": passwordCtrl.text,
+//       },
+//     );
 
-    try {
-      final body = {
+//     print("Login Response: $response");
+
+//     if (response['success'] == true) {
+//      final token = response['result']['token'];
+//         await saveAuthToken(token);
+//         final prefs = await SharedPreferences.getInstance();
+
+//         await prefs.setBool('isLoggedIn', true);
+
+//         setState(() {
+//           isLoggedIn = true;
+//         });
+//       await saveCredentials();
+
+//       ClientHome().launch(context);
+//     } else {
+//       final message = response['message'] ?? "Something went wrong";
+//       toast(message);
+//     }
+//   } catch (e) {
+//     print("Login error: $e");
+
+//     if (e.toString().contains("Forbidden")) {
+//       toast("User not registered");
+//     } else {
+//       toast("Error: $e");
+//     }
+//   } finally {
+//     if (mounted) {
+//       setState(() => isLoading = false);
+//     }
+//   }
+// }
+
+Future<void> loginApiCall(BuildContext context) async {
+  setState(() => isLoading = true);
+
+  try {
+    final response = await ApiService.postRequest(
+      "login-pin",
+      {
         "mobile_no": mobileCtrl.text,
         "password": passwordCtrl.text,
-      };
+      },
+    );
 
-      final response = await ApiService.postRequest("login-pin", body);
-      print("Login Response: $response");
-
-      toast("Login Successful");
-
+    if (response['success'] == true) {
+      final token = response['result']['token'];
+      await saveAuthToken(token);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
       await saveCredentials();
 
-      const ClientOtpVerification(mobile: '').launch(context);
-    } catch (e) {
-      print("Login Error: $e");
-      toast("Login Failed: $e");
-    } finally {
-      setState(() => isLoading = false);
+      setState(() {
+        isLoggedIn = true;
+      });
+
+      // 🔹 Redirect to the original selected page
+      if (widget.redirectPage != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => widget.redirectPage!),
+        );
+      } else {
+        // Default fallback → ClientHome
+        ClientHome().launch(context);
+      }
+    } else {
+      final message = response['message'] ?? "Something went wrong";
+      toast(message);
     }
+  } catch (e) {
+    toast("Error: $e");
+  } finally {
+    if (mounted) setState(() => isLoading = false);
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +231,6 @@ class _ClientLogInState extends State<ClientLogIn> {
                 ),
               ),
               const SizedBox(height: 30.0),
-
               AutofillGroup(
                 child: Column(
                   children: [
@@ -168,7 +243,8 @@ class _ClientLogInState extends State<ClientLogIn> {
                         labelText: 'Mobile Number',
                         hintText: 'Enter your Mobile Number',
                         labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                        hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
+                        hintStyle:
+                            kTextStyle.copyWith(color: kLightNeutralColor),
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -183,14 +259,17 @@ class _ClientLogInState extends State<ClientLogIn> {
                         labelText: 'Password*',
                         hintText: 'Please enter your password',
                         labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                        hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
+                        hintStyle:
+                            kTextStyle.copyWith(color: kLightNeutralColor),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() => hidePassword = !hidePassword);
                           },
                           icon: Icon(
-                            hidePassword ? Icons.visibility_off : Icons.visibility,
+                            hidePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: kLightNeutralColor,
                           ),
                         ),
@@ -199,7 +278,6 @@ class _ClientLogInState extends State<ClientLogIn> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 5.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -215,17 +293,20 @@ class _ClientLogInState extends State<ClientLogIn> {
                 ],
               ),
               const SizedBox(height: 20.0),
-              ButtonGlobalWithoutIcon(
-                buttontext: isLoading ? "Logging In..." : 'Log In',
-                buttonDecoration: kButtonDecoration.copyWith(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-                 onPressed: isLoading ? null : loginApiCall,
-                // onPressed:  ClientOtpVerification().launch(context),
-                buttonTextColor: kWhite,
-              ),
-              const SizedBox(height: 20.0),
+             ButtonGlobalWithoutIcon(
+  buttontext: isLoading ? "Logging In..." : 'Log In',
+  buttonDecoration: kButtonDecoration.copyWith(
+    color: kPrimaryColor,
+    borderRadius: BorderRadius.circular(30.0),
+  ),
+  onPressed: isLoading
+      ? null
+      : () async {
+          await loginApiCall(context); // context is passed here
+        },
+  buttonTextColor: kWhite,
+),
+   const SizedBox(height: 20.0),
               const Divider(thickness: 1.0, color: kBorderColorTextField),
               const SizedBox(height: 20.0),
               Center(
@@ -239,7 +320,8 @@ class _ClientLogInState extends State<ClientLogIn> {
                         TextSpan(
                           text: 'Create New Account',
                           style: kTextStyle.copyWith(
-                              color: kPrimaryColor, fontWeight: FontWeight.bold),
+                              color: kPrimaryColor,
+                              fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),

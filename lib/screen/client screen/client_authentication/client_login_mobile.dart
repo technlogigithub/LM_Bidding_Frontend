@@ -1,13 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:freelancer/screen/app_config/api_config.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_log_in.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_otp_verification.dart';
 import 'package:freelancer/screen/client%20screen/client_authentication/client_sign_up.dart';
-import 'package:http/http.dart' as http;
+import 'package:mobile_number/mobile_number.dart';
 import 'package:nb_utils/nb_utils.dart';
-
 import '../../app_config/app_config.dart';
 import '../../widgets/button_global.dart';
 import '../../widgets/constant.dart';
@@ -21,11 +19,51 @@ class ClientLogInMobile extends StatefulWidget {
 
 class _ClientLogInMobileState extends State<ClientLogInMobile> {
   bool hidePassword = false;
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
 final  TextEditingController mobileController=TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+     initMobileNumber();
+     loadSavedCredentials();
+  
+  }
+Future<void> initMobileNumber() async {
+  bool permissionGranted = await MobileNumber.hasPhonePermission;
 
-static Future<void> loginWithOtp(BuildContext context, String mobileNo) async {
+  try {
+    if (!permissionGranted) {
+      await MobileNumber.requestPhonePermission;
+
+    
+      permissionGranted = await MobileNumber.hasPhonePermission;
+    }
+
+    if (permissionGranted) {
+      String? simNumber = await MobileNumber.mobileNumber;
+      if (simNumber!.isNotEmpty) {
+        mobileController.text = simNumber;
+      }
+    }
+  } catch (e) {
+    print("Cannot read SIM number: $e");
+  }
+}
+
+  Future<void> loadSavedCredentials() async {
+    String? savedMobile = await secureStorage.read(key: 'mobile');
+
+    mobileController.text = savedMobile!;
+  }
+
+  Future<void> saveCredentials() async {
+    await secureStorage.write(key: 'mobile', value: mobileController.text);
+  }
+
+
+ Future<void> loginWithOtp(BuildContext context, String mobileNo) async {
   try {
     final response = await ApiService.postRequest(
       "login",
@@ -36,21 +74,33 @@ static Future<void> loginWithOtp(BuildContext context, String mobileNo) async {
 
     print("Login Response: $response");
 
-    final otp = response['result']['otp'];
+    if (response['success'] == true) {
+      final otp = response['result']['otp'];
+      toast("OTP: $otp");
+       await saveCredentials();
 
-    toast("OTP: $otp");
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => ClientOtpVerification(mobile: mobileNo,)),
-    );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ClientOtpVerification(mobile: mobileNo),
+        ),
+      );
+    } else {
+      final message = response['message'] ?? "Something went wrong";
+      toast(message);
+    }
   } catch (e) {
     print("Login error: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Login failed: $e")),
-    );
+
+
+    if (e.toString().contains("Forbidden")) {
+      toast("User not registered");
+    } else {
+      toast("Error: $e");
+    }
   }
 }
+
 
 
 

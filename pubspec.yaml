@@ -67,6 +67,9 @@ dependencies:
   google_places_flutter: ^2.1.1
   google_api_headers: ^4.5.8
   google_maps_flutter: ^2.13.1
+  geolocator: ^14.0.2
+  cached_network_image: ^3.4.1
+  logger: ^2.6.1
 
 dev_dependencies:
   flutter_test:

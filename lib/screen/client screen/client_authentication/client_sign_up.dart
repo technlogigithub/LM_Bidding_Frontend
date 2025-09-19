@@ -22,31 +22,41 @@ class ClientSignUp extends StatefulWidget {
 }
 
 class _ClientSignUpState extends State<ClientSignUp> {
+  final mobileController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   bool hidePassword = true;
   bool isCheck = true;
-  static Future<dynamic> signUpApi(String mobileNo, String password) async {
+
+  Future<void> signUpApi(BuildContext context) async {
     try {
-      final response = await http.post(
-        Uri.parse("${ApiService.baseUrl}api/login"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer <your_token_here>", 
+      final response = await ApiService.postRequest(
+        "register",
+        {
+          "mobile_no": mobileController.text.trim(),
+          "password": passwordController.text.trim(),
+          "password_confirmation": confirmPasswordController.text.trim(),
         },
-        body: jsonEncode({
-          "mobile_no": mobileNo,
-          "password": "123456",
-          "confirm_password": "123456",
-     
-        }),
       );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+      print("Login Response: $response");
+
+      if (response['success'] == true) {
+        final otp = response['result']['otp'];
+        toast("OTP: $otp");
+        ClientOtpVerification(mobile: mobileController.text).launch(context);
       } else {
-        throw Exception("Failed: ${response.statusCode} ${response.body}");
+        final message = response['message'] ?? "Something went wrong";
+        toast(message);
       }
     } catch (e) {
-      throw Exception("Login error: $e");
+      print("Login error: $e");
+
+      if (e.toString().contains("Forbidden")) {
+        toast("User not registered");
+      } else {
+        toast("Error: $e");
+      }
     }
   }
 
@@ -106,10 +116,10 @@ class _ClientSignUpState extends State<ClientSignUp> {
                         fontSize: 18.0),
                   ),
                 ),
-                
                 const SizedBox(height: 20.0),
                 TextFormField(
-                  keyboardType: TextInputType.emailAddress,
+                  controller: mobileController,
+                  keyboardType: TextInputType.phone,
                   cursorColor: kNeutralColor,
                   textInputAction: TextInputAction.next,
                   decoration: kInputDecoration.copyWith(
@@ -119,11 +129,11 @@ class _ClientSignUpState extends State<ClientSignUp> {
                       hintStyle: kTextStyle.copyWith(color: kLightNeutralColor),
                       focusColor: kNeutralColor,
                       border: const OutlineInputBorder(),
-                     
                       floatingLabelBehavior: FloatingLabelBehavior.always),
                 ),
                 const SizedBox(height: 20.0),
                 TextFormField(
+                  controller: passwordController,
                   cursorColor: kNeutralColor,
                   keyboardType: TextInputType.emailAddress,
                   obscureText: hidePassword,
@@ -149,6 +159,7 @@ class _ClientSignUpState extends State<ClientSignUp> {
                 ),
                 const SizedBox(height: 20.0),
                 TextFormField(
+                  controller: confirmPasswordController,
                   cursorColor: kNeutralColor,
                   keyboardType: TextInputType.visiblePassword,
                   obscureText: hidePassword,
@@ -214,7 +225,26 @@ class _ClientSignUpState extends State<ClientSignUp> {
                       borderRadius: BorderRadius.circular(30.0),
                     ),
                     onPressed: () {
-                      const ClientOtpVerification(mobile: '').launch(context);
+                      String mobile = mobileController.text.trim();
+                      String password = passwordController.text.trim();
+                      String confirmPassword =
+                          confirmPasswordController.text.trim();
+
+                      if (mobile.isEmpty) {
+                        toast('Please enter mobile number');
+                      } else if (mobile.length != 10) {
+                        toast('Mobile number must be 10 digits');
+                      } else if (password.isEmpty) {
+                        toast('Please enter password');
+                      } else if (password.length < 4) {
+                        toast('Password must be at least 4 characters');
+                      } else if (confirmPassword.isEmpty) {
+                        toast('Please confirm password');
+                      } else if (password != confirmPassword) {
+                        toast('Passwords do not match');
+                      } else {
+                        signUpApi(context);
+                      }
                     },
                     buttonTextColor: kWhite),
                 const SizedBox(height: 20.0),

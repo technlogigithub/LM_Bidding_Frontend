@@ -150,59 +150,62 @@ class _ClientOtpVerificationState extends State<ClientOtpVerification> {
   int _secondsRemaining = 56;
   Timer? _timer;
   bool isLoggedIn = false;
-  
-   Future<void> _checkLoginStatus() async {
+
+  Future<void> _checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     });
   }
-Future<void> saveAuthToken(String token) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('auth_token', token);
- 
-  print("Auth Token Saved: $token");
-}
-void _submitOtp(BuildContext context, String pin) async {
-  setState(() => isLoading = true);
-  try {
-    final body = {
-      "mobile_no": widget.mobile,
-      "otp": pin,
-    };
 
-    final response = await ApiService.postRequest("verify-otp", body);
-    print("OTP Verification Response: $response");
+  Future<void> saveAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
 
-    if (response['response'] == "success") {
-      final token = response['result']['token'];
-     await saveAuthToken(token);
-       final prefs = await SharedPreferences.getInstance();
-
-  await prefs.setBool('isLoggedIn', true);
-
-  setState(() {
-    isLoggedIn = true;
-  });
-      toast(response['message'] ?? "OTP Verified Successfully");
-
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const ClientHome()),
-        (route) => false,
-      );
-    } else {
-      toast(response['message'] ?? "Verification failed");
-    }
-  } catch (e) {
-    print("OTP Verification Error: $e");
-    toast("OTP Verification Failed: $e");
-  } finally {
-    if (mounted) setState(() => isLoading = false);
+    print("Auth Token Saved: $token");
   }
-}
 
+  void _submitOtp(BuildContext context, String pin) async {
+    setState(() => isLoading = true);
+    try {
+      final body = {
+        "mobile_no": widget.mobile,
+        "otp": pin,
+      };
 
+      final response = await ApiService.postRequest("verify-otp", body);
+      print("OTP Verification Response: $response");
+
+      if (response['success'] == true) {
+        final token = response['result']['token'];
+        await saveAuthToken(token);
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setBool('isLoggedIn', true);
+
+        setState(() {
+          isLoggedIn = true;
+        });
+        toast(response['message'] ?? "OTP Verified Successfully");
+
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const ClientHome()),
+          (route) => false,
+        );
+      } else {
+        if (response['status_code'] == 401) {
+          toast("Invalid OTP");
+        } else {
+          toast(response['message'] ?? "Verification failed");
+        }
+      }
+    } catch (e) {
+      print("OTP Verification Error: $e");
+      toast("OTP Verification Failed: $e");
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
 
   @override
   void initState() {
@@ -272,7 +275,7 @@ void _submitOtp(BuildContext context, String pin) async {
               ),
               const SizedBox(height: 20.0),
               Pinput(
-                length: 6,
+                length: 4,
                 controller: pinController,
                 defaultPinTheme: defaultPinTheme.copyWith(
                   decoration: BoxDecoration(
