@@ -1,12 +1,6 @@
-# freelancer
+# libdding
 
 A new Flutter project.
-
-Flutter Update  Details :
-
-Flutter Last Update Date : 08 October 2024
-Flutter Version : 3.24.3
-Dart Version : 3.5.3
 
 ## Getting Started
 

@@ -1,0 +1,460 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:nb_utils/nb_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../core/app_constant.dart';
+import '../../core/app_config.dart';
+import '../../core/network.dart';
+import '../../models/App_moduls/AppResponseModel.dart';
+
+class AppSettingsController extends GetxController {
+  Rx<AppModelResponse?> appSettings = Rx<AppModelResponse?>(null);
+  RxBool isLoading = false.obs;
+  RxBool isDarkMode = false.obs;
+
+  // SEO Meta
+  RxString seoTitle = "".obs;
+  RxString seoAuthor = "".obs;
+  RxString seoApplication = "".obs;
+  RxString seoCopyright = "".obs;
+  RxString seoDescription = "".obs;
+  RxString seoKeywords = "".obs;
+
+  // OG
+  RxString ogType = "".obs;
+  RxString ogImage = "".obs;
+  RxString ogImageWidth = "".obs;
+  RxString ogImageHeight = "".obs;
+  RxString ogTitle = "".obs;
+  RxString ogDescription = "".obs;
+  RxString ogUrl = "".obs;
+  RxString ogFbAppId = "".obs;
+
+  // Instagram
+  RxString instaImage = "".obs;
+  RxString instaImageWidth = "".obs;
+  RxString instaImageHeight = "".obs;
+
+  // Twitter
+  RxString twitterCard = "".obs;
+  RxString twitterImage = "".obs;
+  RxString twitterTitle = "".obs;
+  RxString twitterDescription = "".obs;
+  RxString twitterUrl = "".obs;
+
+  // General
+  RxString appName = "".obs;
+  RxString companyName = "".obs;
+  RxString logo = "".obs;
+  RxString favicon = "".obs;
+  RxString siteCopyright = "".obs;
+  RxString contactNumber = "".obs;
+  RxString whatsappNumber = "".obs;
+  RxString timezone = "".obs;
+  RxString orientation = "".obs;
+  RxBool demoMode = false.obs;
+  RxBool loginRequired = false.obs;
+  RxBool socialLoginRequired = false.obs;
+
+  // MobileApp
+  RxString androidVersion = "".obs;
+  RxString iosVersion = "".obs;
+  RxString playstoreUrl = "".obs;
+  RxString appstoreUrl = "".obs;
+
+  // Theme
+  RxString bgColorLtr = "".obs;
+  RxString bgColorTtb = "".obs;
+  RxString primaryColor = "".obs;
+  RxString primaryTextColor = "".obs;
+  RxString secondaryColor = "".obs;
+  RxString secondaryTextColor = "".obs;
+  RxString mutedColor = "".obs;
+  RxString mutedTextColor = "".obs;
+  RxString linkTextColor = "".obs;
+
+  // Intro Sliders
+  RxList<IntroSlider> introSliders = <IntroSlider>[].obs;
+
+  // Register page (dynamic)
+  Rx<RegisterPage?> registerPage = Rx<RegisterPage?>(null);
+  // Login pages (dynamic)
+  Rx<LoginWithPasswordPage?> loginWithPasswordPage = Rx<LoginWithPasswordPage?>(null);
+  Rx<LoginWithOtpPage?> loginWithOtpPage = Rx<LoginWithOtpPage?>(null);
+  // Verify OTP page (dynamic)
+  Rx<VerifyOtpPage?> verifyOtpPage = Rx<VerifyOtpPage?>(null);
+  // Profile Form page (dynamic)
+  Rx<ProfileFormPage?> profileFormPage = Rx<ProfileFormPage?>(null);
+  // Post Form page (dynamic)
+  Rx<ProfileFormPage?> postFormPage = Rx<ProfileFormPage?>(null);
+
+  // Languages
+  RxList<Language> availableLanguages = <Language>[].obs;
+  RxString selectedLanguageKey = "en".obs;
+  RxString selectedLanguageName = "English".obs;
+
+  // Language Page (from settings)
+  RxString languagePageTitle = "".obs;
+  RxString languagePageDescription = "".obs;
+  RxString languageSubmitButtonLabel = "".obs;
+
+  // Force Update Page (from settings)
+  RxString forceUpdatePageTitle = "".obs;
+  RxString forceUpdatePageDescription = "".obs;
+  RxString forceUpdateSubmitButtonLabel = "".obs;
+  RxString forceUpdatePlaystoreUrl = "".obs;
+  RxString forceUpdateAppstoreUrl = "".obs;
+
+  Map<String, dynamic> _lightTheme = {};
+  Map<String, dynamic> _darkTheme = {};
+
+  // Fetch API and store all fields
+  Future<void> fetchAllData() async {
+    try {
+      isLoading.value = true;
+
+      final apiService = ApiServices();
+      final token = await getAuthToken();
+      print("🔐 Token Used: $token");
+      var response = await apiService.makeRequestFormData(
+        endPoint: AppConstants.settings,
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer $token",  // ⬅️ token added
+          "Accept": "application/json",
+        },
+        body: {"app_key": "b2QgKe1+OFbaIVbBc76cWVVfj2W94jqB6x2yTOJI7ds"},
+      );
+
+      if (response['success'] == true) {
+        appSettings.value = AppModelResponse.fromJson(response);
+        final result = appSettings.value?.result;
+
+        /// Save MobileApp
+        androidVersion.value = result?.mobileApp?.androidVersion ?? "";
+        iosVersion.value = result?.mobileApp?.iosVersion ?? "";
+        playstoreUrl.value = result?.mobileApp?.playstoreUrl ?? "";
+        appstoreUrl.value = result?.mobileApp?.appstoreUrl ?? "";
+
+        /// Store themes
+        _lightTheme = result?.lightTheme?.toJson() ?? {};
+        _darkTheme = result?.darkTheme?.toJson() ?? {};
+
+        /// SEO Meta
+        seoTitle.value = result?.seo?.meta?.title ?? "";
+        seoAuthor.value = result?.seo?.meta?.author ?? "";
+        seoApplication.value = result?.seo?.meta?.application ?? "";
+        seoCopyright.value = result?.seo?.meta?.copyright ?? "";
+        seoDescription.value = result?.seo?.meta?.description ?? "";
+        seoKeywords.value = result?.seo?.meta?.keywords ?? "";
+
+        /// OG
+        ogType.value = result?.seo?.og?.type ?? "";
+        ogImage.value = result?.seo?.og?.image ?? "";
+        ogImageWidth.value = result?.seo?.og?.imageWidth ?? "";
+        ogImageHeight.value = result?.seo?.og?.imageHeight ?? "";
+        ogTitle.value = result?.seo?.og?.title ?? "";
+        ogDescription.value = result?.seo?.og?.description ?? "";
+        ogUrl.value = result?.seo?.og?.url ?? "";
+        ogFbAppId.value = result?.seo?.og?.fbAppId ?? "";
+
+        /// Instagram
+        instaImage.value = result?.seo?.instagram?.image ?? "";
+        instaImageWidth.value = result?.seo?.instagram?.imageWidth ?? "";
+        instaImageHeight.value = result?.seo?.instagram?.imageHeight ?? "";
+
+        /// Twitter
+        twitterCard.value = result?.seo?.twitter?.card ?? "";
+        twitterImage.value = result?.seo?.twitter?.image ?? "";
+        twitterTitle.value = result?.seo?.twitter?.title ?? "";
+        twitterDescription.value = result?.seo?.twitter?.description ?? "";
+        twitterUrl.value = result?.seo?.twitter?.url ?? "";
+
+        /// General
+        appName.value = result?.general?.appName ?? "";
+        companyName.value = result?.general?.companyName ?? "";
+        logo.value = result?.general?.logo ?? "";
+        favicon.value = result?.general?.favicon ?? "";
+        siteCopyright.value = result?.general?.siteCopyright ?? "";
+        contactNumber.value = result?.general?.contactNumber ?? "";
+        whatsappNumber.value = result?.general?.whatsappNumber ?? "";
+        timezone.value = result?.general?.timezone ?? "";
+        orientation.value = result?.general?.orientation ?? "";
+        demoMode.value = result?.general?.demoMode ?? false;
+        loginRequired.value = result?.general?.loginRequired ?? false;
+        socialLoginRequired.value = result?.general?.socialLogin ?? false;
+
+        /// Intro Sliders
+        introSliders.assignAll(result?.introSlider ?? []);
+
+        /// Language Page
+        languagePageTitle.value = result?.languagePage?.pageTitle ?? "";
+        languagePageDescription.value = result?.languagePage?.pageDescription ?? "";
+        languageSubmitButtonLabel.value = result?.languagePage?.submitButtonLabel ?? "";
+
+        /// Force Update Page
+        forceUpdatePageTitle.value = result?.forceUpdatePage?.pageTitle ?? "";
+        forceUpdatePageDescription.value = result?.forceUpdatePage?.pageDescription ?? "";
+        forceUpdateSubmitButtonLabel.value = result?.forceUpdatePage?.submitButtonLabel ?? "";
+        forceUpdatePlaystoreUrl.value = result?.forceUpdatePage?.submitButtonPlaystoreUrl ?? "";
+        forceUpdateAppstoreUrl.value = result?.forceUpdatePage?.submitButtonAppstoreUrl ?? "";
+
+        /// Languages
+        availableLanguages.assignAll(result?.languages ?? []);
+        await loadSelectedLanguage();
+
+        /// Set initial theme based on system brightness
+        final Brightness systemBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+        updateTheme(systemBrightness == Brightness.dark);
+      } else {
+        toast(response['message'] ?? "Something went wrong");
+      }
+    } catch (e) {
+      toast("Error: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
+  // Fetch app_content using selected/saved language and update introSliders
+  Future<void> fetchAppContent() async {
+    try {
+      isLoading.value = true;
+
+      final prefs = await SharedPreferences.getInstance();
+      final languageKey = prefs.getString('selected_language_key') ?? selectedLanguageKey.value;
+      final token = await getAuthToken();
+
+
+      final apiService = ApiServices();
+
+      // Base headers (always sent)
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      // Add Authorization only if token is valid
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final response = await apiService.makeRequestRaw(
+        endPoint: AppConstants.appContent,
+        method: AppConstants.POST,
+        body: {
+          'app_key': 'b2QgKe1+OFbaIVbBc76cWVVfj2W94jqB6x2yTOJI7ds',
+          'language': languageKey,
+        },
+        headers: headers,
+      );
+
+      if (response['success'] == true && response['response_code'] == 200) {
+        final parsed = AppContentResponse.fromJson(response);
+
+        // Update intro sliders and pages
+        introSliders.assignAll(parsed.result?.introSliderPage?.introSlider ?? []);
+        registerPage.value = parsed.result?.register;
+        loginWithPasswordPage.value = parsed.result?.loginWithPassword;
+        loginWithOtpPage.value = parsed.result?.loginWithOtp;
+        verifyOtpPage.value = parsed.result?.verifyOtp;
+        profileFormPage.value = parsed.result?.profileForm;
+        if (parsed.result?.profileForm != null) {
+          profileFormPage.value = parsed.result?.profileForm;
+          // Save loginRequired flag to SP
+          await saveLoginRequiredStatus(profileFormPage.value?.loginRequired);
+        }
+// ---------------------------------------------------
+// 1. Parse the response (you already have `parsed`)
+// ---------------------------------------------------
+        if (parsed.result?.profileForm != null) {
+          profileFormPage.value = parsed.result?.profileForm;
+
+          // Save loginRequired flag to SharedPreferences
+          await saveLoginRequiredStatus(profileFormPage.value?.loginRequired ?? false);
+        }
+
+// ---------------------------------------------------
+// 2. Grab step_1 inputs (0-based index)
+// ---------------------------------------------------
+        final ProfileFormInputs? formInputs = profileFormPage.value?.inputs;
+        final List<RegisterInput>? step1Inputs = formInputs?.getStepInputs(0);
+
+// ---------------------------------------------------
+// 3. Print the values (terminal / debug console)
+// ---------------------------------------------------
+        if (step1Inputs != null && step1Inputs.isNotEmpty) {
+          debugPrint('=== PROFILE FORM – STEP 1 VALUES ===');
+          for (final RegisterInput input in step1Inputs) {
+            // `input.label` may be null → fallback to name
+            final String label = input.label?.isNotEmpty == true
+                ? input.label!
+                : (input.name ?? 'Unnamed');
+
+            // `input.value` can be String, int, bool, List, Map or null
+            final dynamic rawValue = input.value;
+            String displayValue;
+
+            if (rawValue == null) {
+              displayValue = '<null>';
+            } else if (rawValue is List) {
+              displayValue = rawValue.isEmpty ? '[]' : '[${rawValue.join(', ')}]';
+            } else if (rawValue is Map) {
+              displayValue = rawValue.isEmpty ? '{}' : '{…}';
+            } else {
+              displayValue = rawValue.toString();
+            }
+
+            debugPrint('$label: $displayValue');
+          }
+          debugPrint('=====================================');
+        } else {
+          debugPrint('No inputs found for profile_form → step_1');
+        }
+
+        postFormPage.value = parsed.result?.postForm;
+      } else {
+        toast(response['message'] ?? 'Failed to fetch app content');
+      }
+    } catch (e) {
+      print('Error: $e');
+      toast('Error: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
+
+  void updateTheme(bool darkMode) {
+    isDarkMode.value = darkMode;
+    final theme = darkMode ? _darkTheme : _lightTheme;
+
+    bgColorLtr.value = theme['bg_color_ltr'] ?? "";
+    bgColorTtb.value = theme['bg_color_ttb'] ?? "";
+    primaryColor.value = theme['primary_color'] ?? "";
+    primaryTextColor.value = theme['primary_text_color'] ?? "";
+    secondaryColor.value = theme['secondary_color'] ?? "";
+    secondaryTextColor.value = theme['secondary_text_color'] ?? "";
+    mutedColor.value = theme['muted_color'] ?? "";
+    mutedTextColor.value = theme['muted_text_color'] ?? "";
+    linkTextColor.value = theme['link_text_color'] ?? "";
+  }
+
+  // Language Management Methods
+  Future<void> loadSelectedLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLanguageKey = prefs.getString('selected_language_key') ?? 'en';
+    
+    // Set the selected language key
+    selectedLanguageKey.value = savedLanguageKey;
+    
+    // Find the corresponding language name from available languages
+    try {
+      final language = availableLanguages.firstWhere((lang) => lang.code == savedLanguageKey);
+      selectedLanguageName.value = language.name ?? 'English';
+    } catch (e) {
+      selectedLanguageName.value = 'English';
+    }
+  }
+
+  Future<void> setSelectedLanguage(String languageKey) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_language_key', languageKey);
+    
+    selectedLanguageKey.value = languageKey;
+    
+    // Find the corresponding language name from available languages
+    try {
+      final language = availableLanguages.firstWhere((lang) => lang.code == languageKey);
+      selectedLanguageName.value = language.name ?? 'English';
+    } catch (e) {
+      selectedLanguageName.value = 'English';
+    }
+  }
+
+  List<Map<String, String>> getLanguageOptions() {
+    List<Map<String, String>> options = [];
+    
+    for (var language in availableLanguages) {
+      options.add({
+        'key': language.code ?? '',
+        'name': language.name ?? '',
+      });
+    }
+    
+    return options;
+  }
+
+  bool get isLanguageSelected {
+    return selectedLanguageKey.value.isNotEmpty;
+  }
+
+  // Version checking methods
+  Future<bool> isUpdateRequired() async {
+    try {
+      // Get current app version from AppInfo
+      final currentVersion = await AppInfo.getCurrentVersion();
+      
+      String? requiredVersion;
+      if (GetPlatform.isAndroid) {
+        requiredVersion = androidVersion.value;
+      } else if (GetPlatform.isIOS) {
+        requiredVersion = iosVersion.value;
+      }
+      
+      if (requiredVersion == null || requiredVersion.isEmpty) {
+        print('No required version set, allowing app to continue');
+        return false;
+      }
+      
+      print('Version Check - Current: $currentVersion, Required: $requiredVersion');
+      if(currentVersion != requiredVersion)
+        {
+          return true;
+        }
+      else
+        {
+          return false;
+        }
+    } catch (e) {
+      print("Error checking version: $e");
+      return false;
+    }
+  }
+
+  String getUpdateUrl() {
+    if (GetPlatform.isAndroid) {
+      return forceUpdatePlaystoreUrl.value.isNotEmpty 
+          ? forceUpdatePlaystoreUrl.value 
+          : playstoreUrl.value;
+    } else if (GetPlatform.isIOS) {
+      return forceUpdateAppstoreUrl.value.isNotEmpty 
+          ? forceUpdateAppstoreUrl.value 
+          : appstoreUrl.value;
+    }
+    return "";
+  }
+
+  String getRequiredVersion() {
+    if (GetPlatform.isAndroid) {
+      return androidVersion.value;
+    } else if (GetPlatform.isIOS) {
+      return iosVersion.value;
+    }
+    return "";
+  }
+  Future<void> saveLoginRequiredStatus(bool? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('profile_form_login_required', value ?? false);
+  }
+  Future<String?> getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("auth_token");
+  }
+
+
+}
+
