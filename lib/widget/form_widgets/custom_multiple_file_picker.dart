@@ -79,9 +79,54 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
 
   bool _isVideoFile(String path) {
     final ext = path.split('.').last.toLowerCase();
-    return ['mp4', 'mov', 'mkv', 'avi', 'webm', '3gp', 'hevc', 'h265', 'h.265'].contains(ext);
+    // Remove query parameters for URL checking
+    final cleanPath = path.split('?').first;
+    final cleanExt = cleanPath.split('.').last.toLowerCase();
+    return ['mp4', 'mov', 'mkv', 'avi', 'webm', '3gp', 'hevc', 'h265', 'h.265'].contains(ext) ||
+           ['mp4', 'mov', 'mkv', 'avi', 'webm', '3gp', 'hevc', 'h265', 'h.265'].contains(cleanExt);
   }
 
+  bool _isPdf(String path) =>
+      path.toLowerCase().endsWith(".pdf");
+
+  bool _isWord(String path) =>
+      path.toLowerCase().endsWith(".doc") ||
+          path.toLowerCase().endsWith(".docx");
+
+  bool _isExcel(String path) =>
+      path.toLowerCase().endsWith(".xls") ||
+          path.toLowerCase().endsWith(".xlsx");
+
+  bool _isPpt(String path) =>
+      path.toLowerCase().endsWith(".ppt") ||
+          path.toLowerCase().endsWith(".pptx");
+
+  bool _isText(String path) =>
+      path.toLowerCase().endsWith(".txt") ||
+          path.toLowerCase().endsWith(".csv") ||
+          path.toLowerCase().endsWith(".rtf");
+
+  bool _isEpub(String path) =>
+      path.toLowerCase().endsWith(".epub");
+
+  bool _isDocument(String path) =>
+      _isPdf(path) ||
+          _isWord(path) ||
+          _isExcel(path) ||
+          _isPpt(path) ||
+          _isText(path) ||
+          _isEpub(path);
+
+  IconData _fileIcon(String path) {
+    if (_isPdf(path)) return Icons.picture_as_pdf;
+    if (_isWord(path)) return Icons.description;
+    if (_isExcel(path)) return Icons.grid_on;
+    if (_isPpt(path)) return Icons.slideshow;
+    if (_isText(path)) return Icons.text_snippet;
+    if (_isEpub(path)) return Icons.book;
+    return Icons.insert_drive_file;
+  }
+  
   Future<void> _loadVideoThumbnail(File videoFile) async {
     if (_videoControllers.containsKey(videoFile.path)) return;
 
@@ -415,6 +460,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
     final isVideo = _isVideoFile(file.path);
     final extension = file.path.split('.').last.toLowerCase();
     final isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].contains(extension);
+    final isDocument = _isDocument(file.path);
 
     return Container(
       margin: const EdgeInsets.only(right: 8, bottom: 8),
@@ -427,15 +473,6 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // ClipRRect(
-          //   borderRadius: BorderRadius.circular(7),
-          //   child: isVideo
-          //       ? _buildVideoThumbnail(file)
-          //       : (isImage
-          //       ? Image.file(file, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildPlaceholder())
-          //       : _buildPlaceholder()),
-          // ),
-
           ClipRRect(
             borderRadius: BorderRadius.circular(7),
             child: GestureDetector(
@@ -459,11 +496,12 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               child: isVideo
                   ? _buildVideoThumbnail(file)
                   : (isImage
-                  ? Image.file(file, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildPlaceholder())
-                  : _buildPlaceholder()),
+                      ? Image.file(file, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildPlaceholder())
+                      : (isDocument
+                          ? _buildDocumentPreview(file)
+                          : _buildPlaceholder())),
             ),
           ),
-
 
           // Edit Icon (only for images)
           if (isImage)
@@ -518,6 +556,78 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
                 child: const Icon(Icons.videocam, color: Colors.white, size: 14),
               ),
             ),
+
+          // Document Indicator
+          if (isDocument)
+            Positioned(
+              bottom: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(4)),
+                child: Icon(_fileIcon(file.path), color: Colors.white, size: 14),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentPreview(File file) {
+    final fileName = file.path.split('/').last;
+    final extension = file.path.split('.').last.toUpperCase();
+
+    return Container(
+      color: Colors.grey.shade100,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(_fileIcon(file.path), size: 40, color: Colors.blue),
+                const SizedBox(height: 4),
+                Text(
+                  extension,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // File name overlay at bottom
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
+                ),
+              ),
+              child: Text(
+                fileName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

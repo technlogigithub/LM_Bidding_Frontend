@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pdfx/pdfx.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../core/app_string.dart';
@@ -46,6 +48,10 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
   final ImagePicker _picker = ImagePicker();
   bool _isDragging = false;
   VideoPlayerController? _videoController;
+  Uint8List? _networkThumbnail;
+  Uint8List? _pdfThumb;
+
+
 
   @override
   void dispose() {
@@ -55,23 +61,55 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
 
   bool _isVideoFile(String path) {
     final ext = path.split('.').last.toLowerCase();
-    return ['mp4', 'mov', 'mkv', 'avi', 'webm', '3gp', 'hevc', 'h265', 'h.265'].contains(ext);
+    // Remove query parameters for URL checking
+    final cleanPath = path.split('?').first;
+    final cleanExt = cleanPath.split('.').last.toLowerCase();
+    return ['mp4', 'mov', 'mkv', 'avi', 'webm', '3gp', 'hevc', 'h265', 'h.265'].contains(ext) ||
+           ['mp4', 'mov', 'mkv', 'avi', 'webm', '3gp', 'hevc', 'h265', 'h.265'].contains(cleanExt);
+  }
+  
+  bool _isVideoUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    return _isVideoFile(url);
   }
 
-  Future<void> _loadVideoThumbnail(File videoFile) async {
-    _videoController?.dispose();
+  bool _isDocumentUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    return _isDocument(url);
+  }
+
+  Future<void> _loadVideoThumbnail(dynamic videoSource) async {
     try {
-      final controller = VideoPlayerController.file(videoFile);
-      await controller.initialize();
-      if (mounted) {
+      Uint8List? thumbBytes;
+
+      if (videoSource is File) {
+        // 👉 LOCAL FILE → Use file path
+        thumbBytes = await VideoThumbnail.thumbnailData(
+          video: videoSource.path,
+          imageFormat: ImageFormat.JPEG,
+          maxWidth: 350,
+          quality: 75,
+        );
+      } else if (videoSource is String && videoSource.startsWith("http")) {
+        // 👉 NETWORK URL → Generate thumbnail
+        thumbBytes = await VideoThumbnail.thumbnailData(
+          video: videoSource,
+          imageFormat: ImageFormat.JPEG,
+          maxWidth: 350,
+          quality: 75,
+        );
+      }
+
+      if (thumbBytes != null) {
         setState(() {
-          _videoController = controller;
+          _networkThumbnail = thumbBytes;
         });
       }
     } catch (e) {
-      debugPrint('Error loading video: $e');
+      debugPrint("Thumbnail error: $e");
     }
   }
+
 
   Future<void> _pick(BuildContext context) async {
     final category = widget.category ?? (widget.isImageFile ? 'image' : 'any');
@@ -124,8 +162,12 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                   if (picked != null) {
                     final file = File(picked.path);
                     widget.onPicked(file);
-                    setState(() => _localFile = file);
+                    setState(() {
+                      _localFile = file;
+                      _networkThumbnail = null;  // reset old image
+                    });
                     await _loadVideoThumbnail(file);
+
                   }
                 },
               ),
@@ -161,7 +203,14 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
       if (path != null) {
         final file = File(path);
         widget.onPicked(file);
-        setState(() => _localFile = file);
+        setState(() {
+          _localFile = file;
+          _pdfThumb = null; // Reset PDF thumb when new file is picked
+        });
+        // Load PDF thumbnail if it's a PDF
+        if (_isPdf(file.path)) {
+          await _loadPdfThumbnail(file);
+        }
       }
     }
   }
@@ -249,7 +298,14 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
       await _loadVideoThumbnail(file);
     } else {
       widget.onPicked(file);
-      setState(() => _localFile = file);
+      setState(() {
+        _localFile = file;
+        _pdfThumb = null; // Reset PDF thumb when new file is picked
+      });
+      // Load PDF thumbnail if it's a PDF
+      if (_isPdf(file.path)) {
+        await _loadPdfThumbnail(file);
+      }
     }
   }
 
@@ -283,9 +339,22 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
         lowerLabel.contains('display') || lowerLabel.contains('profile') || lowerLabel.contains('avatar');
     final isBannerImage = lowerField == 'banner_image' || lowerLabel.contains('banner');
     final effectiveFile = _localFile ?? widget.value;
+    final isVideoUrl = _isVideoUrl(widget.imageUrl);
+    final isDocumentUrl = _isDocumentUrl(widget.imageUrl);
 
-    if (effectiveFile != null && _isVideoFile(effectiveFile.path) && _videoController == null) {
+    // Load video thumbnail if imageUrl is a video URL
+    if (isVideoUrl && _networkThumbnail == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadVideoThumbnail(widget.imageUrl!));
+    }
+
+    // Load video thumbnail for local video files
+    if (effectiveFile != null && _isVideoFile(effectiveFile.path) && _networkThumbnail == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadVideoThumbnail(effectiveFile));
+    }
+
+    // Load PDF thumbnail for local PDF files
+    if (effectiveFile != null && _isPdf(effectiveFile.path) && _pdfThumb == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadPdfThumbnail(effectiveFile));
     }
 
     return Column(
@@ -325,32 +394,51 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                           fit: StackFit.expand,
                           children: [
                             effectiveFile != null
-                                ? Image.file(effectiveFile, fit: BoxFit.cover)
-                                : (widget.imageUrl != null && widget.imageUrl!.isNotEmpty
-                                    ? CachedNetworkImage(
-                                        imageUrl: widget.imageUrl!,
-                                        fit: BoxFit.cover,
-                                        errorWidget: (context, url, error) => _buildNoImagePlaceholder(),
-                                      )
-                                    : _buildNoImagePlaceholder()),
+                                ? _isVideoFile(effectiveFile.path)
+                                ? (_networkThumbnail != null
+                                ? Image.memory(_networkThumbnail!, fit: BoxFit.cover)
+                                : Center(child: CircularProgressIndicator()))
+                                : buildFilePreview(effectiveFile)
+
+
+                                : (isVideoUrl && _networkThumbnail != null
+                                    ? Image.memory(_networkThumbnail!, fit: BoxFit.cover)
+                                    : (isVideoUrl && _networkThumbnail == null
+                                        ? Center(child: CircularProgressIndicator())
+                                        : (isDocumentUrl
+                                            ? _buildDocumentFromUrlPreview(widget.imageUrl!)
+                                            : (widget.imageUrl != null && widget.imageUrl!.isNotEmpty
+                                                ? CachedNetworkImage(
+                                                    imageUrl: widget.imageUrl!,
+                                                    fit: BoxFit.cover,
+                                                    errorWidget: (context, url, error) => _buildNoImagePlaceholder(),
+                                                  )
+                                                : _buildNoImagePlaceholder())))),
+                            // ALWAYS show edit icon (image + video + API + local)
                             Positioned(
                               top: 15,
                               right: 13,
                               child: GestureDetector(
                                 onTap: () async {
-                                  // If image comes from URL (HTTP), then select new photo instead of editing
-                                  if (widget.imageUrl != null && widget.imageUrl!.startsWith("http")) {
-                                    _pick(context);   // opens gallery/camera
-                                    return;
-                                  }
-                                  
-                                  // Check if file path itself starts with HTTP
-                                  if (effectiveFile != null && effectiveFile.path.startsWith("http")) {
-                                    _pick(context);   // opens gallery/camera
+                                  // If it's a video (local or API), open video picker
+                                  if (_isVideoFile(effectiveFile?.path ?? '') || isVideoUrl) {
+                                    _pick(context);   // open video bottom sheet
                                     return;
                                   }
 
-                                  // ELSE: If file already local → edit photo
+                                  // If image comes from API → open picker (don't edit)
+                                  if (widget.imageUrl != null && widget.imageUrl!.startsWith("http")) {
+                                    _pick(context);
+                                    return;
+                                  }
+
+                                  // If file path is http → also pick
+                                  if (effectiveFile != null && effectiveFile.path.startsWith("http")) {
+                                    _pick(context);
+                                    return;
+                                  }
+
+                                  // ELSE → image editor
                                   if (effectiveFile != null) {
                                     final edited = await _openImageEditor(effectiveFile);
                                     if (edited != null) {
@@ -366,6 +454,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                                 ),
                               ),
                             ),
+
                           ],
                         )
                             : _buildNoImagePlaceholder(),
@@ -401,101 +490,143 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: effectiveFile != null
-                          ? (_isVideoFile(effectiveFile.path) &&
-                          _videoController?.value.isInitialized == true
-                          ? Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              // 👉 Open video viewer
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      VideoViewScreen(videoFile: effectiveFile),
-                                ),
-                              );
-                            },
-                            child: VideoPlayer(_videoController!),
-                          ),
-                          // Play icon overlay
-                          Center(
-                            child: GestureDetector(
-                              onTap: () {
-                                // 👉 Open video viewer
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        VideoViewScreen(videoFile: effectiveFile),
+                          ? (_isVideoFile(effectiveFile.path)
+                          ? (_networkThumbnail != null
+                              ? GestureDetector(
+                                  onTap: () {
+                                    // 👉 Open video viewer
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            VideoViewScreen(videoFile: effectiveFile),
+                                      ),
+                                    );
+                                  },
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.memory(_networkThumbnail!, fit: BoxFit.cover, width: double.infinity),
+                                      // Play icon overlay
+                                      Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.5),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.play_arrow,
+                                            color: Colors.white,
+                                            size: 40,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.play_arrow,
-                                  color: Colors.white,
-                                  size: 40,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                          : GestureDetector(
-                        onTap: () {
-                          // 👉 Open image viewer
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ImageViewScreen(
-                                imageFile: effectiveFile,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Image.file(
-                          effectiveFile,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
-                      ))
-                          : widget.imageUrl != null
-                          ? GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ImageViewScreen(
-                                imageFile: File(''),
-                                imageUrl: widget.imageUrl,
-                              ),
-                            ),
-                          );
-                        },
-                        child: CachedNetworkImage(
-                          imageUrl: widget.imageUrl!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
-                      )
-                          : _buildNoImagePlaceholder(),
+                                )
+                              : const Center(child: CircularProgressIndicator()))
+                          : (_isDocument(effectiveFile.path)
+                              ? _buildFullSizeDocumentPreview(effectiveFile)
+                              : GestureDetector(
+                                  onTap: () {
+                                    // 👉 Open image viewer
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ImageViewScreen(
+                                          imageFile: effectiveFile,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Image.file(
+                                    effectiveFile,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                  ),
+                                )))
+                          : (isVideoUrl && _networkThumbnail != null
+                              ? GestureDetector(
+                                  onTap: () {
+                                    // 👉 Open video viewer for URL
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => VideoViewScreen(
+                                          videoFile: File(''),
+                                          videoUrl: widget.imageUrl,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Image.memory(
+                                        _networkThumbnail!,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                      ),
+                                      // Play icon overlay
+                                      Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.5),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.play_arrow,
+                                            color: Colors.white,
+                                            size: 40,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : (isVideoUrl && _networkThumbnail == null
+                                  ? Center(child: CircularProgressIndicator())
+                                  : (isDocumentUrl
+                                      ? _buildDocumentFromUrlPreview(widget.imageUrl!)
+                                      : (widget.imageUrl != null
+                                          ? GestureDetector(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => ImageViewScreen(
+                                                      imageFile: File(''),
+                                                      imageUrl: widget.imageUrl,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              child: CachedNetworkImage(
+                                                imageUrl: widget.imageUrl!,
+                                                fit: BoxFit.cover,
+                                                width: double.infinity,
+                                                errorWidget: (context, url, error) => _buildNoImagePlaceholder(),
+                                              ),
+                                            )
+                                          : _buildNoImagePlaceholder())))),
                     ),
 
                     // === EDIT BUTTON ===
-                    if ((effectiveFile != null && !_isVideoFile(effectiveFile.path)) || 
+                    if ((effectiveFile != null) || 
                         (widget.imageUrl != null && widget.imageUrl!.isNotEmpty && effectiveFile == null))
                       Positioned(
                         top: 10,
                         left: 10,
                         child: GestureDetector(
                           onTap: () async {
+                            // If it's a video (local or API), open video picker
+                            if (_isVideoFile(effectiveFile?.path ?? '') || isVideoUrl) {
+                              _pick(context);   // open video bottom sheet
+                              return;
+                            }
+
                             // If image comes from URL (HTTP), then select new photo instead of editing
                             if (widget.imageUrl != null && widget.imageUrl!.startsWith("http")) {
                               _pick(context);   // opens gallery/camera
@@ -536,7 +667,10 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                         right: 10,
                         child: GestureDetector(
                           onTap: () {
-                            setState(() => _localFile = null);
+                            setState(() {
+                              _localFile = null;
+                              _networkThumbnail = null;
+                            });
                             widget.onPicked(null);
                             _videoController?.dispose();
                             _videoController = null;
@@ -553,7 +687,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                       ),
 
                     // === HINT TEXT (when empty) ===
-                    if (effectiveFile == null && widget.imageUrl == null)
+                    if (effectiveFile == null && widget.imageUrl == null && !isVideoUrl)
                       Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -601,64 +735,11 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                         ? Stack(
                       fit: StackFit.expand,
                       children: [
-                        _isVideoFile(effectiveFile.path) && _videoController?.value.isInitialized == true
-                            ? VideoPlayer(_videoController!)
-                            : Image.file(effectiveFile, fit: BoxFit.cover),
-                        if (!_isVideoFile(effectiveFile.path))
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () async {
-                                    // If image comes from URL (HTTP), then select new photo instead of editing
-                                    if (widget.imageUrl != null && widget.imageUrl!.startsWith("http")) {
-                                      _pick(context);   // opens gallery/camera
-                                      return;
-                                    }
-                                    
-                                    // Check if file path itself starts with HTTP
-                                    if (effectiveFile.path.startsWith("http")) {
-                                      _pick(context);   // opens gallery/camera
-                                      return;
-                                    }
-
-                                    // ELSE: If file already local → edit photo
-                                    final edited = await _openImageEditor(effectiveFile);
-                                    if (edited != null) {
-                                      widget.onPicked(edited);
-                                      setState(() => _localFile = edited);
-                                    }
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(color: AppColors.appColor, shape: BoxShape.circle),
-                                    child: const Icon(Icons.edit, color: Colors.white, size: 18),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() => _localFile = null);
-                                    widget.onPicked(null);
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.8), shape: BoxShape.circle),
-                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    )
-                        : widget.imageUrl != null && widget.imageUrl!.isNotEmpty
-                        ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CachedNetworkImage(imageUrl: widget.imageUrl!, fit: BoxFit.cover),
+                        _isVideoFile(effectiveFile.path)
+                            ? (_networkThumbnail != null
+                                ? Image.memory(_networkThumbnail!, fit: BoxFit.cover)
+                                : const Center(child: CircularProgressIndicator()))
+                            : buildFilePreview(effectiveFile),
                         Positioned(
                           top: 8,
                           right: 8,
@@ -666,6 +747,12 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                             children: [
                               GestureDetector(
                                 onTap: () async {
+                                  // If it's a video (local or API), open video picker
+                                  if (_isVideoFile(effectiveFile.path) || isVideoUrl) {
+                                    _pick(context);   // open video bottom sheet
+                                    return;
+                                  }
+
                                   // If image comes from URL (HTTP), then select new photo instead of editing
                                   if (widget.imageUrl != null && widget.imageUrl!.startsWith("http")) {
                                     _pick(context);   // opens gallery/camera
@@ -673,18 +760,22 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                                   }
                                   
                                   // Check if file path itself starts with HTTP
-                                  if (effectiveFile != null && effectiveFile.path.startsWith("http")) {
+                                  if (effectiveFile.path.startsWith("http")) {
                                     _pick(context);   // opens gallery/camera
                                     return;
                                   }
 
+                                  // If it's a document, don't edit
+                                  if (_isDocument(effectiveFile.path)) {
+                                    _pick(context);
+                                    return;
+                                  }
+
                                   // ELSE: If file already local → edit photo
-                                  if (effectiveFile != null) {
-                                    final edited = await _openImageEditor(effectiveFile);
-                                    if (edited != null) {
-                                      widget.onPicked(edited);
-                                      setState(() => _localFile = edited);
-                                    }
+                                  final edited = await _openImageEditor(effectiveFile);
+                                  if (edited != null) {
+                                    widget.onPicked(edited);
+                                    setState(() => _localFile = edited);
                                   }
                                 },
                                 child: Container(
@@ -695,7 +786,10 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                               ),
                               const SizedBox(width: 8),
                               GestureDetector(
-                                onTap: () => widget.onPicked(null),
+                                onTap: () {
+                                  setState(() => _localFile = null);
+                                  widget.onPicked(null);
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.8), shape: BoxShape.circle),
@@ -707,23 +801,101 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                         ),
                       ],
                     )
-                        : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        _buildNoImagePlaceholder(),
-                        if (kIsWeb)
-                          Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.4)),
-                                const SizedBox(height: 8),
-                                Text(_isDragging ? 'Drop Image Here' : 'Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12)),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
+                        : (isVideoUrl && _networkThumbnail != null
+                            ? Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Image.memory(_networkThumbnail!, fit: BoxFit.cover),
+                                  Center(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.5),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : (isVideoUrl && _networkThumbnail == null
+                                ? Center(child: CircularProgressIndicator())
+                                : (isDocumentUrl
+                                    ? _buildDocumentFromUrlPreview(widget.imageUrl!)
+                                    : (widget.imageUrl != null && widget.imageUrl!.isNotEmpty
+                                        ? Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              CachedNetworkImage(
+                                                imageUrl: widget.imageUrl!,
+                                                fit: BoxFit.cover,
+                                                errorWidget: (context, url, error) => _buildNoImagePlaceholder(),
+                                              ),
+                                          Positioned(
+                                            top: 8,
+                                            right: 8,
+                                            child: Row(
+                                              children: [
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    // If image comes from URL (HTTP), then select new photo instead of editing
+                                                    if (widget.imageUrl != null && widget.imageUrl!.startsWith("http")) {
+                                                      _pick(context);   // opens gallery/camera
+                                                      return;
+                                                    }
+                                                    
+                                                    // Check if file path itself starts with HTTP
+                                                    if (effectiveFile != null && effectiveFile.path.startsWith("http")) {
+                                                      _pick(context);   // opens gallery/camera
+                                                      return;
+                                                    }
+
+                                                    // ELSE: If file already local → edit photo
+                                                    if (effectiveFile != null) {
+                                                      final edited = await _openImageEditor(effectiveFile);
+                                                      if (edited != null) {
+                                                        widget.onPicked(edited);
+                                                        setState(() => _localFile = edited);
+                                                      }
+                                                    }
+                                                  },
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(6),
+                                                    decoration: BoxDecoration(color: AppColors.appColor, shape: BoxShape.circle),
+                                                    child: const Icon(Icons.edit, color: Colors.white, size: 18),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                GestureDetector(
+                                                  onTap: () => widget.onPicked(null),
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(6),
+                                                    decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.8), shape: BoxShape.circle),
+                                                    child: const Icon(Icons.close, color: Colors.white, size: 18),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          _buildNoImagePlaceholder(),
+                                          if (kIsWeb)
+                                            Center(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.4)),
+                                                  const SizedBox(height: 8),
+                                                  Text(_isDragging ? 'Drop Image Here' : 'Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12)),
+                                                ],
+                                              ),
+                                            ),
+                                        ],
+                                      ))))),
                   ),
                 ),
               ),
@@ -739,32 +911,360 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     decoration: BoxDecoration(
-                      border: Border.all(color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.3), width: _isDragging ? 3 : 1),
+                      border: Border.all(
+                        color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.3),
+                        width: _isDragging ? 3 : 1,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                       color: _isDragging ? AppColors.appColor.withValues(alpha: 0.05) : Colors.transparent,
                     ),
-                    child: Row(
+
+                    // 🔥 IF DOCUMENT → SHOW PREVIEW
+                    child: (effectiveFile != null && _isDocument(effectiveFile.path))
+                        ? _buildDocumentPreview(effectiveFile)
+
+                    // 🔥 OTHERWISE SHOW DEFAULT ROW
+                        : Row(
                       children: [
-                        Icon(_isDragging ? Icons.cloud_upload : Icons.attach_file, color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.6)),
+                        Icon(
+                          _isDragging ? Icons.cloud_upload : Icons.attach_file,
+                          color: _isDragging
+                              ? AppColors.appColor
+                              : AppColors.appTextColor.withValues(alpha: 0.6),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             _isDragging && kIsWeb
                                 ? 'Drop File Here'
-                                : (effectiveFile != null ? effectiveFile.path.split('/').last : AppStrings.noFileSelected),
-                            style: AppTextStyle.kTextStyle.copyWith(color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.7)),
+                                : (effectiveFile != null
+                                ? effectiveFile.path.split('/').last
+                                : AppStrings.noFileSelected),
+                            style: AppTextStyle.kTextStyle.copyWith(
+                              color: _isDragging
+                                  ? AppColors.appColor
+                                  : AppColors.appTextColor.withValues(alpha: 0.7),
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (kIsWeb && effectiveFile == null && !_isDragging)
-                          Text('or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12, color: AppColors.appTextColor.withValues(alpha: 0.5))),
+                          Text(
+                            'or Click',
+                            style: AppTextStyle.kTextStyle.copyWith(
+                              fontSize: 12,
+                              color: AppColors.appTextColor.withValues(alpha: 0.5),
+                            ),
+                          ),
                       ],
                     ),
                   ),
                 ),
               ),
             ],
+
       ],
+    );
+}
+  bool _isPdf(String path) =>
+      path.toLowerCase().endsWith(".pdf");
+
+  bool _isWord(String path) =>
+      path.toLowerCase().endsWith(".doc") ||
+          path.toLowerCase().endsWith(".docx");
+
+  bool _isExcel(String path) =>
+      path.toLowerCase().endsWith(".xls") ||
+          path.toLowerCase().endsWith(".xlsx");
+
+  bool _isPpt(String path) =>
+      path.toLowerCase().endsWith(".ppt") ||
+          path.toLowerCase().endsWith(".pptx");
+
+  bool _isText(String path) =>
+      path.toLowerCase().endsWith(".txt") ||
+          path.toLowerCase().endsWith(".csv") ||
+          path.toLowerCase().endsWith(".rtf");
+
+  bool _isEpub(String path) =>
+      path.toLowerCase().endsWith(".epub");
+
+  bool _isDocument(String path) =>
+      _isPdf(path) ||
+          _isWord(path) ||
+          _isExcel(path) ||
+          _isPpt(path) ||
+          _isText(path) ||
+          _isEpub(path);
+
+  IconData _fileIcon(String path) {
+    if (_isPdf(path)) return Icons.picture_as_pdf;
+    if (_isWord(path)) return Icons.description;
+    if (_isExcel(path)) return Icons.grid_on;
+    if (_isPpt(path)) return Icons.slideshow;
+    if (_isText(path)) return Icons.text_snippet;
+    if (_isEpub(path)) return Icons.book;
+    return Icons.insert_drive_file;
+  }
+
+
+  Future<Uint8List?> _generatePdfThumbnail(String path) async {
+    try {
+      final pdf = await PdfDocument.openFile(path);
+      final page = await pdf.getPage(1);
+
+      final render = await page.render(
+        width: page.width,
+        height: page.height,
+        format: PdfPageImageFormat.png,
+      );
+
+      await page.close();
+      return render?.bytes;
+    } catch (e) {
+      debugPrint("PDF thumbnail error: $e");
+      return null;
+    }
+  }
+
+  Future<void> _loadPdfThumbnail(File file) async {
+    if (!_isPdf(file.path) || _pdfThumb != null) return;
+    try {
+      final thumb = await _generatePdfThumbnail(file.path);
+      if (thumb != null && mounted) {
+        setState(() {
+          _pdfThumb = thumb;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading PDF thumbnail: $e");
+    }
+  }
+
+
+  Widget _buildDocumentPreview(File file) {
+    final fileName = file.path.split('/').last;
+    final fileSize = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
+
+    return Row(
+      children: [
+        // Thumbnail / Icon
+        Container(
+          width: 60,
+          height: 75,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: _isPdf(file.path)
+              ? (_pdfThumb == null
+              ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+              : ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.memory(_pdfThumb!, fit: BoxFit.cover),
+          ))
+              : Icon(_fileIcon(file.path), size: 32, color: Colors.blue),
+        ),
+
+        const SizedBox(width: 12),
+
+        // File name & size
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                fileName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "$fileSize MB",
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              Text(
+                file.path.split(".").last.toUpperCase(),
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+
+  Widget buildFilePreview(File file) {
+    if (_isVideoFile(file.path)) {
+      // 🔥 If it's a video, never try to decode the video as image
+      return _networkThumbnail != null
+          ? Image.memory(_networkThumbnail!, fit: BoxFit.cover)
+          : const Center(child: CircularProgressIndicator());
+    }
+
+    if (_isDocument(file.path)) {
+      // 📄 Document file - show preview
+      return _buildFullSizeDocumentPreview(file);
+    }
+
+    // 🖼 Normal Image file
+    return Image.file(file, fit: BoxFit.cover);
+  }
+
+  Widget _buildFullSizeDocumentPreview(File file) {
+    final fileName = file.path.split('/').last;
+    final fileSize = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
+    final extension = file.path.split('.').last.toUpperCase();
+
+    return Container(
+      color: Colors.grey.shade100,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // PDF thumbnail or icon
+          _isPdf(file.path)
+              ? (_pdfThumb != null
+                  ? Image.memory(_pdfThumb!, fit: BoxFit.contain)
+                  : const Center(child: CircularProgressIndicator()))
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(_fileIcon(file.path), size: 64, color: Colors.blue),
+                      const SizedBox(height: 8),
+                      Text(
+                        extension,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          // File info overlay at bottom
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    fileName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "$fileSize MB • $extension",
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentFromUrlPreview(String url) {
+    final fileName = url.split('/').last.split('?').first;
+    final extension = fileName.contains('.') ? fileName.split('.').last.toUpperCase() : 'FILE';
+
+    return Container(
+      color: Colors.grey.shade100,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(_fileIcon(url), size: 64, color: Colors.blue),
+                const SizedBox(height: 8),
+                Text(
+                  extension,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // File info overlay at bottom
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    fileName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    extension,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

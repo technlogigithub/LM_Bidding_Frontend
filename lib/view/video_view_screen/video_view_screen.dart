@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoViewScreen extends StatefulWidget {
-  final File videoFile;
+  final File? videoFile;
+  final String? videoUrl;
 
-  const VideoViewScreen({super.key, required this.videoFile});
+  const VideoViewScreen({super.key, this.videoFile, this.videoUrl})
+      : assert(videoFile != null || videoUrl != null, 'Either videoFile or videoUrl must be provided');
 
   @override
   State<VideoViewScreen> createState() => _VideoViewScreenState();
@@ -25,17 +27,31 @@ class _VideoViewScreenState extends State<VideoViewScreen> {
 
   Future<void> _initializeVideo() async {
     try {
-      // Check if file exists
-      if (!await widget.videoFile.exists()) {
+      VideoPlayerController controller;
+      
+      if (widget.videoUrl != null) {
+        // Initialize from URL
+        controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+      } else if (widget.videoFile != null) {
+        // Check if file exists
+        if (!await widget.videoFile!.exists()) {
+          if (mounted) {
+            setState(() {
+              _errorMessage = 'Video file not found';
+            });
+          }
+          return;
+        }
+        controller = VideoPlayerController.file(widget.videoFile!);
+      } else {
         if (mounted) {
           setState(() {
-            _errorMessage = 'Video file not found';
+            _errorMessage = 'No video source provided';
           });
         }
         return;
       }
 
-      final controller = VideoPlayerController.file(widget.videoFile);
       controller.addListener(() {
         if (mounted) setState(() => _isPlaying = controller.value.isPlaying);
       });
