@@ -5,6 +5,7 @@ import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_config.dart';
 import 'package:libdding/service/socket_service.dart';
 import 'package:libdding/view/splash_screen/Splash_screen.dart';
+import 'package:libdding/widget/custom_html_viewer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +19,8 @@ void main() async {
   // Fetch API data before running the app
   await appController.fetchAllData();
 
-  final socketService = SocketService();
-  await socketService.connect('user_456'); // Set the user id
+  // final socketService = SocketService();
+  // await socketService.connect('user_456'); // Set the user id
 
   runApp(const MyApp());
 }

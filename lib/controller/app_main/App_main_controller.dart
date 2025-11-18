@@ -57,6 +57,24 @@ class AppSettingsController extends GetxController {
   RxBool loginRequired = false.obs;
   RxBool socialLoginRequired = false.obs;
 
+  // Social Login
+  Rx<SocialLogin?> socialLogin = Rx<SocialLogin?>(null);
+  RxString googleClientId = "".obs;
+  RxString googleClientSecret = "".obs;
+  RxString facebookClientId = "".obs;
+  RxString facebookClientSecret = "".obs;
+
+  // App Menu
+// App Menu
+  Rx<AppMenu?> appMenu = Rx<AppMenu?>(null);
+  Rx<UserInfo?> userInfo = Rx<UserInfo?>(null);
+  Rx<MenuItem?> myProfile = Rx<MenuItem?>(null);
+  Rx<SupportMenuItem?> support = Rx<SupportMenuItem?>(null);
+
+// NEW
+  Rx<SettingsMenuItem?> settings = Rx<SettingsMenuItem?>(null);
+  Rx<ReferralMenuItem?> referral = Rx<ReferralMenuItem?>(null);
+
   // MobileApp
   RxString androidVersion = "".obs;
   RxString iosVersion = "".obs;
@@ -93,6 +111,8 @@ class AppSettingsController extends GetxController {
   RxList<Language> availableLanguages = <Language>[].obs;
   RxString selectedLanguageKey = "en".obs;
   RxString selectedLanguageName = "English".obs;
+
+
 
   // Language Page (from settings)
   RxString languagePageTitle = "".obs;
@@ -183,7 +203,34 @@ class AppSettingsController extends GetxController {
         orientation.value = result?.general?.orientation ?? "";
         demoMode.value = result?.general?.demoMode ?? false;
         loginRequired.value = result?.general?.loginRequired ?? false;
-        socialLoginRequired.value = result?.general?.socialLogin ?? false;
+        
+        /// Social Login
+        socialLogin.value = result?.socialLogin;
+        googleClientId.value = result?.socialLogin?.google?.clientId ?? "";
+        googleClientSecret.value = result?.socialLogin?.google?.clientSecret ?? "";
+        facebookClientId.value = result?.socialLogin?.facebook?.clientId ?? "";
+        facebookClientSecret.value = result?.socialLogin?.facebook?.clientSecret ?? "";
+        // Check if social login is enabled (if any provider has client_id configured)
+        socialLoginRequired.value = (googleClientId.value.isNotEmpty || facebookClientId.value.isNotEmpty);
+
+        /// App Menu
+        appMenu.value = result?.appMenu;
+
+        userInfo.value = result?.appMenu?.userInfo;
+        myProfile.value = result?.appMenu?.myProfile;
+        support.value = result?.appMenu?.support;
+
+// NEW
+        settings.value = result?.appMenu?.settings;
+        referral.value = result?.appMenu?.referral;
+
+        // Save loginRequired flag for support to SharedPreferences
+        if (support.value != null) {
+          await saveLoginRequiredStatusforsupport(support.value?.loginRequired);
+        }
+        if (referral.value != null) {
+          await saveLoginRequiredStatusforinvite(referral.value?.loginRequired);
+        }
 
         /// Intro Sliders
         introSliders.assignAll(result?.introSlider ?? []);
@@ -261,6 +308,7 @@ class AppSettingsController extends GetxController {
         loginWithOtpPage.value = parsed.result?.loginWithOtp;
         verifyOtpPage.value = parsed.result?.verifyOtp;
         profileFormPage.value = parsed.result?.profileForm;
+
         if (parsed.result?.profileForm != null) {
           profileFormPage.value = parsed.result?.profileForm;
           // Save loginRequired flag to SP
@@ -450,6 +498,15 @@ class AppSettingsController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('profile_form_login_required', value ?? false);
   }
+  Future<void> saveLoginRequiredStatusforsupport(bool? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('support_login_required', value ?? false);
+  }
+  Future<void> saveLoginRequiredStatusforinvite(bool? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('invite_login_required', value ?? false);
+  }
+
   Future<String?> getAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("auth_token");

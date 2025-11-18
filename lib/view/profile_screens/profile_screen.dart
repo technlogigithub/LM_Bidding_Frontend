@@ -11,14 +11,16 @@ import '../../core/app_color.dart';
 import '../../core/app_string.dart';
 import '../../widget/app_appbar.dart';
 import '../seller screen/buyer request/seller_buyer_request.dart';
+import 'Invitescreen.dart';
+import 'help_support.dart';
 import 'my_profile_screen.dart';
 class ProfileScreen extends StatelessWidget {
    ProfileScreen({super.key});
 
-  final controller = Get.put(ProfileController());
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(ProfileController());
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final Color text=AppColors.textgrey;
@@ -415,6 +417,30 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   ListTile(
+                    onTap: () async {
+                      final prefs = await SharedPreferences.getInstance();
+
+                      final bool isLoginRequired = prefs.getBool('invite_login_required') ?? true;
+                      final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+                      if (isLoginRequired && !isLoggedIn) {
+                        // 🔒 Go to Login Screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Invitescreen(
+                              referralCode: controller.profileDetailsResponeModel.value?.result?.referralCode ?? "",
+                            ),
+                          ),
+                        );
+
+                      }
+                    },
                     // onTap: () => const ClientInvite().launch(context),
                     visualDensity: const VisualDensity(vertical: -3),
                     horizontalTitleGap: 10,
@@ -442,6 +468,26 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   ListTile(
+
+                    onTap: () async {
+                      final prefs = await SharedPreferences.getInstance();
+
+                      final bool isLoginRequired = prefs.getBool('support_login_required') ?? true;
+                      final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+                      if (isLoginRequired && !isLoggedIn) {
+                        // 🔒 Go to Login Screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const HelpSupport()),
+                        );
+                      }
+                    },
                     // onTap: () => const ClientHelpSupport().launch(context),
                     visualDensity: const VisualDensity(vertical: -3),
                     horizontalTitleGap: 10,

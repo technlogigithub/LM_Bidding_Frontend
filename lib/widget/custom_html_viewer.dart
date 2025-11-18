@@ -11,6 +11,8 @@ class CustomHtmlViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Html(
       data: htmlContent,
     );

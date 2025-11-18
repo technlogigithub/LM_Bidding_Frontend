@@ -33,9 +33,11 @@ class Result {
   LightTheme? lightTheme;
   LightTheme? darkTheme;
   General? general;
+  SocialLogin? socialLogin;
   Seo? seo;
   List<IntroSlider>? introSlider;
   LanguagePage? languagePage;
+  AppMenu? appMenu;
   List<Language>? languages;
 
   Result(
@@ -44,9 +46,11 @@ class Result {
         this.lightTheme,
         this.darkTheme,
         this.general,
+        this.socialLogin,
         this.seo,
         this.introSlider,
         this.languagePage,
+        this.appMenu,
         this.languages});
 
   Result.fromJson(Map<String, dynamic> json) {
@@ -64,6 +68,9 @@ class Result {
         : null;
     general =
     json['general'] != null ? new General.fromJson(json['general']) : null;
+    socialLogin = json['social_login'] != null
+        ? new SocialLogin.fromJson(json['social_login'])
+        : null;
     seo = json['seo'] != null ? new Seo.fromJson(json['seo']) : null;
     if (json['intro_slider'] != null) {
       introSlider = <IntroSlider>[];
@@ -73,6 +80,9 @@ class Result {
     }
     languagePage = json['language_page'] != null
         ? new LanguagePage.fromJson(json['language_page'])
+        : null;
+    appMenu = json['app_menu'] != null
+        ? new AppMenu.fromJson(json['app_menu'])
         : null;
     if (json['languages'] != null) {
       languages = <Language>[];
@@ -99,6 +109,9 @@ class Result {
     if (this.general != null) {
       data['general'] = this.general!.toJson();
     }
+    if (this.socialLogin != null) {
+      data['social_login'] = this.socialLogin!.toJson();
+    }
     if (this.seo != null) {
       data['seo'] = this.seo!.toJson();
     }
@@ -107,6 +120,9 @@ class Result {
     }
     if (this.languagePage != null) {
       data['language_page'] = this.languagePage!.toJson();
+    }
+    if (this.appMenu != null) {
+      data['app_menu'] = this.appMenu!.toJson();
     }
     if (this.languages != null) {
       data['languages'] = this.languages!.map((v) => v.toJson()).toList();
@@ -523,6 +539,576 @@ class ForceUpdatePage {
     return data;
   }
 }
+
+class SocialLogin {
+  SocialLoginProvider? google;
+  SocialLoginProvider? facebook;
+
+  SocialLogin({this.google, this.facebook});
+
+  SocialLogin.fromJson(Map<String, dynamic> json) {
+    google = json['google'] != null
+        ? new SocialLoginProvider.fromJson(json['google'])
+        : null;
+    facebook = json['facebook'] != null
+        ? new SocialLoginProvider.fromJson(json['facebook'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.google != null) {
+      data['google'] = this.google!.toJson();
+    }
+    if (this.facebook != null) {
+      data['facebook'] = this.facebook!.toJson();
+    }
+    return data;
+  }
+}
+
+class SocialLoginProvider {
+  String? clientId;
+  String? clientSecret;
+
+  SocialLoginProvider({this.clientId, this.clientSecret});
+
+  SocialLoginProvider.fromJson(Map<String, dynamic> json) {
+    clientId = json['client_id'];
+    clientSecret = json['client_secret'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['client_id'] = this.clientId;
+    data['client_secret'] = this.clientSecret;
+    return data;
+  }
+}
+
+class AppMenu {
+  UserInfo? userInfo;
+  MenuItem? myProfile;
+
+  SettingsMenuItem? settings;   // NEW
+  ReferralMenuItem? referral;   // NEW
+
+  SupportMenuItem? support;
+
+  AppMenu({
+    this.userInfo,
+    this.myProfile,
+    this.settings,
+    this.referral,
+    this.support,
+  });
+
+  AppMenu.fromJson(Map<String, dynamic> json) {
+    userInfo = json['user_info'] != null
+        ? UserInfo.fromJson(json['user_info'])
+        : null;
+
+    myProfile = json['my_profile'] != null
+        ? MenuItem.fromJson(json['my_profile'])
+        : null;
+
+    settings = json['settings'] != null
+        ? SettingsMenuItem.fromJson(json['settings'])
+        : null;
+
+    referral = json['referral'] != null
+        ? ReferralMenuItem.fromJson(json['referral'])
+        : null;
+
+    support = json['support'] != null
+        ? SupportMenuItem.fromJson(json['support'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() => {
+    if (userInfo != null) 'user_info': userInfo!.toJson(),
+    if (myProfile != null) 'my_profile': myProfile!.toJson(),
+    if (settings != null) 'settings': settings!.toJson(),
+    if (referral != null) 'referral': referral!.toJson(),
+    if (support != null) 'support': support!.toJson(),
+  };
+}
+
+
+class UserInfo {
+  bool? dp;
+  bool? name;
+  bool? mobile;
+  bool? email;
+  bool? walletBalance;
+
+  UserInfo({this.dp, this.name, this.mobile, this.email, this.walletBalance});
+
+  UserInfo.fromJson(Map<String, dynamic> json) {
+    dp = json['dp'];
+    name = json['name'];
+    mobile = json['mobile'];
+    email = json['email'];
+    walletBalance = json['wallet_balance'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['dp'] = this.dp;
+    data['name'] = this.name;
+    data['mobile'] = this.mobile;
+    data['email'] = this.email;
+    data['wallet_balance'] = this.walletBalance;
+    return data;
+  }
+}
+
+class MenuItem {
+  String? label;
+  String? apiEndpoint;
+  String? pageType;
+  String? pageName;
+  String? pageImage;
+  String? title;
+  String? description;
+
+  MenuItem({
+    this.label,
+    this.apiEndpoint,
+    this.pageType,
+    this.pageName,
+    this.pageImage,
+    this.title,
+    this.description,
+  });
+
+  MenuItem.fromJson(Map<String, dynamic> json) {
+    label = json['label'];
+    apiEndpoint = json['api_endpoint'];
+    pageType = json['page_type'];
+    pageName = json['page_name'];
+    pageImage = json['page_image'];
+    title = json['title'];
+    description = json['description'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['label'] = this.label;
+    data['api_endpoint'] = this.apiEndpoint;
+    data['page_type'] = this.pageType;
+    data['page_name'] = this.pageName;
+    data['page_image'] = this.pageImage;
+    data['title'] = this.title;
+    data['description'] = this.description;
+    return data;
+  }
+}
+
+class SupportMenuItem {
+  bool? loginRequired;
+  bool? isActive;
+  String? label;
+  String? apiEndpoint;
+  String? pageType;
+  String? pageName;
+  String? pageImage;
+  String? title;
+  String? description;
+  SupportDesign? design;
+
+  SupportMenuItem({
+    this.loginRequired,
+    this.isActive,
+    this.label,
+    this.apiEndpoint,
+    this.pageType,
+    this.pageName,
+    this.pageImage,
+    this.title,
+    this.description,
+    this.design,
+  });
+
+  SupportMenuItem.fromJson(Map<String, dynamic> json) {
+    loginRequired = json['login_required'];
+    isActive = json['is_active'];
+    label = json['label'];
+    apiEndpoint = json['api_endpoint'];
+    pageType = json['page_type'];
+    pageName = json['page_name'];
+    pageImage = json['page_image'];
+    title = json['title'];
+    description = json['description'];
+    design = json['design'] != null
+        ? new SupportDesign.fromJson(json['design'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['login_required'] = this.loginRequired;
+    data['is_active'] = this.isActive;
+    data['label'] = this.label;
+    data['api_endpoint'] = this.apiEndpoint;
+    data['page_type'] = this.pageType;
+    data['page_name'] = this.pageName;
+    data['page_image'] = this.pageImage;
+    data['title'] = this.title;
+    data['description'] = this.description;
+    if (this.design != null) {
+      data['design'] = this.design!.toJson();
+    }
+    return data;
+  }
+}
+
+class SupportDesign {
+  ContactItem? call;
+  ContactItem? whatsapp;
+  ContactItem? email;
+  SocialMedia? socialMedia;
+
+  SupportDesign({this.call, this.whatsapp, this.email, this.socialMedia});
+
+  SupportDesign.fromJson(Map<String, dynamic> json) {
+    call = json['call'] != null
+        ? new ContactItem.fromJson(json['call'])
+        : null;
+    whatsapp = json['whatsapp'] != null
+        ? new ContactItem.fromJson(json['whatsapp'])
+        : null;
+    email = json['email'] != null
+        ? new ContactItem.fromJson(json['email'])
+        : null;
+    socialMedia = json['social_media'] != null
+        ? new SocialMedia.fromJson(json['social_media'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.call != null) {
+      data['call'] = this.call!.toJson();
+    }
+    if (this.whatsapp != null) {
+      data['whatsapp'] = this.whatsapp!.toJson();
+    }
+    if (this.email != null) {
+      data['email'] = this.email!.toJson();
+    }
+    if (this.socialMedia != null) {
+      data['social_media'] = this.socialMedia!.toJson();
+    }
+    return data;
+  }
+}
+
+class ContactItem {
+  String? icon;
+  String? detail;
+
+  ContactItem({this.icon, this.detail});
+
+  ContactItem.fromJson(Map<String, dynamic> json) {
+    icon = json['icon'];
+    detail = json['detail'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['icon'] = this.icon;
+    data['detail'] = this.detail;
+    return data;
+  }
+}
+
+class SocialMedia {
+  SocialMediaItem? facebook;
+  SocialMediaItem? instagram;
+  SocialMediaItem? youtube;
+  SocialMediaItem? twitter;
+  SocialMediaItem? linkedin;
+
+  SocialMedia({
+    this.facebook,
+    this.instagram,
+    this.youtube,
+    this.twitter,
+    this.linkedin,
+  });
+
+  SocialMedia.fromJson(Map<String, dynamic> json) {
+    facebook = json['facebook'] != null
+        ? new SocialMediaItem.fromJson(json['facebook'])
+        : null;
+    instagram = json['instagram'] != null
+        ? new SocialMediaItem.fromJson(json['instagram'])
+        : null;
+    youtube = json['youtube'] != null
+        ? new SocialMediaItem.fromJson(json['youtube'])
+        : null;
+    twitter = json['twitter'] != null
+        ? new SocialMediaItem.fromJson(json['twitter'])
+        : null;
+    linkedin = json['linkedin'] != null
+        ? new SocialMediaItem.fromJson(json['linkedin'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.facebook != null) {
+      data['facebook'] = this.facebook!.toJson();
+    }
+    if (this.instagram != null) {
+      data['instagram'] = this.instagram!.toJson();
+    }
+    if (this.youtube != null) {
+      data['youtube'] = this.youtube!.toJson();
+    }
+    if (this.twitter != null) {
+      data['twitter'] = this.twitter!.toJson();
+    }
+    if (this.linkedin != null) {
+      data['linkedin'] = this.linkedin!.toJson();
+    }
+    return data;
+  }
+}
+
+class SocialMediaItem {
+  String? icon;
+  String? url;
+
+  SocialMediaItem({this.icon, this.url});
+
+  SocialMediaItem.fromJson(Map<String, dynamic> json) {
+    icon = json['icon'];
+    url = json['url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['icon'] = this.icon;
+    data['url'] = this.url;
+    return data;
+  }
+}
+
+class ReferralMenuItem {
+  bool? isActive;
+  bool? loginRequired;
+  String? label;
+  String? apiEndpoint;
+  String? pageType;
+  String? pageName;
+  String? pageImage;
+  String? title;
+  String? description;
+  ReferralDesign? design;
+
+  ReferralMenuItem({
+    this.isActive,
+    this.loginRequired,
+    this.label,
+    this.apiEndpoint,
+    this.pageType,
+    this.pageName,
+    this.pageImage,
+    this.title,
+    this.description,
+    this.design,
+  });
+
+  ReferralMenuItem.fromJson(Map<String, dynamic> json) {
+    isActive = json['is_active'];
+    loginRequired = json['login_required'];
+    label = json['label'];
+    apiEndpoint = json['api_endpoint'];
+    pageType = json['page_type'];
+    pageName = json['page_name'];
+    pageImage = json['page_image'];
+    title = json['title'];
+    description = json['description'];
+    design = json['design'] != null
+        ? ReferralDesign.fromJson(json['design'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'is_active': isActive,
+    'login_required': loginRequired,
+    'label': label,
+    'api_endpoint': apiEndpoint,
+    'page_type': pageType,
+    'page_name': pageName,
+    'page_image': pageImage,
+    'title': title,
+    'description': description,
+    if (design != null) 'design': design!.toJson(),
+  };
+}
+
+class ReferralDesign {
+  ContactItem? code;
+  SocialMedia? socialMedia;
+
+  ReferralDesign({this.code, this.socialMedia});
+
+  ReferralDesign.fromJson(Map<String, dynamic> json) {
+    code = json['code'] != null ? ContactItem.fromJson(json['code']) : null;
+    socialMedia = json['social_media'] != null
+        ? SocialMedia.fromJson(json['social_media'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() => {
+    if (code != null) 'code': code!.toJson(),
+    if (socialMedia != null) 'social_media': socialMedia!.toJson(),
+  };
+}
+class SettingsMenuItem {
+  bool? isActive;
+  bool? loginRequired;
+  String? label;
+  String? apiEndpoint;
+  String? pageType;
+  String? pageName;
+  String? pageImage;
+  String? title;
+  String? description;
+  SettingsDesign? design;
+
+  SettingsMenuItem({
+    this.isActive,
+    this.loginRequired,
+    this.label,
+    this.apiEndpoint,
+    this.pageType,
+    this.pageName,
+    this.pageImage,
+    this.title,
+    this.description,
+    this.design,
+  });
+
+  SettingsMenuItem.fromJson(Map<String, dynamic> json) {
+    isActive = json['is_active'];
+    loginRequired = json['login_required'];
+    label = json['label'];
+    apiEndpoint = json['api_endpoint'];
+    pageType = json['page_type'];
+    pageName = json['page_name'];
+    pageImage = json['page_image'];
+    title = json['title'];
+    description = json['description'];
+    design = json['design'] != null
+        ? SettingsDesign.fromJson(json['design'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'is_active': isActive,
+    'login_required': loginRequired,
+    'label': label,
+    'api_endpoint': apiEndpoint,
+    'page_type': pageType,
+    'page_name': pageName,
+    'page_image': pageImage,
+    'title': title,
+    'description': description,
+    if (design != null) 'design': design!.toJson(),
+  };
+}
+class SettingsDesign {
+  Map<String, SettingsInput>? inputs;
+  List<SettingsLink>? link;
+
+  SettingsDesign({this.inputs, this.link});
+
+  SettingsDesign.fromJson(Map<String, dynamic> json) {
+    if (json['inputs'] != null) {
+      inputs = {};
+      json['inputs'].forEach((key, value) {
+        inputs![key] = SettingsInput.fromJson(value);
+      });
+    }
+
+    if (json['link'] != null) {
+      link = (json['link'] as List)
+          .map((e) => SettingsLink.fromJson(e))
+          .toList();
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+    if (inputs != null)
+      'inputs': inputs!.map((k, v) => MapEntry(k, v.toJson())),
+    if (link != null) 'link': link!.map((e) => e.toJson()).toList(),
+  };
+}
+
+class SettingsInput {
+  String? inputType;
+  String? label;
+  String? placeholder;
+  String? name;
+  bool? required;
+  String? apiEndpoint;
+
+  SettingsInput({
+    this.inputType,
+    this.label,
+    this.placeholder,
+    this.name,
+    this.required,
+    this.apiEndpoint,
+  });
+
+  SettingsInput.fromJson(Map<String, dynamic> json) {
+    inputType = json['input_type'];
+    label = json['label'];
+    placeholder = json['placeholder'];
+    name = json['name'];
+    required = json['required'];
+    apiEndpoint = json['api_endpoint'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    'input_type': inputType,
+    'label': label,
+    'placeholder': placeholder,
+    'name': name,
+    'required': required,
+    'api_endpoint': apiEndpoint,
+  };
+}
+
+class SettingsLink {
+  String? label;
+  String? apiEndpoint;
+  String? pageType;
+
+  SettingsLink({this.label, this.apiEndpoint, this.pageType});
+
+  SettingsLink.fromJson(Map<String, dynamic> json) {
+    label = json['label'];
+    apiEndpoint = json['api_endpoint'];
+    pageType = json['page_type'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    'label': label,
+    'api_endpoint': apiEndpoint,
+    'page_type': pageType,
+  };
+}
+
+
+
+
+
 
 // New models for app_content endpoint minimal parsing
 class AppContentResponse {
