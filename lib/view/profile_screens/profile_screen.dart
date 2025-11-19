@@ -6,6 +6,7 @@ import 'package:libdding/core/app_textstyle.dart';
 import 'package:libdding/view/auth/login_screen.dart';
 import 'package:libdding/view/transaction/transaction.dart';
 import 'package:nb_utils/nb_utils.dart';
+import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_string.dart';
@@ -21,6 +22,9 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ProfileController());
+    final appController = Get.find<AppSettingsController>();
+    final support = appController.support.value;
+    final referral = appController.referral.value;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final Color text=AppColors.textgrey;
@@ -34,8 +38,15 @@ class ProfileScreen extends StatelessWidget {
         children: [
           SizedBox(height: screenHeight*0.04,),
           Obx(() => CustomHeader(
-            username: controller.username.value,
-            balance: controller.balance.value,
+            username: controller.profileDetailsResponeModel.value?.result?.basicInfo?.name ?? "",
+
+            balance: double.tryParse(
+                controller.profileDetailsResponeModel.value?.result?.hidden?.walletBalance ?? "0"
+            ) ?? 0.0,
+
+            images: controller.profileDetailsResponeModel.value?.result?.dp?.dp ?? "",
+
+            userInfo: controller.userInfo.value,
           )),
           Padding(
             padding:  EdgeInsets.only(top: screenHeight*0.01),
@@ -416,7 +427,9 @@ class ProfileScreen extends StatelessWidget {
                       color: text,
                     ),
                   ),
-                  ListTile(
+
+                  referral != null && referral.isActive == true
+                      ? ListTile(
                     onTap: () async {
                       final prefs = await SharedPreferences.getInstance();
 
@@ -434,10 +447,11 @@ class ProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => Invitescreen(
-                              referralCode: controller.profileDetailsResponeModel.value?.result?.referralCode ?? "",
+                              referralCode: controller.profileDetailsResponeModel.value?.result?.hidden?.referralCode ?? "",
                             ),
                           ),
                         );
+
 
                       }
                     },
@@ -466,55 +480,57 @@ class ProfileScreen extends StatelessWidget {
                       FeatherIcons.chevronRight,
                       color: text,
                     ),
-                  ),
-                  ListTile(
+                  ):const SizedBox.shrink(),
 
-                    onTap: () async {
-                      final prefs = await SharedPreferences.getInstance();
+                support != null && support.isActive == true
+                    ? ListTile(
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
 
-                      final bool isLoginRequired = prefs.getBool('support_login_required') ?? true;
-                      final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+                    final bool isLoginRequired =
+                        support.loginRequired ?? true; // from API
+                    final bool isLoggedIn =
+                        prefs.getBool('isLoggedIn') ?? false;
 
-                      if (isLoginRequired && !isLoggedIn) {
-                        // 🔒 Go to Login Screen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginScreen()),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const HelpSupport()),
-                        );
-                      }
-                    },
-                    // onTap: () => const ClientHelpSupport().launch(context),
-                    visualDensity: const VisualDensity(vertical: -3),
-                    horizontalTitleGap: 10,
-                    contentPadding: const EdgeInsets.only(bottom: 15),
-                    leading: Container(
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFFE3EDFF),
-                      ),
-                      child: const Icon(
-                        IconlyBold.danger,
-                        color: Color(0xFF144BD6),
-                      ),
+                    if (isLoginRequired && !isLoggedIn) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HelpSupport()),
+                      );
+                    }
+                  },
+                  visualDensity: const VisualDensity(vertical: -3),
+                  horizontalTitleGap: 10,
+                  contentPadding: const EdgeInsets.only(bottom: 15),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFE3EDFF),
                     ),
-                    title: Text(
-                        AppStrings.helpSupport,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style: style
-                    ),
-                    trailing:  Icon(
-                      FeatherIcons.chevronRight,
-                      color: text,
+                    child: const Icon(
+                      IconlyBold.danger,
+                      color: Color(0xFF144BD6),
                     ),
                   ),
-                  ListTile(
+                  title: Text(AppStrings.helpSupport,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: style,
+                  ),
+                  trailing: Icon(
+                    FeatherIcons.chevronRight,
+                    color: text,
+                  ),
+                )
+                    : const SizedBox.shrink(),
+
+            ListTile(
                     visualDensity: const VisualDensity(vertical: -3),
                     horizontalTitleGap: 10,
                     contentPadding: const EdgeInsets.only(bottom: 15),

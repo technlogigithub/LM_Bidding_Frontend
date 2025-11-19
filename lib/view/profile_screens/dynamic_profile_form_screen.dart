@@ -100,7 +100,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
               // Form Content
               GetBuilder<SetupProfileController>(
                 id: 'form_content',
-                builder: (controller) => _buildFormContent(profileForm, screenHeight),
+                builder: (controller) => _buildFormContent(profileForm, screenHeight,context),
               ),
             ],
           ),
@@ -142,7 +142,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  Widget _buildFormContent(ProfileFormPage profileForm, double screenHeight) {
+  Widget _buildFormContent(ProfileFormPage profileForm, double screenHeight,BuildContext context) {
     final currentStep = controller.currentStep.value;
     List<RegisterInput>? currentStepInputs;
 
@@ -187,7 +187,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
         const SizedBox(height: 30),
 
         // Action Buttons
-        _buildActionButtons(profileForm, screenHeight),
+        _buildActionButtons(profileForm, screenHeight,context),
       ],
     );
   }
@@ -560,7 +560,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  Widget _buildActionButtons(ProfileFormPage profileForm, double screenHeight) {
+  Widget _buildActionButtons(ProfileFormPage profileForm, double screenHeight,BuildContext context) {
     return Obx(() {
       final currentStep = controller.currentStep.value;
       final addresses = controller.addresses;
@@ -610,7 +610,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 onTap: controller.isLoading.value
                     ? null
                     : () => controller.showSubmitButton.value
-                        ? controller.submitForm()
+                        ? controller.submitForm(context)
                         : controller.nextStep(),
 
                 // onTap: controller.isLoading.value

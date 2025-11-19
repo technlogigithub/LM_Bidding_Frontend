@@ -41,181 +41,190 @@ class HelpSupport extends StatelessWidget {
         ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: screenHeight * 0.03),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
 
-              // ✔ Big Circle Avatar with page_image
-              CircleAvatar(
-                radius: screenHeight * 0.1,
-                backgroundColor: AppColors.appColor.withOpacity(0.15),
-                backgroundImage: (support?.pageImage != null && support!.pageImage!.isNotEmpty)
-                    ? NetworkImage(support.pageImage!)
-                    : null,
-                child: (support?.pageImage == null || (support?.pageImage?.isEmpty ?? true))
-                    ? Icon(
-                        Icons.help_outline,
-                        size: screenHeight * 0.1,
-                        color: AppColors.appColor,
-                      )
-                    : null,
+                color: AppColors.appColor.withOpacity(0.15),
               ),
-
-              SizedBox(height: screenHeight * 0.02),
-
-              // Title from support.title
-              Text(
-                support?.title ?? "Contact Us",
-                style: TextStyle(
-                  fontSize: screenHeight * 0.03,
-                  color: AppColors.appTextColor,
-                  fontWeight: FontWeight.w600,
-                ),
+              clipBehavior: Clip.antiAlias,
+              child: (support?.pageImage != null &&
+                  support!.pageImage!.isNotEmpty)
+                  ? Image.network(
+                support.pageImage!,
+                fit: BoxFit.cover,
+              )
+                  : Icon(
+                Icons.help_outline,
+                size: screenHeight * 0.1,
+                color: AppColors.appColor,
               ),
+            ),
 
-              SizedBox(height: screenHeight * 0.01),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: screenHeight * 0.03),
 
-              // Description from support.description
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  support?.description ?? "If you need any help or facing any issue, feel free to contact us. "
-                      "We are always here to help you!",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: screenHeight * 0.02,
-                    color: AppColors.subTitleColor,
+                  // ✔ Big Circle Avatar with page_image
+
+
+                  SizedBox(height: screenHeight * 0.02),
+
+                  // Title from support.title
+                  Text(
+                    support?.title ?? "Contact Us",
+                    style: TextStyle(
+                      fontSize: screenHeight * 0.03,
+                      color: AppColors.appTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ),
 
-              SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: screenHeight * 0.01),
 
-              // ✔ First Row (Call, WhatsApp, Email)
-              if (support?.design != null)
-        Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          if (support!.design!.call != null)
-            helpBoxWithIcon(
-              screenHeight,
-              screenWidth,
-              support.design!.call!.icon,
-                  () {
-                makePhoneCall(support.design!.call!.detail!);
-              },
-            ),
-
-          if (support.design!.whatsapp != null)
-            helpBoxWithIcon(
-              screenHeight,
-              screenWidth,
-              support.design!.whatsapp!.icon,
-                  () {
-                openWhatsApp(support.design!.whatsapp!.detail!);
-              },
-            ),
-
-          if (support.design!.email != null)
-            helpBoxWithIcon(
-              screenHeight,
-              screenWidth,
-              support.design!.email!.icon,
-                  () {
-                sendEmail(support.design!.email!.detail!);
-              },
-            ),
-        ],
-      ),
-
-        SizedBox(height: screenHeight * 0.03),
-
-              // ✔ OR Divider
-              Row(
-                children: const [
-                  Expanded(child: Divider(thickness: 1)),
+                  // Description from support.description
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text("OR"),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      support?.description ?? "If you need any help or facing any issue, feel free to contact us. "
+                          "We are always here to help you!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenHeight * 0.02,
+                        color: AppColors.subTitleColor,
+                      ),
+                    ),
                   ),
-                  Expanded(child: Divider(thickness: 1)),
+
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // ✔ First Row (Call, WhatsApp, Email)
+                  if (support?.design != null)
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+              if (support!.design!.call != null)
+                helpBoxWithIcon(
+                  screenHeight,
+                  screenWidth,
+                  support.design!.call!.icon,
+                      () {
+                    makePhoneCall(support.design!.call!.detail!);
+                  },
+                ),
+
+              if (support.design!.whatsapp != null)
+                helpBoxWithIcon(
+                  screenHeight,
+                  screenWidth,
+                  support.design!.whatsapp!.icon,
+                      () {
+                    openWhatsApp(support.design!.whatsapp!.detail!);
+                  },
+                ),
+
+              if (support.design!.email != null)
+                helpBoxWithIcon(
+                  screenHeight,
+                  screenWidth,
+                  support.design!.email!.icon,
+                      () {
+                    sendEmail(support.design!.email!.detail!);
+                  },
+                ),
+                    ],
+                  ),
+
+                    SizedBox(height: screenHeight * 0.03),
+
+                  // ✔ OR Divider
+                  Row(
+                    children: const [
+                      Expanded(child: Divider(thickness: 1)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text("OR"),
+                      ),
+                      Expanded(child: Divider(thickness: 1)),
+                    ],
+                  ),
+
+                  SizedBox(height: screenHeight * 0.03),
+
+                  // ✔ Second Row (Social Media)
+                  if (support?.design?.socialMedia != null)
+                    Wrap(
+                      spacing: 9,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        if (support!.design!.socialMedia!.facebook != null)
+                          helpBoxWithImage(
+                            screenHeight,
+                            screenWidth,
+                            support.design!.socialMedia!.facebook!.icon,
+                                () {
+                              openSocialUrl(support.design!.socialMedia!.facebook!.url!);
+                            },
+                          ),
+
+                        if (support.design!.socialMedia!.instagram != null)
+                          helpBoxWithImage(
+                            screenHeight,
+                            screenWidth,
+                            support.design!.socialMedia!.instagram!.icon,
+                                () {
+                              openSocialUrl(support.design!.socialMedia!.instagram!.url!);
+                            },
+                          ),
+
+                        if (support.design!.socialMedia!.youtube != null)
+                          helpBoxWithImage(
+                            screenHeight,
+                            screenWidth,
+                            support.design!.socialMedia!.youtube!.icon,
+                                () {
+                              openSocialUrl(support.design!.socialMedia!.youtube!.url!);
+                            },
+                          ),
+
+                        if (support.design!.socialMedia!.twitter != null)
+                          helpBoxWithImage(
+                            screenHeight,
+                            screenWidth,
+                            support.design!.socialMedia!.twitter!.icon,
+                                () {
+                              openSocialUrl(support.design!.socialMedia!.twitter!.url!);
+                            },
+                          ),
+
+                        if (support.design!.socialMedia!.linkedin != null)
+                          helpBoxWithImage(
+                            screenHeight,
+                            screenWidth,
+                            support.design!.socialMedia!.linkedin!.icon,
+                                () {
+                              openSocialUrl(support.design!.socialMedia!.linkedin!.url!);
+                            },
+                          ),
+                      ],
+                    ),
+
+                  SizedBox(height: screenHeight * 0.03),
                 ],
               ),
-
-              SizedBox(height: screenHeight * 0.03),
-
-              // ✔ Second Row (Social Media)
-              if (support?.design?.socialMedia != null)
-                Wrap(
-                  spacing: 9,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    if (support!.design!.socialMedia!.facebook != null)
-                      helpBoxWithImage(
-                        screenHeight,
-                        screenWidth,
-                        support.design!.socialMedia!.facebook!.icon,
-                            () {
-                          openSocialUrl(support.design!.socialMedia!.facebook!.url!);
-                        },
-                      ),
-
-                    if (support.design!.socialMedia!.instagram != null)
-                      helpBoxWithImage(
-                        screenHeight,
-                        screenWidth,
-                        support.design!.socialMedia!.instagram!.icon,
-                            () {
-                          openSocialUrl(support.design!.socialMedia!.instagram!.url!);
-                        },
-                      ),
-
-                    if (support.design!.socialMedia!.youtube != null)
-                      helpBoxWithImage(
-                        screenHeight,
-                        screenWidth,
-                        support.design!.socialMedia!.youtube!.icon,
-                            () {
-                          openSocialUrl(support.design!.socialMedia!.youtube!.url!);
-                        },
-                      ),
-
-                    if (support.design!.socialMedia!.twitter != null)
-                      helpBoxWithImage(
-                        screenHeight,
-                        screenWidth,
-                        support.design!.socialMedia!.twitter!.icon,
-                            () {
-                          openSocialUrl(support.design!.socialMedia!.twitter!.url!);
-                        },
-                      ),
-
-                    if (support.design!.socialMedia!.linkedin != null)
-                      helpBoxWithImage(
-                        screenHeight,
-                        screenWidth,
-                        support.design!.socialMedia!.linkedin!.icon,
-                            () {
-                          openSocialUrl(support.design!.socialMedia!.linkedin!.url!);
-                        },
-                      ),
-                  ],
-                ),
-
-              SizedBox(height: screenHeight * 0.03),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ⭐ Reusable Box Widget with Icon (for call, whatsapp, email)
-// ⭐ Reusable Box Widget with Icon (for call, whatsapp, email)
+
   Widget helpBoxWithIcon(
       double screenHeight, double screenWidth, String? iconUrl, VoidCallback onTap) {
     bool hasUrl = iconUrl != null &&

@@ -4,7 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/api_config.dart';
 import '../../core/network.dart';
-import '../../models/Profile/profile_response_model.dart';
+import '../../models/App_moduls/AppResponseModel.dart';
+import '../../models/Profile/profile_response_model.dart' hide Result;
 
 class ProfileController extends GetxController {
   var notifications = [].obs;
@@ -13,8 +14,14 @@ class ProfileController extends GetxController {
   var username = "User Name".obs;
   var balance = 500.00.obs;
 
+  Rx<ProfileDetailsResponseModel?> profileDetailsResponeModel =
+  Rx<ProfileDetailsResponseModel?>(null);
 
-  Rx<ProfileDetailsResponeModel?> profileDetailsResponeModel = Rx<ProfileDetailsResponeModel?>(null);
+  // ✅ ADD THIS (you forgot this earlier)
+  Rx<AppMenu?> appMenu = Rx<AppMenu?>(null);
+
+  // API UserInfo flags (dp, name, mobile, email, wallet_balance)
+  var userInfo = UserInfo().obs;
 
   @override
   void onInit() {
@@ -28,9 +35,7 @@ class ProfileController extends GetxController {
     try {
       final res = await ApiService.getRequest("ordersApi");
       notifications.value = res["data"] ?? [];
-    } catch (e) {
-      // Get.snackbar("Error", e.toString());
-    } finally {
+    } catch (e) {} finally {
       isLoading.value = false;
     }
   }
@@ -44,27 +49,27 @@ class ProfileController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool("isLoggedIn", false);
     isLoggedIn.value = false;
-    // navigate to login
-    Get.offAll(() =>  LoginScreen());
-  }
 
+    Get.offAll(() => LoginScreen());
+  }
 
   Future<void> fetchProfileDetails() async {
     try {
       isLoading.value = true;
 
       final token = await getAuthToken();
+      print("Token is $token");
 
       final res = await ApiServices().makeRequestRaw(
-        endPoint: "/profile/details",
+        endPoint: "profile/details",
         method: "GET",
         headers: {
           "Authorization": "Bearer $token",
         },
       );
 
-      // Store response into model variable
-      profileDetailsResponeModel.value = ProfileDetailsResponeModel.fromJson(res);
+      profileDetailsResponeModel.value =
+          ProfileDetailsResponseModel.fromJson(res);
 
       print("📌 Saved Profile: ${profileDetailsResponeModel.value}");
 
@@ -75,10 +80,20 @@ class ProfileController extends GetxController {
     }
   }
 
-
   Future<String?> getAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("auth_token");
   }
 
+  // ✅ Store flags & menu safely
+  void setAppMenu(Result? result) {
+    if (result?.appMenu != null) {
+      appMenu.value = result!.appMenu;
+
+      // Save userInfo flags (dp, name, mobile, email, balance)
+      if (result.appMenu!.userInfo != null) {
+        userInfo.value = result.appMenu!.userInfo!;
+      }
+    }
+  }
 }

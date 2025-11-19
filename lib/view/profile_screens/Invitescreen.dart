@@ -63,7 +63,7 @@ class Invitescreen extends StatelessWidget {
           screenHeight,
           screenWidth,
           referral,
-          profilecontroller!.profileDetailsResponeModel.value?.result!.referralCode ?? "",
+          profilecontroller!.profileDetailsResponeModel.value?.result?.hidden?.referralCode ?? "",
         );
       }),
     );
@@ -107,135 +107,164 @@ class Invitescreen extends StatelessWidget {
   // ⭐ FINAL UI
   // ---------------------------------------------------------------------------
   Widget actualUI(double screenHeight, double screenWidth, referral, String referralCode) {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(height: screenHeight * 0.03),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // SizedBox(height: screenHeight * 0.03),
 
-            // Page Icon
-            CircleAvatar(
-              radius: screenHeight * 0.1,
-              backgroundColor: AppColors.appColor.withOpacity(0.15),
-              backgroundImage: referral?.pageImage != null &&
-                  referral!.pageImage!.isNotEmpty
-                  ? NetworkImage(referral.pageImage!)
-                  : null,
-              child: (referral?.pageImage == null ||
-                  (referral?.pageImage?.isEmpty ?? true))
-                  ? Icon(
-                Icons.group_add_outlined,
-                size: screenHeight * 0.1,
-                color: AppColors.appColor,
-              )
-                  : null,
+
+
+
+
+          Container(
+            decoration: BoxDecoration(
+
+              color: AppColors.appColor.withOpacity(0.15),
             ),
-
-            SizedBox(height: 20),
-
-            Text(
-              referral?.title ?? "Invite & Earn",
-              style: TextStyle(
-                fontSize: screenHeight * 0.03,
-                fontWeight: FontWeight.bold,
-                color: AppColors.appTextColor,
-              ),
+            clipBehavior: Clip.antiAlias,
+            child: (referral?.pageImage != null &&
+                referral!.pageImage!.isNotEmpty)
+                ? Image.network(
+              referral.pageImage!,
+              fit: BoxFit.cover,
+            )
+                : Icon(
+              Icons.group_add_outlined,
+              size: screenHeight * 0.1,
+              color: AppColors.appColor,
             ),
+          ),
 
-            SizedBox(height: 10),
 
-            Text(
-              referral?.description ??
-                  "Invite your friends and earn exciting rewards!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: screenHeight * 0.02,
-                color: AppColors.subTitleColor,
-              ),
-            ),
+          // Page Icon
+          // CircleAvatar(
+          //   radius: screenHeight * 0.1,
+          //   backgroundColor: AppColors.appColor.withOpacity(0.15),
+          //   backgroundImage: referral?.pageImage != null &&
+          //       referral!.pageImage!.isNotEmpty
+          //       ? NetworkImage(referral.pageImage!)
+          //       : null,
+          //   child: (referral?.pageImage == null ||
+          //       (referral?.pageImage?.isEmpty ?? true))
+          //       ? Icon(
+          //     Icons.group_add_outlined,
+          //     size: screenHeight * 0.1,
+          //     color: AppColors.appColor,
+          //   )
+          //       : null,
+          // ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                SizedBox(height: 20),
 
-            SizedBox(height: 30),
-
-            // -----------------------------------------------------------------
-            // ⭐ REFERRAL CODE UI
-            // -----------------------------------------------------------------
-            if (referralCode.isNotEmpty)
-              Column(
-                children: [
-                  Text(
-                    "Your Referral Code",
-                    style: TextStyle(
-                      fontSize: screenHeight * 0.022,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.appTextColor,
-                    ),
+                Text(
+                  referral?.title ?? "Invite & Earn",
+                  style: TextStyle(
+                    fontSize: screenHeight * 0.03,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.appTextColor,
                   ),
-                  SizedBox(height: 12),
-                  Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: AppColors.appWhite,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.subTitleColor.withOpacity(0.5),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          referralCode,
-                          style: TextStyle(
-                            fontSize: screenHeight * 0.028,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.appColor,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        GestureDetector(
-                          onTap: () {
-                            copyToClipboard(referralCode);
-                          },
-                          child: const Icon(
-                            Icons.copy,
-                            size: 22,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-            SizedBox(height: 35),
-
-            Row(
-              children: const [
-                Expanded(child: Divider()),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text("OR"),
                 ),
-                Expanded(child: Divider()),
+
+                SizedBox(height: 10),
+
+                Text(
+                  referral?.description ??
+                      "Invite your friends and earn exciting rewards!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: screenHeight * 0.02,
+                    color: AppColors.subTitleColor,
+                  ),
+                ),
+
+                SizedBox(height: 30),
+
+                // -----------------------------------------------------------------
+                // ⭐ REFERRAL CODE UI
+                // -----------------------------------------------------------------
+                if (referralCode.isNotEmpty)
+                  Column(
+                    children: [
+                      Text(
+                        "Your Referral Code",
+                        style: TextStyle(
+                          fontSize: screenHeight * 0.022,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.appTextColor,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Container(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: AppColors.appWhite,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.subTitleColor.withOpacity(0.5),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              referralCode,
+                              style: TextStyle(
+                                fontSize: screenHeight * 0.028,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.appColor,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            GestureDetector(
+                              onTap: () {
+                                copyToClipboard(referralCode);
+                              },
+                              child: const Icon(
+                                Icons.copy,
+                                size: 22,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                SizedBox(height: 35),
+
+                Row(
+                  children: const [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text("OR"),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+
+                SizedBox(height: 30),
+
+                // -----------------------------------------------------------------
+                // ⭐ SOCIAL ICONS
+                // -----------------------------------------------------------------
+                if (referral?.design?.socialMedia != null)
+                  Wrap(
+                    spacing: 9,
+                    alignment: WrapAlignment.center,
+                    children: buildSocialIcons(screenHeight, screenWidth, referral),
+                  ),
               ],
             ),
+          )
 
-            SizedBox(height: 30),
 
-            // -----------------------------------------------------------------
-            // ⭐ SOCIAL ICONS
-            // -----------------------------------------------------------------
-            if (referral?.design?.socialMedia != null)
-              Wrap(
-                spacing: 9,
-                alignment: WrapAlignment.center,
-                children: buildSocialIcons(screenHeight, screenWidth, referral),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }

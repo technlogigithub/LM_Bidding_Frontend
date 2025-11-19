@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:libdding/controller/profile/profile_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
 import '../app_main/App_main_controller.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
@@ -78,10 +80,12 @@ class SetupProfileController extends GetxController {
 
   // Loading State
   final isLoading = false.obs;
+  final profilecontroller = Get.put(ProfileController());
 
   // Step-wise API endpoints
   String? _getStepApiEndpoint(int step) {
     final appController = Get.find<AppSettingsController>();
+
     final profileForm = appController.profileFormPage.value;
     
     if (profileForm?.apiEndpoints == null) return null;
@@ -973,7 +977,7 @@ class SetupProfileController extends GetxController {
     return stepTitle.toLowerCase().contains('address');
   }
 
-  Future<void> submitForm() async {
+  Future<void> submitForm(BuildContext context) async {
     if (!_validateCurrentStep()) {
       // Force UI update to show errors immediately
       formErrors.refresh();
@@ -993,7 +997,9 @@ class SetupProfileController extends GetxController {
       final success = await _callStepApi(submitUrl, currentStep.value);
       if (success) {
         Get.snackbar('Success', 'Profile updated successfully');
-        Get.back();
+        profilecontroller.fetchProfileDetails();
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BottomNavigationScreen(),));
+
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e');

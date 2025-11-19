@@ -1,13 +1,17 @@
-class ProfileDetailsResponeModel {
+class ProfileDetailsResponseModel {
   int? responseCode;
   bool? success;
   String? message;
   Result? result;
 
-  ProfileDetailsResponeModel(
-      {this.responseCode, this.success, this.message, this.result});
+  ProfileDetailsResponseModel({
+    this.responseCode,
+    this.success,
+    this.message,
+    this.result,
+  });
 
-  ProfileDetailsResponeModel.fromJson(Map<String, dynamic> json) {
+  ProfileDetailsResponseModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     success = json['success'];
     message = json['message'];
@@ -15,7 +19,7 @@ class ProfileDetailsResponeModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
+    final data = <String, dynamic>{};
     data['response_code'] = responseCode;
     data['success'] = success;
     data['message'] = message;
@@ -25,199 +29,206 @@ class ProfileDetailsResponeModel {
 }
 
 class Result {
-  String? userKey;
-  String? userType;
-  String? username;
-  String? name;
-  String? email;
-  String? mobile;
-  String? dpImage;
-  String? bannerImage;
-  String? referralCode;
-  String? dpImageUrl;
-  String? bannerImageUrl;
-
-  List<BankAccount>? bankAccounts;
-  List<Addresses>? addresses;
+  Hidden? hidden;
+  DP? dp;
+  BannerImage? banner;
+  BasicInfo? basicInfo;
+  List<Address>? address;
   List<Documents>? documents;
 
+  /// Store full API response for dynamic UI
+  Map<String, dynamic>? rawData;
+
   Result({
-    this.userKey,
-    this.userType,
-    this.username,
-    this.name,
-    this.email,
-    this.mobile,
-    this.dpImage,
-    this.bannerImage,
-    this.referralCode,
-    this.dpImageUrl,
-    this.bannerImageUrl,
-    this.bankAccounts,
-    this.addresses,
+    this.hidden,
+    this.dp,
+    this.banner,
+    this.basicInfo,
+    this.address,
     this.documents,
+    this.rawData,
   });
 
   Result.fromJson(Map<String, dynamic> json) {
-    userKey = json['user_key'];
-    userType = json['user_type'];
-    username = json['username'];
-    name = json['name'];
-    email = json['email'];
-    mobile = json['mobile'];
-    dpImage = json['dp_image'];
-    bannerImage = json['banner_image'];
-    referralCode = json['referral_code'];
-    dpImageUrl = json['dp_image_url'];
-    bannerImageUrl = json['banner_image_url'];
+    rawData = json;
 
-    if (json['bank_accounts'] != null) {
-      bankAccounts = [];
-      json['bank_accounts'].forEach((v) {
-        bankAccounts!.add(BankAccount.fromJson(v));
+    hidden = json['hidden'] != null ? Hidden.fromJson(json['hidden']) : null;
+
+    // Correct keys
+    dp = json['dp'] != null ? DP.fromJson(json['dp']) : null;
+    banner = json['banner'] != null ? BannerImage.fromJson(json['banner']) : null;
+
+    basicInfo = json['Basic Info'] != null
+        ? BasicInfo.fromJson(json['Basic Info'])
+        : null;
+
+    if (json['Address'] != null) {
+      address = [];
+      json['Address'].forEach((v) {
+        address!.add(Address.fromJson(v));
       });
     }
 
-    if (json['addresses'] != null) {
-      addresses = [];
-      json['addresses'].forEach((v) {
-        addresses!.add(Addresses.fromJson(v));
-      });
-    }
-
-    if (json['documents'] != null) {
+    if (json['Documents'] != null) {
       documents = [];
-      json['documents'].forEach((v) {
+      json['Documents'].forEach((v) {
         documents!.add(Documents.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['user_key'] = userKey;
-    data['user_type'] = userType;
-    data['username'] = username;
-    data['name'] = name;
-    data['email'] = email;
-    data['mobile'] = mobile;
-    data['dp_image'] = dpImage;
-    data['banner_image'] = bannerImage;
-    data['referral_code'] = referralCode;
-    data['dp_image_url'] = dpImageUrl;
-    data['banner_image_url'] = bannerImageUrl;
+    final data = <String, dynamic>{};
 
-    if (bankAccounts != null) {
-      data['bank_accounts'] = bankAccounts!.map((v) => v.toJson()).toList();
+    if (hidden != null) data['hidden'] = hidden!.toJson();
+    if (dp != null) data['dp'] = dp!.toJson();
+    if (banner != null) data['banner'] = banner!.toJson();
+    if (basicInfo != null) data['Basic Info'] = basicInfo!.toJson();
+
+    if (address != null) {
+      data['Address'] = address!.map((e) => e.toJson()).toList();
     }
-    if (addresses != null) {
-      data['addresses'] = addresses!.map((v) => v.toJson()).toList();
-    }
+
     if (documents != null) {
-      data['documents'] = documents!.map((v) => v.toJson()).toList();
+      data['Documents'] = documents!.map((e) => e.toJson()).toList();
     }
 
     return data;
   }
 }
 
-// ---------------- BANK ACCOUNT MODEL ----------------
-class BankAccount {
-  String? accountNumber;
-  String? bankName;
-  String? ifsc;
+class Hidden {
+  String? userKey;
+  String? referralCode;
+  String? walletBalance;
 
-  BankAccount({this.accountNumber, this.bankName, this.ifsc});
+  Hidden({this.userKey, this.referralCode, this.walletBalance});
 
-  BankAccount.fromJson(Map<String, dynamic> json) {
-    accountNumber = json['account_number'];
-    bankName = json['bank_name'];
-    ifsc = json['ifsc'];
+  Hidden.fromJson(Map<String, dynamic> json) {
+    userKey = json['user_key'];
+    referralCode = json['referral_code'];
+    walletBalance = json['wallet_balance'];
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'account_number': accountNumber,
-      'bank_name': bankName,
-      'ifsc': ifsc,
+      'user_key': userKey,
+      'referral_code': referralCode,
+      'wallet_balance': walletBalance,
     };
   }
 }
 
-// ---------------- ADDRESS MODEL ----------------
-class Addresses {
-  String? addressKey;
-  String? addressType;
-  String? fullAddress;
-  String? latitude;
-  String? longitude;
-  int? isDefault;
+class DP {
+  String? dp;
 
-  Addresses({
-    this.addressKey,
-    this.addressType,
-    this.fullAddress,
-    this.latitude,
-    this.longitude,
-    this.isDefault,
+  DP({this.dp});
+
+  DP.fromJson(Map<String, dynamic> json) {
+    dp = json['DP'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'DP': dp};
+  }
+}
+
+class BannerImage {
+  String? banner;
+
+  BannerImage({this.banner});
+
+  BannerImage.fromJson(Map<String, dynamic> json) {
+    banner = json['Banner'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'Banner': banner};
+  }
+}
+
+class BasicInfo {
+  String? userType;
+  String? name;
+  String? username;
+  String? mobile;
+  String? email;
+
+  BasicInfo({
+    this.userType,
+    this.name,
+    this.username,
+    this.mobile,
+    this.email,
   });
 
-  Addresses.fromJson(Map<String, dynamic> json) {
-    addressKey = json['address_key'];
-    addressType = json['address_type'];
-    fullAddress = json['full_address'];
-    latitude = json['latitude'];
-    longitude = json['longitude'];
-    isDefault = json['is_default'];
+  BasicInfo.fromJson(Map<String, dynamic> json) {
+    userType = json['User Type'];
+    name = json['Name'];
+    username = json['Username'];
+    mobile = json['Mobile'];
+    email = json['Email'];
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'address_key': addressKey,
-      'address_type': addressType,
-      'full_address': fullAddress,
-      'latitude': latitude,
-      'longitude': longitude,
-      'is_default': isDefault,
+      'User Type': userType,
+      'Name': name,
+      'Username': username,
+      'Mobile': mobile,
+      'Email': email,
     };
   }
 }
 
-// ---------------- DOCUMENTS MODEL ----------------
+class Address {
+  String? type;
+  String? address;
+  String? isDefault;
+
+  Address({this.type, this.address, this.isDefault});
+
+  Address.fromJson(Map<String, dynamic> json) {
+    type = json['Type'];
+    address = json['Address'];
+    isDefault = json['Default'];
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'Type': type,
+      'Address': address,
+      'Default': isDefault,
+    };
+  }
+}
+
 class Documents {
-  String? docKey;
-  String? documentKey;
-  String? documentValue;
-  String? documentUrl;
-  int? isVerified;
-  String? documentUrlFull;
+  String? name;
+  String? number;
+  String? image;
+  String? verified;
 
   Documents({
-    this.docKey,
-    this.documentKey,
-    this.documentValue,
-    this.documentUrl,
-    this.isVerified,
-    this.documentUrlFull,
+    this.name,
+    this.number,
+    this.image,
+    this.verified,
   });
 
   Documents.fromJson(Map<String, dynamic> json) {
-    docKey = json['doc_key'];
-    documentKey = json['document_key'];
-    documentValue = json['document_value'];
-    documentUrl = json['document_url'];
-    isVerified = json['is_verified'];
-    documentUrlFull = json['document_url_full'];
+    name = json['Name'];
+    number = json['Number']; // may be null
+    image = json['Image'];   // may be null
+    verified = json['Verified'];
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'doc_key': docKey,
-      'document_key': documentKey,
-      'document_value': documentValue,
-      'document_url': documentUrl,
-      'is_verified': isVerified,
-      'document_url_full': documentUrlFull,
+      'Name': name,
+      'Number': number,
+      'Image': image,
+      'Verified': verified,
     };
   }
 }
