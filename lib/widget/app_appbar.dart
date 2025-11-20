@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../models/App_moduls/AppResponseModel.dart';
@@ -32,10 +34,22 @@ class CustomHeader extends StatelessWidget {
               decoration: const BoxDecoration(shape: BoxShape.circle),
               child: ClipOval(
                 child: images.isNotEmpty
-                    ? Image.network(
-                  images,
+                    ? CachedNetworkImage(
+                  imageUrl: images,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
+                  placeholder: (context, url) => Shimmer.fromColors(
+                    baseColor: AppColors.simmerColor,
+                    highlightColor: AppColors.appWhite,
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration:  BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.appWhite,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) {
                     return Image.asset(
                       'assets/images/profilepic2.png',
                       fit: BoxFit.cover,

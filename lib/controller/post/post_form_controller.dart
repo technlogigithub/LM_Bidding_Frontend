@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../core/utils.dart';
 import '../app_main/App_main_controller.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../../core/app_constant.dart';
@@ -166,7 +167,7 @@ class PostFormController extends GetxController {
         }
       } catch (e) {
         isLoading.value = false;
-        Get.snackbar('Error', 'Failed to save step data: $e');
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message:  'Failed to save step data: $e');
         return;
       }
       isLoading.value = false;
@@ -242,7 +243,8 @@ class PostFormController extends GetxController {
       final token = prefs.getString('auth_token');
 
       if (token == null) {
-        Get.snackbar('Error', 'Authentication token not found');
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Authentication token not found');
+
         return false;
       }
 
@@ -335,15 +337,16 @@ class PostFormController extends GetxController {
       print('Step ${step + 1} API Response: $decodedResponse');
 
       if (response.statusCode == 200 && decodedResponse['success'] == true) {
-        Get.snackbar('Success', 'Step ${step + 1} data saved successfully');
+        Utils.showSnackbar(isSuccess: true, title: 'Success', message: 'Step ${step + 1} data saved successfully');
         return true;
       } else {
-        Get.snackbar('Error', decodedResponse['message'] ?? 'Failed to save step data');
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: decodedResponse['message'] ?? 'Failed to save step data');
         return false;
       }
     } catch (e) {
       print('Step API Error: $e');
-      Get.snackbar('Error', 'Failed to save step data: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to save step data: $e');
+
       return false;
     }
   }
@@ -408,7 +411,8 @@ class PostFormController extends GetxController {
       if (hasMultipleMarker) {
         final list = multiStepEntries[currentStep.value] ?? const [];
         if (list.isEmpty) {
-          Get.snackbar('Validation Error', 'Please add at least one item before proceeding');
+          Utils.showSnackbar(isSuccess: false, title: 'Validation Error', message:  'Please add at least one item before proceeding');
+
           return false;
         }
         return true;
@@ -436,7 +440,8 @@ class PostFormController extends GetxController {
       // Force UI update to show errors immediately
       formErrors.refresh();
       update(['form_content']);
-      Get.snackbar('Validation Error', 'Please fix the errors before submitting');
+      Utils.showSnackbar(isSuccess: false, title: 'Validation Error', message:  'Please fix the errors before submitting');
+
       return;
     }
 
@@ -450,11 +455,13 @@ class PostFormController extends GetxController {
       // Submit only current step data with step_no formatting like nextStep
       final success = await _callStepApi(submitUrl, currentStep.value);
       if (success) {
-        Get.snackbar('Success', 'Post created successfully');
+
+        Utils.showSnackbar(isSuccess: true, title: 'Success', message: 'Post created successfully');
         Get.back();
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message:  'An error occurred: $e');
+
     } finally {
       isLoading.value = false;
     }

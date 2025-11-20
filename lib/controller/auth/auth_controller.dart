@@ -14,6 +14,7 @@ import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
 import '../../view/auth/otp_varification_screen.dart';
 import '../app_main/App_main_controller.dart';
 import '../home/home_controller.dart';
+import '../profile/profile_controller.dart';
 
 
 class AuthController extends GetxController {
@@ -38,6 +39,7 @@ class AuthController extends GetxController {
 
   final ClientHomeController homecontroller = Get.put(ClientHomeController());
   final appController = Get.find<AppSettingsController>();
+  final profilecontroller = Get.put(ProfileController());
 
 
   @override
@@ -86,6 +88,7 @@ class AuthController extends GetxController {
         passwordController.clear();
         homecontroller.checkLoginStatus();
         appController.fetchAppContent();
+        profilecontroller.fetchProfileDetails();
         // homecontroller.fetchBanner();
         // homecontroller.fetchCategory();
         Utils.gotoNextPage(() => BottomNavigationScreen(),);

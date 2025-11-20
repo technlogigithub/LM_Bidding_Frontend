@@ -106,6 +106,8 @@ class AppSettingsController extends GetxController {
   Rx<ProfileFormPage?> profileFormPage = Rx<ProfileFormPage?>(null);
   // Post Form page (dynamic)
   Rx<ProfileFormPage?> postFormPage = Rx<ProfileFormPage?>(null);
+  Rx<HomePage?> homePage = Rx<HomePage?>(null);
+  Rx<HeaderMenuSection?> homePageheader = Rx<HeaderMenuSection?>(null);
 
   // Languages
   RxList<Language> availableLanguages = <Language>[].obs;
@@ -231,6 +233,9 @@ class AppSettingsController extends GetxController {
         if (referral.value != null) {
           await saveLoginRequiredStatusforinvite(referral.value?.loginRequired);
         }
+        if (settings.value != null) {
+          await saveLoginRequiredStatusforsetting(settings.value?.loginRequired);
+        }
 
         /// Intro Sliders
         introSliders.assignAll(result?.introSlider ?? []);
@@ -308,6 +313,8 @@ class AppSettingsController extends GetxController {
         loginWithOtpPage.value = parsed.result?.loginWithOtp;
         verifyOtpPage.value = parsed.result?.verifyOtp;
         profileFormPage.value = parsed.result?.profileForm;
+        homePage.value = parsed.result?.homePage;
+        homePageheader.value = parsed.result?.homePage?.design?.headerMenu;
 
         if (parsed.result?.profileForm != null) {
           profileFormPage.value = parsed.result?.profileForm;
@@ -505,6 +512,10 @@ class AppSettingsController extends GetxController {
   Future<void> saveLoginRequiredStatusforinvite(bool? value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('invite_login_required', value ?? false);
+  }
+  Future<void> saveLoginRequiredStatusforsetting(bool? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('setting_login_required', value ?? false);
   }
 
   Future<String?> getAuthToken() async {

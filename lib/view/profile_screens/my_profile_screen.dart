@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:libdding/widget/form_widgets/app_button.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../controller/profile/edit_profile_controller.dart';
 import 'dynamic_profile_form_screen.dart';
@@ -84,7 +85,7 @@ class SetupClientProfileView extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return _buildShimmerLoading(context, screenWidth);
         }
 
         final rawData = controller.profileDetailsResponeModel.value?.result?.rawData;
@@ -185,15 +186,16 @@ class SetupClientProfileView extends StatelessWidget {
                                     fit: BoxFit.cover,
                                     width: 80.w,
                                     height: 80.h,
-                                    placeholder: (context, url) => Container(
-                                      width: 80.w,
-                                      height: 80.h,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.grey,
-                                      ),
-                                      child: Center(
-                                        child: CircularProgressIndicator(strokeWidth: 2.w),
+                                    placeholder: (context, url) => Shimmer.fromColors(
+                                      baseColor: AppColors.simmerColor,
+                                      highlightColor: AppColors.appWhite,
+                                      child: Container(
+                                        width: 80.w,
+                                        height: 80.h,
+                                        decoration:  BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: AppColors.appWhite,
+                                        ),
                                       ),
                                     ),
                                     errorWidget: (context, url, error) {
@@ -209,7 +211,7 @@ class SetupClientProfileView extends StatelessWidget {
                                           Icons.person,
                                           size: 50.sp,
                                           color: Colors.white,
-                                        ),
+                                        )
                                       );
                                     },
                                   )
@@ -286,8 +288,17 @@ class SetupClientProfileView extends StatelessWidget {
                               child: CachedNetworkImage(
                                 imageUrl: bannerUrl,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2.w),
+                                placeholder: (context, url) => Shimmer.fromColors(
+                                  baseColor: AppColors.simmerColor,
+                                  highlightColor: AppColors.appWhite,
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 100.h,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.appWhite,
+                                      borderRadius: BorderRadius.circular(10.r),
+                                    ),
+                                  ),
                                 ),
                                 errorWidget: (context, url, error) => Icon(
                                   Icons.image,
@@ -475,12 +486,9 @@ class SetupClientProfileView extends StatelessWidget {
     }
 
     // -----------------------------
-    // CASE 2: DOCUMENTS SECTION - All items in a single card
+    // CASE 2: DOCUMENTS SECTION - Each document in its own card
     // -----------------------------
     if (sectionKey.toLowerCase() == "documents") {
-      // Collect all document widgets first
-      final documentWidgets = <Widget>[];
-      
       for (var item in sectionArray) {
         if (item is! Map) continue;
 
@@ -491,93 +499,116 @@ class SetupClientProfileView extends StatelessWidget {
         final hasNumber = number.isNotEmpty;
 
         // -----------------------------
-        // CASE A: Name + Image
+        // CASE A: Name + Image - Each in its own card
         // -----------------------------
         if (name.isNotEmpty && hasImage) {
-          documentWidgets.add(
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.h),
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRowDoc(name,context),
+                  _buildInfoRowDoc(name, context),
                   _buildDocumentImage(imageUrl, "", context),
                 ],
               ),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
 
         // -----------------------------
-        // CASE B: Name + Number
+        // CASE B: Name + Number - Each in its own card
         // -----------------------------
         if (name.isNotEmpty && hasNumber && !hasImage) {
-          documentWidgets.add(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow("Name", name, context),
-                _buildInfoRow("Number", number, context),
-                SizedBox(height: 10.h),
-              ],
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Name", name, context),
+                  _buildInfoRow("Number", number, context),
+                ],
+              ),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
 
         // -----------------------------
-        // CASE C: Only Image
+        // CASE C: Only Image - Each in its own card
         // -----------------------------
         if (hasImage && name.isEmpty) {
-          documentWidgets.add(
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.h),
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: _buildDocumentImage(imageUrl, "", context),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
 
         // -----------------------------
-        // CASE D: Only Number
+        // CASE D: Only Number - Each in its own card
         // -----------------------------
         if (hasNumber && name.isEmpty) {
-          documentWidgets.add(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow("Number", number, context),
-                SizedBox(height: 15.h),
-              ],
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _buildInfoRow("Number", number, context),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
-      }
-
-      // Wrap all documents in a single card
-      if (documentWidgets.isNotEmpty) {
-        widgets.add(
-          Container(
-            padding: EdgeInsets.all(15.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: documentWidgets,
-            ),
-          ),
-        );
       }
 
       widgets.add(SizedBox(height: 25.h));
@@ -748,8 +779,17 @@ class SetupClientProfileView extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: url,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Center(
-                  child: CircularProgressIndicator(strokeWidth: 2.w),
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: AppColors.simmerColor,
+                  highlightColor: AppColors.appWhite,
+                  child: Container(
+                    width: double.infinity,
+                    height: 200.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.appWhite,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Icon(Icons.error, size: 24.sp),
               ),
@@ -765,6 +805,158 @@ class SetupClientProfileView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildShimmerLoading(BuildContext context, double screenWidth) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: screenWidth > 1200 ? 1200.0 : screenWidth),
+        child: Padding(
+          padding: EdgeInsets.only(top: 20.h),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30.r),
+                topRight: Radius.circular(30.r),
+              ),
+            ),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Profile Picture Shimmer
+                  Center(
+                    child: Shimmer.fromColors(
+                      baseColor: AppColors.simmerColor,
+                      highlightColor: AppColors.appWhite,
+                      child: Container(
+                        height: 80.h,
+                        width: 80.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.appWhite,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  // Banner Shimmer
+                  Shimmer.fromColors(
+                    baseColor: AppColors.simmerColor,
+                    highlightColor: AppColors.appWhite,
+                    child: Container(
+                      height: 100.h,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.appWhite,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 25.h),
+                  // Section Shimmer
+                  ...List.generate(3, (index) => Padding(
+                    padding: EdgeInsets.only(bottom: 22.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section Title Shimmer
+                        Shimmer.fromColors(
+                          baseColor: AppColors.simmerColor,
+                          highlightColor: AppColors.appWhite,
+                          child: Container(
+                            height: 20.h,
+                            width: 150.w,
+                            decoration: BoxDecoration(
+                              color: AppColors.appWhite,
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        // Card Shimmer
+                        Container(
+                          padding: EdgeInsets.all(15.w),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: List.generate(3, (itemIndex) => Padding(
+                              padding: EdgeInsets.only(bottom: 10.h),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    flex: 2,
+                                    child: Shimmer.fromColors(
+                                      baseColor: AppColors.simmerColor,
+                                      highlightColor: AppColors.appWhite,
+                                      child: Container(
+                                        height: 14.h,
+                                        width: 80.w,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.appWhite,
+                                          borderRadius: BorderRadius.circular(4.r),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 4,
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          ":",
+                                          style: AppTextStyle.kTextStyle.copyWith(
+                                            color: AppColors.subTitleColor,
+                                            fontSize: 14.sp,
+                                          ),
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Expanded(
+                                          child: Shimmer.fromColors(
+                                            baseColor: AppColors.simmerColor,
+                                            highlightColor: AppColors.appWhite,
+                                            child: Container(
+                                              height: 14.h,
+                                              width: double.infinity,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.appWhite,
+                                                borderRadius: BorderRadius.circular(4.r),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

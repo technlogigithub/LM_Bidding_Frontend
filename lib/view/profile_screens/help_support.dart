@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../controller/app_main/App_main_controller.dart';
@@ -47,14 +48,28 @@ class HelpSupport extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
 
-                color: AppColors.appColor.withOpacity(0.15),
+                color: AppColors.appColor.withValues(alpha: 0.15),
               ),
               clipBehavior: Clip.antiAlias,
               child: (support?.pageImage != null &&
                   support!.pageImage!.isNotEmpty)
-                  ? Image.network(
-                support.pageImage!,
+                  ? CachedNetworkImage(
+                imageUrl: support.pageImage!,
                 fit: BoxFit.cover,
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: AppColors.simmerColor,
+                  highlightColor: AppColors.appWhite,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: AppColors.appWhite,
+                  ),
+                ),
+                errorWidget: (context, url, error) => Icon(
+                  Icons.help_outline,
+                  size: screenHeight * 0.1,
+                  color: AppColors.appColor,
+                ),
               )
                   : Icon(
                 Icons.help_outline,
@@ -77,7 +92,7 @@ class HelpSupport extends StatelessWidget {
 
                   // Title from support.title
                   Text(
-                    support?.title ?? "Contact Us",
+                    support?.title ?? "",
                     style: TextStyle(
                       fontSize: screenHeight * 0.03,
                       color: AppColors.appTextColor,
@@ -91,8 +106,7 @@ class HelpSupport extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      support?.description ?? "If you need any help or facing any issue, feel free to contact us. "
-                          "We are always here to help you!",
+                      support?.description ?? "",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: screenHeight * 0.02,
@@ -249,9 +263,14 @@ class HelpSupport extends StatelessWidget {
           child: CachedNetworkImage(
             imageUrl: hasUrl ? iconUrl! : AppImage.placeholder,
             fit: BoxFit.contain,
-            placeholder: (context, url) => Image.asset(
-              AppImage.placeholder,
-              fit: BoxFit.contain,
+            placeholder: (context, url) => Shimmer.fromColors(
+              baseColor: AppColors.simmerColor,
+              highlightColor: AppColors.appWhite,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: AppColors.appWhite,
+              ),
             ),
             errorWidget: (context, url, error) => Image.asset(
               AppImage.placeholder,
@@ -268,31 +287,34 @@ class HelpSupport extends StatelessWidget {
       double screenHeight, double screenWidth, String? iconUrl, VoidCallback onTap) {
     bool hasUrl = iconUrl != null && iconUrl.isNotEmpty;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: screenHeight * 0.08,
-        width: screenWidth * 0.17,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: AppColors.appWhite,
-          border: Border.all(
-            color: AppColors.subTitleColor.withOpacity(0.6),
-            width: 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CachedNetworkImage(
-            imageUrl: hasUrl ? iconUrl! : AppImage.placeholder,
-            fit: BoxFit.contain,
-            placeholder: (context, url) => Image.asset(
-              AppImage.placeholder,
-              fit: BoxFit.contain,
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: screenHeight * 0.08,
+          width: screenWidth * 0.17,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.appWhite,
+            border: Border.all(
+              color: AppColors.subTitleColor.withOpacity(0.6),
+              width: 1,
             ),
-            errorWidget: (context, url, error) => Image.asset(
-              AppImage.placeholder,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CachedNetworkImage(
+              imageUrl: hasUrl ? iconUrl! : AppImage.placeholder,
               fit: BoxFit.contain,
+              placeholder: (context, url) => Image.asset(
+                AppImage.placeholder,
+                fit: BoxFit.contain,
+              ),
+              errorWidget: (context, url, error) => Image.asset(
+                AppImage.placeholder,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),

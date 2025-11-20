@@ -4,12 +4,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../controller/profile/edit_profile_controller.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/home/home_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../core/app_string.dart';
+import '../../core/utils.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/form_widgets/reusable_location_picker.dart';
@@ -72,6 +74,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           return const Center(
             child: Text('Profile form configuration not available'),
           );
+        }
+
+        // Show shimmer when loading/prefilling data
+        if (controller.isLoading.value) {
+          return _buildShimmerLoading(screenHeight);
         }
 
         return SingleChildScrollView(
@@ -211,7 +218,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
   // Helper method to check if current step is address step based on step_titles
   bool _isAddressStep(String? stepTitle) {
     if (stepTitle == null) return false;
-    return stepTitle.toLowerCase().contains('address');
+    return stepTitle.toLowerCase().contains('address') || stepTitle.toLowerCase().contains("पता विवरण");
   }
 
   // Helper method to check if current step is document step based on step_titles
@@ -240,7 +247,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    title ?? 'Addresses',
+                    title ?? '',
                     style: TextStyle(
                       color: Color(0xFF1D1D1D),
                       fontWeight: FontWeight.bold,
@@ -632,6 +639,109 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     });
   }
 
+  Widget _buildShimmerLoading(double screenHeight) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Page Description Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
+            child: Container(
+              height: 20,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Progress Bar Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
+            child: Container(
+              height: 8,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Step Title Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
+            child: Container(
+              height: 24,
+              width: 200,
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          // Form Fields Shimmer
+          ...List.generate(5, (index) => Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Label Shimmer
+                Shimmer.fromColors(
+                  baseColor: AppColors.simmerColor,
+                  highlightColor: AppColors.appWhite,
+                  child: Container(
+                    height: 16,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: AppColors.appWhite,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Input Field Shimmer
+                Shimmer.fromColors(
+                  baseColor: AppColors.simmerColor,
+                  highlightColor: AppColors.appWhite,
+                  child: Container(
+                    height: 50,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.appWhite,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )),
+          const SizedBox(height: 30),
+          // Button Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
+            child: Container(
+              height: 50,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 Future<void> _openInGoogleMaps({double? lat, double? lng, String? queryAddress}) async {
@@ -933,7 +1043,8 @@ class _AddressDialogState extends State<AddressDialog> {
         _addressData['landmark'] = landmark;
       });
     } catch (e) {
-      Get.snackbar('Error', 'Failed to get current location: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to get current location: $e');
+
     }
   }
 

@@ -90,13 +90,13 @@ class Invitescreen extends StatelessWidget {
 
   Widget shimmerBox(double height, double width) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
+      baseColor: AppColors.simmerColor,
+      highlightColor: AppColors.appWhite,
       child: Container(
         height: height,
         width: width,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.appWhite,
           borderRadius: BorderRadius.circular(12),
         ),
       ),
@@ -124,9 +124,23 @@ class Invitescreen extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: (referral?.pageImage != null &&
                 referral!.pageImage!.isNotEmpty)
-                ? Image.network(
-              referral.pageImage!,
+                ? CachedNetworkImage(
+              imageUrl: referral.pageImage!,
               fit: BoxFit.cover,
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: AppColors.simmerColor,
+                highlightColor: AppColors.appWhite,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: AppColors.appWhite,
+                ),
+              ),
+              errorWidget: (context, url, error) => Icon(
+                Icons.group_add_outlined,
+                size: screenHeight * 0.1,
+                color: AppColors.appColor,
+              ),
             )
                 : Icon(
               Icons.group_add_outlined,
@@ -294,23 +308,35 @@ class Invitescreen extends StatelessWidget {
   // ⭐ SOCIAL ICON BOX
   // ---------------------------------------------------------------------------
   Widget helpBoxWithImage(double sh, double sw, String? iconUrl, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: sh * 0.08,
-        width: sw * 0.17,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: AppColors.appWhite,
-          border: Border.all(color: Colors.grey.shade400),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CachedNetworkImage(
-            imageUrl: iconUrl ?? AppImage.placeholder,
-            fit: BoxFit.contain,
-            errorWidget: (_, __, ___) =>
-                Image.asset(AppImage.placeholder, fit: BoxFit.contain),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: sh * 0.08,
+          width: sw * 0.17,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.appWhite,
+            border: Border.all(color: Colors.grey.shade400),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CachedNetworkImage(
+              imageUrl: iconUrl ?? AppImage.placeholder,
+              fit: BoxFit.contain,
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: AppColors.simmerColor,
+                highlightColor: AppColors.appWhite,
+                child: Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: AppColors.appWhite,
+                ),
+              ),
+              errorWidget: (_, __, ___) =>
+                  Image.asset(AppImage.placeholder, fit: BoxFit.contain),
+            ),
           ),
         ),
       ),

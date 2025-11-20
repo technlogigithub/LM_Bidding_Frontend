@@ -7,7 +7,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../core/utils.dart';
 import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
+import '../../view/profile_screens/my_profile_screen.dart';
 import '../app_main/App_main_controller.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
@@ -585,7 +587,8 @@ class SetupProfileController extends GetxController {
         }
       } catch (e) {
         isLoading.value = false;
-        Get.snackbar('Error', 'Failed to save step data: $e');
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to save step data: $e');
+
         return;
       }
       isLoading.value = false;
@@ -621,7 +624,7 @@ class SetupProfileController extends GetxController {
       final token = prefs.getString('auth_token');
 
       if (token == null) {
-        Get.snackbar('Error', 'Authentication token not found');
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Authentication token not found');
         return false;
       }
 
@@ -814,7 +817,7 @@ class SetupProfileController extends GetxController {
       print('Step ${step + 1} API Response: $decodedResponse');
 
       if (response.statusCode == 200 && decodedResponse['success'] == true) {
-        Get.snackbar('Success', 'Step ${step + 1} data saved successfully');
+        Utils.showSnackbar(isSuccess: true, title: 'Success', message: 'Step ${step + 1} data saved successfully');
         //
         // if (profileForm?.autoForward == true) {
         //   showNextButtonFromAuto.value = true; // ✅ correct Rx update
@@ -834,12 +837,12 @@ class SetupProfileController extends GetxController {
 
         return true;
       } else {
-        Get.snackbar('Error', decodedResponse['message'] ?? 'Failed to save step data');
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: decodedResponse['message'] ?? 'Failed to save step data');
         return false;
       }
     } catch (e) {
       print('Step API Error: $e');
-      Get.snackbar('Error', 'Failed to save step data: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to save step data: $e');
       return false;
     }
   }
@@ -918,7 +921,7 @@ class SetupProfileController extends GetxController {
       print('Address step validation - addresses count: ${addresses.length}');
       // For address step, we only validate that at least one address is added
       if (addresses.isEmpty) {
-        Get.snackbar('Validation Error', 'Please add at least one address before proceeding');
+        Utils.showSnackbar(isSuccess: false, title: 'Validation Error', message: 'Please add at least one address before proceeding');
         return false;
       }
       return true;
@@ -940,7 +943,7 @@ class SetupProfileController extends GetxController {
       if (hasMultipleMarker) {
         final list = multiStepEntries[currentStep.value] ?? const [];
         if (list.isEmpty) {
-          Get.snackbar('Validation Error', 'Please add at least one item before proceeding');
+          Utils.showSnackbar(isSuccess: false, title: 'Validation Error', message: 'Please add at least one item before proceeding');
           return false;
         }
         return true;
@@ -982,7 +985,8 @@ class SetupProfileController extends GetxController {
       // Force UI update to show errors immediately
       formErrors.refresh();
       update(['form_content']);
-      Get.snackbar('Validation Error', 'Please fix the errors before submitting');
+      Utils.showSnackbar(isSuccess: false, title: 'Validation Error', message: "Please fix the errors before submitting");
+
       return;
     }
 
@@ -996,13 +1000,14 @@ class SetupProfileController extends GetxController {
       // Submit only current step data with step_no formatting like nextStep
       final success = await _callStepApi(submitUrl, currentStep.value);
       if (success) {
-        Get.snackbar('Success', 'Profile updated successfully');
+        Utils.showSnackbar(isSuccess: true, title: 'Success', message: 'Profile updated successfully');
+
         profilecontroller.fetchProfileDetails();
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => BottomNavigationScreen(),));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SetupClientProfileView(),));
 
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message:'An error occurred: $e');
     } finally {
       isLoading.value = false;
     }
@@ -1075,7 +1080,8 @@ class SetupProfileController extends GetxController {
         if (!cameraStatus.isGranted) {
           final status = await Permission.camera.request();
           if (!status.isGranted) {
-            Get.snackbar('Permission Required', 'Camera permission is required for taking photos');
+            Utils.showSnackbar(isSuccess: false, title: 'Permission Required', message: 'Camera permission is required for taking photos');
+
             return false;
           }
         }
@@ -1092,8 +1098,7 @@ class SetupProfileController extends GetxController {
 
       final storageResult = await Permission.storage.request();
       if (storageResult.isGranted) return true;
-
-      Get.snackbar('Permission Required', 'Storage or media permissions are required to pick images');
+      Utils.showSnackbar(isSuccess: false, title: 'Permission Required', message: 'Storage or media permissions are required to pick images');
       return false;
     }
     return true;
@@ -1108,7 +1113,8 @@ class SetupProfileController extends GetxController {
         imageField.value = File(file.path);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Error picking image: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Error picking image: $e');
+
     }
   }
 
@@ -1186,7 +1192,8 @@ class SetupProfileController extends GetxController {
       final token = prefs.getString('auth_token');
 
       if (token == null) {
-        Get.snackbar('Error', 'Authentication token not found');
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Authentication token not found');
+
         return;
       }
 
@@ -1205,7 +1212,7 @@ class SetupProfileController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch profile: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message:'Failed to fetch profile: $e');
     } finally {
       isLoading.value = false;
     }
@@ -1258,11 +1265,12 @@ class SetupProfileController extends GetxController {
       // Convert to use GetX observables
 
       await Future.delayed(const Duration(seconds: 2)); // Mock API call
+      Utils.showSnackbar(isSuccess: true, title: "Success", message: 'Profile updated successfully');
 
-      Get.snackbar('Success', 'Profile updated successfully');
       return true;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to submit profile: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to submit profile: $e');
+
       return false;
     } finally {
       isLoading.value = false;
