@@ -10,6 +10,7 @@ import '../../controller/home/home_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../core/app_string.dart';
+import '../../core/utils.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/form_widgets/reusable_location_picker.dart';
@@ -211,7 +212,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
   // Helper method to check if current step is address step based on step_titles
   bool _isAddressStep(String? stepTitle) {
     if (stepTitle == null) return false;
-    return stepTitle.toLowerCase().contains('address');
+    return stepTitle.toLowerCase().contains('address') || stepTitle.toLowerCase().contains("पता विवरण");
   }
 
   // Helper method to check if current step is document step based on step_titles
@@ -240,7 +241,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    title ?? 'Addresses',
+                    title ?? '',
                     style: TextStyle(
                       color: Color(0xFF1D1D1D),
                       fontWeight: FontWeight.bold,
@@ -933,7 +934,8 @@ class _AddressDialogState extends State<AddressDialog> {
         _addressData['landmark'] = landmark;
       });
     } catch (e) {
-      Get.snackbar('Error', 'Failed to get current location: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to get current location: $e');
+
     }
   }
 

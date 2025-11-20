@@ -231,6 +231,9 @@ class AppSettingsController extends GetxController {
         if (referral.value != null) {
           await saveLoginRequiredStatusforinvite(referral.value?.loginRequired);
         }
+        if (settings.value != null) {
+          await saveLoginRequiredStatusforsetting(settings.value?.loginRequired);
+        }
 
         /// Intro Sliders
         introSliders.assignAll(result?.introSlider ?? []);
@@ -505,6 +508,10 @@ class AppSettingsController extends GetxController {
   Future<void> saveLoginRequiredStatusforinvite(bool? value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('invite_login_required', value ?? false);
+  }
+  Future<void> saveLoginRequiredStatusforsetting(bool? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('setting_login_required', value ?? false);
   }
 
   Future<String?> getAuthToken() async {

@@ -4,6 +4,7 @@ import 'package:libdding/widget/form_widgets/app_button.dart';
 import '../../controller/review/review_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_constant.dart' as AppTextStyle;
+import '../../core/utils.dart';
 import '../../widget/review_form_container.dart';
 
 class ReviewScreen extends StatelessWidget {
@@ -44,7 +45,7 @@ class ReviewScreen extends StatelessWidget {
               if (controller.rating.value > 0 && controller.comment.value.isNotEmpty) {
                 controller.showSuccessDialog();
               } else {
-                Get.snackbar('Error', 'Please add rating and comment');
+                Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Please add rating and comment');
               }
             },
             text: 'Published Review',

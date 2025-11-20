@@ -8,6 +8,7 @@ import 'package:libdding/core/app_constant.dart';
 import 'package:libdding/view/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api_config.dart';
+import '../../core/utils.dart';
 import '../../models/home/banner_response_model.dart';
 import '../../models/home/category_response_model.dart';
 import '../../models/static models/service_items_model.dart';
@@ -243,7 +244,8 @@ class ClientHomeController extends GetxController {
     } catch (e) {
       print('Error fetching location: $e');
       currentLocation.value = 'Unable to fetch location';
-      Get.snackbar('Error', 'Failed to fetch location: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to fetch location: $e');
+
     }
   }
 
@@ -315,7 +317,8 @@ class ClientHomeController extends GetxController {
     } catch (e, stack) {
       print('❌ Error fetching categories: $e');
       print(stack);
-      Get.snackbar('Error', 'Failed to load categories: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to load categories: $e');
+
     } finally {
       isLoading.value = false; // Set loading to false
     }
@@ -360,7 +363,8 @@ class ClientHomeController extends GetxController {
       }
     } catch (e) {
       print('❌ Error fetching banners: $e');
-      Get.snackbar('Error', 'Failed to load banners: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to load banners: $e');
+
     }
   }
 
@@ -383,7 +387,7 @@ class ClientHomeController extends GetxController {
         print(post);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load live posts: $e');
+      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to load live posts: $e');
     }
   }
 

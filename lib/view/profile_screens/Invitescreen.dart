@@ -294,23 +294,26 @@ class Invitescreen extends StatelessWidget {
   // ⭐ SOCIAL ICON BOX
   // ---------------------------------------------------------------------------
   Widget helpBoxWithImage(double sh, double sw, String? iconUrl, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: sh * 0.08,
-        width: sw * 0.17,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: AppColors.appWhite,
-          border: Border.all(color: Colors.grey.shade400),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CachedNetworkImage(
-            imageUrl: iconUrl ?? AppImage.placeholder,
-            fit: BoxFit.contain,
-            errorWidget: (_, __, ___) =>
-                Image.asset(AppImage.placeholder, fit: BoxFit.contain),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: sh * 0.08,
+          width: sw * 0.17,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.appWhite,
+            border: Border.all(color: Colors.grey.shade400),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CachedNetworkImage(
+              imageUrl: iconUrl ?? AppImage.placeholder,
+              fit: BoxFit.contain,
+              errorWidget: (_, __, ___) =>
+                  Image.asset(AppImage.placeholder, fit: BoxFit.contain),
+            ),
           ),
         ),
       ),

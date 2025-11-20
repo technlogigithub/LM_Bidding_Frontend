@@ -13,6 +13,7 @@ import '../../core/app_string.dart';
 import '../../widget/app_appbar.dart';
 import '../seller screen/buyer request/seller_buyer_request.dart';
 import 'Invitescreen.dart';
+import 'Setting_screen.dart';
 import 'help_support.dart';
 import 'my_profile_screen.dart';
 class ProfileScreen extends StatelessWidget {
@@ -25,6 +26,7 @@ class ProfileScreen extends StatelessWidget {
     final appController = Get.find<AppSettingsController>();
     final support = appController.support.value;
     final referral = appController.referral.value;
+    final setting = appController.settings.value;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final Color text=AppColors.textgrey;
@@ -400,7 +402,31 @@ class ProfileScreen extends StatelessWidget {
                       color: text,
                     ),
                   ),
-                  ListTile(
+                  setting != null && referral?.isActive == true
+                      ?ListTile(
+                    onTap: () async {
+                      final prefs = await SharedPreferences.getInstance();
+
+                      final bool isLoginRequired = prefs.getBool('setting_login_required') ?? true;
+                      final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+                      if (isLoginRequired && !isLoggedIn) {
+                        // 🔒 Go to Login Screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => LoginScreen()),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>SettingScreen(),
+                          ),
+                        );
+
+
+                      }
+                    },
                     // onTap: () => const ClientSetting().launch(context),
                     visualDensity: const VisualDensity(vertical: -3),
                     horizontalTitleGap: 10,
@@ -426,7 +452,7 @@ class ProfileScreen extends StatelessWidget {
                       FeatherIcons.chevronRight,
                       color: text,
                     ),
-                  ),
+                  ):const SizedBox.shrink(),
 
                   referral != null && referral.isActive == true
                       ? ListTile(

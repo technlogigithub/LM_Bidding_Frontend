@@ -475,12 +475,9 @@ class SetupClientProfileView extends StatelessWidget {
     }
 
     // -----------------------------
-    // CASE 2: DOCUMENTS SECTION - All items in a single card
+    // CASE 2: DOCUMENTS SECTION - Each document in its own card
     // -----------------------------
     if (sectionKey.toLowerCase() == "documents") {
-      // Collect all document widgets first
-      final documentWidgets = <Widget>[];
-      
       for (var item in sectionArray) {
         if (item is! Map) continue;
 
@@ -491,93 +488,116 @@ class SetupClientProfileView extends StatelessWidget {
         final hasNumber = number.isNotEmpty;
 
         // -----------------------------
-        // CASE A: Name + Image
+        // CASE A: Name + Image - Each in its own card
         // -----------------------------
         if (name.isNotEmpty && hasImage) {
-          documentWidgets.add(
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.h),
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRowDoc(name,context),
+                  _buildInfoRowDoc(name, context),
                   _buildDocumentImage(imageUrl, "", context),
                 ],
               ),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
 
         // -----------------------------
-        // CASE B: Name + Number
+        // CASE B: Name + Number - Each in its own card
         // -----------------------------
         if (name.isNotEmpty && hasNumber && !hasImage) {
-          documentWidgets.add(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow("Name", name, context),
-                _buildInfoRow("Number", number, context),
-                SizedBox(height: 10.h),
-              ],
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow("Name", name, context),
+                  _buildInfoRow("Number", number, context),
+                ],
+              ),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
 
         // -----------------------------
-        // CASE C: Only Image
+        // CASE C: Only Image - Each in its own card
         // -----------------------------
         if (hasImage && name.isEmpty) {
-          documentWidgets.add(
-            Padding(
-              padding: EdgeInsets.only(bottom: 20.h),
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: _buildDocumentImage(imageUrl, "", context),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
 
         // -----------------------------
-        // CASE D: Only Number
+        // CASE D: Only Number - Each in its own card
         // -----------------------------
         if (hasNumber && name.isEmpty) {
-          documentWidgets.add(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow("Number", number, context),
-                SizedBox(height: 15.h),
-              ],
+          widgets.add(
+            Container(
+              padding: EdgeInsets.all(15.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _buildInfoRow("Number", number, context),
             ),
           );
+          widgets.add(SizedBox(height: 15.h));
           continue;
         }
-      }
-
-      // Wrap all documents in a single card
-      if (documentWidgets.isNotEmpty) {
-        widgets.add(
-          Container(
-            padding: EdgeInsets.all(15.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: documentWidgets,
-            ),
-          ),
-        );
       }
 
       widgets.add(SizedBox(height: 25.h));

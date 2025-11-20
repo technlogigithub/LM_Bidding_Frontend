@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -10,6 +11,8 @@ import '../../core/network.dart';
 import '../../core/utils.dart';
 import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
 import '../app_main/App_main_controller.dart';
+import '../home/home_controller.dart';
+import '../profile/profile_controller.dart';
 
 class OtpController extends GetxController {
   var pinController = TextEditingController();
@@ -17,6 +20,10 @@ class OtpController extends GetxController {
   var secondsRemaining = 60.obs;
   String mobile = ""; // store mobile number here
   Timer? _timer;
+
+  final ClientHomeController homecontroller = Get.put(ClientHomeController());
+  final appController = Get.find<AppSettingsController>();
+  final profilecontroller = Get.put(ProfileController());
 
 
 
@@ -119,6 +126,13 @@ class OtpController extends GetxController {
       if (response['success'] == true) {
         final token = response['result']['token'];
         await saveAuthToken(token);
+        final loginData = response['result'];
+        await saveUserData(loginData['user']);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        homecontroller.checkLoginStatus();
+        appController.fetchAppContent();
+        profilecontroller.fetchProfileDetails();
         toast("OTP verified successfully");
         Utils.gotoNextPage(() => BottomNavigationScreen(),);
         // Navigate to Home
@@ -138,4 +152,11 @@ class OtpController extends GetxController {
     await prefs.setString('auth_token', token);
     print("Auth Token Saved: $token");
   }
+
+
+  Future<void> saveUserData(Map<String, dynamic> data) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("user_data", jsonEncode(data));
+  }
+
 }
