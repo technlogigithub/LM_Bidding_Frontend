@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:video_player/video_player.dart';
-import '../../core/app_color.dart';
+import '../core/app_color.dart';
 
 class CustomBannerWithVideo extends StatefulWidget {
   final List<Map<String, dynamic>> mediaItems;

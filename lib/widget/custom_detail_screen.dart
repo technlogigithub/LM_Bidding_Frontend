@@ -12,7 +12,7 @@ import '../../models/static models/service_items_model.dart';
 import '../../widget/button_global.dart';
 import '../../widget/custom_horizontal_listview_list.dart';
 import '../../widget/custom_html_viewer.dart';
-import '../widget/form_widgets/custom_banner_with_video.dart';
+import 'custom_banner_with_video.dart';
 import '../view/Home_screen/recently_view.dart';
 import '../view/client service details/bidding_sheet.dart';
 import '../view/client service details/client_order.dart';

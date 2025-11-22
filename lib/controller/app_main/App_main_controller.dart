@@ -316,6 +316,9 @@ class AppSettingsController extends GetxController {
         homePage.value = parsed.result?.homePage;
         homePageheader.value = parsed.result?.homePage?.design?.headerMenu;
 
+        print('We are checking home page Data ... ${homePage.value}');
+        print('We are checking home page Data ... ${homePageheader.value}');
+
         if (parsed.result?.profileForm != null) {
           profileFormPage.value = parsed.result?.profileForm;
           // Save loginRequired flag to SP

@@ -8,8 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../core/utils.dart';
-import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
-import '../../view/profile_screens/my_profile_screen.dart';
 import '../app_main/App_main_controller.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
@@ -1003,7 +1001,8 @@ class SetupProfileController extends GetxController {
         Utils.showSnackbar(isSuccess: true, title: 'Success', message: 'Profile updated successfully');
 
         profilecontroller.fetchProfileDetails();
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SetupClientProfileView(),));
+        Navigator.pop(context);
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SetupClientProfileView(),));
 
       }
     } catch (e) {

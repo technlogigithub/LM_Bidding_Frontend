@@ -42,7 +42,7 @@ class Invitescreen extends StatelessWidget {
         centerTitle: true,
         title: Obx(() {
           return Text(
-            controller.referral.value?.label ?? 'Invite Friends',
+            controller.referral.value?.label ?? '',
             style: const TextStyle(
               color: Color(0xFF1D1D1D),
               fontWeight: FontWeight.bold,
@@ -111,11 +111,6 @@ class Invitescreen extends StatelessWidget {
       child: Column(
         children: [
           // SizedBox(height: screenHeight * 0.03),
-
-
-
-
-
           Container(
             decoration: BoxDecoration(
 

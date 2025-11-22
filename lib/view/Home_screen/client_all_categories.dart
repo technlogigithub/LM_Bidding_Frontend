@@ -251,7 +251,7 @@ import '../../controller/client_all_categories/client_all_categories_controller.
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../models/category_model/category_model.dart';
-import '../../widget/category_item_widget.dart';
+import '../../widget/category_item_widget(un used).dart';
 
 class ClientAllCategories extends StatelessWidget {
   const ClientAllCategories({super.key});

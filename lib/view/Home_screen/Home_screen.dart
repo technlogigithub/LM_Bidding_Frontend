@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_images.dart';
@@ -15,7 +14,6 @@ import '../../controller/home/home_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_constant.dart';
-import '../../models/App_moduls/AppResponseModel.dart';
 import '../../models/static models/service_items_model.dart';
 import '../../widget/appSearchDelegate.dart';
 import '../../widget/custom_banner.dart';
@@ -24,9 +22,10 @@ import '../../widget/custom_horizontal_gridview_list.dart';
 import '../../widget/custom_horizontal_listview_list.dart';
 import '../../widget/custom_tapbar.dart';
 import '../../widget/custom_vertical_gridview_list.dart';
-import '../../widget/form_widgets/custom_banner_with_video.dart';
+import '../../widget/custom_banner_with_video.dart';
 import '../cart_screen/cart_screen.dart';
-import 'client_all_categories.dart' hide AppColors;
+import '../notifications/notifications_screen.dart';
+import 'client_all_categories.dart';
 
 class ClientHomeScreen extends StatelessWidget {
   ClientHomeScreen({super.key});
@@ -130,7 +129,7 @@ class ClientHomeScreen extends StatelessWidget {
               final dpUrl = profilecontroller.profileDetailsResponeModel.value
                   ?.result?.dp?.dp ??
                   "";
-
+              print(headerConfig?.userInfo);
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -216,7 +215,9 @@ class ClientHomeScreen extends StatelessWidget {
                     children: [
                       // 🔔 ICON 1
                       GestureDetector(
-                        onTap: () => controller.handleRestrictedFeature(() {}),
+                        onTap: () {
+                          const NotificationsScreen().launch(context);
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(8.0),
                           decoration: BoxDecoration(
