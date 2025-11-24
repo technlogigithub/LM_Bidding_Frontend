@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../core/app_color.dart';
 
 class CustomDateTimePicker extends StatelessWidget {
@@ -96,12 +97,63 @@ class CustomDateTimePicker extends StatelessWidget {
   }
 }
 
+// class CustomDateRangePicker extends StatelessWidget {
+//   final String label;
+//   final DateTimeRange? value;
+//   final ValueChanged<DateTimeRange?> onChanged;
+//
+//   const CustomDateRangePicker({super.key, required this.label, required this.value, required this.onChanged});
+//
+//   Future<void> _pickRange(BuildContext context) async {
+//     final range = await showDateRangePicker(
+//       context: context,
+//       firstDate: DateTime(1900),
+//       lastDate: DateTime(2100),
+//       initialDateRange: value,
+//     );
+//     onChanged(range);
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         Text(label, style: TextStyle(color: AppColors.appTextColor)),
+//         const SizedBox(height: 6),
+//         InkWell(
+//           onTap: () => _pickRange(context),
+//           child: Container(
+//             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+//             decoration: BoxDecoration(
+//               // border: Border.all(color: Colors.black.withValues(alpha: 0.3)),
+//               border: Border.all(color: AppColors.appTextColor.withValues(alpha: 0.3)),
+//               borderRadius: BorderRadius.circular(4),
+//             ),
+//             child: Text(
+//               value != null ? "${value!.start.toString()} - ${value!.end.toString()}" : 'Select date range',
+//               style: TextStyle(color: AppColors.appTextColor.withValues(alpha: 0.7)),
+//               // style: TextStyle(color: Colors.black.withValues(alpha: 0.7)),
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
 class CustomDateRangePicker extends StatelessWidget {
   final String label;
   final DateTimeRange? value;
   final ValueChanged<DateTimeRange?> onChanged;
 
-  const CustomDateRangePicker({super.key, required this.label, required this.value, required this.onChanged});
+  CustomDateRangePicker({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final dateFormat = DateFormat('dd/MM/yyyy');
 
   Future<void> _pickRange(BuildContext context) async {
     final range = await showDateRangePicker(
@@ -109,31 +161,73 @@ class CustomDateRangePicker extends StatelessWidget {
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
       initialDateRange: value,
+
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: AppColors.appColor,
+            colorScheme: ColorScheme.light(
+              primary: AppColors.appColor,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+
+            ),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
     );
     onChanged(range);
   }
 
   @override
   Widget build(BuildContext context) {
+    String displayText = "Select date range";
+
+    if (value != null) {
+      final start = dateFormat.format(value!.start);
+      final end = dateFormat.format(value!.end);
+      displayText = "$start → $end";
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: AppColors.appTextColor)),
-        const SizedBox(height: 6),
-        InkWell(
-          onTap: () => _pickRange(context),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.appTextColor.withValues(alpha: 0.3)),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              value != null ? "${value!.start.toString()} - ${value!.end.toString()}" : 'Select date range',
-              style: TextStyle(color: AppColors.appTextColor.withValues(alpha: 0.7)),
-            ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.black,
           ),
         ),
+        const SizedBox(height: 6),
+
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black.withOpacity(0.3)),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              /// Selected date or placeholder
+              Text(
+                displayText,
+                style: TextStyle(
+                  color: Colors.black.withOpacity(0.7),
+                  fontSize: 14,
+                ),
+              ),
+
+              /// Calendar Icon
+              InkWell(
+                  onTap: () => _pickRange(context),
+                  child: const Icon(Icons.calendar_month_outlined, color: Colors.black54)),
+            ],
+          ),
+        )
       ],
     );
   }

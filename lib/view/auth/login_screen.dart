@@ -6,6 +6,7 @@ import 'package:libdding/core/app_string.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:libdding/core/utils.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:libdding/widget/app_image_handle.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/auth/auth_controller.dart';
@@ -26,6 +27,9 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    print("Login page loaded fields = ${controllerApp.loginWithPasswordPage.value?.inputs?.length}");
+
 
     return SafeArea(
       top: false,
@@ -73,21 +77,15 @@ class LoginScreen extends StatelessWidget {
                         height: screenHeight * 0.1,
                         width: screenWidth * 0.7,
                         child: Center(
-                          child: SvgPicture.network(
-                            controllerApp.logo.toString(),
+                          child: UniversalImage(
+                            url: controllerApp.logo.toString(),
+                            height: screenHeight * 0.1,
+                            width: screenWidth * 0.7,
                             fit: BoxFit.contain,
-                            placeholderBuilder: (context) => Shimmer.fromColors(
-                              baseColor: Colors.grey.shade300.withValues(alpha: 0.3),
-                              highlightColor: Colors.grey.shade100.withValues(alpha: 0.3),
-                              child: Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                color: Colors.white.withValues(alpha: 0.3),
-                              ),
-                            ),
                           ),
                         ),
                       ),
+
                       SizedBox(height: screenHeight*0.01,),
                       Text(controllerApp.appName.toString(),style: TextStyle(color: AppColors.appTextColor,fontWeight: FontWeight.bold,fontSize: screenWidth*0.07),)
                     ],
@@ -139,35 +137,61 @@ class LoginScreen extends StatelessWidget {
                     final label = field.label ?? '';
                     final hint = field.placeholder ?? '';
                     final type = (field.inputType ?? 'text').toLowerCase();
+
+                    // assign proper controller based on field.name
+                    TextEditingController? textController;
+
+                    if (fname.contains('mobile') || fname.contains('phone')) {
+                      textController = controller.mobileController;
+                    } else if (fname.contains('password')) {
+                      textController = controller.passwordController;
+                    } else {
+                      // create a temp controller for unknown input fields
+                      textController = TextEditingController();
+                    }
+
                     if (type == 'text') {
                       fields.add(CustomTextfield(
                         label: label,
                         hintText: hint,
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-                        controller: controller.mobileController,
-                        onChanged: (v) => controller.mobile.value = v,
+                        controller: textController,
+                        maxLength: null,
+                        keyboardType: fname.contains('email')
+                            ? TextInputType.emailAddress
+                            : TextInputType.text,
+                        onChanged: (v) {
+                          if (fname.contains('mobile') || fname.contains('phone')) {
+                            controller.mobile.value = v;
+                          }
+                        },
                       ));
-                      fields.add(SizedBox(height: screenHeight * 0.02));
-                    } else if (type == 'password') {
-                      fields.add(Obx(() => CustomTextfield(
-                        label: label,
-                        hintText: hint,
-                        obscureText: controller.hidePassword.value,
-                        keyboardType: TextInputType.visiblePassword,
-                        controller: controller.passwordController,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.hidePassword.value ? Icons.visibility_off : Icons.visibility,
-                            color: AppColors.appTextColor,
-                          ),
-                          onPressed: controller.togglePassword,
-                        ),
-                        onChanged: (v) => controller.password.value = v,
-                      )));
-                      fields.add(SizedBox(height: screenHeight * 0.02));
                     }
+
+                    else if (type == 'password') {
+                      fields.add(
+                        Obx(() => CustomTextfield(
+                          label: label,
+                          hintText: hint,
+                          obscureText: controller.hidePassword.value,
+                          controller: textController,
+                          keyboardType: TextInputType.visiblePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.hidePassword.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.appTextColor,
+                            ),
+                            onPressed: controller.togglePassword,
+                          ),
+                          onChanged: (v) => controller.password.value = v,
+                        )),
+                      );
+                    }
+
+                    fields.add(SizedBox(height: screenHeight * 0.02));
                   }
+
                   return AutofillGroup(child: Column(children: fields));
                 }),
                 SizedBox(height: screenHeight * 0.02),

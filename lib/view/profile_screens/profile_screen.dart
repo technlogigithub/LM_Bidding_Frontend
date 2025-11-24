@@ -23,6 +23,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
     final controller = Get.put(ProfileController());
     final appController = Get.find<AppSettingsController>();
     final support = appController.support.value;
@@ -32,6 +34,7 @@ class ProfileScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final Color text=AppColors.textgrey;
     final TextStyle style= AppTextStyle.kTextStyle.copyWith(color: AppColors.appBlack);
+
     return Scaffold(
       backgroundColor: AppColors.darkWhite,
 

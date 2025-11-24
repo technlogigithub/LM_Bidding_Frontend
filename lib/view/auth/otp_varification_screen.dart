@@ -9,6 +9,7 @@ import '../../controller/auth/Otp_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_string.dart';
 import '../../core/app_textstyle.dart';
+import '../../widget/app_image_handle.dart';
 import '../../widget/form_widgets/app_button.dart';
 
 class OtpVarificationScreen extends StatelessWidget {
@@ -71,17 +72,12 @@ class OtpVarificationScreen extends StatelessWidget {
                     SizedBox(
                       height: screenHeight * 0.1,
                       width: screenWidth * 0.7,
-                      child: SvgPicture.network(
-                        controllerApp.logo.toString(),
-                        fit: BoxFit.cover,
-                        placeholderBuilder: (context) => Shimmer.fromColors(
-                          baseColor: Colors.grey.shade300.withOpacity(0.3),
-                          highlightColor: Colors.grey.shade100.withOpacity(0.3),
-                          child: Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            color: Colors.white.withOpacity(0.3),
-                          ),
+                      child: Center(
+                        child: UniversalImage(
+                          url: controllerApp.logo.toString(),
+                          height: screenHeight * 0.1,
+                          width: screenWidth * 0.7,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),

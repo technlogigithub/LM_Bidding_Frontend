@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/auth/auth_controller.dart';
 import '../../core/utils.dart';
+import '../../widget/app_image_handle.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/app_social_icons.dart';
 import '../../widget/form_widgets/app_textfield.dart';
@@ -99,22 +100,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: Column(
                     children: [
                       SizedBox(
-                        height: 100.h, // Scaled height
-                        width: maxContentWidth * 0.7, // Responsive width
-                        child: SvgPicture.network(
-                          controllerApp.logo.toString(),
-                          fit: BoxFit.fill,
-                          placeholderBuilder: (context) => Shimmer.fromColors(
-                            baseColor: Colors.grey.shade300.withValues(alpha: 0.3),
-                            highlightColor: Colors.grey.shade100.withValues(alpha: 0.3),
-                            child: Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              color: Colors.white.withValues(alpha: 0.3),
-                            ),
+                        height: screenHeight * 0.1,
+                        width: screenWidth * 0.7,
+                        child: Center(
+                          child: UniversalImage(
+                            url: controllerApp.logo.toString(),
+                            height: screenHeight * 0.1,
+                            width: screenWidth * 0.7,
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
+
                       SizedBox(height: 10.h),
                       Text(
                         controllerApp.appName.toString(),

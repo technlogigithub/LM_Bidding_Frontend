@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_config.dart';
+import '../../widget/app_image_handle.dart';
 import '../Bottom_navigation_screen/Botom_navigation_screen.dart';
 import '../force_update/ForceUpdateScreen.dart';
 import '../language_selection/LanguageSelectionScreen.dart';
@@ -23,6 +24,7 @@ class SplashScreen extends StatefulWidget {
 
 class SplashScreenState extends State<SplashScreen> {
   final controller = Get.put(AppSettingsController());
+  String appVersion = "";
 
   void whereToGo() async {
     await Future.delayed(const Duration(seconds: 3));
@@ -86,8 +88,13 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    loadVersion();
     whereToGo();
     controller.fetchAllData();
+  }
+  void loadVersion() async {
+    appVersion = await AppInfo.getCurrentVersion();
+    setState(() {});
   }
 
   @override
@@ -141,7 +148,7 @@ class SplashScreenState extends State<SplashScreen> {
                               ),
                             ),
                             Text(
-                              AppInfo.appVersion,
+                              appVersion,
                               style: AppTextStyle.kTextStyle.copyWith(
                                 color: AppColors.appTextColor,
                                 fontWeight: FontWeight.bold,
@@ -154,14 +161,16 @@ class SplashScreenState extends State<SplashScreen> {
                     ),
                   ),
                   SizedBox(
-                    height: 100.h, // Scaled height
-                    width: maxContentWidth * 0.9, // Responsive width
-                    child: SvgPicture.network(
-                      controller.logo.value,
+                    height: 100.h,
+                    width: maxContentWidth * 0.9,
+                    child: UniversalImage(
+                      url: controller.logo.value,
+                      height: 100.h,
+                      width: maxContentWidth * 0.9,
                       fit: BoxFit.contain,
-                      placeholderBuilder: (context) => Container(),
                     ),
-                  ),
+                  )
+
                 ],
               );
             }),

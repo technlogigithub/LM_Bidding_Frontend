@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/app_color.dart';
@@ -9,7 +10,7 @@ class CustomHeader extends StatelessWidget {
   final String username;
   final double balance;
   final String images;
-  final UserInfo? userInfo;   // 👈 Add this
+  final UserInfo? userInfo;
 
   const CustomHeader({
     super.key,
@@ -19,6 +20,11 @@ class CustomHeader extends StatelessWidget {
     this.userInfo,
   });
 
+  Future<bool> _checkLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -26,82 +32,84 @@ class CustomHeader extends StatelessWidget {
       color: AppColors.darkWhite,
       child: Row(
         children: [
-          // ***** SHOW DP ONLY IF API SAYS dp = true *****
-          // if (userInfo?.dp == true)
-            Container(
-              height: 50,
-              width: 50,
-              decoration: const BoxDecoration(shape: BoxShape.circle),
-              child: ClipOval(
-                child: images.isNotEmpty
-                    ? CachedNetworkImage(
-                  imageUrl: images,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Shimmer.fromColors(
-                    baseColor: AppColors.simmerColor,
-                    highlightColor: AppColors.appWhite,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration:  BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.appWhite,
-                      ),
+          // Profile Image
+          Container(
+            height: 50,
+            width: 50,
+            decoration: const BoxDecoration(shape: BoxShape.circle),
+            child: ClipOval(
+              child: images.isNotEmpty
+                  ? CachedNetworkImage(
+                imageUrl: images,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: AppColors.simmerColor,
+                  highlightColor: AppColors.appWhite,
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
                     ),
                   ),
-                  errorWidget: (context, url, error) {
-                    return Image.asset(
-                      'assets/images/profilepic2.png',
-                      fit: BoxFit.cover,
-                    );
-                  },
-                )
-                    : Image.asset(
-                  'assets/images/profilepic2.png',
-                  fit: BoxFit.cover,
                 ),
+                errorWidget: (context, url, error) {
+                  return Image.asset(
+                    'assets/images/profilepic2.png',
+                    fit: BoxFit.cover,
+                  );
+                },
+              )
+                  : Image.asset(
+                'assets/images/profilepic2.png',
+                fit: BoxFit.cover,
               ),
             ),
+          ),
 
           const SizedBox(width: 12),
 
-          // ***** SHOW NAME or BALANCE based on API flags *****
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // NAME (only if allowed)
-                // if (userInfo?.name == true)
-                  Text(
-                    username,
-                    style: AppTextStyle.kTextStyle.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.neutralColor,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                // USERNAME OR GUEST
+                FutureBuilder<bool>(
+                  future: _checkLogin(),
+                  builder: (context, snapshot) {
+                    bool isLoggedIn = snapshot.data ?? false;
 
-                // BALANCE (only if allowed)
-                // if (userInfo?.walletBalance == true)
-                  RichText(
-                    text: TextSpan(
-                      text: 'Balance: ',
+                    return Text(
+                      isLoggedIn ? username : "Guest",
                       style: AppTextStyle.kTextStyle.copyWith(
+                        fontWeight: FontWeight.w600,
                         color: AppColors.neutralColor,
-                        fontSize: 13,
                       ),
-                      children: [
-                        TextSpan(
-                          text: "\$${balance.toStringAsFixed(2)}",
-                          style: AppTextStyle.kTextStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.neutralColor,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+
+                // BALANCE
+                RichText(
+                  text: TextSpan(
+                    text: 'Balance: ',
+                    style: AppTextStyle.kTextStyle.copyWith(
+                      color: AppColors.neutralColor,
+                      fontSize: 13,
                     ),
+                    children: [
+                      TextSpan(
+                        text: "\$${balance.toStringAsFixed(2)}",
+                        style: AppTextStyle.kTextStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.neutralColor,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),
@@ -110,4 +118,3 @@ class CustomHeader extends StatelessWidget {
     );
   }
 }
-

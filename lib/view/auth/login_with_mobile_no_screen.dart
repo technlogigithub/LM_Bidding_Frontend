@@ -10,6 +10,7 @@ import '../../core/app_color.dart';
 import '../../core/app_string.dart';
 import '../../core/app_textstyle.dart';
 import '../../core/utils.dart';
+import '../../widget/app_image_handle.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/form_widgets/app_textfield.dart';
 import 'create_account_screen.dart';
@@ -68,20 +69,16 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                       SizedBox(
                         height: screenHeight * 0.1,
                         width: screenWidth * 0.7,
-                        child: SvgPicture.network(
-                          controllerApp.logo.toString(),
-                          fit: BoxFit.cover,
-                          placeholderBuilder: (context) => Shimmer.fromColors(
-                            baseColor: Colors.grey.shade300.withOpacity(0.3),
-                            highlightColor: Colors.grey.shade100.withOpacity(0.3),
-                            child: Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              color: Colors.white.withOpacity(0.3),
-                            ),
+                        child: Center(
+                          child: UniversalImage(
+                            url: controllerApp.logo.toString(),
+                            height: screenHeight * 0.1,
+                            width: screenWidth * 0.7,
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ),
+
                       SizedBox(height: screenHeight*0.01,),
                       Text(controllerApp.appName.toString(),style: TextStyle(color: AppColors.appTextColor,fontWeight: FontWeight.bold,fontSize: screenWidth*0.07),)
                     ],

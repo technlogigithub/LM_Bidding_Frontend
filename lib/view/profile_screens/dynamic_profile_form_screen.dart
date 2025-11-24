@@ -258,14 +258,20 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                     final currentStep = controller.currentStep.value;
                     final profileForm = appController.profileFormPage.value;
 
-                    // Show floating action button for any step marked as multiple
                     if (profileForm != null) {
                       final inputs = controller.getCurrentStepInputs(currentStep) ?? [];
-                      final isMultiple = inputs.any((e) => (e.inputType ?? '').toLowerCase() == 'multiple');
+
+                      // ✔ Correct Condition: If any inputType == 'address'
+                      final isAddress = inputs.any(
+                            (e) => (e.inputType ?? '').toLowerCase() == 'address',
+                      );
+
+                      // ✔ Detect multi-entry step
+                      final isMultiple = inputs.any(
+                            (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+                      );
+
                       if (isMultiple) {
-                        // For legacy address behavior, keep address dialog; otherwise generic dialog
-                        final currentStepTitle = _getCurrentStepTitle(profileForm, currentStep);
-                        final isAddress = _isAddressStep(currentStepTitle);
                         return SizedBox(
                           height: 40.h,
                           child: FloatingActionButton.extended(
@@ -298,8 +304,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                         );
                       }
                     }
+
                     return const SizedBox.shrink();
                   })
+
                 ],
               ),
         const SizedBox(height: 20),

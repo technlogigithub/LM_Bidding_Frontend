@@ -53,7 +53,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
               const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
-                color: isSelected ? widget.primaryColor : Colors.white,
+                color: isSelected ? widget.primaryColor : AppColors.appButtonColor,
                 gradient: isSelected
                     ? LinearGradient(
                   colors: [
@@ -81,7 +81,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
               child: Text(
                 widget.tabs[index],
                 style: widget.textStyle.copyWith(
-                  color: isSelected ? Colors.white :AppColors.appTextColor,
+                  color: isSelected ? AppColors.appButtonTextColor:AppColors.appTextColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),

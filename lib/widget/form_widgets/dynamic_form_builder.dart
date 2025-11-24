@@ -2,6 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../core/app_textstyle.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
+import 'app_button.dart';
+import 'app_checkbox.dart';
+import 'app_date_picker.dart';
+import 'app_dropdown.dart';
+import 'app_radiobutton.dart';
 import 'app_textfield.dart';
 import 'custom_textarea.dart';
 import 'custom_toggle.dart';
@@ -162,7 +167,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         }
         break;
 
-      case 'checkbox':
+      case 'toggle':
         // Convert currentValue to bool, handling String, bool, and null cases
         bool boolValue = false;
         if (currentValue != null) {
@@ -294,6 +299,181 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           keyboardType: TextInputType.number,
         );
         break;
+      case 'button':
+        fieldWidget = CustomButton(
+          text: label,
+          onTap: () => widget.onFieldChanged(fieldName, true),
+          backgroundColor: AppColors.appButtonColor,
+        );
+        break;
+      case 'checkbox':
+        bool boolValue = false;
+
+        if (currentValue is bool) {
+          boolValue = currentValue;
+        } else if (currentValue is String) {
+          boolValue = currentValue.toLowerCase() == "true" || currentValue == "1";
+        }
+
+        fieldWidget = CustomCheckbox(
+          value: boolValue,
+          title: label + (isRequired ? " *" : ""),
+          onChanged: (val) => widget.onFieldChanged(fieldName, val),
+        );
+        break;
+      case 'radio':
+        List<String> labels = [];
+        List<String> values = [];
+
+        if (input.optionItems != null && input.optionItems!.isNotEmpty) {
+          labels = input.optionItems!.map((e) => e.label ?? "").where((l) => l.isNotEmpty).toList();
+          values = input.optionItems!.map((e) => e.value ?? e.label ?? "").where((v) => v.isNotEmpty).toList();
+          
+          // Ensure both lists have same length
+          if (labels.length != values.length) {
+            // If mismatch, use labels as values
+            values = List<String>.from(labels);
+          }
+        }
+
+        // Handle empty options case
+        if (labels.isEmpty || values.isEmpty) {
+          fieldWidget = Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Text(
+              '${label + (isRequired ? " *" : "")}\nNo options available',
+              style: AppTextStyle.kTextStyle.copyWith(
+                color: Colors.red,
+              ),
+            ),
+          );
+        } else {
+          // Get current value as string, defaulting to empty string if null
+          final currentValueStr = currentValue?.toString() ?? '';
+          
+          fieldWidget = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label + (isRequired ? " *" : "")),
+              const SizedBox(height: 8),
+
+              for (int i = 0; i < labels.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: CustomRadioButton<String>(
+                    value: values[i],
+                    groupValue: currentValueStr,
+                    title: labels[i],
+                    onChanged: (val) => widget.onFieldChanged(fieldName, val),
+                  ),
+                ),
+            ],
+          );
+        }
+        break;
+      case 'dropdown':
+        List<String> labels = [];
+        List<String> values = [];
+
+        if (input.optionItems != null) {
+          labels = input.optionItems!.map((e) => e.label ?? "").toList();
+          values = input.optionItems!.map((e) => e.value ?? e.label ?? "").toList();
+        }
+
+        // Convert currentValue into correct dropdown value
+        String? selectedValue;
+        if (currentValue != null) {
+          if (values.contains(currentValue.toString())) {
+            selectedValue = currentValue.toString();
+          } else {
+            int index = labels.indexOf(currentValue.toString());
+            if (index != -1) {
+              selectedValue = values[index];
+            }
+          }
+        }
+
+        fieldWidget = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label + (isRequired ? " *" : "")),
+            const SizedBox(height: 8),
+
+            CustomDropdown<String>(
+              value: selectedValue,
+              items: values,
+              hintText: placeholder ?? "Select",
+              itemToString: (v) {
+                final index = values.indexOf(v);
+                return labels[index];
+              },
+              onChanged: (val) => widget.onFieldChanged(fieldName, val),
+            ),
+          ],
+        );
+        break;
+
+
+      case 'daterange':    // date picker
+        DateTime? dateValue;
+        if (currentValue is DateTime) {
+          dateValue = currentValue;
+        } else if (currentValue is String && currentValue.isNotEmpty) {
+          try {
+            dateValue = DateTime.parse(currentValue);
+          } catch (e) {
+            dateValue = null;
+          }
+        }
+
+        fieldWidget = CustomDatePicker(
+          label: label + (isRequired ? ' *' : ''),
+          value: dateValue,
+          onChanged: (pickedDate) {
+            if (pickedDate != null) {
+              widget.onFieldChanged(fieldName, pickedDate.toIso8601String());
+            } else {
+              widget.onFieldChanged(fieldName, "");
+            }
+          },
+        );
+        break;
+
+      //
+      // case 'daterange':
+      //   DateTime? start;
+      //   DateTime? end;
+      //
+      //   if (currentValue is String && currentValue.contains('|')) {
+      //     final parts = currentValue.split('|');
+      //     try {
+      //       start = DateTime.parse(parts[0]);
+      //       end = DateTime.parse(parts[1]);
+      //     } catch (e) {
+      //       start = null;
+      //       end = null;
+      //     }
+      //   }
+      //
+      //   fieldWidget = CustomDateRangePicker(
+      //     label: label + (isRequired ? ' *' : ''),
+      //     value: (start != null && end != null)
+      //         ? DateTimeRange(start: start!, end: end!)
+      //         : null,
+      //     onChanged: (range) {
+      //       if (range != null) {
+      //         widget.onFieldChanged(
+      //           fieldName,
+      //           "${range.start.toIso8601String()}|${range.end.toIso8601String()}",
+      //         );
+      //       } else {
+      //         widget.onFieldChanged(fieldName, "");
+      //       }
+      //     },
+      //   );
+      //   break;
+      //
+      //
 
       case 'group':
         // Group inputs should not create any UI element
