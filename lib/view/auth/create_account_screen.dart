@@ -380,7 +380,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               text: TextSpan(
                                 text: AppStrings.yesIunderstandandagreetothe,
                                 style: AppTextStyle.kTextStyle.copyWith(
-                                  color: AppColors.subTitleColor,
+                                  color: AppColors.appTextColor,
                                   fontSize: 12.sp, // Responsive font size
                                 ),
                                 children: [
@@ -541,7 +541,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   child: Text(
                                     'Or Sign up with',
                                     style: AppTextStyle.kTextStyle.copyWith(
-                                      color: AppColors.appgreyTextColor,
+                                      color: AppColors.appGreyTextColor,
                                       fontSize: 14.sp, // Responsive font size
                                     ),
                                   ),

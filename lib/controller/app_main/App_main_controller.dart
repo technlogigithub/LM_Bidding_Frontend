@@ -91,6 +91,10 @@ class AppSettingsController extends GetxController {
   RxString mutedColor = "".obs;
   RxString mutedTextColor = "".obs;
   RxString linkTextColor = "".obs;
+  RxString titleColor = "".obs;
+  RxString iconColor = "".obs;
+  RxString descriptiontextColor = "".obs;
+  RxString bodytextColor = "".obs;
 
   // Intro Sliders
   RxList<IntroSlider> introSliders = <IntroSlider>[].obs;
@@ -399,6 +403,10 @@ class AppSettingsController extends GetxController {
     mutedColor.value = theme['muted_color'] ?? "";
     mutedTextColor.value = theme['muted_text_color'] ?? "";
     linkTextColor.value = theme['link_text_color'] ?? "";
+    iconColor.value = theme['icon_text_color'] ?? "";
+    descriptiontextColor.value = theme['description_text_color'] ?? "";
+    titleColor.value = theme['title_text_color'] ?? "";
+    bodytextColor.value = theme['description_text_color'] ?? "";
   }
 
   // Language Management Methods

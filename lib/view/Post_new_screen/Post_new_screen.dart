@@ -20,96 +20,109 @@ class PostNewScreen extends GetView<PostFormController> {
     if (!Get.isRegistered<PostFormController>()) {
       Get.put(PostFormController());
     }
-    
+
     final screenHeight = MediaQuery.of(context).size.height;
     final appController = Get.find<AppSettingsController>();
 
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return Container(
+      // FULL PAGE GRADIENT — FIXES WHITE SPACE ISSUE
+      decoration: BoxDecoration(
+        gradient: AppColors.appPagecolor,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors
+            .transparent, // Important so scaffold doesn't hide gradient under body
         appBar: AppBar(
-        elevation: 0,
-        automaticallyImplyLeading: true,
-        iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
-        backgroundColor: const Color(0xFFF5F5F5),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(50.0),
-            bottomRight: Radius.circular(50.0),
-          ),
-        ),
-        toolbarHeight: 80,
+          elevation: 0,
+          automaticallyImplyLeading: true,
+          iconTheme: IconThemeData(color: AppColors.appTextColor),
+          toolbarHeight: 80,
           centerTitle: true,
-        title: Obx(() {
+          backgroundColor: Colors.transparent,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: AppColors.appbarColor,   // ← APPLY GRADIENT HERE
+            ),
+          ),
+          title: Obx(() {
+            final postForm = appController.postFormPage.value;
+            return Text(
+              postForm?.pageTitle ?? 'Create Post',
+              style: TextStyle(
+                color: AppColors.appTextColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            );
+          }),
+        ),
+
+
+        // BODY
+        body: Obx(() {
           final postForm = appController.postFormPage.value;
-          return Text(
-            postForm?.pageTitle ?? 'Create Post',
-            style: const TextStyle(
-              color: Color(0xFF1D1D1D),
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
+
+          if (postForm == null) {
+            return const Center(
+              child: Text('Post form configuration not available'),
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Page Description
+                if (postForm.pageDescription?.isNotEmpty == true) ...[
+                  Text(
+                    postForm.pageDescription!,
+                    style: AppTextStyle.kTextStyle.copyWith(
+                      color: AppColors.appDescriptionColor,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // Progress Bar
+                if (postForm.progressBar == true) ...[
+                  _buildProgressBar(postForm),
+                  const SizedBox(height: 20),
+                ],
+
+                // Form Content
+                GetBuilder<PostFormController>(
+                  id: 'form_content',
+                  builder: (controller) =>
+                      _buildFormContent(postForm, screenHeight),
+                ),
+
+                const SizedBox(height: 160), // For bottom nav spacing
+              ],
+            ),
+          );
+        }),
+
+        // BOTTOM BAR
+        bottomNavigationBar: Obx(() {
+          final postForm = appController.postFormPage.value;
+          if (postForm == null) return const SizedBox.shrink();
+
+          return Container(
+            padding: const EdgeInsets.all(16.0),
+            color: Colors
+                .transparent, // FIX: do not apply gradient again → no white gap
+            child: SafeArea(
+              child: _buildActionButtons(postForm, screenHeight),
             ),
           );
         }),
       ),
-      body: Obx(() {
-        final postForm = appController.postFormPage.value;
-        
-        if (postForm == null) {
-          return const Center(
-            child: Text('Post form configuration not available'),
-          );
-        }
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Page Description
-              if (postForm.pageDescription?.isNotEmpty == true) ...[
-                Text(
-                  postForm.pageDescription!,
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.appTextColor,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-
-              // Progress Bar
-              if (postForm.progressBar == true) ...[
-                _buildProgressBar(postForm),
-                const SizedBox(height: 20),
-              ],
-
-              // Form Content
-              GetBuilder<PostFormController>(
-                id: 'form_content',
-                builder: (controller) => _buildFormContent(postForm, screenHeight),
-              ),
-              
-              // Add bottom padding to prevent content from being hidden behind buttons
-              const SizedBox(height: 100),
-            ],
-          ),
-        );
-      }),
-      bottomNavigationBar: Obx(() {
-        final postForm = appController.postFormPage.value;
-        if (postForm == null) return const SizedBox.shrink();
-        return Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-          ),
-          child: SafeArea(
-            child: _buildActionButtons(postForm, screenHeight),
-          ),
-        );
-      }),
     );
   }
+
+  // ------------------------- PROGRESS BAR -------------------------
 
   Widget _buildProgressBar(ProfileFormPage postForm) {
     final currentStep = controller.currentStep.value;
@@ -117,24 +130,22 @@ class PostNewScreen extends GetView<PostFormController> {
 
     return Column(
       children: [
-        // Step Progress Indicator
         StepProgressIndicator(
           totalSteps: totalSteps,
           currentStep: currentStep + 1,
           selectedColor: AppColors.appColor,
-          unselectedColor: AppColors.appTextColor.withValues(alpha: 0.3),
+          unselectedColor: AppColors.appGreyColor,
           size: 8,
           roundedEdges: const Radius.circular(4),
         ),
         const SizedBox(height: 12),
-        
-        // Step Title
-        if (postForm.stepTitles != null && 
+
+        if (postForm.stepTitles != null &&
             currentStep < postForm.stepTitles!.length) ...[
           Text(
             postForm.stepTitles![currentStep],
             style: AppTextStyle.kTextStyle.copyWith(
-              color: AppColors.appTextColor,
+              color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
@@ -144,11 +155,12 @@ class PostNewScreen extends GetView<PostFormController> {
     );
   }
 
+  // ------------------------- FORM CONTENT -------------------------
+
   Widget _buildFormContent(ProfileFormPage postForm, double screenHeight) {
     final currentStep = controller.currentStep.value;
     List<RegisterInput>? currentStepInputs;
 
-    // Dynamic step handling based on total_steps from backend
     final totalSteps = postForm.totalSteps ?? 26;
     if (currentStep >= 0 && currentStep < totalSteps) {
       currentStepInputs = _getStepInputs(postForm, currentStep);
@@ -160,20 +172,23 @@ class PostNewScreen extends GetView<PostFormController> {
       );
     }
 
-    // Get current step title for conditional rendering
     final currentStepTitle = _getCurrentStepTitle(postForm, currentStep);
 
-    // Determine if step is marked as multiple/single by input marker
-    final hasMultipleMarker = currentStepInputs.any((e) => (e.inputType ?? '').toLowerCase() == 'multiple');
-    final filteredInputs = currentStepInputs.where((e) => (e.name ?? '').toLowerCase() != 'step_type').toList();
+    final hasMultipleMarker = currentStepInputs
+        .any((e) => (e.inputType ?? '').toLowerCase() == 'multiple');
+
+    final filteredInputs = currentStepInputs
+        .where((e) => (e.name ?? '').toLowerCase() != 'step_type')
+        .toList();
 
     return Column(
       children: [
-        // Generic multiple step renderer
         if (hasMultipleMarker)
-          _buildGenericMultipleStep(currentStep, filteredInputs, title: currentStepTitle)
-
-        // If generic single step, show dynamic form
+          _buildGenericMultipleStep(
+            currentStep,
+            filteredInputs,
+            title: currentStepTitle,
+          )
         else
           DynamicFormBuilder(
             inputs: filteredInputs,
@@ -185,119 +200,130 @@ class PostNewScreen extends GetView<PostFormController> {
     );
   }
 
-  // Helper method to get inputs for any step dynamically
   List<RegisterInput>? _getStepInputs(ProfileFormPage postForm, int stepIndex) {
     if (postForm.inputs == null) return null;
-    
-    // Use the dynamic method from the model
     return postForm.inputs!.getStepInputs(stepIndex);
   }
 
-  // Helper method to get current step title
   String? _getCurrentStepTitle(ProfileFormPage postForm, int stepIndex) {
-    if (postForm.stepTitles == null || stepIndex >= postForm.stepTitles!.length) {
+    if (postForm.stepTitles == null ||
+        stepIndex >= postForm.stepTitles!.length) {
       return null;
     }
     return postForm.stepTitles![stepIndex];
   }
 
-  Widget _buildGenericMultipleStep(int stepIndex, List<RegisterInput>? inputs, {String? title}) {
+  // ------------------------- MULTI ENTRY STEP -------------------------
+
+  Widget _buildGenericMultipleStep(
+      int stepIndex, List<RegisterInput>? inputs,
+      {String? title}) {
     return Obx(() {
       final list = controller.getEntriesForStep(stepIndex);
+
       return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title ?? 'Items',
-          style: const TextStyle(
-            color: Color(0xFF1D1D1D),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        const SizedBox(height: 20),
-        if (list.isEmpty)
-          const Text(
-            'No items added',
-            style: TextStyle(
-              color: Color(0xFF757575),
-              fontSize: 16,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title ?? 'Items',
+            style: const TextStyle(
+              color: Color(0xFF1D1D1D),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
             ),
-          )
-        else
-          Column(
-            children: list.asMap().entries.map((entry) {
-              final index = entry.key;
-              final data = entry.value;
-              // pick a couple of fields to preview
-              String subtitle = data.entries.take(3).map((e) => '${e.key}: ${e.value}').join(' • ');
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          const SizedBox(height: 20),
+
+          if (list.isEmpty)
+            const Text(
+              'No items added',
+              style: TextStyle(
+                color: Color(0xFF757575),
+                fontSize: 16,
+              ),
+            )
+          else
+            Column(
+              children: list.asMap().entries.map((entry) {
+                final index = entry.key;
+                final data = entry.value;
+
+                String subtitle = data.entries
+                    .take(3)
+                    .map((e) => '${e.key}: ${e.value}')
+                    .join(' • ');
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              data.values.first?.toString() ??
+                                  'Item ${index + 1}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.appTextColor,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF757575),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
                         children: [
-                          Text(
-                            data.values.first?.toString() ?? 'Item ${index + 1}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.appTextColor,
-                              fontSize: 16,
+                          GestureDetector(
+                            onTap: () => _showGenericEntryDialog(
+                                stepIndex, inputs,
+                                existingData: data, index: index),
+                            child: const Icon(
+                              FeatherIcons.edit,
+                              color: Colors.blue,
+                              size: 18,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            subtitle,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF757575),
-                              fontSize: 14,
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () => controller.removeEntryForStep(
+                                stepIndex, index),
+                            child: const Icon(
+                              FeatherIcons.trash2,
+                              color: Colors.red,
+                              size: 18,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => _showGenericEntryDialog(stepIndex, inputs, existingData: data, index: index),
-                          child: const Icon(
-                            FeatherIcons.edit,
-                            color: Colors.blue,
-                            size: 18,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: () => controller.removeEntryForStep(stepIndex, index),
-                          child: const Icon(
-                            FeatherIcons.trash2,
-                            color: Colors.red,
-                            size: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-      ],
-    );
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+        ],
+      );
     });
   }
 
-  void _showGenericEntryDialog(int stepIndex, List<RegisterInput>? inputs, {Map<String, dynamic>? existingData, int? index}) {
+  void _showGenericEntryDialog(int stepIndex, List<RegisterInput>? inputs,
+      {Map<String, dynamic>? existingData, int? index}) {
     Get.bottomSheet(
       GenericMultiEntryDialog(
         inputs: inputs,
@@ -316,6 +342,8 @@ class PostNewScreen extends GetView<PostFormController> {
     );
   }
 
+  // ------------------------- ACTION BUTTONS -------------------------
+
   Widget _buildActionButtons(ProfileFormPage postForm, double screenHeight) {
     return Obx(() {
       final currentStep = controller.currentStep.value;
@@ -326,9 +354,21 @@ class PostNewScreen extends GetView<PostFormController> {
         for (final b in buttons) {
           final a = (b.action ?? '').toLowerCase();
           if (a != action) continue;
-          if (action == 'prev_step' && (b.visibleFromStep == null || currentStepOneBased >= b.visibleFromStep!)) return b.label;
-          if (action == 'next_step' && (b.visibleUntilStep == null || currentStepOneBased <= b.visibleUntilStep!)) return b.label;
-          if (action == 'submit_form' && (b.visibleOnStep != null && currentStepOneBased == b.visibleOnStep!)) return b.label;
+          if (action == 'prev_step' &&
+              (b.visibleFromStep == null ||
+                  currentStepOneBased >= b.visibleFromStep!)) {
+            return b.label;
+          }
+          if (action == 'next_step' &&
+              (b.visibleUntilStep == null ||
+                  currentStepOneBased <= b.visibleUntilStep!)) {
+            return b.label;
+          }
+          if (action == 'submit_form' &&
+              (b.visibleOnStep != null &&
+                  currentStepOneBased == b.visibleOnStep!)) {
+            return b.label;
+          }
         }
         return null;
       }
@@ -339,28 +379,30 @@ class PostNewScreen extends GetView<PostFormController> {
 
       return Row(
         children: [
-          // Previous Button - Show based on API response
           if (controller.showPreviousButton.value) ...[
             Expanded(
               child: CustomButton(
                 text: prevLabel,
-                onTap: controller.isLoading.value ? null : controller.previousStep,
-                isLoading: false, // Previous button doesn't trigger API, so no loading state
+                onTap: controller.isLoading.value
+                    ? null
+                    : controller.previousStep,
               ),
             ),
             const SizedBox(width: 16),
           ],
 
-          // Next/Submit Button - Show based on API response
-          if (controller.showNextButton.value || controller.showSubmitButton.value)
+          if (controller.showNextButton.value ||
+              controller.showSubmitButton.value)
             Expanded(
               child: CustomButton(
-                text: controller.showSubmitButton.value ? submitLabel : nextLabel,
-                onTap: controller.isLoading.value 
-                    ? null 
+                text: controller.showSubmitButton.value
+                    ? submitLabel
+                    : nextLabel,
+                onTap: controller.isLoading.value
+                    ? null
                     : () => controller.showSubmitButton.value
-                        ? controller.submitForm()
-                        : controller.nextStep(),
+                    ? controller.submitForm()
+                    : controller.nextStep(),
                 isLoading: controller.isLoading.value,
               ),
             ),
@@ -385,7 +427,8 @@ class GenericMultiEntryDialog extends StatefulWidget {
   });
 
   @override
-  State<GenericMultiEntryDialog> createState() => _GenericMultiEntryDialogState();
+  State<GenericMultiEntryDialog> createState() =>
+      _GenericMultiEntryDialogState();
 }
 
 class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
@@ -411,12 +454,11 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
     _errors.clear();
     bool ok = true;
     for (final input in widget.inputs ?? const []) {
-      final fieldName = input.name ?? '';
-      if (fieldName.toLowerCase() == 'step_type') continue;
-      final isRequired = input.required ?? false;
-      final value = _data[fieldName];
-      if (isRequired && (value == null || value.toString().isEmpty)) {
-        _errors[fieldName] = '${input.label ?? 'This field'} is required';
+      final name = input.name ?? '';
+      if (name.toLowerCase() == 'step_type') continue;
+      if (input.required == true &&
+          (_data[name] == null || _data[name].toString().isEmpty)) {
+        _errors[name] = '${input.label ?? 'Field'} is required';
         ok = false;
       }
     }
@@ -436,6 +478,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
     final filtered = (widget.inputs ?? const [])
         .where((e) => (e.name ?? '').toLowerCase() != 'step_type')
         .toList();
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.9,
@@ -486,13 +529,12 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  if (filtered.isNotEmpty)
-                    DynamicFormBuilder(
-                      inputs: filtered,
-                      formData: _data,
-                      onFieldChanged: _updateField,
-                      errors: _errors,
-                    ),
+                  DynamicFormBuilder(
+                    inputs: filtered,
+                    formData: _data,
+                    onFieldChanged: _updateField,
+                    errors: _errors,
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     children: [

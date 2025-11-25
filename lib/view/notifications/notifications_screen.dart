@@ -170,29 +170,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: true,
-        iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
-        backgroundColor: const Color(0xFFF5F5F5),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(50.0),
-            bottomRight: Radius.circular(50.0),
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
+        backgroundColor: Colors.transparent, // MUST be transparent
+        // shape: const RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.only(
+        //     bottomLeft: Radius.circular(50.0),
+        //     bottomRight: Radius.circular(50.0),
+        //   ),
+        // ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appbarColor, // <-- Your gradient here
+            // borderRadius: const BorderRadius.only(
+            //   bottomLeft: Radius.circular(50.0),
+            //   bottomRight: Radius.circular(50.0),
+            // ),
           ),
         ),
         toolbarHeight: 80,
         centerTitle: true,
-        title: Text(
+        title:  Text(
           'Notifications',
-          style: const TextStyle(
-            color: Color(0xFF1D1D1D),
+          style: TextStyle(
+            color: AppColors.appTextColor,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
       ),
+
       body: Container(
         height: screenHeight,
         width: screenWidth,
@@ -204,11 +214,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: Container(
                 width: screenWidth,
                 decoration: BoxDecoration(
-                  color: AppColors.appWhite,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30.0),
-                    topRight: Radius.circular(30.0),
-                  ),
+                  gradient: AppColors.appPagecolor,
+                  // borderRadius: const BorderRadius.only(
+                  //   topLeft: Radius.circular(30.0),
+                  //   topRight: Radius.circular(30.0),
+                  // ),
                 ),
                 child: isLoading
                     ? _buildShimmerLoading()
@@ -220,13 +230,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 Icon(
                                   Icons.notifications_none,
                                   size: 64,
-                                  color: AppColors.appgreyTextColor,
+                                  color: AppColors.appTextColor,
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   'No notifications yet',
                                   style: AppTextStyle.kTextStyle.copyWith(
-                                    color: AppColors.appgreyTextColor,
+                                    color: AppColors.appTextColor,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -292,7 +302,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                   notification['description'] ?? 
                                                   'Notification description will be shown...',
                                                   style: AppTextStyle.kTextStyle.copyWith(
-                                                    color: AppColors.appgreyTextColor,
+                                                    color: AppColors.appGreyTextColor,
                                                     fontSize: 13,
                                                   ),
                                                   maxLines: 2,

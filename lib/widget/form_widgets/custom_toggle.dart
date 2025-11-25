@@ -19,10 +19,10 @@ class _CustomToggleState extends State<CustomToggle> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: Text(widget.label, style: TextStyle(color: AppColors.appTextColor))),
+        Expanded(child: Text(widget.label, style: TextStyle(color: AppColors.appBodyTextColor))),
         Switch(
           value: widget.value,
-          activeColor: AppColors.appColor,
+          activeColor: AppColors.appBodyTextColor,
           onChanged: (newValue) {
             setState(() {
               widget.onChanged(newValue);

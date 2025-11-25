@@ -98,7 +98,7 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
                   topRight: Radius.circular(30.0),
                   topLeft: Radius.circular(30.0),
                 ),
-                color: AppColors.appWhite,
+                // color: AppColors.appWhite,
               ),
             ),
           ],

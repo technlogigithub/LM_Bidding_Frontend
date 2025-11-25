@@ -66,7 +66,7 @@ class ClientHomeScreen extends StatelessWidget {
           child: ListTile(
             horizontalTitleGap: 0,
             visualDensity: const VisualDensity(vertical: -2),
-            leading: Icon(FeatherIcons.search, color: AppColors.appWhite),
+            leading: Icon(FeatherIcons.search, color: AppColors.appTextColor),
             title: Text('Search services...', style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)),
             onTap: () {
               showSearch(context: context, delegate: CustomSearchDelegate());
@@ -82,7 +82,7 @@ class ClientHomeScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
-        backgroundColor: AppColors.appWhite,
+
         appBar: AppBar(
           backgroundColor: parseColor(headerConfig?.bgColor),
           elevation: 0,
@@ -293,12 +293,12 @@ class ClientHomeScreen extends StatelessWidget {
           decoration: BoxDecoration(gradient: AppColors.appPagecolor),
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(top: 15.0),
+            // padding: const EdgeInsets.only(top: 15.0),
             child: Container(
               width: MediaQuery.of(context).size.width,
               decoration: BoxDecoration(
-                color: AppColors.appWhite,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0)),
+                gradient: AppColors.appPagecolor,
+                // borderRadius: const BorderRadius.only(topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,14 +319,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.categories,
-                          style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor, fontWeight: FontWeight.bold),
+                          style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
                         ),
                         GestureDetector(
                           onTap: () => const ClientAllCategories().launch(context),
                           // onTap: () => controller.handleRestrictedFeature(() {
                           //   Get.toNamed('/categories'); // Replace with actual categories route
                           // }),
-                          child: Text(AppStrings.viewAll, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)),
+                          child: Text(AppStrings.viewAll, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -346,14 +346,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.upcomingPost,
-                          style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor, fontWeight: FontWeight.bold),
+                          style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () {
                             // const PopularServices().launch(context);
                           },
-                          child: Text(AppStrings.viewAll, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)),
+                          child: Text(AppStrings.viewAll, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -365,14 +365,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Top Poster',
-                          style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                          style: kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold,),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => controller.handleRestrictedFeature(() {
                             // const TopSeller().launch(context);
                           }),
-                          child: Text('View All', style: kTextStyle.copyWith(color: kLightNeutralColor)),
+                          child: Text('View All', style: kTextStyle.copyWith(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -457,14 +457,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Recent Viewed',
-                          style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                          style: kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => controller.handleRestrictedFeature(() {
                             const RecentlyView().launch(context);
                           }),
-                          child: Text('View All', style: kTextStyle.copyWith(color: kLightNeutralColor)),
+                          child: Text('View All', style: kTextStyle.copyWith(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -474,8 +474,8 @@ class ClientHomeScreen extends StatelessWidget {
                   CustomTabBar(
                     height: 50,
                     tabs: controller.serviceList,
-                    primaryColor: AppColors.appColor,
-                    borderColor: Colors.grey.shade300,
+                    // primaryColor: AppColors.appColor,
+                    // borderColor: Colors.grey.shade300,
                     textStyle: const TextStyle(fontSize: 14),
                     onTap: (index) {
                       // do something when tapped

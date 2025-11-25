@@ -25,7 +25,7 @@ class CustomDropdown<T> extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppColors.appColor, // 🔵 Use your app color
+          color: AppColors.appBodyTextColor, // 🔵 Use your app color
           width: 1.2,
         ),
       ),
@@ -34,7 +34,7 @@ class CustomDropdown<T> extends StatelessWidget {
           value: value,
           hint: Text(
             hintText,
-            style: TextStyle(color: AppColors.appColor),
+            style: TextStyle(color: AppColors.appBodyTextColor),
           ),
           isExpanded: true,
           icon: Icon(
@@ -47,7 +47,7 @@ class CustomDropdown<T> extends StatelessWidget {
               child: Text(
                 itemToString(item),
                 style: TextStyle(
-                  color: AppColors.appColor, // 🔵 Text color
+                  color: AppColors.appBodyTextColor, // 🔵 Text color
                 ),
               ),
             );

@@ -27,11 +27,11 @@ class BottomNavigationScreen extends StatelessWidget {
      bool isWeb = kIsWeb || MediaQuery.of(context).size.width > 600;
 
      return Obx(() => Scaffold(
-       backgroundColor: AppColors.appWhite,
+
        appBar: isWeb
            ? AppBar(
          elevation: 0,
-         backgroundColor: AppColors.appWhite,
+         // backgroundColor: AppColors.appWhite,
          title: Row(
            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
            children: List.generate(
@@ -79,53 +79,60 @@ class BottomNavigationScreen extends StatelessWidget {
            ? null
            : Container(
          padding: const EdgeInsets.all(8.0),
-         decoration:  BoxDecoration(
-           color: AppColors.appWhite,
-           borderRadius: BorderRadius.only(
-             topRight: Radius.circular(30.0),
-             topLeft: Radius.circular(30.0),
+         decoration: BoxDecoration(
+           gradient: AppColors.appPagecolor, // <-- Gradient instead of color
+           // borderRadius: const BorderRadius.only(
+           //   topRight: Radius.circular(30.0),
+           //   topLeft: Radius.circular(30.0),
+           // ),
+           // boxShadow: [
+           //   BoxShadow(
+           //     color: AppColors.darkWhite,
+           //     blurRadius: 5.0,
+           //     spreadRadius: 3.0,
+           //     offset: Offset(0, -2),
+           //   )
+           // ],
+         ),
+
+         child:Container(
+           decoration: BoxDecoration(
+             gradient: AppColors.appPagecolor, // <-- your dynamic gradient
            ),
-           boxShadow: [
-             BoxShadow(
-               color: AppColors.darkWhite,
-               blurRadius: 5.0,
-               spreadRadius: 3.0,
-               offset: Offset(0, -2),
-             )
-           ],
-         ),
-         child: BottomNavigationBar(
-           elevation: 0.0,
-           selectedItemColor: AppColors.appColor,
-           unselectedItemColor: AppColors.textgrey,
-           backgroundColor: AppColors.appWhite,
-           showUnselectedLabels: true,
-           type: BottomNavigationBarType.fixed,
-           currentIndex: controller.currentPage.value,
-           onTap: controller.onItemTapped,
-           items: const [
-             BottomNavigationBarItem(
-               icon: Icon(IconlyBold.home),
-               label: "Home",
-             ),
-             BottomNavigationBarItem(
-               icon: Icon(IconlyBold.chat),
-               label: "Message",
-             ),
-             BottomNavigationBarItem(
-               icon: Icon(IconlyBold.paperPlus),
-               label: "Post Now",
-             ),
-             BottomNavigationBarItem(
-               icon: Icon(IconlyBold.document),
-               label: "Participate",
-             ),
-             BottomNavigationBarItem(
-               icon: Icon(IconlyBold.profile),
-               label: "Profile",
-             ),
-           ],
-         ),
+           child: BottomNavigationBar(
+             elevation: 0.0,
+             backgroundColor: Colors.transparent, // <-- IMPORTANT
+             selectedItemColor: AppColors.appButtonColor,
+             unselectedItemColor: AppColors.appIconColor,
+             showUnselectedLabels: true,
+             type: BottomNavigationBarType.fixed,
+             currentIndex: controller.currentPage.value,
+             onTap: controller.onItemTapped,
+             items: const [
+               BottomNavigationBarItem(
+                 icon: Icon(IconlyBold.home),
+                 label: "Home",
+               ),
+               BottomNavigationBarItem(
+                 icon: Icon(IconlyBold.chat),
+                 label: "Message",
+               ),
+               BottomNavigationBarItem(
+                 icon: Icon(IconlyBold.paperPlus),
+                 label: "Post Now",
+               ),
+               BottomNavigationBarItem(
+                 icon: Icon(IconlyBold.document),
+                 label: "Participate",
+               ),
+               BottomNavigationBarItem(
+                 icon: Icon(IconlyBold.profile),
+                 label: "Profile",
+               ),
+             ],
+           ),
+         )
+
        ),
      ));
    }

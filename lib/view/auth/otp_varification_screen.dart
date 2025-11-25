@@ -120,7 +120,7 @@ class OtpVarificationScreen extends StatelessWidget {
                 Text(
                   mobile,
                   style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.appgreyTextColor,
+                    color: AppColors.appGreyTextColor,
                     fontWeight: FontWeight.bold,
                     fontSize: width * 0.045,
                   ),
@@ -147,7 +147,7 @@ class OtpVarificationScreen extends StatelessWidget {
                       width: width * 0.15,
                       height: width * 0.15,
                       textStyle: TextStyle(
-                          fontSize: width * 0.05, color: AppColors.appgreyTextColor),
+                          fontSize: width * 0.05, color: AppColors.appGreyTextColor),
                       decoration: BoxDecoration(
                         border: Border.all(color: AppColors.appColor),
                         borderRadius: BorderRadius.circular(10),
@@ -157,9 +157,9 @@ class OtpVarificationScreen extends StatelessWidget {
                       width: width * 0.15,
                       height: width * 0.15,
                       textStyle: TextStyle(
-                          fontSize: width * 0.05, color: AppColors.appgreyTextColor),
+                          fontSize: width * 0.05, color: AppColors.appGreyTextColor),
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.appgreyTextColor),
+                        border: Border.all(color: AppColors.appGreyTextColor),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -177,7 +177,7 @@ class OtpVarificationScreen extends StatelessWidget {
                   return Text(
                     "$minutes:$secs",
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.appgreyTextColor,
+                      color: AppColors.appGreyTextColor,
                       fontWeight: FontWeight.bold,
                       fontSize: width * 0.05,
                     ),
@@ -197,7 +197,7 @@ class OtpVarificationScreen extends StatelessWidget {
                     style: AppTextStyle.kTextStyle.copyWith(
                       color: controller.secondsRemaining.value == 0
                           ? AppColors.appColor
-                          : AppColors.appgreyTextColor,
+                          : AppColors.appGreyTextColor,
                       fontSize: width * 0.04,
                     ),
                   ),

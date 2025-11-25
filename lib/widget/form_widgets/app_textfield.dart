@@ -49,12 +49,12 @@ class CustomTextfield extends StatelessWidget {
       ),
       child: TextField(
         controller: controller, // can be null
-        style: TextStyle(color: AppColors.appTextColor),
+        style: TextStyle(color: AppColors.appTitleColor),
         obscureText: obscureText,
         focusNode: focusNode,
         keyboardType: keyboardType,
         textCapitalization: textCapitalization,
-        cursorColor: AppColors.appTextColor,
+        cursorColor: AppColors.appColor,
         maxLines: lines.toInt(),
         inputFormatters: [
           if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
@@ -62,16 +62,16 @@ class CustomTextfield extends StatelessWidget {
         ],
         onChanged: onChanged, // 🔹 callback added
         decoration: InputDecoration(
-          label:Text(label,style: TextStyle(color: AppColors.appTextColor),) ,
+          label:Text(label,style: TextStyle(color: AppColors.appDescriptionColor),) ,
           hintText: hintText,
-          hintStyle: TextStyle(color: AppColors.appTextColor.withValues(alpha: 0.4)),
+          hintStyle: TextStyle(color: AppColors.appDescriptionColor),
           suffixIcon: suffixIcon,
           counterText: "", // 🔹 hides default counter
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appTextColor.withValues(alpha: 0.3)),
+            borderSide: BorderSide(color: AppColors.appTitleColor),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appTextColor),
+            borderSide: BorderSide(color: AppColors.appTitleColor),
           ),
         ),
       ),

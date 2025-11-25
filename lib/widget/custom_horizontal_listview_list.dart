@@ -233,7 +233,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
               child: Center(
                 child: Icon(
                   item.isFavorite.value ? Icons.favorite : Icons.favorite_border,
-                  color: item.isFavorite.value ? Colors.red : AppColors.neutralColor,
+                  color: item.isFavorite.value ? Colors.red : AppColors.appIconColor,
                   size: 16.0,
                 ),
               ),
@@ -257,7 +257,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
               child: Text(
                 item.title,
                 style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.appTextColor,
+                  color: AppColors.appTitleColor,
                   fontWeight: FontWeight.bold,
                 ),
                 maxLines: 2,
@@ -274,14 +274,14 @@ class CustomHorizontalListViewList extends StatelessWidget {
               Text(
                 item.rating.toStringAsFixed(1),
                 style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.neutralColor,
+                  color: AppColors.appDescriptionColor,
                 ),
               ),
               const SizedBox(width: 2.0),
               Text(
                 '(${item.reviewCount})',
                 style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.textgrey,
+                  color: AppColors.appDescriptionColor,
                 ),
               ),
               const SizedBox(width: 40),
@@ -289,7 +289,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
                 text: TextSpan(
                   text: 'Price: ',
                   style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.textgrey,
+                    color: AppColors.appDescriptionColor,
                   ),
                   children: [
                     TextSpan(
@@ -327,7 +327,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.neutralColor,
+                      color: AppColors.appTitleColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -336,7 +336,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.subTitleColor,
+                      color: AppColors.appDescriptionColor,
                     ),
                   ),
                 ],

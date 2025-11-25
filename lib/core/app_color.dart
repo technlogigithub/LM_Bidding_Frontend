@@ -13,8 +13,14 @@ class AppColors {
   static Color get appTextColor => parseColor(controller.primaryTextColor.value);
   static Color get appButtonColor => parseColor(controller.secondaryColor.value);
   static Color get appButtonTextColor => parseColor(controller.secondaryTextColor.value);
-  static Color get appgreyColor => parseColor(controller.mutedColor.value);
-  static Color get appgreyTextColor => parseColor(controller.mutedTextColor.value);
+  static Color get appGreyColor => parseColor(controller.mutedColor.value);
+  static Color get appGreyTextColor => parseColor(controller.mutedTextColor.value);
+  static Color get appLinkColor => parseColor(controller.linkTextColor.value);
+  static Color get appTitleColor => parseColor(controller.titleColor.value);
+  static Color get appDescriptionColor => parseColor(controller.descriptiontextColor.value);
+  static Color get appIconColor => parseColor(controller.iconColor.value);
+  static Color get appBodyTextColor => parseColor(controller.bodytextColor.value);
+
 
   static Color appWhite = Colors.white;
   static Color appBlack = Colors.black;

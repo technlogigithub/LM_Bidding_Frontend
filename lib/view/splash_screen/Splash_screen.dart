@@ -111,6 +111,7 @@ class SplashScreenState extends State<SplashScreen> {
         backgroundColor: AppColors.appColor,
         body: Center(
           child: ConstrainedBox(
+
             constraints: BoxConstraints(maxWidth: maxContentWidth),
             child: Obx(() {
               // Check if the controller logo data is loaded

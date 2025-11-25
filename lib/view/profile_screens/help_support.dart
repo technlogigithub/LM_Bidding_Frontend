@@ -18,31 +18,38 @@ class HelpSupport extends StatelessWidget {
     final support = controller.support.value;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        automaticallyImplyLeading: true,
-        iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
-        backgroundColor: const Color(0xFFF5F5F5),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(50.0),
-            bottomRight: Radius.circular(50.0),
-          ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,
         ),
-        toolbarHeight: 80,
-        centerTitle: true,
-        title: Text(
-          support?.label ?? 'Help & Support',
-          style: const TextStyle(
-            color: Color(0xFF1D1D1D),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            elevation: 0,
+            automaticallyImplyLeading: true,
+            iconTheme:  IconThemeData(color: AppColors.appTextColor),
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: AppColors.appbarColor,
+                // borderRadius: const BorderRadius.only(
+                //   bottomLeft: Radius.circular(50.0),
+                //   bottomRight: Radius.circular(50.0),
+                // ),
+              ),
+            ),
+            toolbarHeight: 80,
+            centerTitle: true,
+            title: Text(
+              support?.label ?? 'Help & Support',
+              style:  TextStyle(
+                color: AppColors.appTextColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
           ),
-        ),
-      ),
 
-      body: SingleChildScrollView(
+          body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
@@ -233,6 +240,8 @@ class HelpSupport extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
         ),
       ),
     );

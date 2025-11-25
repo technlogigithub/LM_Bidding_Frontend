@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../core/app_textstyle.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
+import '../custom_tapbar.dart';
 import 'app_button.dart';
 import 'app_checkbox.dart';
 import 'app_date_picker.dart';
@@ -157,13 +158,31 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
             ),
           );
         } else {
-          fieldWidget = _SelectTabBarWidget(
-            label: label + (isRequired ? ' *' : ''),
-            optionLabels: optionLabels,
-            optionValues: optionValues,
-            initialIndex: initialIndex,
-            onValueChanged: (value) => widget.onFieldChanged(fieldName, value),
+          fieldWidget = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  label + (isRequired ? ' *' : ''),
+                  style: AppTextStyle.kTextStyle.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              CustomTabBar(
+                tabs: optionLabels,
+                height: 55,
+                textStyle: AppTextStyle.kTextStyle,
+                // initialIndex: initialIndex,
+                onTap: (index) {
+                  widget.onFieldChanged(fieldName, optionValues[index]);
+                },
+              ),
+            ],
           );
+
         }
         break;
 
@@ -414,7 +433,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         break;
 
 
-      case 'daterange':    // date picker
+      case 'date':    // date picker
         DateTime? dateValue;
         if (currentValue is DateTime) {
           dateValue = currentValue;
@@ -437,43 +456,43 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
             }
           },
         );
+      //   break;
+
+
+      case 'daterange':
+        DateTime? start;
+        DateTime? end;
+
+        if (currentValue is String && currentValue.contains('|')) {
+          final parts = currentValue.split('|');
+          try {
+            start = DateTime.parse(parts[0]);
+            end = DateTime.parse(parts[1]);
+          } catch (e) {
+            start = null;
+            end = null;
+          }
+        }
+
+        fieldWidget = CustomDateRangePicker(
+          label: label + (isRequired ? ' *' : ''),
+          value: (start != null && end != null)
+              ? DateTimeRange(start: start!, end: end!)
+              : null,
+          onChanged: (range) {
+            if (range != null) {
+              widget.onFieldChanged(
+                fieldName,
+                "${range.start.toIso8601String()}|${range.end.toIso8601String()}",
+              );
+            } else {
+              widget.onFieldChanged(fieldName, "");
+            }
+          },
+        );
         break;
 
-      //
-      // case 'daterange':
-      //   DateTime? start;
-      //   DateTime? end;
-      //
-      //   if (currentValue is String && currentValue.contains('|')) {
-      //     final parts = currentValue.split('|');
-      //     try {
-      //       start = DateTime.parse(parts[0]);
-      //       end = DateTime.parse(parts[1]);
-      //     } catch (e) {
-      //       start = null;
-      //       end = null;
-      //     }
-      //   }
-      //
-      //   fieldWidget = CustomDateRangePicker(
-      //     label: label + (isRequired ? ' *' : ''),
-      //     value: (start != null && end != null)
-      //         ? DateTimeRange(start: start!, end: end!)
-      //         : null,
-      //     onChanged: (range) {
-      //       if (range != null) {
-      //         widget.onFieldChanged(
-      //           fieldName,
-      //           "${range.start.toIso8601String()}|${range.end.toIso8601String()}",
-      //         );
-      //       } else {
-      //         widget.onFieldChanged(fieldName, "");
-      //       }
-      //     },
-      //   );
-      //   break;
-      //
-      //
+
 
       case 'group':
         // Group inputs should not create any UI element
@@ -803,7 +822,7 @@ class _PasswordFieldState extends State<_PasswordField> {
       suffixIcon: IconButton(
         icon: Icon(
           _obscureText ? Icons.visibility_off : Icons.visibility,
-          color: AppColors.appTextColor.withOpacity(0.6),
+          color: AppColors.appIconColor
         ),
         onPressed: () {
           setState(() {

@@ -187,7 +187,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                     Text(
                       item.sellerName,
                       style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.neutralColor,
+                        color: AppColors.appTitleColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 14.sp,
                       ),
@@ -207,7 +207,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                         Text(
                           item.rating.toStringAsFixed(1),
                           style: AppTextStyle.kTextStyle.copyWith(
-                            color: AppColors.neutralColor,
+                            color: AppColors.appTitleColor,
                             fontSize: 12.sp,
                           ),
                         ),
@@ -215,7 +215,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                         Text(
                           '(${item.reviewCount} review)',
                           style: AppTextStyle.kTextStyle.copyWith(
-                            color: AppColors.textgrey,
+                            color: AppColors.appDescriptionColor,
                             fontSize: 12.sp,
                           ),
                         ),
@@ -226,14 +226,14 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                       text: TextSpan(
                         text: 'Seller Level - ',
                         style: AppTextStyle.kTextStyle.copyWith(
-                          color: AppColors.neutralColor,
+                          color: AppColors.appTitleColor,
                           fontSize: 12.sp,
                         ),
                         children: [
                           TextSpan(
                             text: item.sellerLevel,
                             style: AppTextStyle.kTextStyle.copyWith(
-                              color: AppColors.textgrey,
+                              color: AppColors.appDescriptionColor,
                               fontSize: 12.sp,
                             ),
                           ),

@@ -65,7 +65,7 @@ class CustomVerticalGridviewList extends StatelessWidget {
                                   : Icons.favorite_border,
                               color:service.isFavorite.value
                                   ? Colors.redAccent
-                                  : Colors.black,
+                                  : AppColors.appTitleColor,
                             ),
                           );
                         }),
@@ -77,8 +77,10 @@ class CustomVerticalGridviewList extends StatelessWidget {
                     service.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style:  TextStyle(
                       fontWeight: FontWeight.bold,
+                      color: AppColors.appTitleColor,
+                      fontSize: 16,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -86,10 +88,10 @@ class CustomVerticalGridviewList extends StatelessWidget {
                     children: [
                       Icon(Icons.star, color: Colors.amber, size: 16),
                       const SizedBox(width: 3),
-                      Text('${service.rating}'),
+                      Text('${service.rating}',style: TextStyle(fontSize: 14, color: AppColors.appTitleColor)),
                       const SizedBox(width: 5),
                       Text('(${service.reviewCount} reviews)',
-                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          style: TextStyle(fontSize: 12, color: AppColors.appDescriptionColor)),
                     ],
                   ),
                   const SizedBox(height: 5),

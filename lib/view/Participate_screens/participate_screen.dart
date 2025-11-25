@@ -43,8 +43,8 @@ class ParticipateScreen extends StatelessWidget {
               CustomTabBar(
                 height: 50,
                 tabs: const ['Active', 'Pending', 'Completed', 'Cancelled'],
-                primaryColor: AppColors.appColor,
-                borderColor: Colors.grey.shade300,
+                // primaryColor: AppColors.appColor,
+                // borderColor: Colors.grey.shade300,
                 textStyle: AppTextStyle.kTextStyle.copyWith(
                   color: AppColors.appTextColor,
                   fontSize: 14,

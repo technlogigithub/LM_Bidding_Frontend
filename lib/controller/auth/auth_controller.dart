@@ -40,6 +40,7 @@ class AuthController extends GetxController {
   final ClientHomeController homecontroller = Get.put(ClientHomeController());
   final appController = Get.find<AppSettingsController>();
   final profilecontroller = Get.put(ProfileController());
+  Map<String, TextEditingController> fieldControllers = {};
 
 
   @override

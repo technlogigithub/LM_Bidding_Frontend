@@ -29,7 +29,12 @@ class CustomHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: AppColors.darkWhite,
+
+      /// 🔥 Apply dynamic gradient as Header Background
+      decoration: BoxDecoration(
+        gradient: AppColors.appbarColor,   // ⬅ HERE
+      ),
+
       child: Row(
         children: [
           // Profile Image

@@ -436,7 +436,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
     final controller = _videoControllers[videoFile.path];
     if (controller == null || !controller.value.isInitialized) {
       return Container(
-        color: AppColors.appTextColor.withValues(alpha: 0.1),
+        color: AppColors.appDescriptionColor,
         child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
@@ -467,7 +467,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
       width: 120,
       height: 120,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.appTextColor.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: AppColors.appDescriptionColor, width: 1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Stack(
@@ -635,13 +635,13 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
 
   Widget _buildPlaceholder() {
     return Container(
-      color: AppColors.appTextColor.withValues(alpha: 0.1),
+      color: AppColors.appDescriptionColor,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.insert_drive_file, size: 30, color: AppColors.appTextColor.withValues(alpha: 0.4)),
+          Icon(Icons.insert_drive_file, size: 30, color: AppColors.appDescriptionColor),
           const SizedBox(height: 4),
-          Text('File', style: AppTextStyle.kTextStyle.copyWith(fontSize: 10, color: AppColors.appTextColor.withValues(alpha: 0.6))),
+          Text('File', style: AppTextStyle.kTextStyle.copyWith(fontSize: 10, color: AppColors.appDescriptionColor)),
         ],
       ),
     );
@@ -658,7 +658,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
         if (widget.label.isNotEmpty)
           Text(
             widget.label,
-            style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor, fontWeight: FontWeight.w600),
+            style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appBodyTextColor, fontWeight: FontWeight.w600),
           ),
         const SizedBox(height: 12),
 
@@ -670,31 +670,44 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.3),
-                  width: _isDragging ? 3 : 1,
+                  color: _isDragging ? AppColors.appColor : AppColors.appColor.withValues(alpha: 0.3),
+                  width: _isDragging ? 3 : 2,
                 ),
                 borderRadius: BorderRadius.circular(8),
-                color: _isDragging ? AppColors.appColor.withValues(alpha: 0.05) : AppColors.appTextColor.withValues(alpha: 0.1),
+                color: _isDragging 
+                    ? AppColors.appColor.withValues(alpha: 0.05) 
+                    : (widget.category == 'video'
+                        ? AppColors.appColor.withValues(alpha: 0.1)
+                        : Colors.transparent),
               ),
               child: Column(
                 children: [
                   Icon(
-                    _isDragging ? Icons.cloud_upload : Icons.add_photo_alternate_outlined,
-                    size: 40,
-                    color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.6),
+                    _isDragging 
+                        ? Icons.cloud_upload 
+                        : (widget.category == 'video' 
+                            ? Icons.videocam_outlined 
+                            : Icons.add_photo_alternate_outlined),
+                    size: widget.category == 'video' ? 50 : 40,
+                    color: _isDragging 
+                        ? AppColors.appColor 
+                        : AppColors.appDescriptionColor,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _isDragging ? 'Drop Files Here' : 'Tap to Select Files',
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.7),
+                      color: _isDragging 
+                          ? AppColors.appColor 
+                          : AppColors.appDescriptionColor,
                       fontWeight: _isDragging ? FontWeight.bold : FontWeight.normal,
+                      fontSize: widget.category == 'video' ? 14 : null,
                     ),
                   ),
                   if (kIsWeb && !_isDragging)
                     Text(
                       'or Drag & Drop',
-                      style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor.withValues(alpha: 0.5), fontSize: 12),
+                      style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appDescriptionColor, fontSize: 12),
                     ),
                 ],
               ),

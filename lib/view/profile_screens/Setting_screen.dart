@@ -34,24 +34,33 @@ class SettingScreen extends StatelessWidget {
     final links = setting?.design?.link ?? [];
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        automaticallyImplyLeading: true,
-        backgroundColor: const Color(0xFFF5F5F5),
-        centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.appTextColor),
-        title: Text(
-          setting?.label ?? 'Settings',
-          style: TextStyle(
-            color: AppColors.appTextColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,
         ),
-      ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            elevation: 0,
+            automaticallyImplyLeading: true,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: AppColors.appbarColor,
+              ),
+            ),
+            centerTitle: true,
+            iconTheme: IconThemeData(color: AppColors.appTextColor),
+            title: Text(
+              setting?.label ?? 'Settings',
+              style: TextStyle(
+                color: AppColors.appTextColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ),
 
-      body: ListView(
+          body: ListView(
         children: [
 
           // ---------------------
@@ -124,6 +133,8 @@ class SettingScreen extends StatelessWidget {
             );
           }),
         ],
+      ),
+        ),
       ),
     );
   }

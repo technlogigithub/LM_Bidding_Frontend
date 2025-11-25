@@ -14,6 +14,7 @@ import '../../widget/app_image_handle.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/form_widgets/app_textfield.dart';
 import 'create_account_screen.dart';
+import 'login_screen.dart';
 class LoginWithMobileNoScreen extends StatelessWidget {
    LoginWithMobileNoScreen({super.key});
 
@@ -144,7 +145,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                        onTap: () =>Utils.gotoNextPage(() => LoginScreen()),
                         child: Text(
                           AppStrings.loginwitPassword,
                           style: AppTextStyle.kTextStyle

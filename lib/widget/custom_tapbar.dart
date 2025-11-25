@@ -5,8 +5,7 @@ import '../core/app_color.dart';
 class CustomTabBar extends StatefulWidget implements PreferredSizeWidget {
   final List<String> tabs;
   final Function(int)? onTap;
-  final Color primaryColor;
-  final Color borderColor;
+
   final TextStyle textStyle;
   final double height;
 
@@ -15,8 +14,7 @@ class CustomTabBar extends StatefulWidget implements PreferredSizeWidget {
     required this.tabs,
     this.onTap,
     required this.height,
-    required this.primaryColor,
-    required this.borderColor,
+
     required this.textStyle,
   });
 
@@ -53,12 +51,12 @@ class _CustomTabBarState extends State<CustomTabBar> {
               const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
-                color: isSelected ? widget.primaryColor : AppColors.appButtonColor,
+                color: isSelected ? AppColors.appButtonColor : AppColors.appGreyColor,
                 gradient: isSelected
                     ? LinearGradient(
                   colors: [
-                    widget.primaryColor,
-                    widget.primaryColor.withOpacity(0.7)
+                    AppColors.appButtonColor,
+                    AppColors.appButtonColor.withOpacity(0.7)
                   ],
                 )
                     : null,
@@ -66,7 +64,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
                 boxShadow: isSelected
                     ? [
                   BoxShadow(
-                    color: widget.primaryColor.withOpacity(0.3),
+                    color: AppColors.appButtonColor.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   )
@@ -74,14 +72,14 @@ class _CustomTabBarState extends State<CustomTabBar> {
                     : [],
                 border: Border.all(
                   color:
-                  isSelected ? widget.primaryColor : widget.borderColor,
+                  isSelected ? AppColors.appButtonColor : AppColors.appGreyColor,
                   width: 1.2,
                 ),
               ),
               child: Text(
                 widget.tabs[index],
                 style: widget.textStyle.copyWith(
-                  color: isSelected ? AppColors.appButtonTextColor:AppColors.appTextColor,
+                  color: isSelected ? AppColors.appButtonTextColor:AppColors.appGreyTextColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),

@@ -7,7 +7,12 @@ class CustomDateTimePicker extends StatelessWidget {
   final DateTime? value;
   final ValueChanged<DateTime?> onChanged;
 
-  const CustomDateTimePicker({super.key, required this.label, required this.value, required this.onChanged});
+  const CustomDateTimePicker({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   Future<void> _pick(BuildContext context) async {
     final date = await showDatePicker(
@@ -15,59 +20,22 @@ class CustomDateTimePicker extends StatelessWidget {
       initialDate: value ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: AppColors.appColor,
-            colorScheme: ColorScheme.light(
-              primary: AppColors.appColor,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            dialogTheme: DialogThemeData(backgroundColor: Colors.white),
-          ),
-          child: child!,
-        );
-      },
+      builder: (context, child) => themedPicker(context, child!),
     );
+
     if (date == null) return;
-    // --- Time Picker ---
+
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(value ?? DateTime.now()),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: AppColors.appColor,
-            colorScheme: ColorScheme.light(
-              primary: AppColors.appColor,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-            timePickerTheme: TimePickerThemeData(
-              dialHandColor: AppColors.appColor,
-              hourMinuteColor: MaterialStateColor.resolveWith(
-                    (states) => states.contains(MaterialState.selected)
-                    ? AppColors.appColor
-                    : Colors.grey.shade200,
-              ),
-              hourMinuteTextColor: MaterialStateColor.resolveWith(
-                    (states) => states.contains(MaterialState.selected)
-                    ? Colors.white
-                    : Colors.black,
-              ),
-              entryModeIconColor: AppColors.appColor,
-            ),
-          ),
-          child: child!,
-        );
-      },
+      builder: (context, child) => themedPicker(context, child!),
     );
+
     if (time == null) {
       onChanged(date);
       return;
     }
+
     onChanged(DateTime(date.year, date.month, date.day, time.hour, time.minute));
   }
 
@@ -76,27 +44,22 @@ class CustomDateTimePicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: AppColors.appTextColor)),
+        Text(label, style: TextStyle(color: AppColors.appBodyTextColor)),
         const SizedBox(height: 6),
-        InkWell(
+        pickerContainerforDateandTime(
+          text: value != null
+              ? DateFormat("dd/MM/yyyy hh:mm a").format(value!)
+              : "Select date & time",
           onTap: () => _pick(context),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.appTextColor.withValues(alpha: 0.3)),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              value != null ? value.toString() : 'Select date & time',
-              style: TextStyle(color: AppColors.appTextColor.withValues(alpha: 0.7)),
-            ),
-          ),
+          icon:Icon(Icons.calendar_month_outlined),
+          iconsecond:Icon(Icons.access_time),
         ),
       ],
     );
   }
 }
 
+//
 // class CustomDateRangePicker extends StatelessWidget {
 //   final String label;
 //   final DateTimeRange? value;
@@ -170,9 +133,33 @@ class CustomDateRangePicker extends StatelessWidget {
               primary: AppColors.appColor,
               onPrimary: Colors.white,
               onSurface: Colors.black,
-
             ),
             dialogBackgroundColor: Colors.white,
+            // Date range picker theme for range highlight color
+            datePickerTheme: DatePickerThemeData(
+              // Range highlight strip color
+              rangeSelectionBackgroundColor: AppColors.appColor.withValues(alpha: 0.3),
+              rangeSelectionOverlayColor:
+                  WidgetStateProperty.all(AppColors.appColor.withOpacity(0.2)),
+              // Header (top bar) color
+              rangePickerHeaderBackgroundColor: AppColors.appColor,
+              // Selected start/end circle
+              dayBackgroundColor: MaterialStateColor.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return AppColors.appColor;
+                }
+                return Colors.transparent;
+              }),
+              // Selected day text color
+              dayForegroundColor: MaterialStateColor.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) {
+                  return Colors.white;
+                }
+                return AppColors.appBodyTextColor;
+              }),
+              // Today outline
+              todayBorder: BorderSide(color: AppColors.appColor),
+            ),
           ),
           child: child!,
         );
@@ -196,9 +183,9 @@ class CustomDateRangePicker extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style:  TextStyle(
             fontSize: 16,
-            color: Colors.black,
+            color: AppColors.appBodyTextColor,
           ),
         ),
         const SizedBox(height: 6),
@@ -206,7 +193,7 @@ class CustomDateRangePicker extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.black.withOpacity(0.3)),
+            border: Border.all(color:AppColors.appDescriptionColor),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
@@ -216,7 +203,7 @@ class CustomDateRangePicker extends StatelessWidget {
               Text(
                 displayText,
                 style: TextStyle(
-                  color: Colors.black.withOpacity(0.7),
+                  color: AppColors.appDescriptionColor,
                   fontSize: 14,
                 ),
               ),
@@ -224,7 +211,7 @@ class CustomDateRangePicker extends StatelessWidget {
               /// Calendar Icon
               InkWell(
                   onTap: () => _pickRange(context),
-                  child: const Icon(Icons.calendar_month_outlined, color: Colors.black54)),
+                  child:  Icon(Icons.calendar_month_outlined, color: AppColors.appDescriptionColor)),
             ],
           ),
         )
@@ -239,7 +226,12 @@ class CustomDatePicker extends StatelessWidget {
   final DateTime? value;
   final ValueChanged<DateTime?> onChanged;
 
-  const CustomDatePicker({super.key, required this.label, required this.value, required this.onChanged});
+  const CustomDatePicker({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   Future<void> _pickDate(BuildContext context) async {
     final date = await showDatePicker(
@@ -247,7 +239,9 @@ class CustomDatePicker extends StatelessWidget {
       initialDate: value ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
+      builder: (context, child) => themedPicker(context, child!),
     );
+
     onChanged(date);
   }
 
@@ -256,25 +250,300 @@ class CustomDatePicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: AppColors.appTextColor)),
+        Text(label, style: TextStyle(color: AppColors.appBodyTextColor)),
         const SizedBox(height: 6),
-        InkWell(
+        pickerContainer(
+          text: value != null
+              ? DateFormat("dd/MM/yyyy").format(value!)
+              : "Select date",
           onTap: () => _pickDate(context),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.appTextColor.withValues(alpha: 0.3)),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              value != null ? value!.toString().split(' ').first : 'Select date',
-              style: TextStyle(color: AppColors.appTextColor.withValues(alpha: 0.7)),
-            ),
-          ),
+          icon: Icon(Icons.calendar_month_outlined)
         ),
       ],
     );
   }
 }
+
+
+
+class CustomDateTimeRangePicker extends StatelessWidget {
+  final String label;
+  final DateTimeRangeResult? value;
+  final ValueChanged<DateTimeRangeResult?> onChanged;
+
+  const CustomDateTimeRangePicker({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  String _format(DateTime date) {
+    return DateFormat("dd/MM/yyyy hh:mm a").format(date);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String displayText = "Select date & time range";
+
+    if (value != null) {
+      displayText = "${_format(value!.start)} → ${_format(value!.end)}";
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(color: AppColors.appBodyTextColor)),
+        const SizedBox(height: 6),
+
+        InkWell(
+          onTap: () async {
+            final result = await showDateTimeRangePicker(context);
+            onChanged(result);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.appDescriptionColor),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    displayText,
+                    style: TextStyle(
+                      color: AppColors.appDescriptionColor,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_month_outlined,
+                        size: 20, color: AppColors.appDescriptionColor),
+                    const SizedBox(width: 8),
+                    Icon(Icons.access_time,
+                        size: 20, color: AppColors.appDescriptionColor),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class DateTimeRangeResult {
+  final DateTime start;
+  final DateTime end;
+
+  DateTimeRangeResult({required this.start, required this.end});
+}
+
+Future<DateTimeRangeResult?> showDateTimeRangePicker(BuildContext context) async {
+  // Pick date range first
+  final pickedDateRange = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(2000),
+    lastDate: DateTime(2100),
+  );
+
+  if (pickedDateRange == null) return null;
+
+  // Pick START time
+  final startTime = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+  );
+
+  if (startTime == null) return null;
+
+  // Pick END time
+  final endTime = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.now(),
+  );
+
+  if (endTime == null) return null;
+
+  // Combine date + time
+  final startDateTime = DateTime(
+    pickedDateRange.start.year,
+    pickedDateRange.start.month,
+    pickedDateRange.start.day,
+    startTime.hour,
+    startTime.minute,
+  );
+
+  final endDateTime = DateTime(
+    pickedDateRange.end.year,
+    pickedDateRange.end.month,
+    pickedDateRange.end.day,
+    endTime.hour,
+    endTime.minute,
+  );
+
+  return DateTimeRangeResult(start: startDateTime, end: endDateTime);
+}
+
+
+
+
+
+Widget pickerContainer({
+  required String text,
+  required VoidCallback onTap,
+  required Icon icon,
+}) {
+  return InkWell(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.appDescriptionColor),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              color: AppColors.appDescriptionColor,
+              fontSize: 14,
+            ),
+          ),
+          Icon(icon.icon, size: 20, color: AppColors.appDescriptionColor),
+        ],
+      ),
+    ),
+  );
+}
+Widget pickerContainerforDateandTime({
+  required String text,
+  required VoidCallback onTap,
+  required Icon icon,
+  required Icon iconsecond,
+}) {
+  return InkWell(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.appDescriptionColor),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              color: AppColors.appDescriptionColor,
+              fontSize: 14,
+            ),
+          ),
+          Row(
+            children: [
+              Icon(icon.icon, size: 20, color: AppColors.appDescriptionColor),
+              const SizedBox(width: 8),
+              Icon(iconsecond.icon, size: 20, color: AppColors.appDescriptionColor),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+
+Widget themedPicker(BuildContext context, Widget child) {
+  return Theme(
+    data: ThemeData.light().copyWith(
+      primaryColor: AppColors.appColor,
+      colorScheme: ColorScheme.light(
+        primary: AppColors.appColor,
+        onPrimary: AppColors.appTextColor,
+        onSurface: AppColors.appTextColor,
+      ),
+      dialogBackgroundColor: Colors.white,
+
+      // ⭐ TIME PICKER THEME ⭐
+      timePickerTheme: TimePickerThemeData(
+        dialHandColor: AppColors.appColor,
+
+        hourMinuteColor: MaterialStateColor.resolveWith(
+              (states) => states.contains(MaterialState.selected)
+              ? AppColors.appColor
+              : Colors.grey.shade200,
+        ),
+
+        hourMinuteTextColor: MaterialStateColor.resolveWith(
+              (states) => states.contains(MaterialState.selected)
+              ? AppColors.appTextColor
+              : AppColors.appTextColor,
+        ),
+
+        entryModeIconColor: AppColors.appColor,
+
+        dayPeriodColor: MaterialStateColor.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.appColor;
+          }
+          return AppColors.appColor.withOpacity(0.2);
+        }),
+
+        dayPeriodTextColor: MaterialStateColor.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.appTextColor;
+          }
+          return AppColors.appTextColor.withOpacity(0.7);
+        }),
+
+        dayPeriodBorderSide: const BorderSide(color: Colors.transparent),
+      ),
+
+      // ⭐ DATE RANGE PICKER THEME ⭐
+      datePickerTheme: DatePickerThemeData(
+        // Range highlight strip
+        rangeSelectionBackgroundColor: AppColors.appColor,
+        rangeSelectionOverlayColor:
+        WidgetStateProperty.all(AppColors.appColor.withOpacity(0.2)),
+
+        // Header (top bar) color
+        rangePickerHeaderBackgroundColor: AppColors.appColor,
+
+        // Selected start/end circle
+        dayBackgroundColor: MaterialStateColor.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return AppColors.appColor.withValues(alpha: 0.3);
+          }
+          return Colors.transparent;
+        }),
+
+        // Selected day text color
+        dayForegroundColor: MaterialStateColor.resolveWith((states) {
+          if (states.contains(MaterialState.selected)) {
+            return Colors.white;
+          }
+          return AppColors.appTextColor;
+        }),
+
+        // Today outline
+        todayBorder: BorderSide(color: AppColors.appColor),
+      ),
+    ),
+    child: child,
+  );
+}
+
+
 
 

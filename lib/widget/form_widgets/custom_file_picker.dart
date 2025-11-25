@@ -364,7 +364,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
           Text(
             widget.label,
             style: AppTextStyle.kTextStyle.copyWith(
-              color: AppColors.appTextColor,
+              color: AppColors.appBodyTextColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -384,7 +384,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: _isDragging ? AppColors.appColor : AppColors.appColor.withValues(alpha: 0.3),
+                          color: _isDragging ? AppColors.appColor : AppColors.appDescriptionColor,
                           width: _isDragging ? 3 : 2,
                         ),
                       ),
@@ -462,7 +462,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                     ),
                     if (kIsWeb && !_isDragging) ...[
                       const SizedBox(height: 8),
-                      Text('Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12, color: AppColors.appTextColor.withValues(alpha: 0.6))),
+                      Text('Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12, color: AppColors.appDescriptionColor)),
                     ],
                   ],
                 ),
@@ -481,7 +481,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                 height: 180,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  gradient: AppColors.appPagecolor,
+                  color: Colors.transparent,
                 ),
                 child: Stack(
                   fit: StackFit.expand,
@@ -697,14 +697,14 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                               size: 50,
                               color: _isDragging
                                   ? AppColors.appColor
-                                  : AppColors.appTextColor.withValues(alpha: 0.5),
+                                  : AppColors.appDescriptionColor,
                             ),
                             const SizedBox(height: 8),
                             Text(
                               _isDragging ? 'Drop Here' : '',
                               style: AppTextStyle.kTextStyle.copyWith(
                                 color:
-                                AppColors.appTextColor.withValues(alpha: 0.7),
+                                AppColors.appDescriptionColor,
                                 fontSize: 13,
                               ),
                             ),
@@ -717,7 +717,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
             ),
           ),
         ]
-        else if (widget.isImageFile) ...[
+        else if (widget.isImageFile || widget.category == 'video') ...[
             _buildDragTarget(
               child: GestureDetector(
                 onTap: () => _pick(context),
@@ -725,9 +725,20 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                   width: double.infinity,
                   height: 200,
                   decoration: BoxDecoration(
-                    border: Border.all(color: _isDragging ? AppColors.appColor : AppColors.appColor.withValues(alpha: 0.3), width: _isDragging ? 3 : 2),
+                    border: Border.all(
+                      color: _isDragging 
+                          ? AppColors.appColor 
+                          : (widget.category == 'video' && effectiveFile == null && widget.imageUrl == null
+                              ? AppColors.appDescriptionColor
+                              : AppColors.appDescriptionColor),
+                      width: _isDragging ? 3 : 2,
+                    ),
                     borderRadius: BorderRadius.circular(8),
-                    color: _isDragging ? AppColors.appColor.withValues(alpha: 0.05) : Colors.transparent,
+                    color: _isDragging 
+                        ? AppColors.appColor.withValues(alpha: 0.05)
+                        : (widget.category == 'video' && effectiveFile == null && widget.imageUrl == null && !isVideoUrl
+                            ? Colors.transparent
+                            : Colors.transparent),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(6),
@@ -882,15 +893,54 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                                     : Stack(
                                         fit: StackFit.expand,
                                         children: [
-                                          _buildNoImagePlaceholder(),
-                                          if (kIsWeb)
+                                          widget.category == 'video' 
+                                            ? Container(
+                                                color: Colors.transparent,
+                                                child: Center(
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Icon(
+                                                        _isDragging ? Icons.cloud_upload : Icons.videocam_outlined,
+                                                        size: 50,
+                                                        color: _isDragging 
+                                                            ? AppColors.appColor 
+                                                            : AppColors.appDescriptionColor,
+                                                      ),
+                                                      const SizedBox(height: 12),
+                                                      Text(
+                                                        _isDragging ? 'Drop Video Here' : 'Tap to Select Files',
+                                                        style: AppTextStyle.kTextStyle.copyWith(
+                                                          color: _isDragging 
+                                                              ? AppColors.appColor 
+                                                              : AppColors.appDescriptionColor,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      if (kIsWeb && !_isDragging)
+                                                        Padding(
+                                                          padding: const EdgeInsets.only(top: 4),
+                                                          child: Text(
+                                                            'or Drag & Drop',
+                                                            style: AppTextStyle.kTextStyle.copyWith(
+                                                              fontSize: 12,
+                                                              color: AppColors.appDescriptionColor,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                            : _buildNoImagePlaceholder(),
+                                          if (kIsWeb && widget.category != 'video')
                                             Center(
                                               child: Column(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
-                                                  Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.4)),
+                                                  Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appDescriptionColor),
                                                   const SizedBox(height: 8),
-                                                  Text(_isDragging ? 'Drop Image Here' : 'Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12)),
+                                                  Text(_isDragging ? 'Drop Image Here' : 'Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12,color: AppColors.appDescriptionColor)),
                                                 ],
                                               ),
                                             ),
@@ -912,11 +962,11 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: _isDragging ? AppColors.appColor : AppColors.appTextColor.withValues(alpha: 0.3),
+                        color: _isDragging ? AppColors.appColor : AppColors.appDescriptionColor,
                         width: _isDragging ? 3 : 1,
                       ),
                       borderRadius: BorderRadius.circular(8),
-                      color: _isDragging ? AppColors.appColor.withValues(alpha: 0.05) : Colors.transparent,
+                      color:Colors.transparent,
                     ),
 
                     // 🔥 IF DOCUMENT → SHOW PREVIEW
@@ -930,7 +980,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                           _isDragging ? Icons.cloud_upload : Icons.attach_file,
                           color: _isDragging
                               ? AppColors.appColor
-                              : AppColors.appTextColor.withValues(alpha: 0.6),
+                              : AppColors.appDescriptionColor,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -943,7 +993,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                             style: AppTextStyle.kTextStyle.copyWith(
                               color: _isDragging
                                   ? AppColors.appColor
-                                  : AppColors.appTextColor.withValues(alpha: 0.7),
+                                  : AppColors.appDescriptionColor
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -953,7 +1003,7 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                             'or Click',
                             style: AppTextStyle.kTextStyle.copyWith(
                               fontSize: 12,
-                              color: AppColors.appTextColor.withValues(alpha: 0.5),
+                              color: AppColors.appDescriptionColor,
                             ),
                           ),
                       ],

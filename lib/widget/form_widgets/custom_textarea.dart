@@ -17,16 +17,16 @@ class CustomTextarea extends StatelessWidget {
       controller: controller,
       minLines: minLines,
       maxLines: maxLines,
-      style: TextStyle(color: AppColors.appTextColor),
+      style: TextStyle(color: AppColors.appTitleColor),
       decoration: InputDecoration(
-        label: Text(label, style: TextStyle(color: AppColors.appTextColor)),
+        label: Text(label, style: TextStyle(color: AppColors.appDescriptionColor)),
         hintText: hintText,
-        hintStyle: TextStyle(color: AppColors.appTextColor.withValues(alpha: 0.4)),
+        hintStyle: TextStyle(color: AppColors.appDescriptionColor.withValues(alpha: 0.4)),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.appTextColor.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: AppColors.appTitleColor.withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.appTextColor),
+          borderSide: BorderSide(color: AppColors.appDescriptionColor),
         ),
       ),
     );

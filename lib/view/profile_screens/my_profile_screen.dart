@@ -55,35 +55,44 @@ class SetupClientProfileView extends StatelessWidget {
     final maxContentWidth = screenWidth > 1200 ? 1200.0 : screenWidth;
 
     return Scaffold(
-      backgroundColor: AppColors.appWhite,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: Text(
-          'My Profile',
-          style: AppTextStyle.kTextStyle.copyWith(
-            color: AppColors.appTextColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 18.sp,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.black),
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: AppColors.appbarColor,
+              ),
+            ),
+            title: Text(
+              'My Profile',
+              style: AppTextStyle.kTextStyle.copyWith(
+                color: AppColors.appTextColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 18.sp,
+              ),
+            ),
+            centerTitle: true,
           ),
-        ),
-        centerTitle: true,
-      ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(left: 15,right: 15,bottom: 10,top: 5),
-        child: CustomButton(
-          onTap: () {
-            Get.put(SetupProfileController());
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
-            );
-          },
-          text: 'Edit Profile',
-        ),
-      ),
-      body: Obx(() {
+          bottomNavigationBar: Padding(
+            padding: EdgeInsets.only(left: 15,right: 15,bottom: 10,top: 5),
+            child: CustomButton(
+              onTap: () {
+                Get.put(SetupProfileController());
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
+                );
+              },
+              text: 'Edit Profile',
+            ),
+          ),
+          body: Obx(() {
         if (controller.isLoading.value) {
           return _buildShimmerLoading(context, screenWidth);
         }
@@ -145,11 +154,11 @@ class SetupClientProfileView extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.r),
-                    topRight: Radius.circular(30.r),
-                  ),
+                 gradient: AppColors.appPagecolor
+                  // borderRadius: BorderRadius.only(
+                  //   topLeft: Radius.circular(30.r),
+                  //   topRight: Radius.circular(30.r),
+                  // ),
                 ),
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -177,7 +186,7 @@ class SetupClientProfileView extends StatelessWidget {
                                 offset: Offset(0, -2),
                               ),
                             ],
-                            border: Border.all(color: AppColors.appTextColor, width: 2.w),
+
                           ),
                           child: ClipOval(
                             child: (dpUrl != null && dpUrl.isNotEmpty && _isImageFile(dpUrl))
@@ -321,6 +330,8 @@ class SetupClientProfileView extends StatelessWidget {
           ),
         );
       }),
+        ),
+      ),
     );
   }
 
@@ -959,7 +970,7 @@ class SetupClientProfileView extends StatelessWidget {
       ),
     );
   }
-}
+} 
 
 
 

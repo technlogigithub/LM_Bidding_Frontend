@@ -45,7 +45,7 @@ class InfoShowCase extends StatelessWidget {
                 onTap: onEdit,
                 child: Icon(
                   IconlyBold.edit,
-                  color: AppColors.appgreyTextColor, // Updated
+                  color: AppColors.appGreyTextColor, // Updated
                   size: 18.0,
                 ),
               ),
@@ -57,7 +57,7 @@ class InfoShowCase extends StatelessWidget {
               Text(
                 subTitle,
                 style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.appgreyTextColor, // Updated
+                  color: AppColors.appGreyTextColor, // Updated
                 ),
               ),
               const Spacer(),
@@ -65,7 +65,7 @@ class InfoShowCase extends StatelessWidget {
                 onTap: onDelete,
                 child: Icon(
                   IconlyBold.delete,
-                  color: AppColors.appgreyTextColor, // Updated
+                  color: AppColors.appGreyTextColor, // Updated
                   size: 18.0,
                 ),
               ),
