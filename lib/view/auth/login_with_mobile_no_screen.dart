@@ -67,21 +67,14 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                 Center(
                   child: Column(
                     children: [
-                      SizedBox(
-                        height: screenHeight * 0.1,
-                        width: screenWidth * 0.7,
-                        child: Center(
-                          child: UniversalImage(
-                            url: controllerApp.logo.toString(),
-                            height: screenHeight * 0.1,
-                            width: screenWidth * 0.7,
-                            fit: BoxFit.contain,
-                          ),
+                      Center(
+                        child: UniversalImage(
+                          url: controllerApp.logoNameWhite.toString(),
+                          height: screenHeight * 0.1,
+                          width: screenWidth * 0.7,
+                          fit: BoxFit.contain,
                         ),
                       ),
-
-                      SizedBox(height: screenHeight*0.01,),
-                      Text(controllerApp.appName.toString(),style: TextStyle(color: AppColors.appTextColor,fontWeight: FontWeight.bold,fontSize: screenWidth*0.07),)
                     ],
                   ),
                 ),
@@ -111,7 +104,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                       return Text(
                         title,
                         style: AppTextStyle.kTextStyle.copyWith(
-                            color: AppColors.neutralColor,
+                            color: AppColors.appTitleColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 18.0),
                       );
@@ -123,7 +116,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                     final inputs = page?.inputs ?? [];
                     final List<Widget> fields = [];
                     if ((page?.pageDescription ?? '').isNotEmpty) {
-                      fields.add(Text(page!.pageDescription!, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)));
+                      fields.add(Text(page!.pageDescription!, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appDescriptionColor)));
                       fields.add(SizedBox(height: screenHeight * 0.02));
                     }
                     for (final field in inputs) {
@@ -149,7 +142,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                         child: Text(
                           AppStrings.loginwitPassword,
                           style: AppTextStyle.kTextStyle
-                              .copyWith(color: AppColors.appTextColor.withOpacity(0.8)),
+                              .copyWith(color: AppColors.appLinkColor),
                           textAlign: TextAlign.end,
                         ),
                       ),
@@ -190,12 +183,12 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                         text: TextSpan(
                           text:AppStrings.donthaveanaccount,
                           style: AppTextStyle.kTextStyle
-                              .copyWith(color: AppColors.subTitleColor),
+                              .copyWith(color: AppColors.appBodyTextColor),
                           children: [
                             TextSpan(
                               text: AppStrings.createNewAccount,
                               style: AppTextStyle.kTextStyle.copyWith(
-                                  color: AppColors.appColor,
+                                  color: AppColors.appLinkColor,
                                   fontWeight: FontWeight.bold),
                             ),
                           ],

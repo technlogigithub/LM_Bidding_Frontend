@@ -23,7 +23,7 @@ class CustomTextarea extends StatelessWidget {
         hintText: hintText,
         hintStyle: TextStyle(color: AppColors.appDescriptionColor.withValues(alpha: 0.4)),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.appTitleColor.withValues(alpha: 0.3)),
+          borderSide: BorderSide(color: AppColors.appBodyTextColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.appDescriptionColor),

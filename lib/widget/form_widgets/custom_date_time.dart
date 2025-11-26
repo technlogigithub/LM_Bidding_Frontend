@@ -193,7 +193,7 @@ class CustomDateRangePicker extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
-            border: Border.all(color:AppColors.appDescriptionColor),
+            border: Border.all(color:AppColors.appBodyTextColor),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
@@ -211,7 +211,7 @@ class CustomDateRangePicker extends StatelessWidget {
               /// Calendar Icon
               InkWell(
                   onTap: () => _pickRange(context),
-                  child:  Icon(Icons.calendar_month_outlined, color: AppColors.appDescriptionColor)),
+                  child:  Icon(Icons.calendar_month_outlined, color: AppColors.appIconColor)),
             ],
           ),
         )
@@ -304,7 +304,7 @@ class CustomDateTimeRangePicker extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.appDescriptionColor),
+              border: Border.all(color: AppColors.appBodyTextColor),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Row(
@@ -324,10 +324,10 @@ class CustomDateTimeRangePicker extends StatelessWidget {
                 Row(
                   children: [
                     Icon(Icons.calendar_month_outlined,
-                        size: 20, color: AppColors.appDescriptionColor),
+                        size: 20, color: AppColors.appIconColor),
                     const SizedBox(width: 8),
                     Icon(Icons.access_time,
-                        size: 20, color: AppColors.appDescriptionColor),
+                        size: 20, color: AppColors.appIconColor),
                   ],
                 ),
               ],
@@ -406,7 +406,7 @@ Widget pickerContainer({
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.appDescriptionColor),
+        border: Border.all(color: AppColors.appBodyTextColor),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
@@ -419,7 +419,7 @@ Widget pickerContainer({
               fontSize: 14,
             ),
           ),
-          Icon(icon.icon, size: 20, color: AppColors.appDescriptionColor),
+          Icon(icon.icon, size: 20, color: AppColors.appBodyTextColor),
         ],
       ),
     ),
@@ -436,7 +436,7 @@ Widget pickerContainerforDateandTime({
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.appDescriptionColor),
+        border: Border.all(color: AppColors.appBodyTextColor),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
@@ -451,9 +451,9 @@ Widget pickerContainerforDateandTime({
           ),
           Row(
             children: [
-              Icon(icon.icon, size: 20, color: AppColors.appDescriptionColor),
+              Icon(icon.icon, size: 20, color: AppColors.appIconColor),
               const SizedBox(width: 8),
-              Icon(iconsecond.icon, size: 20, color: AppColors.appDescriptionColor),
+              Icon(iconsecond.icon, size: 20, color: AppColors.appIconColor),
             ],
           ),
         ],
@@ -470,8 +470,8 @@ Widget themedPicker(BuildContext context, Widget child) {
       primaryColor: AppColors.appColor,
       colorScheme: ColorScheme.light(
         primary: AppColors.appColor,
-        onPrimary: AppColors.appTextColor,
-        onSurface: AppColors.appTextColor,
+        onPrimary: AppColors.appBodyTextColor,
+        onSurface: AppColors.appBodyTextColor,
       ),
       dialogBackgroundColor: Colors.white,
 
@@ -487,8 +487,8 @@ Widget themedPicker(BuildContext context, Widget child) {
 
         hourMinuteTextColor: MaterialStateColor.resolveWith(
               (states) => states.contains(MaterialState.selected)
-              ? AppColors.appTextColor
-              : AppColors.appTextColor,
+              ? AppColors.appBodyTextColor
+              : AppColors.appBodyTextColor,
         ),
 
         entryModeIconColor: AppColors.appColor,
@@ -502,9 +502,9 @@ Widget themedPicker(BuildContext context, Widget child) {
 
         dayPeriodTextColor: MaterialStateColor.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.appTextColor;
+            return AppColors.appBodyTextColor;
           }
-          return AppColors.appTextColor.withOpacity(0.7);
+          return AppColors.appBodyTextColor.withOpacity(0.7);
         }),
 
         dayPeriodBorderSide: const BorderSide(color: Colors.transparent),
@@ -533,7 +533,7 @@ Widget themedPicker(BuildContext context, Widget child) {
           if (states.contains(MaterialState.selected)) {
             return Colors.white;
           }
-          return AppColors.appTextColor;
+          return AppColors.appBodyTextColor;
         }),
 
         // Today outline

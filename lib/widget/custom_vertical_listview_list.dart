@@ -176,19 +176,11 @@ class CustomVerticalListviewList extends StatelessWidget {
       onTap: onItemTap ?? () => _openCustomDetailScreen(context, item),
       child: Container(
         width: 330,
-        height: isFromCartScreen ? 165 : 125,
+        height: isFromCartScreen ? 165 : 140,
         decoration: BoxDecoration(
           color: AppColors.appWhite,
           borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(color: AppColors.kBorderColorTextField),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.darkWhite,
-              blurRadius: 5.0,
-              spreadRadius: 2.0,
-              offset: const Offset(0, 5),
-            ),
-          ],
+
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,7 +317,7 @@ class CustomVerticalListviewList extends StatelessWidget {
               child: Text(
                 item.title,
                 style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.appTextColor,
+                  color: AppColors.appTitleColor,
                   fontWeight: FontWeight.bold,
                 ),
                 maxLines: 2,
@@ -342,34 +334,21 @@ class CustomVerticalListviewList extends StatelessWidget {
               Text(
                 item.rating.toStringAsFixed(1),
                 style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.neutralColor,
+                  color: AppColors.appTitleColor,
                 ),
               ),
               const SizedBox(width: 2.0),
               Text(
                 '(${item.reviewCount})',
                 style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.textgrey,
+                  color: AppColors.appDescriptionColor,
                 ),
               ),
               const SizedBox(width: 40),
-              RichText(
-                text: TextSpan(
-                  text: 'Price: ',
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.textgrey,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: '₹${item.price.toStringAsFixed(0)}',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.appColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.kTextStyle.copyWith(
+    color: AppColors.appTitleColor,
+    fontWeight: FontWeight.bold,))
+
             ],
           ),
           const SizedBox(height: 5.0),
@@ -395,7 +374,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.neutralColor,
+                      color: AppColors.appTitleColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -404,7 +383,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.subTitleColor,
+                      color: AppColors.appDescriptionColor,
                     ),
                   ),
                 ],

@@ -167,6 +167,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
                   label + (isRequired ? ' *' : ''),
                   style: AppTextStyle.kTextStyle.copyWith(
                     fontWeight: FontWeight.w600,
+                    color: AppColors.appBodyTextColor
                   ),
                 ),
               ),
@@ -373,7 +374,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           fieldWidget = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label + (isRequired ? " *" : "")),
+              Text(label + (isRequired ? " *" : ""),style: TextStyle(color: AppColors.appBodyTextColor),),
               const SizedBox(height: 8),
 
               for (int i = 0; i < labels.length; i++)
@@ -415,7 +416,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         fieldWidget = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label + (isRequired ? " *" : "")),
+            Text(label + (isRequired ? " *" : ""),style: TextStyle(color: AppColors.appBodyTextColor),),
             const SizedBox(height: 8),
 
             CustomDropdown<String>(

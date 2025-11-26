@@ -66,8 +66,8 @@ class ClientHomeScreen extends StatelessWidget {
           child: ListTile(
             horizontalTitleGap: 0,
             visualDensity: const VisualDensity(vertical: -2),
-            leading: Icon(FeatherIcons.search, color: AppColors.appTextColor),
-            title: Text('Search services...', style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)),
+            leading: Icon(FeatherIcons.search, color: AppColors.appTextColor,size: 18,),
+            title: Text(' Search...', style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)),
             onTap: () {
               showSearch(context: context, delegate: CustomSearchDelegate());
             },

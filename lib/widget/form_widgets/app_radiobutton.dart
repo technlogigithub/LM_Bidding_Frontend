@@ -37,7 +37,7 @@ class CustomRadioButton<T> extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? AppColors.appColor : Colors.grey,
+                color: isSelected ? AppColors.appColor :AppColors.appBodyTextColor,
                 width: 2,
               ),
             ),
@@ -62,7 +62,7 @@ class CustomRadioButton<T> extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: fontSize,
-              color: isSelected ? AppColors.appColor : AppColors.appBodyTextColor,
+              color: AppColors.appBodyTextColor,
               fontWeight: FontWeight.w500,
             ),
           ),

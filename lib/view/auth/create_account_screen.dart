@@ -99,28 +99,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Center(
                   child: Column(
                     children: [
-                      SizedBox(
-                        height: screenHeight * 0.1,
-                        width: screenWidth * 0.7,
-                        child: Center(
-                          child: UniversalImage(
-                            url: controllerApp.logo.toString(),
-                            height: screenHeight * 0.1,
-                            width: screenWidth * 0.7,
-                            fit: BoxFit.contain,
-                          ),
+                      Center(
+                        child: UniversalImage(
+                          url: controllerApp.logoNameWhite.toString(),
+                          height: screenHeight * 0.1,
+                          width: screenWidth * 0.7,
+                          fit: BoxFit.contain,
                         ),
                       ),
 
-                      SizedBox(height: 10.h),
-                      Text(
-                        controllerApp.appName.toString(),
-                        style: AppTextStyle.kTextStyle.copyWith(
-                          color: AppColors.appTextColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24.sp, // Responsive font size
-                        ),
-                      ),
+
                     ],
                   ),
                 ),
@@ -150,7 +138,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: Text(
                             reg?.pageTitle ?? AppStrings.createNewAccount,
                             style: AppTextStyle.kTextStyle.copyWith(
-                              color: AppColors.appTextColor,
+                              color: AppColors.appTitleColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 18.sp,
                             ),
@@ -166,7 +154,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         if ((reg?.pageDescription ?? '').isNotEmpty) {
                           widgets.add(Text(
                             reg!.pageDescription!,
-                            style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor),
+                            style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appDescriptionColor),
                           ));
                           widgets.add(SizedBox(height: 16.h));
                         }
@@ -224,7 +212,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         },
                                         icon: Icon(
                                           (_passwordObscure[name] ?? true) ? Icons.visibility_off : Icons.visibility,
-                                          color: AppColors.appTextColor,
+                                          color: AppColors.appIconColor,
                                         ),
                                       )
                                     : null,
@@ -380,14 +368,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               text: TextSpan(
                                 text: AppStrings.yesIunderstandandagreetothe,
                                 style: AppTextStyle.kTextStyle.copyWith(
-                                  color: AppColors.appTextColor,
+                                  color: AppColors.appBodyTextColor,
                                   fontSize: 12.sp, // Responsive font size
                                 ),
                                 children: [
                                   TextSpan(
                                     text: AppStrings.termsofService,
                                     style: AppTextStyle.kTextStyle.copyWith(
-                                      color: AppColors.appColor,
+                                      color: AppColors.appLinkColor,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12.sp,
                                     ),
@@ -546,12 +534,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     ),
                                   ),
                                 ),
-                                Expanded(
-                                  child: Divider(
-                                    thickness: 1.w,
-                                    color: AppColors.appTextColor,
-                                  ),
-                                ),
+
                               ],
                             ),
                             SizedBox(height: 20.h),
@@ -602,17 +585,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               text: TextSpan(
                                 text: left + ' ',
                                 style: AppTextStyle.kTextStyle.copyWith(
-                                  color: AppColors.appTextColor,
+                                  color: AppColors.appBodyTextColor,
                                   fontSize: 14.sp,
                                 ),
                                 children: [
                                   TextSpan(
                                     text: right,
                                     style: AppTextStyle.kTextStyle.copyWith(
-                                      color: AppColors.appColor,
+                                      color: AppColors.appLinkColor,
                                       fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: AppColors.appColor,
+
                                       fontSize: 14.sp,
                                     ),
                                   ),

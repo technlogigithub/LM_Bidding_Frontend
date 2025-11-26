@@ -68,10 +68,10 @@ class CustomTextfield extends StatelessWidget {
           suffixIcon: suffixIcon,
           counterText: "", // 🔹 hides default counter
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appTitleColor),
+            borderSide: BorderSide(color: AppColors.appBodyTextColor),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appTitleColor),
+            borderSide: BorderSide(color: AppColors.appDescriptionColor),
           ),
         ),
       ),

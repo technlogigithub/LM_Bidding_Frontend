@@ -98,7 +98,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 Text(
                   profileForm.pageDescription!,
                   style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.appTextColor,
+                    color: AppColors.appDescriptionColor,
                     fontSize: 16,
                   ),
                 ),
@@ -136,7 +136,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           totalSteps: totalSteps,
           currentStep: currentStep + 1,
           selectedColor: AppColors.appColor,
-          unselectedColor: AppColors.appTextColor.withValues(alpha: 0.3),
+          unselectedColor: AppColors.appGreyColor,
           size: 8,
           roundedEdges: const Radius.circular(4),
         ),
@@ -148,7 +148,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           Text(
             profileForm.stepTitles![currentStep],
             style: AppTextStyle.kTextStyle.copyWith(
-              color: AppColors.appTextColor,
+              color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
@@ -258,7 +258,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                   Text(
                     title ?? '',
                     style: TextStyle(
-                      color: Color(0xFF1D1D1D),
+                      color: AppColors.appBodyTextColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                             ),
@@ -284,13 +284,13 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                         return SizedBox(
                           height: 40.h,
                           child: FloatingActionButton.extended(
-                            backgroundColor: AppColors.appColor,
+                            backgroundColor: AppColors.appButtonColor,
                             onPressed: () => isAddress
                                 ? _showAddressDialog(_filterMarkerInputs(inputs))
                                 : _showGenericEntryDialog(currentStep, inputs),
                             icon: Icon(
                               FeatherIcons.plusCircle,
-                              color: AppColors.appTextColor,
+                              color: AppColors.appButtonTextColor,
                               size: 20.0,
                             ),
                             label: Text(
@@ -304,7 +304,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                                 return AppStrings.addNew;
                               })(),
                               style: TextStyle(
-                                color: AppColors.appTextColor,
+                                color: AppColors.appButtonTextColor,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -443,7 +443,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: AppColors.appBodyTextColor),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -461,7 +461,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                       address['address_type'] ?? '',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.appTextColor,
+                        color: AppColors.appTitleColor,
                         fontSize: 16,
                       ),
                     ),
@@ -476,7 +476,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                              final fullAddress = address['address']?.toString();
                              _openInGoogleMaps(lat: lat, lng: lng, queryAddress: fullAddress);
                            },
-                             child: Icon(Icons.place_outlined, color: AppColors.appColor, size: 20)),
+                             child: Icon(Icons.place_outlined, color: AppColors.appIconColor, size: 20)),
                         SizedBox(width: 10.w),
                         SizedBox(
                           width: Get.width * 0.6,
@@ -484,8 +484,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                             address['address']?.isNotEmpty == true
                                 ? '${address['address']}${address['landmark']?.isNotEmpty == true ? ', ${address['landmark']}' : ''}'
                                 : 'Latitude: ${address['latitude'] ?? 'N/A'}, Longitude: ${address['longitude'] ?? 'N/A'}',
-                            style: const TextStyle(
-                              color: Color(0xFF757575),
+                            style:  TextStyle(
+                              color:AppColors.appDescriptionColor ,
                               fontSize: 14,
                             ),
                           ),
@@ -512,9 +512,9 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                         existingAddress: address,
                         index: index
                     ),
-                    child: const Icon(
+                    child:  Icon(
                       FeatherIcons.edit,
-                      color: Colors.blue,
+                      color: AppColors.appColor,
                       size: 18,
                     ),
                   ),
@@ -1107,14 +1107,15 @@ class _AddressDialogState extends State<AddressDialog> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.appTextColor
+                          color: AppColors.appTitleColor
                         ),
                       ),
                       GestureDetector(
                         onTap: () => Get.back(),
-                        child: const Icon(
+                        child:  Icon(
                           FeatherIcons.x,
                           size: 24,
+                          color: AppColors.appIconColor,
                         ),
                       ),
                     ],
@@ -1143,7 +1144,7 @@ class _AddressDialogState extends State<AddressDialog> {
                         const SizedBox(width: 16),
                         GestureDetector(
                           onTap: _openLocationPicker,
-                          child: Icon(Icons.place_outlined, color: AppColors.appColor, size: 20),
+                          child: Icon(Icons.place_outlined, color: AppColors.appIconColor, size: 20),
                         ),
                       ],
                     ],

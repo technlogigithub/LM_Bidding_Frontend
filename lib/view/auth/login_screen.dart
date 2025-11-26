@@ -63,27 +63,15 @@ class LoginScreen extends StatelessWidget {
                 Center(
                   child: Column(
                     children: [
-                      SizedBox(
-                        height: screenHeight * 0.1,
-                        width: screenWidth * 0.7,
-                        child: Center(
-                          child: UniversalImage(
-                            url: controllerApp.logo.toString(),
-                            height: screenHeight * 0.1,
-                            width: screenWidth * 0.7,
-                            fit: BoxFit.contain,
-                          ),
+                      Center(
+                        child: UniversalImage(
+                          url: controllerApp.logoNameWhite.toString(),
+                          height: screenHeight * 0.1,
+                          width: screenWidth * 0.7,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      SizedBox(height: screenHeight * 0.01),
-                      Text(
-                        controllerApp.appName.toString(),
-                        style: TextStyle(
-                          color: AppColors.appTextColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: screenWidth * 0.07,
-                        ),
-                      )
+
                     ],
                   ),
                 ),
@@ -108,7 +96,7 @@ class LoginScreen extends StatelessWidget {
                     return Text(
                       title,
                       style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.appTextColor,
+                        color: AppColors.appTitleColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 18.0,
                       ),
@@ -127,7 +115,7 @@ class LoginScreen extends StatelessWidget {
                     fields.add(Text(
                       page!.pageDescription!,
                       style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.appTextColor,
+                        color: AppColors.appDescriptionColor,
                       ),
                     ));
                     fields.add(SizedBox(height: screenHeight * 0.02));
@@ -187,7 +175,7 @@ class LoginScreen extends StatelessWidget {
                                 controller.hidePassword.value
                                     ? Icons.visibility_off
                                     : Icons.visibility,
-                                color: AppColors.appTextColor,
+                                color: AppColors.appIconColor,
                               ),
                               onPressed: controller.togglePassword,
                             ),
@@ -214,7 +202,7 @@ class LoginScreen extends StatelessWidget {
                       child: Text(
                         AppStrings.loginwithOTP,
                         style: AppTextStyle.kTextStyle.copyWith(
-                          color: AppColors.appColor,
+                          color: AppColors.appLinkColor,
                         ),
                       ),
                     ),
@@ -282,13 +270,13 @@ class LoginScreen extends StatelessWidget {
                       text: TextSpan(
                         text: AppStrings.donthaveanaccount,
                         style: AppTextStyle.kTextStyle.copyWith(
-                          color: AppColors.appTextColor,
+                          color: AppColors.appBodyTextColor,
                         ),
                         children: [
                           TextSpan(
                             text: AppStrings.createNewAccount,
                             style: AppTextStyle.kTextStyle.copyWith(
-                              color: AppColors.appColor,
+                              color: AppColors.appLinkColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

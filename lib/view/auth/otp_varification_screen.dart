@@ -69,16 +69,12 @@ class OtpVarificationScreen extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    SizedBox(
-                      height: screenHeight * 0.1,
-                      width: screenWidth * 0.7,
-                      child: Center(
-                        child: UniversalImage(
-                          url: controllerApp.logo.toString(),
-                          height: screenHeight * 0.1,
-                          width: screenWidth * 0.7,
-                          fit: BoxFit.contain,
-                        ),
+                    Center(
+                      child: UniversalImage(
+                        url: controllerApp.logoNameWhite.toString(),
+                        height: screenHeight * 0.1,
+                        width: screenWidth * 0.7,
+                        fit: BoxFit.contain,
                       ),
                     ),
                     SizedBox(height: screenHeight*0.01,),
@@ -110,7 +106,7 @@ class OtpVarificationScreen extends StatelessWidget {
                   return Text(
                     desc,
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.appTextColor,
+                      color: AppColors.appDescriptionColor,
                       fontSize: width * 0.04,
                     ),
                     textAlign: TextAlign.center,
@@ -120,7 +116,7 @@ class OtpVarificationScreen extends StatelessWidget {
                 Text(
                   mobile,
                   style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.appGreyTextColor,
+                    color: AppColors.appTitleColor,
                     fontWeight: FontWeight.bold,
                     fontSize: width * 0.045,
                   ),
@@ -147,9 +143,9 @@ class OtpVarificationScreen extends StatelessWidget {
                       width: width * 0.15,
                       height: width * 0.15,
                       textStyle: TextStyle(
-                          fontSize: width * 0.05, color: AppColors.appGreyTextColor),
+                          fontSize: width * 0.05, color: AppColors.appTitleColor),
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.appColor),
+                        border: Border.all(color: AppColors.appBodyTextColor),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -157,7 +153,7 @@ class OtpVarificationScreen extends StatelessWidget {
                       width: width * 0.15,
                       height: width * 0.15,
                       textStyle: TextStyle(
-                          fontSize: width * 0.05, color: AppColors.appGreyTextColor),
+                          fontSize: width * 0.05, color: AppColors.appBodyTextColor),
                       decoration: BoxDecoration(
                         border: Border.all(color: AppColors.appGreyTextColor),
                         borderRadius: BorderRadius.circular(10),
@@ -177,7 +173,7 @@ class OtpVarificationScreen extends StatelessWidget {
                   return Text(
                     "$minutes:$secs",
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.appGreyTextColor,
+                      color: AppColors.appBodyTextColor,
                       fontWeight: FontWeight.bold,
                       fontSize: width * 0.05,
                     ),
@@ -196,8 +192,8 @@ class OtpVarificationScreen extends StatelessWidget {
                         : AppStrings.verification,
                     style: AppTextStyle.kTextStyle.copyWith(
                       color: controller.secondsRemaining.value == 0
-                          ? AppColors.appColor
-                          : AppColors.appGreyTextColor,
+                          ? AppColors.appLinkColor
+                          : AppColors.appLinkColor,
                       fontSize: width * 0.04,
                     ),
                   ),

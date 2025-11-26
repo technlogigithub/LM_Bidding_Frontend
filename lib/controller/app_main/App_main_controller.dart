@@ -48,6 +48,10 @@ class AppSettingsController extends GetxController {
   RxString companyName = "".obs;
   RxString logo = "".obs;
   RxString favicon = "".obs;
+  RxString logoSplash = "".obs;
+  RxString logoName = "".obs;
+  RxString logoNameWhite = "".obs;
+  RxString logoWhite = "".obs;
   RxString siteCopyright = "".obs;
   RxString contactNumber = "".obs;
   RxString whatsappNumber = "".obs;
@@ -201,6 +205,12 @@ class AppSettingsController extends GetxController {
         appName.value = result?.general?.appName ?? "";
         companyName.value = result?.general?.companyName ?? "";
         logo.value = result?.general?.logo ?? "";
+        /// EXTRA LOGOS (new)
+        logoSplash.value = result?.general?.logoSplash ?? "";
+        logoName.value = result?.general?.logoName ?? "";
+        logoNameWhite.value = result?.general?.logoNameWhite ?? "";
+        logoWhite.value = result?.general?.logoWhite ?? "";
+
         favicon.value = result?.general?.favicon ?? "";
         siteCopyright.value = result?.general?.siteCopyright ?? "";
         contactNumber.value = result?.general?.contactNumber ?? "";
@@ -404,9 +414,11 @@ class AppSettingsController extends GetxController {
     mutedTextColor.value = theme['muted_text_color'] ?? "";
     linkTextColor.value = theme['link_text_color'] ?? "";
     iconColor.value = theme['icon_text_color'] ?? "";
+
+    print(" description color ${theme['description_text_color'] ?? ""}");
     descriptiontextColor.value = theme['description_text_color'] ?? "";
     titleColor.value = theme['title_text_color'] ?? "";
-    bodytextColor.value = theme['description_text_color'] ?? "";
+    bodytextColor.value = theme['body_text_color'] ?? "";
   }
 
   // Language Management Methods

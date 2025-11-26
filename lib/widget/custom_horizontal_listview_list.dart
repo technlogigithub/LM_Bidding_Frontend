@@ -26,7 +26,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
           () => isLoading.value
           ? _buildShimmerList()
           : SizedBox(
-        height: 160,
+        height: 170,
         child: ListView.separated(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.only(
@@ -168,19 +168,11 @@ class CustomHorizontalListViewList extends StatelessWidget {
       // onTap: onItemTap ?? () => Get.to(() => const ClientServiceDetails()),
       child: Container(
         width: 330,
-        height: 120,
+        height: 150,
         decoration: BoxDecoration(
           color: AppColors.appWhite,
           borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(color: AppColors.kBorderColorTextField),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.darkWhite,
-              blurRadius: 5.0,
-              spreadRadius: 2.0,
-              offset: const Offset(0, 5),
-            ),
-          ],
+
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -254,6 +246,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
           Flexible(
             child: SizedBox(
               width: 190,
+              height: 60,
               child: Text(
                 item.title,
                 style: AppTextStyle.kTextStyle.copyWith(
@@ -265,7 +258,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 5.0),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -285,23 +278,12 @@ class CustomHorizontalListViewList extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 40),
-              RichText(
-                text: TextSpan(
-                  text: 'Price: ',
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.appDescriptionColor,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: '₹${item.price.toStringAsFixed(0)}',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.appColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+
+
+              Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.kTextStyle.copyWith(
+                color: AppColors.appTitleColor,
+                fontWeight: FontWeight.bold,))
+
             ],
           ),
           const SizedBox(height: 5.0),

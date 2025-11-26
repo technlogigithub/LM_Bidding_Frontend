@@ -165,7 +165,7 @@ class SplashScreenState extends State<SplashScreen> {
                     height: 100.h,
                     width: maxContentWidth * 0.9,
                     child: UniversalImage(
-                      url: controller.logo.value,
+                      url: controller.logoSplash.value,
                       height: 100.h,
                       width: maxContentWidth * 0.9,
                       fit: BoxFit.contain,

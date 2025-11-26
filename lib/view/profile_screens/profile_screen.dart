@@ -32,8 +32,8 @@ class ProfileScreen extends StatelessWidget {
     final setting = appController.settings.value;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final Color text=AppColors.textgrey;
-    final TextStyle style= AppTextStyle.kTextStyle.copyWith(color: AppColors.appBlack);
+    final Color text=AppColors.appTitleColor;
+    final TextStyle style= AppTextStyle.kTextStyle.copyWith(color: AppColors.appTitleColor);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -151,7 +151,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       trailing:  Icon(
                         FeatherIcons.chevronRight,
-                        color: AppColors.textgrey,
+                        color: text,
                       ),
                     ),
                     ListTile(

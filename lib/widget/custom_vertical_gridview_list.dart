@@ -97,14 +97,11 @@ class CustomVerticalGridviewList extends StatelessWidget {
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      Text(
-                        'Price : ',
-                        style: const TextStyle(fontSize: 16),
-                      ),
+
                       Text(
                         '₹${service.price}',
                         style:  TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16,color: AppColors.appColor),
+                            fontWeight: FontWeight.bold, fontSize: 16,color: AppColors.appTitleColor),
                       ),
                     ],
                   ),

@@ -8,6 +8,13 @@ class CustomDropdown<T> extends StatelessWidget {
   final ValueChanged<T?> onChanged;
   final String Function(T) itemToString;
 
+  final Color? textColor;
+  final Color? hintColor;
+  final Color? iconColor;
+  final Color? borderColor;
+  final Color? backgroundColor;
+  final Color? menuBackgroundColor;
+
   const CustomDropdown({
     Key? key,
     required this.value,
@@ -15,6 +22,12 @@ class CustomDropdown<T> extends StatelessWidget {
     required this.hintText,
     required this.onChanged,
     required this.itemToString,
+    this.textColor,
+    this.hintColor,
+    this.iconColor,
+    this.borderColor,
+    this.backgroundColor,
+    this.menuBackgroundColor,
   }) : super(key: key);
 
   @override
@@ -22,36 +35,51 @@ class CustomDropdown<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: backgroundColor ?? Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppColors.appBodyTextColor, // 🔵 Use your app color
+          color: borderColor ?? AppColors.appBodyTextColor,
           width: 1.2,
         ),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<T>(
           value: value,
+          isExpanded: true,
+            borderRadius: BorderRadius.circular(10),
+          // MENU BACKGROUND COLOR
+          dropdownColor: menuBackgroundColor ?? AppColors.appColor,
+
+          // HINT TEXT
           hint: Text(
             hintText,
-            style: TextStyle(color: AppColors.appBodyTextColor),
+            style: TextStyle(
+              color: hintColor ?? AppColors.appDescriptionColor,
+              fontSize: 14,
+            ),
           ),
-          isExpanded: true,
+
+          // ICON COLOR
           icon: Icon(
             Icons.arrow_drop_down,
-            color: AppColors.appColor,
+            color: iconColor ?? AppColors.appBodyTextColor,
           ),
+
+          // ITEMS
           items: items.map((item) {
             return DropdownMenuItem<T>(
               value: item,
               child: Text(
                 itemToString(item),
                 style: TextStyle(
-                  color: AppColors.appBodyTextColor, // 🔵 Text color
+                  color: textColor ?? AppColors.appBodyTextColor,
+                  fontSize: 14,
                 ),
               ),
             );
           }).toList(),
+
+          // ON CHANGE
           onChanged: onChanged,
         ),
       ),

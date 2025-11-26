@@ -88,7 +88,7 @@ class CustomHeader extends StatelessWidget {
                       isLoggedIn ? username : "Guest",
                       style: AppTextStyle.kTextStyle.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.neutralColor,
+                        color: AppColors.appTextColor,
                       ),
                       overflow: TextOverflow.ellipsis,
                     );
@@ -100,7 +100,7 @@ class CustomHeader extends StatelessWidget {
                   text: TextSpan(
                     text: 'Balance: ',
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.neutralColor,
+                      color: AppColors.appTextColor,
                       fontSize: 13,
                     ),
                     children: [
@@ -108,7 +108,7 @@ class CustomHeader extends StatelessWidget {
                         text: "\$${balance.toStringAsFixed(2)}",
                         style: AppTextStyle.kTextStyle.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.neutralColor,
+                          color: AppColors.appTextColor,
                           fontSize: 13,
                         ),
                       ),

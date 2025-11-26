@@ -153,15 +153,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.appWhite,
             borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: AppColors.kBorderColorTextField),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.darkWhite,
-                blurRadius: 5.r,
-                spreadRadius: 2.r,
-                offset: Offset(0, 5.h),
-              ),
-            ],
+
           ),
           child: Column(
             children: [

@@ -22,7 +22,7 @@ class _CustomToggleState extends State<CustomToggle> {
         Expanded(child: Text(widget.label, style: TextStyle(color: AppColors.appBodyTextColor))),
         Switch(
           value: widget.value,
-          activeColor: AppColors.appBodyTextColor,
+          activeColor: AppColors.appButtonColor,
           onChanged: (newValue) {
             setState(() {
               widget.onChanged(newValue);

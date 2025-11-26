@@ -63,7 +63,7 @@ class SetupClientProfileView extends StatelessWidget {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             elevation: 0,
-            iconTheme: const IconThemeData(color: Colors.black),
+            iconTheme:  IconThemeData(color: AppColors.appTextColor),
             flexibleSpace: Container(
               decoration: BoxDecoration(
                 gradient: AppColors.appbarColor,
@@ -274,23 +274,23 @@ class SetupClientProfileView extends StatelessWidget {
                             width: double.infinity,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.15),
-                                  blurRadius: 18,
-                                  spreadRadius: 2,
-                                  offset: Offset(0, 6),
-                                ),
-                                BoxShadow(
-                                  color: Colors.grey.withValues(alpha: 0.2),
-                                  blurRadius: 4,
-                                  spreadRadius: -1,
-                                  offset: Offset(0, -2),
-                                ),
-                              ],
-                              border: Border.all(
-                                color: AppColors.appTextColor.withValues(alpha: 0.3),
-                              ),
+                              // boxShadow: [
+                              //   BoxShadow(
+                              //     color: Colors.black.withValues(alpha: 0.15),
+                              //     blurRadius: 18,
+                              //     spreadRadius: 2,
+                              //     offset: Offset(0, 6),
+                              //   ),
+                              //   BoxShadow(
+                              //     color: Colors.grey.withValues(alpha: 0.2),
+                              //     blurRadius: 4,
+                              //     spreadRadius: -1,
+                              //     offset: Offset(0, -2),
+                              //   ),
+                              // ],
+                              // border: Border.all(
+                              //   color: AppColors.appTextColor.withValues(alpha: 0.3),
+                              // ),
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10.r),
@@ -376,9 +376,9 @@ class SetupClientProfileView extends StatelessWidget {
         child: Text(
           sectionKey,
           style: AppTextStyle.kTextStyle.copyWith(
-            color: AppColors.appTextColor,
+            color: AppColors.appTitleColor,
             fontWeight: FontWeight.w700,
-            fontSize: 18.sp,
+            fontSize: 16.sp,
           ),
         ),
       ),
@@ -447,7 +447,7 @@ class SetupClientProfileView extends StatelessWidget {
       Text(
         sectionKey,
         style: AppTextStyle.kTextStyle.copyWith(
-          color: AppColors.appTextColor,
+          color: AppColors.appTitleColor,
           fontWeight: FontWeight.bold,
           fontSize: 16.sp,
         ),
@@ -704,7 +704,7 @@ class SetupClientProfileView extends StatelessWidget {
             child: Text(
               label,
               style: AppTextStyle.kTextStyle.copyWith(
-                color: AppColors.subTitleColor,
+                color: AppColors.appDescriptionColor,
                 fontSize: 14.sp,
               ),
             ),
@@ -716,7 +716,7 @@ class SetupClientProfileView extends StatelessWidget {
                 Text(
                   ":",
                   style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.subTitleColor,
+                    color: AppColors.appDescriptionColor,
                     fontSize: 14.sp,
                   ),
                 ),
@@ -725,7 +725,7 @@ class SetupClientProfileView extends StatelessWidget {
                   child: Text(
                     value,
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.subTitleColor,
+                      color: AppColors.appBodyTextColor,
                       fontSize: 14.sp,
                     ),
                   ),

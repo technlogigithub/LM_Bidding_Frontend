@@ -170,6 +170,10 @@ class LightTheme {
   String? mutedColor;
   String? mutedTextColor;
   String? linkTextColor;
+  String? iconTexColor;
+  String? titleTextColor;
+  String? descriptionTextColor;
+  String? bodyTextColor;
 
   LightTheme(
       {this.bgColorLtr,
@@ -180,7 +184,12 @@ class LightTheme {
         this.secondaryTextColor,
         this.mutedColor,
         this.mutedTextColor,
-        this.linkTextColor});
+        this.linkTextColor,
+        this.iconTexColor,
+        this.titleTextColor,
+        this.descriptionTextColor,
+        this.bodyTextColor
+      });
 
   LightTheme.fromJson(Map<String, dynamic> json) {
     bgColorLtr = json['bg_color_ltr'];
@@ -192,6 +201,10 @@ class LightTheme {
     mutedColor = json['muted_color'];
     mutedTextColor = json['muted_text_color'];
     linkTextColor = json['link_text_color'];
+    iconTexColor = json['icon_text_color'];
+    titleTextColor = json['title_text_color'];
+    descriptionTextColor = json['description_text_color'];
+    bodyTextColor = json['body_text_color'];
   }
 
   Map<String, dynamic> toJson() {
@@ -205,6 +218,10 @@ class LightTheme {
     data['muted_color'] = this.mutedColor;
     data['muted_text_color'] = this.mutedTextColor;
     data['link_text_color'] = this.linkTextColor;
+    data['icon_text_color'] = this.iconTexColor;
+    data['title_text_color'] = this.titleTextColor;
+    data['description_text_color'] = this.descriptionTextColor;
+    data['body_text_color'] = this.bodyTextColor;
     return data;
   }
 }
@@ -214,6 +231,10 @@ class General {
   String? companyName;
   String? logo;
   String? favicon;
+  String? logoSplash;
+  String? logoName;
+  String? logoNameWhite;
+  String? logoWhite;
   String? siteCopyright;
   String? contactNumber;
   String? whatsappNumber;
@@ -229,6 +250,10 @@ class General {
         this.companyName,
         this.logo,
         this.favicon,
+        this.logoSplash,
+        this.logoName,
+        this.logoNameWhite,
+        this.logoWhite,
         this.siteCopyright,
         this.contactNumber,
         this.whatsappNumber,
@@ -244,6 +269,10 @@ class General {
     companyName = json['company_name'];
     logo = json['logo'];
     favicon = json['favicon'];
+    logoSplash = json['logo_splash'];
+    logoName = json['logo_name'];
+    logoNameWhite = json['logo_name_white'];
+    logoWhite = json['logo_white'];
     siteCopyright = json['site_copyright'];
     contactNumber = json['contact_number'];
     whatsappNumber = json['whatsapp_number'];
@@ -260,6 +289,10 @@ class General {
     data['company_name'] = this.companyName;
     data['logo'] = this.logo;
     data['favicon'] = this.favicon;
+    data['logo_splash'] = this.logoSplash;
+    data['logo_name'] = this.logoName;
+    data['logo_name_white'] = this.logoNameWhite;
+    data['logo_white'] = this.logoWhite;
     data['site_copyright'] = this.siteCopyright;
     data['contact_number'] = this.contactNumber;
     data['whatsapp_number'] = this.whatsappNumber;

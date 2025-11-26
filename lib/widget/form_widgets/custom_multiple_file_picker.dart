@@ -467,7 +467,10 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
       width: 120,
       height: 120,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.appDescriptionColor, width: 1),
+        border: Border.all(
+          color: (isVideo || isImage) ? Colors.transparent : AppColors.appDescriptionColor,
+          width: 1,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Stack(
@@ -670,7 +673,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _isDragging ? AppColors.appColor : AppColors.appColor.withValues(alpha: 0.3),
+                  color: _isDragging ? AppColors.appColor : AppColors.appDescriptionColor,
                   width: _isDragging ? 3 : 2,
                 ),
                 borderRadius: BorderRadius.circular(8),
