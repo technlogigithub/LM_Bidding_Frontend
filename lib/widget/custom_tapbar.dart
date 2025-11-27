@@ -51,7 +51,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
               const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.appButtonColor : AppColors.appGreyColor,
+                color: isSelected ? AppColors.appButtonColor : AppColors.appMutedColor,
                 gradient: isSelected
                     ? LinearGradient(
                   colors: [
@@ -61,25 +61,25 @@ class _CustomTabBarState extends State<CustomTabBar> {
                 )
                     : null,
                 borderRadius: BorderRadius.circular(30),
-                boxShadow: isSelected
-                    ? [
-                  BoxShadow(
-                    color: AppColors.appButtonColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-                    : [],
+                // boxShadow: isSelected
+                //     ? [
+                //   BoxShadow(
+                //     color: AppColors.appButtonColor.withOpacity(0.3),
+                //     blurRadius: 8,
+                //     offset: const Offset(0, 4),
+                //   )
+                // ]
+                //     : [],
                 border: Border.all(
                   color:
-                  isSelected ? AppColors.appButtonColor : AppColors.appGreyColor,
+                  isSelected ? AppColors.appButtonColor : AppColors.appMutedColor,
                   width: 1.2,
                 ),
               ),
               child: Text(
                 widget.tabs[index],
                 style: widget.textStyle.copyWith(
-                  color: isSelected ? AppColors.appButtonTextColor:AppColors.appGreyTextColor,
+                  color: isSelected ? AppColors.appButtonTextColor:AppColors.appMutedTextColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),

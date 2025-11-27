@@ -100,6 +100,12 @@ class AppSettingsController extends GetxController {
   RxString descriptiontextColor = "".obs;
   RxString bodytextColor = "".obs;
 
+  // Font Style
+  RxString fontFamily = "".obs;
+  RxDouble fontTitleSize = 0.0.obs;
+  RxDouble fontDescriptionSize = 0.0.obs;
+  RxDouble fontBodySize = 0.0.obs;
+
   // Intro Sliders
   RxList<IntroSlider> introSliders = <IntroSlider>[].obs;
 
@@ -128,6 +134,9 @@ class AppSettingsController extends GetxController {
   RxString languagePageTitle = "".obs;
   RxString languagePageDescription = "".obs;
   RxString languageSubmitButtonLabel = "".obs;
+  RxString languagePageImage = "".obs;
+  RxString languagePageName = "".obs;
+
 
   // Force Update Page (from settings)
   RxString forceUpdatePageTitle = "".obs;
@@ -170,6 +179,12 @@ class AppSettingsController extends GetxController {
         /// Store themes
         _lightTheme = result?.lightTheme?.toJson() ?? {};
         _darkTheme = result?.darkTheme?.toJson() ?? {};
+
+        /// Font style
+        fontFamily.value = result?.fontStyle?.fontFamily ?? "";
+        fontTitleSize.value = result?.fontStyle?.title ?? 0.0;
+        fontDescriptionSize.value = result?.fontStyle?.description ?? 0.0;
+        fontBodySize.value = result?.fontStyle?.body ?? 0.0;
 
         /// SEO Meta
         seoTitle.value = result?.seo?.meta?.title ?? "";
@@ -255,9 +270,12 @@ class AppSettingsController extends GetxController {
         introSliders.assignAll(result?.introSlider ?? []);
 
         /// Language Page
-        languagePageTitle.value = result?.languagePage?.pageTitle ?? "";
-        languagePageDescription.value = result?.languagePage?.pageDescription ?? "";
+        languagePageTitle.value = result?.languagePage?.title ?? "";
+        languagePageDescription.value = result?.languagePage?.description ?? "";
         languageSubmitButtonLabel.value = result?.languagePage?.submitButtonLabel ?? "";
+        languagePageImage.value = result?.languagePage?.pageImage ?? "";
+        languagePageName.value = result?.languagePage?.pageName ?? "";
+
 
         /// Force Update Page
         forceUpdatePageTitle.value = result?.forceUpdatePage?.pageTitle ?? "";

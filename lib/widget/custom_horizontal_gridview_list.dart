@@ -4,8 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/app_color.dart';
-import '../../core/app_constant.dart' as AppTextStyle;
 import '../../models/static models/service_items_model.dart';
+import '../core/app_textstyle.dart';
 
 class CustomHorizontalGridViewList extends StatelessWidget {
   final List<ServiceItem> items;
@@ -151,7 +151,8 @@ class CustomHorizontalGridViewList extends StatelessWidget {
           height: 220.h,
           width: 156.w,
           decoration: BoxDecoration(
-            color: AppColors.appWhite,
+            gradient: AppColors.appPagecolor,
+            border: Border.all(color: AppColors.appDescriptionColor,width: 1),
             borderRadius: BorderRadius.circular(8.r),
 
           ),
@@ -178,10 +179,10 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                   children: [
                     Text(
                       item.sellerName,
-                      style: AppTextStyle.kTextStyle.copyWith(
+                      style: AppTextStyle.title(
                         color: AppColors.appTitleColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 14.sp,
+
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -198,17 +199,17 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                         SizedBox(width: 2.w),
                         Text(
                           item.rating.toStringAsFixed(1),
-                          style: AppTextStyle.kTextStyle.copyWith(
+                          style: AppTextStyle.body(
                             color: AppColors.appTitleColor,
-                            fontSize: 12.sp,
+
                           ),
                         ),
                         SizedBox(width: 2.w),
                         Text(
                           '(${item.reviewCount} review)',
-                          style: AppTextStyle.kTextStyle.copyWith(
+                          style: AppTextStyle.body(
                             color: AppColors.appDescriptionColor,
-                            fontSize: 12.sp,
+
                           ),
                         ),
                       ],
@@ -217,16 +218,16 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                     RichText(
                       text: TextSpan(
                         text: 'Seller Level - ',
-                        style: AppTextStyle.kTextStyle.copyWith(
+                        style: AppTextStyle.body(
                           color: AppColors.appTitleColor,
-                          fontSize: 12.sp,
+
                         ),
                         children: [
                           TextSpan(
                             text: item.sellerLevel,
-                            style: AppTextStyle.kTextStyle.copyWith(
+                            style: AppTextStyle.body(
                               color: AppColors.appDescriptionColor,
-                              fontSize: 12.sp,
+
                             ),
                           ),
                         ],

@@ -155,7 +155,7 @@ class SettingScreen extends StatelessWidget {
         child: Icon(icon, color: iconscolor),
       ),
       title: Text(title,style:  TextStyle(
-          fontSize: 14, color: AppColors.appTextColor),),
+          fontSize: 14, color: AppColors.appBodyTextColor),),
 
       trailing: trailingText != null
           ? Row(
@@ -216,7 +216,7 @@ class SettingScreen extends StatelessWidget {
           builder: (BuildContext context, StateSetter setState) {
             return Container(
               decoration: BoxDecoration(
-                color: AppColors.appWhite,
+                gradient: AppColors.appPagecolor,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20.r),
                   topRight: Radius.circular(20.r),
@@ -242,7 +242,7 @@ class SettingScreen extends StatelessWidget {
                       height: 4.h,
                       margin: EdgeInsets.only(bottom: 20.h),
                       decoration: BoxDecoration(
-                        color: Colors.grey[300],
+                        color: AppColors.appDescriptionColor,
                         borderRadius: BorderRadius.circular(2.r),
                       ),
                     ),
@@ -252,7 +252,7 @@ class SettingScreen extends StatelessWidget {
                   Text(
                     'Select Language',
                     style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.appTextColor,
+                      color: AppColors.appTitleColor,
                       fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -355,13 +355,13 @@ class SettingScreen extends StatelessWidget {
                             padding: EdgeInsets.symmetric(horizontal: 16.w),
                             margin: EdgeInsets.symmetric(vertical: 5.h),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.appColor : AppColors.appWhite,
+                              color: isSelected ? AppColors.appColor : AppColors.appMutedColor,
                               borderRadius: BorderRadius.circular(10.r),
-                              border: isSelected
-                                  ? null
-                                  : Border.all(
-                                      color: AppColors.appTextColor.withValues(alpha: 0.10),
-                                    ),
+                              // border: isSelected
+                              //     ? null
+                              //     : Border.all(
+                              //         color: AppColors.appBodyTextColor,
+                              //       ),
                             ),
                             alignment: Alignment.centerLeft,
                             child: Row(
@@ -371,18 +371,18 @@ class SettingScreen extends StatelessWidget {
                                     option['name'] ?? '',
                                     style: AppTextStyle.kTextStyle.copyWith(
                                       color: isSelected
-                                          ? AppColors.appWhite
-                                          : AppColors.appTextColor,
+                                          ? AppColors.appTextColor
+                                          : AppColors.appMutedTextColor,
                                       fontSize: 16.sp,
                                     ),
                                   ),
                                 ),
-                                if (isSelected)
-                                  Icon(
-                                    Icons.check,
-                                    color: AppColors.appWhite,
-                                    size: 20.sp,
-                                  ),
+                                // if (isSelected)
+                                //   Icon(
+                                //     Icons.check,
+                                //     color: AppColors.appTextColor,
+                                //     size: 20.sp,
+                                //   ),
                               ],
                             ),
                           ),

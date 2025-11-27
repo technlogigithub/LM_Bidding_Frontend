@@ -82,9 +82,12 @@ class LoginScreen extends StatelessWidget {
         body: Container(
           height: screenHeight,
           width: screenWidth,
-          decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+          decoration: BoxDecoration(
+              gradient: AppColors.appPagecolor
+          ),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(10.0),
+            physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -104,168 +107,110 @@ class LoginScreen extends StatelessWidget {
                   }),
                 ),
                 SizedBox(height: screenHeight * 0.04),
-
-                // FORM FIELDS
                 Obx(() {
                   final page = controllerApp.loginWithPasswordPage.value;
                   final inputs = page?.inputs ?? [];
                   final List<Widget> fields = [];
-
                   if ((page?.pageDescription ?? '').isNotEmpty) {
-                    fields.add(Text(
-                      page!.pageDescription!,
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.appDescriptionColor,
-                      ),
-                    ));
+                    fields.add(Text(page!.pageDescription!, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appDescriptionColor)));
                     fields.add(SizedBox(height: screenHeight * 0.02));
                   }
-
                   for (final field in inputs) {
                     final fname = (field.name ?? '').toLowerCase();
                     final label = field.label ?? '';
                     final hint = field.placeholder ?? '';
                     final type = (field.inputType ?? 'text').toLowerCase();
-
-                    // PERSISTENT CONTROLLER FIX
-                    TextEditingController textController;
-
-                    if (fname.contains('mobile') || fname.contains('phone')) {
-                      textController = controller.mobileController;
-                    } else if (fname.contains('password')) {
-                      textController = controller.passwordController;
-                    } else {
-                      if (!controller.fieldControllers.containsKey(fname)) {
-                        controller.fieldControllers[fname] = TextEditingController();
-                      }
-                      textController = controller.fieldControllers[fname]!;
-                    }
-
-                    // TEXT FIELD
                     if (type == 'text') {
-                      fields.add(
-                        CustomTextfield(
-                          label: label,
-                          hintText: hint,
-                          controller: textController,
-                          keyboardType: fname.contains('email')
-                              ? TextInputType.emailAddress
-                              : TextInputType.text,
-                          onChanged: (v) {
-                            if (fname.contains('mobile') || fname.contains('phone')) {
-                              controller.mobile.value = v;
-                            }
-                          },
-                        ),
-                      );
-                    }
-
-                    // PASSWORD FIELD
-                    else if (type == 'password') {
-                      fields.add(
-                        Obx(
-                              () => CustomTextfield(
-                            label: label,
-                            hintText: hint,
-                            obscureText: controller.hidePassword.value,
-                            controller: textController,
-                            keyboardType: TextInputType.visiblePassword,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                controller.hidePassword.value
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: AppColors.appIconColor,
-                              ),
-                              onPressed: controller.togglePassword,
-                            ),
-                            onChanged: (v) => controller.password.value = v,
+                      fields.add(CustomTextfield(
+                        label: label,
+                        hintText: hint,
+                        keyboardType: TextInputType.phone,
+                        maxLength: 10,
+                        controller: controller.mobileController,
+                        onChanged: (v) => controller.mobile.value = v,
+                      ));
+                      fields.add(SizedBox(height: screenHeight * 0.02));
+                    } else if (type == 'password') {
+                      fields.add(Obx(() => CustomTextfield(
+                        label: label,
+                        hintText: hint,
+                        obscureText: controller.hidePassword.value,
+                        keyboardType: TextInputType.visiblePassword,
+                        controller: controller.passwordController,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            controller.hidePassword.value ? Icons.visibility_off : Icons.visibility,
+                            color: AppColors.appIconColor,
                           ),
+                          onPressed: controller.togglePassword,
                         ),
-                      );
+                        onChanged: (v) => controller.password.value = v,
+                      )));
+                      fields.add(SizedBox(height: screenHeight * 0.02));
                     }
-
-                    fields.add(SizedBox(height: screenHeight * 0.02));
                   }
-
                   return AutofillGroup(child: Column(children: fields));
                 }),
-
                 SizedBox(height: screenHeight * 0.02),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     GestureDetector(
-                      onTap: () => Utils.gotoNextPage(
-                            () => LoginWithMobileNoScreen(),
-                      ),
+                      onTap: () => Utils.gotoNextPage(() => LoginWithMobileNoScreen()),
                       child: Text(
                         AppStrings.loginwithOTP,
                         style: AppTextStyle.kTextStyle.copyWith(
                           color: AppColors.appLinkColor,
                         ),
+                        textAlign: TextAlign.end,
                       ),
                     ),
                   ],
                 ),
-
                 SizedBox(height: screenHeight * 0.06),
 
-                // LOGIN BUTTON
-                Obx(
-                      () => CustomButton(
-                    text: controller.isLoading.value
-                        ? "${AppStrings.loggingIn}..."
-                        : AppStrings.loggingIn,
-                    onTap: () {
-                      final page = controllerApp.loginWithPasswordPage.value;
-                      final inputs = page?.inputs ?? [];
-                      String? firstError;
-
-                      String getVal(String name) {
-                        final lname = name.toLowerCase();
-                        if (lname == 'username' ||
-                            lname.contains('mobile') ||
-                            lname.contains('phone'))
-                          return controller.mobileController.text.trim();
-                        if (lname == 'password')
-                          return controller.passwordController.text.trim();
-                        return '';
+                // Login button with loading state
+                Obx(() => CustomButton(
+                  text: controller.isLoading.value ? "${AppStrings.loggingIn}..." : AppStrings.loggingIn,
+                  onTap: () {
+                    // Dynamic validation from login_with_password
+                    final page = controllerApp.loginWithPasswordPage.value;
+                    final inputs = page?.inputs ?? [];
+                    String? firstError;
+                    String getVal(String name) {
+                      final lname = name.toLowerCase();
+                      if (lname == 'username' || lname.contains('mobile') || lname.contains('phone')) return controller.mobileController.text.trim();
+                      if (lname == 'password') return controller.passwordController.text.trim();
+                      return '';
+                    }
+                    for (final field in inputs) {
+                      final name = field.name ?? '';
+                      final value = getVal(name);
+                      final type = (field.inputType ?? '').toLowerCase();
+                      if ((field.required ?? false) && value.isEmpty) {
+                        firstError = '${field.label ?? name} is required';
+                        break;
                       }
-
-                      for (final field in inputs) {
-                        final name = field.name ?? '';
-                        final value = getVal(name);
-
-                        if ((field.required ?? false) && value.isEmpty) {
-                          firstError = '${field.label ?? name} is required';
-                          break;
-                        }
+                      for (final v in (field.validations ?? [])) {
+                        final t = (v.type ?? '').toLowerCase();
+                        if (t == 'numeric' && !RegExp(r'^\d+$').hasMatch(value)) { firstError = v.errorMessage ?? '${field.label ?? name} must be numeric'; break; }
+                        if (t == 'exact_length' && (v.value ?? 0) != value.length) { firstError = v.errorMessage ?? '${field.label ?? name} must be exactly ${v.value} characters'; break; }
+                        if (t == 'min_length' && value.length < (v.value ?? v.minLength ?? 0)) { firstError = v.errorMessage ?? v.minLengthError ?? '${field.label ?? name} must be at least ${v.value ?? v.minLength} characters'; break; }
+                        if (t == 'pattern' && v.pattern != null && !RegExp(v.pattern!).hasMatch(value)) { firstError = v.errorMessage ?? v.patternErrorMessage ?? '${field.label ?? name} format is invalid'; break; }
                       }
-
-                      if (firstError != null) {
-                        Utils.showSnackbar(
-                          isSuccess: false,
-                          title: AppStrings.alert,
-                          message: firstError!,
-                        );
-                        return;
-                      }
-
-                      controller.loginApi(context);
-                    },
-                  ),
-                ),
+                      if (firstError != null) break;
+                    }
+                    if (firstError != null) { Utils.showSnackbar(isSuccess: false, title: AppStrings.alert, message: firstError!); return; }
+                    controller.loginApi(context);
+                  },
+                )),
 
                 SizedBox(height: screenHeight * 0.02),
-                Divider(thickness: 1.0, color: AppColors.appTextColor),
+                Divider(thickness: 1.0, color: AppColors.appDescriptionColor),
                 SizedBox(height: screenHeight * 0.02),
-
                 Center(
                   child: GestureDetector(
-                    onTap: () => Utils.gotoNextPage(
-                          () => SignUpScreen(),
-                    ),
+                    onTap: () => Utils.gotoNextPage(() => SignUpScreen()),
                     child: RichText(
                       text: TextSpan(
                         text: AppStrings.donthaveanaccount,

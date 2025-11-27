@@ -155,7 +155,7 @@ class OtpVarificationScreen extends StatelessWidget {
                       textStyle: TextStyle(
                           fontSize: width * 0.05, color: AppColors.appBodyTextColor),
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.appGreyTextColor),
+                        border: Border.all(color: AppColors.appMutedTextColor),
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),

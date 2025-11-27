@@ -529,7 +529,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   child: Text(
                                     'Or Sign up with',
                                     style: AppTextStyle.kTextStyle.copyWith(
-                                      color: AppColors.appGreyTextColor,
+                                      color: AppColors.appMutedTextColor,
                                       fontSize: 14.sp, // Responsive font size
                                     ),
                                   ),

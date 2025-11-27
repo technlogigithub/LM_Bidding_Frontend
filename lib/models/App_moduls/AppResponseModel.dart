@@ -32,6 +32,7 @@ class Result {
   ForceUpdatePage? forceUpdatePage;
   LightTheme? lightTheme;
   LightTheme? darkTheme;
+  AppFontStyle? fontStyle;
   General? general;
   SocialLogin? socialLogin;
   Seo? seo;
@@ -45,6 +46,7 @@ class Result {
         this.forceUpdatePage,
         this.lightTheme,
         this.darkTheme,
+        this.fontStyle,
         this.general,
         this.socialLogin,
         this.seo,
@@ -65,6 +67,9 @@ class Result {
         : null;
     darkTheme = json['dark_theme'] != null
         ? new LightTheme.fromJson(json['dark_theme'])
+        : null;
+    fontStyle = json['font_style'] != null
+        ? AppFontStyle.fromJson(json['font_style'])
         : null;
     general =
     json['general'] != null ? new General.fromJson(json['general']) : null;
@@ -105,6 +110,9 @@ class Result {
     }
     if (this.darkTheme != null) {
       data['dark_theme'] = this.darkTheme!.toJson();
+    }
+    if (this.fontStyle != null) {
+      data['font_style'] = this.fontStyle!.toJson();
     }
     if (this.general != null) {
       data['general'] = this.general!.toJson();
@@ -224,6 +232,39 @@ class LightTheme {
     data['body_text_color'] = this.bodyTextColor;
     return data;
   }
+}
+
+class AppFontStyle {
+  String? fontFamily;
+  double? title;
+  double? description;
+  double? body;
+
+  AppFontStyle({this.fontFamily, this.title, this.description, this.body});
+
+  factory AppFontStyle.fromJson(Map<String, dynamic> json) {
+    double? parseSize(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      final trimmed = value.toString().trim();
+      if (trimmed.isEmpty) return null;
+      return double.tryParse(trimmed);
+    }
+
+    return AppFontStyle(
+      fontFamily: json['font_family'],
+      title: parseSize(json['title']),
+      description: parseSize(json['description']),
+      body: parseSize(json['body']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'font_family': fontFamily,
+        'title': title?.toString(),
+        'description': description?.toString(),
+        'body': body?.toString(),
+      };
 }
 
 class General {
@@ -518,26 +559,39 @@ class Language {
 }
 
 class LanguagePage {
-  String? pageTitle;
-  String? pageDescription;
+  String? pageName;
+  String? pageImage;
+  String? title;
+  String? description;
   String? submitButtonLabel;
 
-  LanguagePage({this.pageTitle, this.pageDescription, this.submitButtonLabel});
+  LanguagePage({
+    this.pageName,
+    this.pageImage,
+    this.title,
+    this.description,
+    this.submitButtonLabel,
+  });
 
   LanguagePage.fromJson(Map<String, dynamic> json) {
-    pageTitle = json['page_title'];
-    pageDescription = json['page_description'];
+    pageName = json['page_name'];
+    pageImage = json['page_image'];
+    title = json['title'];
+    description = json['description'];
     submitButtonLabel = json['submit_button_label'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['page_title'] = this.pageTitle;
-    data['page_description'] = this.pageDescription;
-    data['submit_button_label'] = this.submitButtonLabel;
+    final Map<String, dynamic> data = {};
+    data['page_name'] = pageName;
+    data['page_image'] = pageImage;
+    data['title'] = title;
+    data['description'] = description;
+    data['submit_button_label'] = submitButtonLabel;
     return data;
   }
 }
+
 
 class ForceUpdatePage {
   String? pageTitle;

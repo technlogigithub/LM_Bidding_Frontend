@@ -96,6 +96,7 @@ class _OnBoardState extends State<OnBoard> {
                                     errorBuilder: (ctx, err, _) => Icon(
                                       Icons.image_not_supported,
                                       size: 50.sp,
+
                                     ),
                                   ),
                                 ),
@@ -116,7 +117,7 @@ class _OnBoardState extends State<OnBoard> {
                                           slider.title ?? "",
                                           textAlign: TextAlign.center,
                                           style: AppTextStyle.kTextStyle.copyWith(
-                                            color: AppColors.appTextColor,
+                                            color: AppColors.appTitleColor,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 20.sp, // Responsive font size
                                           ),
@@ -125,7 +126,7 @@ class _OnBoardState extends State<OnBoard> {
                                         Text(
                                           slider.description ?? "",
                                           style: AppTextStyle.kTextStyle.copyWith(
-                                            color: AppColors.appTextColor,
+                                            color: AppColors.appDescriptionColor,
                                             fontSize: 16.sp, // Responsive font size
                                           ),
                                           textAlign: TextAlign.center,
@@ -184,7 +185,7 @@ class _OnBoardState extends State<OnBoard> {
                         dotWidth: 8.w,
                         verticalOffset: 10.h,
                         activeDotColor: AppColors.appColor,
-                        dotColor: AppColors.appColor.withValues(alpha: 0.3),
+                        dotColor: AppColors.appMutedColor,
                       ),
                     );
                   }),

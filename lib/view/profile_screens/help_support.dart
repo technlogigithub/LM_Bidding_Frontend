@@ -75,13 +75,13 @@ class HelpSupport extends StatelessWidget {
                 errorWidget: (context, url, error) => Icon(
                   Icons.help_outline,
                   size: screenHeight * 0.1,
-                  color: AppColors.appColor,
+                  color: AppColors.appIconColor,
                 ),
               )
                   : Icon(
                 Icons.help_outline,
                 size: screenHeight * 0.1,
-                color: AppColors.appColor,
+                color: AppColors.appIconColor,
               ),
             ),
 
@@ -102,7 +102,7 @@ class HelpSupport extends StatelessWidget {
                     support?.title ?? "",
                     style: TextStyle(
                       fontSize: screenHeight * 0.03,
-                      color: AppColors.appTextColor,
+                      color: AppColors.appTitleColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -117,7 +117,7 @@ class HelpSupport extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: screenHeight * 0.02,
-                        color: AppColors.subTitleColor,
+                        color: AppColors.appDescriptionColor,
                       ),
                     ),
                   ),

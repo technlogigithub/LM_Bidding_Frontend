@@ -58,6 +58,7 @@ class ClientHomeScreen extends StatelessWidget {
       );
     }
 
+
     Widget buildSearchBar() {
       return Padding(
         padding: const EdgeInsets.all(15.0),
@@ -67,7 +68,7 @@ class ClientHomeScreen extends StatelessWidget {
             horizontalTitleGap: 0,
             visualDensity: const VisualDensity(vertical: -2),
             leading: Icon(FeatherIcons.search, color: AppColors.appTextColor,size: 18,),
-            title: Text(' Search...', style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)),
+            title: Text(' Search...', style: AppTextStyle.description(color: AppColors.appTextColor)),
             onTap: () {
               showSearch(context: context, delegate: CustomSearchDelegate());
             },
@@ -172,11 +173,12 @@ class ClientHomeScreen extends StatelessWidget {
                           profilecontroller.profileDetailsResponeModel.value
                               ?.result?.basicInfo?.name ??
                               "",
-                          style: AppTextStyle.kTextStyle.copyWith(
-                            color: AppColors.appTextColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          style: AppTextStyle.title(color: AppColors.appTextColor),
+                          // style: AppTextStyle.kTextStyle.copyWith(
+                          //   color: AppColors.appTextColor,
+                          //   fontWeight: FontWeight.bold,
+                          //   fontSize: 16,
+                          // ),
                         )
                             : SizedBox.shrink(),
 
@@ -195,9 +197,9 @@ class ClientHomeScreen extends StatelessWidget {
                                       controller.currentLocation.value.isEmpty
                                           ? 'Fetching location...'
                                           : controller.currentLocation.value,
-                                      style: AppTextStyle.kTextStyle.copyWith(
+                                      style: AppTextStyle.description(
                                           color: AppColors.appTextColor,
-                                          fontSize: 12),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -319,14 +321,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.categories,
-                          style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
+                          style: AppTextStyle.title(color: AppColors.appTitleColor),
                         ),
                         GestureDetector(
                           onTap: () => const ClientAllCategories().launch(context),
                           // onTap: () => controller.handleRestrictedFeature(() {
                           //   Get.toNamed('/categories'); // Replace with actual categories route
                           // }),
-                          child: Text(AppStrings.viewAll, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appLinkColor)),
+                          child: Text(AppStrings.viewAll, style: AppTextStyle.description(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -346,14 +348,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.upcomingPost,
-                          style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
+                          style: AppTextStyle.title(color: AppColors.appTitleColor),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () {
                             // const PopularServices().launch(context);
                           },
-                          child: Text(AppStrings.viewAll, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appLinkColor)),
+                          child: Text(AppStrings.viewAll, style: AppTextStyle.description(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -365,14 +367,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Top Poster',
-                          style: kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold,),
+                          style: AppTextStyle.title(color: AppColors.appTitleColor,),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => controller.handleRestrictedFeature(() {
                             // const TopSeller().launch(context);
                           }),
-                          child: Text('View All', style: kTextStyle.copyWith(color: AppColors.appLinkColor)),
+                          child: Text('View All', style: AppTextStyle.description(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -457,14 +459,14 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Recent Viewed',
-                          style: kTextStyle.copyWith(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
+                          style: AppTextStyle.title(color: AppColors.appTitleColor),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => controller.handleRestrictedFeature(() {
                             const RecentlyView().launch(context);
                           }),
-                          child: Text('View All', style: kTextStyle.copyWith(color: AppColors.appLinkColor)),
+                          child: Text('View All', style: AppTextStyle.description(color: AppColors.appLinkColor)),
                         ),
                       ],
                     ),
@@ -476,7 +478,7 @@ class ClientHomeScreen extends StatelessWidget {
                     tabs: controller.serviceList,
                     // primaryColor: AppColors.appColor,
                     // borderColor: Colors.grey.shade300,
-                    textStyle: const TextStyle(fontSize: 14),
+                    textStyle: AppTextStyle.description(),
                     onTap: (index) {
                       // do something when tapped
                       print("Selected tab index: $index");

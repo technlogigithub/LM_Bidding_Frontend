@@ -4,7 +4,8 @@ import 'package:get/get.dart';
 import 'package:libdding/core/app_string.dart';
 import 'package:shimmer/shimmer.dart';
 import '../core/app_color.dart';
-import '../core/app_constant.dart' as AppTextStyle;
+
+import '../core/app_textstyle.dart';
 import '../models/static models/service_items_model.dart';
 import 'custom_detail_screen.dart';
 
@@ -178,7 +179,8 @@ class CustomVerticalListviewList extends StatelessWidget {
         width: 330,
         height: isFromCartScreen ? 165 : 140,
         decoration: BoxDecoration(
-          color: AppColors.appWhite,
+          gradient: AppColors.appPagecolor,
+          border: Border.all(color: AppColors.appDescriptionColor,width: 1),
           borderRadius: BorderRadius.circular(8.0),
 
         ),
@@ -258,7 +260,7 @@ class CustomVerticalListviewList extends StatelessWidget {
       alignment: Alignment.topLeft,
       children: [
         Container(
-          height: 120,
+          height: 138,
           width: 120,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.only(
@@ -293,7 +295,7 @@ class CustomVerticalListviewList extends StatelessWidget {
               child: Center(
                 child: Icon(
                   item.isFavorite.value ? Icons.favorite : Icons.favorite_border,
-                  color: item.isFavorite.value ? Colors.red : AppColors.neutralColor,
+                  color: item.isFavorite.value ? Colors.red : AppColors.appIconColor,
                   size: 16.0,
                 ),
               ),
@@ -316,7 +318,7 @@ class CustomVerticalListviewList extends StatelessWidget {
               width: 190,
               child: Text(
                 item.title,
-                style: AppTextStyle.kTextStyle.copyWith(
+                style: AppTextStyle.description(
                   color: AppColors.appTitleColor,
                   fontWeight: FontWeight.bold,
                 ),
@@ -333,19 +335,19 @@ class CustomVerticalListviewList extends StatelessWidget {
               const SizedBox(width: 2.0),
               Text(
                 item.rating.toStringAsFixed(1),
-                style: AppTextStyle.kTextStyle.copyWith(
+                style: AppTextStyle.body(
                   color: AppColors.appTitleColor,
                 ),
               ),
               const SizedBox(width: 2.0),
               Text(
                 '(${item.reviewCount})',
-                style: AppTextStyle.kTextStyle.copyWith(
+                style: AppTextStyle.body(
                   color: AppColors.appDescriptionColor,
                 ),
               ),
               const SizedBox(width: 40),
-              Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.kTextStyle.copyWith(
+              Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.description(
     color: AppColors.appTitleColor,
     fontWeight: FontWeight.bold,))
 
@@ -373,7 +375,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                     item.sellerName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style:AppTextStyle.body(
                       color: AppColors.appTitleColor,
                       fontWeight: FontWeight.bold,
                     ),
@@ -382,7 +384,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                     item.sellerLevel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.body(
                       color: AppColors.appDescriptionColor,
                     ),
                   ),

@@ -41,6 +41,8 @@ class CustomDateTimePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -465,6 +467,7 @@ Widget pickerContainerforDateandTime({
 
 
 Widget themedPicker(BuildContext context, Widget child) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   return Theme(
     data: ThemeData.light().copyWith(
       primaryColor: AppColors.appColor,
@@ -473,7 +476,7 @@ Widget themedPicker(BuildContext context, Widget child) {
         onPrimary: AppColors.appBodyTextColor,
         onSurface: AppColors.appBodyTextColor,
       ),
-      dialogBackgroundColor: Colors.white,
+      dialogBackgroundColor: Colors.yellow,
 
       // ⭐ TIME PICKER THEME ⭐
       timePickerTheme: TimePickerThemeData(

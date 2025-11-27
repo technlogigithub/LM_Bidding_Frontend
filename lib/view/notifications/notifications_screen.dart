@@ -230,13 +230,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 Icon(
                                   Icons.notifications_none,
                                   size: 64,
-                                  color: AppColors.appTextColor,
+                                  color: AppColors.appDescriptionColor,
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   'No notifications yet',
                                   style: AppTextStyle.kTextStyle.copyWith(
-                                    color: AppColors.appTextColor,
+                                    color: AppColors.appDescriptionColor,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -290,7 +290,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                 Text(
                                                   notification['title'] ?? 'Notification Title',
                                                   style: AppTextStyle.kTextStyle.copyWith(
-                                                    color: AppColors.appTextColor,
+                                                    color: AppColors.appTitleColor,
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 15,
                                                   ),
@@ -302,7 +302,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                   notification['description'] ?? 
                                                   'Notification description will be shown...',
                                                   style: AppTextStyle.kTextStyle.copyWith(
-                                                    color: AppColors.appGreyTextColor,
+                                                    color: AppColors.appMutedTextColor,
                                                     fontSize: 13,
                                                   ),
                                                   maxLines: 2,

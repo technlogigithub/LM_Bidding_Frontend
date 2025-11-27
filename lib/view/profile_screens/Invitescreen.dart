@@ -182,7 +182,7 @@ class Invitescreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: screenHeight * 0.03,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.appTextColor,
+                    color: AppColors.appTitleColor,
                   ),
                 ),
 
@@ -194,7 +194,7 @@ class Invitescreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: screenHeight * 0.02,
-                    color: AppColors.subTitleColor,
+                    color: AppColors.appDescriptionColor,
                   ),
                 ),
 
@@ -211,7 +211,7 @@ class Invitescreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: screenHeight * 0.022,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.appTextColor,
+                          color: AppColors.appBodyTextColor,
                         ),
                       ),
                       SizedBox(height: 12),

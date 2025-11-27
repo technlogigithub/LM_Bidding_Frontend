@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
 import '../../controller/app_main/App_main_controller.dart';
+import '../../core/app_textstyle.dart';
 
 class CustomButton extends StatelessWidget {
   final VoidCallback? onTap;
@@ -67,10 +68,8 @@ class CustomButton extends StatelessWidget {
                 )
               : Text(
                   text,
-                  style: TextStyle(
+                  style: AppTextStyle.title(
                     color: AppColors.appButtonTextColor,
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
         ),

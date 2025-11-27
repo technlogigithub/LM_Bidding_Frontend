@@ -389,15 +389,17 @@ class SetupClientProfileView extends StatelessWidget {
       Container(
         padding: EdgeInsets.all(15.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          // color: Colors.white,
+          gradient: AppColors.appPagecolor,
+          border: Border.all(color: AppColors.appDescriptionColor,width: 1),
           borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: AppColors.appDescriptionColor,
+          //     blurRadius: 4,
+          //     offset: const Offset(0, 2),
+          //   ),
+          // ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,15 +468,16 @@ class SetupClientProfileView extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(15.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              gradient: AppColors.appPagecolor,
+              border: Border.all(color: AppColors.appDescriptionColor,width: 1),
               borderRadius: BorderRadius.circular(12.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              // boxShadow: [
+              //   BoxShadow(
+              //     color: Colors.black12,
+              //     blurRadius: 4,
+              //     offset: const Offset(0, 2),
+              //   ),
+              // ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

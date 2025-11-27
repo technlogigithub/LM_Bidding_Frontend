@@ -34,7 +34,7 @@ class PostNewScreen extends GetView<PostFormController> {
             .transparent, // Important so scaffold doesn't hide gradient under body
         appBar: AppBar(
           elevation: 0,
-          automaticallyImplyLeading: true,
+          automaticallyImplyLeading: false,
           iconTheme: IconThemeData(color: AppColors.appTextColor),
           toolbarHeight: 80,
           centerTitle: true,
@@ -134,7 +134,7 @@ class PostNewScreen extends GetView<PostFormController> {
           totalSteps: totalSteps,
           currentStep: currentStep + 1,
           selectedColor: AppColors.appColor,
-          unselectedColor: AppColors.appGreyColor,
+          unselectedColor: AppColors.appMutedColor,
           size: 8,
           roundedEdges: const Radius.circular(4),
         ),

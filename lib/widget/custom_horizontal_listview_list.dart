@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import '../core/app_color.dart';
-import '../core/app_constant.dart' as AppTextStyle;
+import '../core/app_textstyle.dart';
 import '../models/static models/service_items_model.dart';
 import 'custom_detail_screen.dart';
 
@@ -170,7 +170,16 @@ class CustomHorizontalListViewList extends StatelessWidget {
         width: 330,
         height: 150,
         decoration: BoxDecoration(
-          color: AppColors.appWhite,
+          gradient: AppColors.appPagecolor,
+          border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: AppColors.appDescriptionColor,
+          //     spreadRadius: 2,
+          //     blurRadius: 6,
+          //     offset: Offset(0, 3),
+          //   ),
+          // ],
           borderRadius: BorderRadius.circular(8.0),
 
         ),
@@ -190,7 +199,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
       alignment: Alignment.topLeft,
       children: [
         Container(
-          height: 120,
+          height: 127,
           width: 120,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.only(
@@ -249,7 +258,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
               height: 60,
               child: Text(
                 item.title,
-                style: AppTextStyle.kTextStyle.copyWith(
+                style: AppTextStyle.description(
                   color: AppColors.appTitleColor,
                   fontWeight: FontWeight.bold,
                 ),
@@ -266,23 +275,23 @@ class CustomHorizontalListViewList extends StatelessWidget {
               const SizedBox(width: 2.0),
               Text(
                 item.rating.toStringAsFixed(1),
-                style: AppTextStyle.kTextStyle.copyWith(
+                style: AppTextStyle.body(
                   color: AppColors.appDescriptionColor,
                 ),
               ),
               const SizedBox(width: 2.0),
               Text(
                 '(${item.reviewCount})',
-                style: AppTextStyle.kTextStyle.copyWith(
+                style: AppTextStyle.body(
                   color: AppColors.appDescriptionColor,
                 ),
               ),
               const SizedBox(width: 40),
 
 
-              Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.kTextStyle.copyWith(
+              Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.description(
                 color: AppColors.appTitleColor,
-                fontWeight: FontWeight.bold,))
+              ))
 
             ],
           ),
@@ -308,17 +317,19 @@ class CustomHorizontalListViewList extends StatelessWidget {
                     item.sellerName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.body(
                       color: AppColors.appTitleColor,
                       fontWeight: FontWeight.bold,
+
                     ),
                   ),
                   Text(
                     item.sellerLevel,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.body(
                       color: AppColors.appDescriptionColor,
+
                     ),
                   ),
                 ],

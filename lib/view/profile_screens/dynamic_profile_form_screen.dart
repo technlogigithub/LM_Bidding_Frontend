@@ -136,7 +136,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           totalSteps: totalSteps,
           currentStep: currentStep + 1,
           selectedColor: AppColors.appColor,
-          unselectedColor: AppColors.appGreyColor,
+          unselectedColor: AppColors.appMutedColor,
           size: 8,
           roundedEdges: const Radius.circular(4),
         ),
