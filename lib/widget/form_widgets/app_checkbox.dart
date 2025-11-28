@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:libdding/core/app_color.dart';
 
+import '../../core/app_textstyle.dart';
+
 class CustomCheckbox extends StatelessWidget {
   final bool value;
   final ValueChanged<bool?> onChanged;
@@ -42,9 +44,9 @@ class CustomCheckbox extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style:  TextStyle(
-                fontSize: 16,
+              style:   AppTextStyle.description(
                 color: AppColors.appBodyTextColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

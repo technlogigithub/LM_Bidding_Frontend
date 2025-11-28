@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:libdding/core/app_textstyle.dart';
 
 import '../core/app_color.dart';
 
@@ -20,7 +21,7 @@ class CustomSearchDelegate extends SearchDelegate {
           onPressed: () {
             query = '';
           },
-          icon:  Icon(Icons.clear, color: AppColors.appTextColor),
+          icon:  Icon(Icons.clear, color: AppColors.appIconColor),
         ),
       ),
     ];
@@ -28,79 +29,72 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget? buildLeading(BuildContext context) {
-    IconButton(
+    return IconButton(
       color: AppColors.appTextColor,
-      onPressed: () {
-        close(context, null);
-      },
-      icon:  Icon(
-        Icons.arrow_back,
-        color: AppColors.appTextColor,
-      ),
+      onPressed: () => close(context, null),
+      icon: Icon(Icons.arrow_back, color: AppColors.appIconColor),
     );
-
-    return null;
   }
+
 
   @override
   Widget buildResults(BuildContext context) {
-    List<String> matchQuery = [];
-    for (var car in searchItems) {
-      if (car.toLowerCase().contains(query.toLowerCase())) {
-        matchQuery.add(car);
-      }
-    }
+    List<String> matchQuery = searchItems
+        .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+        .toList();
 
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: matchQuery.length,
-      itemBuilder: (_, i) {
-        var result = matchQuery[i];
-        return ListTile(
-          title: Text(result),
-        );
-      },
+    return Container(
+      decoration: BoxDecoration(
+        gradient:AppColors.appPagecolor
+      ),
+      child: ListView.builder(
+        itemCount: matchQuery.length,
+        itemBuilder: (_, i) {
+          return ListTile(
+            title: Text(
+              matchQuery[i],
+              style: AppTextStyle.description(
+                color: AppColors.appDescriptionColor,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
+
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    List<String> matchQuery = [];
-    for (var car in searchItems) {
-      if (car.toLowerCase().contains(query.toLowerCase())) {
-        matchQuery.add(car);
-      }
-    }
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: matchQuery.length,
-      itemBuilder: (_, i) {
-        return Padding(
-          padding: const EdgeInsets.only(left: 10.0, right: 10),
-          child: Row(
+    List<String> matchQuery = searchItems
+        .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.appPagecolor
+      ),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(10),
+        itemCount: matchQuery.length,
+        itemBuilder: (_, i) {
+          return Row(
             children: [
               GestureDetector(
-                onTap: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //       builder: (context) => const ClientLogIn()),
-                  //
-                  // );
-                },
+                onTap: () {},
                 child: Text(
-                  matchQuery[i].toString(),
+                  matchQuery[i],
+                  style: AppTextStyle.description(
+                      color: AppColors.appDescriptionColor),
                 ),
               ),
               const Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon:  Icon(Icons.clear, color: AppColors.appTextColor),
-              )
+              Icon(Icons.clear, color: AppColors.appIconColor),
             ],
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
+
 }

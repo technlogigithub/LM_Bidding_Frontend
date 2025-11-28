@@ -116,18 +116,18 @@ class _OnBoardState extends State<OnBoard> {
                                         Text(
                                           slider.title ?? "",
                                           textAlign: TextAlign.center,
-                                          style: AppTextStyle.kTextStyle.copyWith(
+                                          style: AppTextStyle.title(
                                             color: AppColors.appTitleColor,
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 20.sp, // Responsive font size
+
                                           ),
                                         ),
                                         SizedBox(height: 20.h),
                                         Text(
                                           slider.description ?? "",
-                                          style: AppTextStyle.kTextStyle.copyWith(
+                                          style: AppTextStyle.description(
                                             color: AppColors.appDescriptionColor,
-                                            fontSize: 16.sp, // Responsive font size
+
                                           ),
                                           textAlign: TextAlign.center,
                                         ),

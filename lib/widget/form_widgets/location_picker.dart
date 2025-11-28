@@ -11,7 +11,7 @@ import 'package:libdding/core/app_string.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../controller/home/home_controller.dart';
 import '../../core/app_config.dart';
-import '../../core/app_constant.dart' as AppTextStyle;
+import '../../core/app_textstyle.dart';
 import 'app_button.dart';
 import 'app_textfield.dart';
 
@@ -145,115 +145,150 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         backgroundColor: AppColors.appColor,
           title:  Text(
         AppStrings.selectLocation,
-        style: AppTextStyle.kTextStyle.copyWith(
+        style: AppTextStyle.title(
           color: AppColors.appTextColor,
           fontWeight: FontWeight.bold,
         ),
       ),
       ),
-      body: Stack(
-        children: [
-          // Google Map
-          GoogleMap(
-            initialCameraPosition: CameraPosition(target: selectedLocation!, zoom: 15),
-            // myLocationEnabled: true,
-            // myLocationButtonEnabled: true,
-            onMapCreated: (controller) {
-              if (mounted) mapController = controller;
-            },
-            onTap: _onMapTap,
-            markers: selectedLocation != null
-                ? {
-              Marker(
-                markerId: const MarkerId('selected'),
-                position: selectedLocation!,
-              ),
-            }
-                : {},
-            zoomGesturesEnabled: true,
-            scrollGesturesEnabled: true,
-            tiltGesturesEnabled: false,
-            rotateGesturesEnabled: false,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appPagecolor, // <-- Apply your gradient here
           ),
-          Positioned(
-            top: 10,
-            left: 15,
-            right: 15,
-            child: Material(
-              elevation: 4,
-              color: whiteColor,
-              borderRadius: BorderRadius.circular(8),
-              child: TypeAheadField<Map<String, dynamic>>(
-                controller: _searchController,
-                builder: (context, controller, focusNode) {
-                  return CustomTextfield(
-                    label: AppStrings.searchLocation,
-                    controller:controller ,
-                    focusNode: focusNode,
-                    onChanged: (value) {
-                      // Debounce API calls to prevent excessive requests
-                      if (_debounce?.isActive ?? false) _debounce!.cancel();
-                      _debounce = Timer(const Duration(milliseconds: 300), () {
-                        _getPlaceSuggestions(value);
-                      });
-                    },
-                    hintText: AppStrings.searchLocation,);
-                },
-                suggestionsCallback: _getPlaceSuggestions,
-                itemBuilder: (context, suggestion) {
-                  return ListTile(
-                    title: Text(suggestion['description'] ?? AppStrings.unknown, style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.appTextColor,
-                    ),),
-                  );
-                },
-                onSelected: (suggestion) {
-                  _selectPlace(suggestion['place_id']);
-                },
-                emptyBuilder: (context) => Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    AppStrings.noPlacesFound,
-                    style: AppTextStyle.kTextStyle.copyWith(
-                      color: AppColors.appTextColor,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+          child: Stack(
+            children: [
+              // Google Map
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: selectedLocation!,
+                  zoom: 15,
                 ),
-                decorationBuilder: (context, child) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: child,
-                  );
+                onMapCreated: (controller) {
+                  if (mounted) mapController = controller;
                 },
+                onTap: _onMapTap,
+                markers: selectedLocation != null
+                    ? {
+                  Marker(
+                    markerId: const MarkerId('selected'),
+                    position: selectedLocation!,
+                  ),
+                }
+                    : {},
+                zoomGesturesEnabled: true,
+                scrollGesturesEnabled: true,
+                tiltGesturesEnabled: false,
+                rotateGesturesEnabled: false,
               ),
-            ),
-          ),
-        ],
-      ),
 
-      bottomNavigationBar: selectedAddress != null
+              // Search TextField
+              Positioned(
+                top: 10,
+                left: 15,
+                right: 15,
+                child: Material(
+                  elevation: 4,
+
+                  borderRadius: BorderRadius.circular(8),
+                  child:TypeAheadField<Map<String, dynamic>>(
+                    controller: _searchController,
+
+                    builder: (context, controller, focusNode) {
+                      return CustomTextfield(
+                        label: AppStrings.searchLocation,
+                        controller: controller,
+                        focusNode: focusNode,
+                        onChanged: (value) {
+                          if (_debounce?.isActive ?? false) _debounce!.cancel();
+                          _debounce = Timer(const Duration(milliseconds: 300), () {
+                            _getPlaceSuggestions(value);
+                          });
+                        },
+                        hintText: AppStrings.searchLocation,
+                      );
+                    },
+
+                    suggestionsCallback: _getPlaceSuggestions,
+
+                    itemBuilder: (context, suggestion) {
+                      return ListTile(
+                        title: Text(
+                          suggestion['description'] ?? AppStrings.unknown,
+                          style: AppTextStyle.description(
+                            color: AppColors.appDescriptionColor,
+                          ),
+                        ),
+                      );
+                    },
+
+                    onSelected: (suggestion) {
+                      _selectPlace(suggestion['place_id']);
+                    },
+
+                    emptyBuilder: (context) => Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text(
+                        AppStrings.noPlacesFound,
+                        style: AppTextStyle.description(
+                          color: AppColors.appTextColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                    // ⬇️ CUSTOM LOADING INDICATOR
+                    loadingBuilder: (context) {
+                      return  Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color:AppColors.appColor,  // 🔥 YOUR COLOR
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    },
+
+                    // ⬇️ CUSTOM DROPDOWN CONTAINER
+                    decorationBuilder: (context, child) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: AppColors.appPagecolor, // 🔥 Set container bg color
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: child,
+                      );
+                    },
+                  )
+                  ,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+
+        bottomNavigationBar: selectedAddress != null
           ? Container(
         padding: const EdgeInsets.all(16),
-        color: Colors.white,
+decoration: BoxDecoration(
+  gradient: AppColors.appPagecolor
+),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               isLoadingAddress ? AppStrings.loading : selectedAddress!,
-              style: AppTextStyle.kTextStyle.copyWith(
-                color: AppColors.appTextColor,
+              style: AppTextStyle.title(
+                color: AppColors.appBodyTextColor,
               ),
               textAlign: TextAlign.center,
             ),

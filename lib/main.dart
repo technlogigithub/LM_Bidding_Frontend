@@ -3,24 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_config.dart';
-import 'package:libdding/service/socket_service.dart';
 import 'package:libdding/view/splash_screen/Splash_screen.dart';
-import 'package:libdding/widget/custom_html_viewer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize app version first
+  // Load version
   await AppInfo.getCurrentVersion();
 
-  // Initialize the AppSettingsController
+  // Initialize App Settings Controller
   final appController = Get.put(AppSettingsController());
 
-  // Fetch API data before running the app
+  // Fetch all server data (font sizes, colors, theme)
   await appController.fetchAllData();
-
-  // final socketService = SocketService();
-  // await socketService.connect('user_456'); // Set the user id
 
   runApp(const MyApp());
 }
@@ -38,37 +33,33 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    try {
-      appController = Get.find<AppSettingsController>();
 
-      // Detect system brightness initially
-      final Brightness systemBrightness = PlatformDispatcher.instance.platformBrightness;
-      appController.updateTheme(systemBrightness == Brightness.dark);
+    appController = Get.find<AppSettingsController>();
 
-      // Listen for runtime changes in system theme
-      PlatformDispatcher.instance.onPlatformBrightnessChanged = () {
-        final Brightness newBrightness = PlatformDispatcher.instance.platformBrightness;
-        appController.updateTheme(newBrightness == Brightness.dark);
-      };
-    } catch (e) {
-      // Fallback if controller not found
-      debugPrint('Error initializing theme: $e');
-    }
+    // Detect system theme on start
+    final brightness = PlatformDispatcher.instance.platformBrightness;
+    appController.updateTheme(brightness == Brightness.dark);
+
+    // Detect theme change at runtime
+    PlatformDispatcher.instance.onPlatformBrightnessChanged = () {
+      final newBrightness = PlatformDispatcher.instance.platformBrightness;
+      appController.updateTheme(newBrightness == Brightness.dark);
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final controller = Get.find<AppSettingsController>();
       return GetMaterialApp(
         debugShowCheckedModeBanner: false,
-        title: controller.appName.value.isNotEmpty
-            ? controller.appName.value
-            : 'Lm Bidding',
-        theme: ThemeData.light(),  // Fallback light theme
-        darkTheme: ThemeData.dark(), // Fallback dark theme
-        themeMode:
-        controller.isDarkMode.value ? ThemeMode.dark : ThemeMode.light,
+        title: appController.appName.value.isNotEmpty
+            ? appController.appName.value
+            : "LM Bidding",
+        theme: ThemeData.light(),
+        darkTheme: ThemeData.dark(),
+        themeMode: appController.isDarkMode.value
+            ? ThemeMode.dark
+            : ThemeMode.light,
         home: const SplashScreen(),
       );
     });

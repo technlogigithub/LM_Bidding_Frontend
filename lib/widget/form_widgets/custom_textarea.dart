@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_color.dart';
+import '../../core/app_textstyle.dart';
 
 class CustomTextarea extends StatelessWidget {
   final String label;
@@ -19,9 +20,9 @@ class CustomTextarea extends StatelessWidget {
       maxLines: maxLines,
       style: TextStyle(color: AppColors.appTitleColor),
       decoration: InputDecoration(
-        label: Text(label, style: TextStyle(color: AppColors.appDescriptionColor)),
+        label: Text(label, style: AppTextStyle.description(color: AppColors.appDescriptionColor)),
         hintText: hintText,
-        hintStyle: TextStyle(color: AppColors.appDescriptionColor.withValues(alpha: 0.4)),
+        hintStyle: AppTextStyle.description(color: AppColors.appDescriptionColor.withValues(alpha: 0.4)),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.appBodyTextColor),
         ),

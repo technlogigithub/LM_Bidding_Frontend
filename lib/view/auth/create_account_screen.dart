@@ -137,10 +137,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         return Center(
                           child: Text(
                             reg?.pageTitle ?? AppStrings.createNewAccount,
-                            style: AppTextStyle.kTextStyle.copyWith(
+                            style: AppTextStyle.title(
                               color: AppColors.appTitleColor,
                               fontWeight: FontWeight.bold,
-                              fontSize: 18.sp,
+
                             ),
                           ),
                         );
@@ -154,7 +154,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         if ((reg?.pageDescription ?? '').isNotEmpty) {
                           widgets.add(Text(
                             reg!.pageDescription!,
-                            style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appDescriptionColor),
+                            style: AppTextStyle.description(color: AppColors.appDescriptionColor),
                           ));
                           widgets.add(SizedBox(height: 16.h));
                         }
@@ -310,7 +310,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(label, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appTextColor)),
+                        Text(label, style: AppTextStyle.title(color: AppColors.appTextColor)),
                         SizedBox(height: 8.h),
                         CustomButton(
                           text: 'Pick Location',
@@ -367,17 +367,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             child: RichText(
                               text: TextSpan(
                                 text: AppStrings.yesIunderstandandagreetothe,
-                                style: AppTextStyle.kTextStyle.copyWith(
+                                style: AppTextStyle.body(
                                   color: AppColors.appBodyTextColor,
-                                  fontSize: 12.sp, // Responsive font size
+
                                 ),
                                 children: [
                                   TextSpan(
                                     text: AppStrings.termsofService,
-                                    style: AppTextStyle.kTextStyle.copyWith(
+                                    style: AppTextStyle.body(
                                       color: AppColors.appLinkColor,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12.sp,
+
                                     ),
                                   ),
                                 ],
@@ -528,9 +528,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   padding: EdgeInsets.symmetric(horizontal: 10.w),
                                   child: Text(
                                     'Or Sign up with',
-                                    style: AppTextStyle.kTextStyle.copyWith(
+                                    style: AppTextStyle.description(
                                       color: AppColors.appMutedTextColor,
-                                      fontSize: 14.sp, // Responsive font size
                                     ),
                                   ),
                                 ),
@@ -584,18 +583,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             child: RichText(
                               text: TextSpan(
                                 text: left + ' ',
-                                style: AppTextStyle.kTextStyle.copyWith(
+                                style: AppTextStyle.description(
                                   color: AppColors.appBodyTextColor,
-                                  fontSize: 14.sp,
+
                                 ),
                                 children: [
                                   TextSpan(
                                     text: right,
-                                    style: AppTextStyle.kTextStyle.copyWith(
+                                    style: AppTextStyle.description(
                                       color: AppColors.appLinkColor,
                                       fontWeight: FontWeight.bold,
 
-                                      fontSize: 14.sp,
                                     ),
                                   ),
                                 ],

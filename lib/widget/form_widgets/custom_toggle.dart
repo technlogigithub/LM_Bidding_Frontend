@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_color.dart';
+import '../../core/app_textstyle.dart';
 
 class CustomToggle extends StatefulWidget {
   final String label;
@@ -19,7 +20,7 @@ class _CustomToggleState extends State<CustomToggle> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: Text(widget.label, style: TextStyle(color: AppColors.appBodyTextColor))),
+        Expanded(child: Text(widget.label, style: AppTextStyle.description(color: AppColors.appBodyTextColor,fontWeight: FontWeight.w600,))),
         Switch(
           value: widget.value,
           activeColor: AppColors.appButtonColor,

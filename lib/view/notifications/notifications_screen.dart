@@ -195,10 +195,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         centerTitle: true,
         title:  Text(
           'Notifications',
-          style: TextStyle(
+          style: AppTextStyle.title(
             color: AppColors.appTextColor,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
           ),
         ),
       ),
@@ -235,9 +234,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 const SizedBox(height: 16),
                                 Text(
                                   'No notifications yet',
-                                  style: AppTextStyle.kTextStyle.copyWith(
+                                  style: AppTextStyle.description(
                                     color: AppColors.appDescriptionColor,
-                                    fontSize: 16,
+
                                   ),
                                 ),
                               ],
@@ -289,10 +288,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               children: [
                                                 Text(
                                                   notification['title'] ?? 'Notification Title',
-                                                  style: AppTextStyle.kTextStyle.copyWith(
+                                                  style: AppTextStyle.title(
                                                     color: AppColors.appTitleColor,
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
                                                   ),
                                                   maxLines: 2,
                                                   overflow: TextOverflow.ellipsis,
@@ -301,9 +299,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                                 Text(
                                                   notification['description'] ?? 
                                                   'Notification description will be shown...',
-                                                  style: AppTextStyle.kTextStyle.copyWith(
+                                                  style: AppTextStyle.description(
                                                     color: AppColors.appMutedTextColor,
-                                                    fontSize: 13,
                                                   ),
                                                   maxLines: 2,
                                                   overflow: TextOverflow.ellipsis,

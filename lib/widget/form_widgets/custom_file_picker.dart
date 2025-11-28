@@ -122,8 +122,8 @@
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.photo_library_outlined),
-                  title: const Text('Gallery'),
+                  leading:  Icon(Icons.photo_library_outlined,color: AppColors.appIconColor),
+                  title:  Text('Gallery',style: AppTextStyle.description(color: AppColors.appTitleColor),),
                   onTap: () async {
                     Navigator.pop(context);
                     final XFile? picked = await _picker.pickImage(source: ImageSource.gallery);
@@ -131,8 +131,8 @@
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.photo_camera_outlined),
-                  title: const Text('Camera'),
+                  leading:  Icon(Icons.photo_camera_outlined,color: AppColors.appIconColor,),
+                  title:  Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
                   onTap: () async {
                     Navigator.pop(context);
                     final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
@@ -154,8 +154,8 @@
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.video_library_outlined),
-                  title: const Text('Video Gallery'),
+                  leading:  Icon(Icons.video_library_outlined,color: AppColors.appIconColor,),
+                  title:  Text('Video Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
                   onTap: () async {
                     Navigator.pop(context);
                     final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
@@ -172,8 +172,8 @@
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.videocam_outlined),
-                  title: const Text('Record Video'),
+                  leading:  Icon(Icons.videocam_outlined,color: AppColors.appIconColor,),
+                  title:  Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
                   onTap: () async {
                     Navigator.pop(context);
                     final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
@@ -280,7 +280,7 @@
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('File type not allowed. Allowed: ${widget.allowedExtensions!.join(", ")}'),
+                content: Text('File type not allowed. Allowed: ${widget.allowedExtensions!.join(", ")}', style: AppTextStyle.description(color: AppColors.appDescriptionColor)),
                 backgroundColor: Colors.red,
               ),
             );
@@ -369,7 +369,7 @@
           if (widget.label.isNotEmpty)
             Text(
               widget.label,
-              style: AppTextStyle.kTextStyle.copyWith(
+              style: AppTextStyle.description(
                 color: AppColors.appBodyTextColor,
                 fontWeight: FontWeight.w600,
               ),
@@ -468,7 +468,7 @@
                       ),
                       if (kIsWeb && !_isDragging) ...[
                         const SizedBox(height: 8),
-                        Text('Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12, color: AppColors.appDescriptionColor)),
+                        Text('Drag & Drop or Click', style: AppTextStyle.body( color: AppColors.appDescriptionColor)),
                       ],
                     ],
                   ),
@@ -524,12 +524,12 @@
                                           child: Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: Colors.black.withValues(alpha: 0.5),
+                                              color: AppColors.appMutedColor,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(
+                                            child:  Icon(
                                               Icons.play_arrow,
-                                              color: Colors.white,
+                                              color: AppColors.appIconColor,
                                               size: 40,
                                             ),
                                           ),
@@ -585,12 +585,12 @@
                                           child: Container(
                                             padding: const EdgeInsets.all(10),
                                             decoration: BoxDecoration(
-                                              color: Colors.black.withValues(alpha: 0.5),
+                                              color: AppColors.appMutedColor,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(
+                                            child:  Icon(
                                               Icons.play_arrow,
-                                              color: Colors.white,
+                                              color: AppColors.appIconColor,
                                               size: 40,
                                             ),
                                           ),
@@ -709,15 +709,15 @@
                                 size: 50,
                                 color: _isDragging
                                     ? AppColors.appColor
-                                    : AppColors.appDescriptionColor,
+                                    : AppColors.appIconColor,
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 _isDragging ? 'Drop Here' : '',
-                                style: AppTextStyle.kTextStyle.copyWith(
+                                style: AppTextStyle.body(
                                   color:
                                   AppColors.appDescriptionColor,
-                                  fontSize: 13,
+
                                 ),
                               ),
                             ],
@@ -831,10 +831,10 @@
                                       child: Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.5),
+                                          color: AppColors.appMutedColor,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                                        child:  Icon(Icons.play_arrow, color: AppColors.appIconColor, size: 30),
                                       ),
                                     ),
                                   ],
@@ -915,16 +915,16 @@
                                                           size: 50,
                                                           color: _isDragging 
                                                               ? AppColors.appColor 
-                                                              : AppColors.appDescriptionColor,
+                                                              : AppColors.appIconColor,
                                                         ),
                                                         const SizedBox(height: 12),
                                                         Text(
                                                           _isDragging ? 'Drop Video Here' : 'Tap to Select Files',
-                                                          style: AppTextStyle.kTextStyle.copyWith(
+                                                          style: AppTextStyle.description(
                                                             color: _isDragging 
                                                                 ? AppColors.appColor 
                                                                 : AppColors.appDescriptionColor,
-                                                            fontSize: 14,
+
                                                           ),
                                                         ),
                                                         if (kIsWeb && !_isDragging)
@@ -932,8 +932,7 @@
                                                             padding: const EdgeInsets.only(top: 4),
                                                             child: Text(
                                                               'or Drag & Drop',
-                                                              style: AppTextStyle.kTextStyle.copyWith(
-                                                                fontSize: 12,
+                                                              style: AppTextStyle.body(
                                                                 color: AppColors.appDescriptionColor,
                                                               ),
                                                             ),
@@ -948,9 +947,9 @@
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appDescriptionColor),
+                                                    Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appIconColor),
                                                     const SizedBox(height: 8),
-                                                    Text(_isDragging ? 'Drop Image Here' : 'Drag & Drop or Click', style: AppTextStyle.kTextStyle.copyWith(fontSize: 12,color: AppColors.appDescriptionColor)),
+                                                    Text(_isDragging ? 'Drop Image Here' : 'Drag & Drop or Click', style: AppTextStyle.body(color: AppColors.appDescriptionColor)),
                                                   ],
                                                 ),
                                               ),
@@ -992,7 +991,7 @@
                             _isDragging ? Icons.cloud_upload : Icons.attach_file,
                             color: _isDragging
                                 ? AppColors.appColor
-                                : AppColors.appDescriptionColor,
+                                : AppColors.appIconColor,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -1002,7 +1001,7 @@
                                   : (effectiveFile != null
                                   ? effectiveFile.path.split('/').last
                                   : AppStrings.noFileSelected),
-                              style: AppTextStyle.kTextStyle.copyWith(
+                              style: AppTextStyle.description(
                                 color: _isDragging
                                     ? AppColors.appColor
                                     : AppColors.appDescriptionColor
@@ -1013,8 +1012,7 @@
                           if (kIsWeb && effectiveFile == null && !_isDragging)
                             Text(
                               'or Click',
-                              style: AppTextStyle.kTextStyle.copyWith(
-                                fontSize: 12,
+                              style: AppTextStyle.body(
                                 color: AppColors.appDescriptionColor,
                               ),
                             ),
@@ -1149,16 +1147,16 @@
                   fileName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style:  AppTextStyle.body(),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   "$fileSize MB",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: AppTextStyle.body(),
                 ),
                 Text(
                   file.path.split(".").last.toUpperCase(),
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style:AppTextStyle.body(),
                 ),
               ],
             ),
@@ -1209,11 +1207,7 @@
                         const SizedBox(height: 8),
                         Text(
                           extension,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: AppTextStyle.body(),
                         ),
                       ],
                     ),
@@ -1243,18 +1237,17 @@
                       fileName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style:  AppTextStyle.description(
+                        color: AppColors.appMutedTextColor,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       "$fileSize MB • $extension",
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12,
+                      style: AppTextStyle.description(
+                        color: AppColors.appMutedTextColor,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -1283,8 +1276,7 @@
                   const SizedBox(height: 8),
                   Text(
                     extension,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: AppTextStyle.body(
                       color: Colors.grey.shade600,
                       fontWeight: FontWeight.w500,
                     ),
@@ -1317,18 +1309,15 @@
                       fileName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: AppTextStyle.description(
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       extension,
-                      style: TextStyle(
+                      style: AppTextStyle.body(
                         color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -1347,9 +1336,9 @@
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.image_outlined, size: 40, color: AppColors.appDescriptionColor),
+              Icon(Icons.image_outlined, size: 40, color: AppColors.appIconColor),
               const SizedBox(height: 8),
-              Text(AppStrings.noImage, style: AppTextStyle.kTextStyle.copyWith(fontSize: 12, color: AppColors.appDescriptionColor)),
+              Text(AppStrings.noImage, style: AppTextStyle.body( color: AppColors.appDescriptionColor)),
             ],
           ),
         ),

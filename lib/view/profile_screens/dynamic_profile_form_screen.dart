@@ -66,10 +66,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
               final profileForm = appController.profileFormPage.value;
               return Text(
                 profileForm?.pageTitle ?? 'Setup Profile',
-                style:  TextStyle(
+                style:  AppTextStyle.title(
                   color: AppColors.appTextColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+
                 ),
               );
             }),
@@ -97,9 +97,9 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
               if (profileForm.pageDescription?.isNotEmpty == true) ...[
                 Text(
                   profileForm.pageDescription!,
-                  style: AppTextStyle.kTextStyle.copyWith(
+                  style: AppTextStyle.description(
                     color: AppColors.appDescriptionColor,
-                    fontSize: 16,
+
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -147,10 +147,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             currentStep < profileForm.stepTitles!.length) ...[
           Text(
             profileForm.stepTitles![currentStep],
-            style: AppTextStyle.kTextStyle.copyWith(
+            style: AppTextStyle.title(
               color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+
             ),
           ),
         ],
@@ -257,10 +257,9 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 children: [
                   Text(
                     title ?? '',
-                    style: TextStyle(
+                    style: AppTextStyle.title(
                       color: AppColors.appBodyTextColor,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
                             ),
                           ),
                   Obx(() {
@@ -303,9 +302,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                                 }
                                 return AppStrings.addNew;
                               })(),
-                              style: TextStyle(
+                              style: AppTextStyle.description(
                                 color: AppColors.appButtonTextColor,
-                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -350,10 +348,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
       children: [
         Text(
           title ?? 'Items',
-          style: const TextStyle(
-            color: Color(0xFF1D1D1D),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+          style: AppTextStyle.title(
           ),
         ),
         const SizedBox(height: 20),
@@ -388,10 +383,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                         children: [
                           Text(
                             data.values.first?.toString() ?? 'Item ${index + 1}',
-                            style: TextStyle(
+                            style: AppTextStyle.title(
                               fontWeight: FontWeight.bold,
                               color: AppColors.appTextColor,
-                              fontSize: 16,
+
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -399,9 +394,9 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                             subtitle,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style:  AppTextStyle.description(
                               color: Color(0xFF757575),
-                              fontSize: 14,
+
                             ),
                           ),
                         ],
@@ -459,10 +454,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                   children: [
                     Text(
                       address['address_type'] ?? '',
-                      style: TextStyle(
+                      style: AppTextStyle.title(
                         fontWeight: FontWeight.bold,
                         color: AppColors.appTitleColor,
-                        fontSize: 16,
+
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -484,9 +479,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                             address['address']?.isNotEmpty == true
                                 ? '${address['address']}${address['landmark']?.isNotEmpty == true ? ', ${address['landmark']}' : ''}'
                                 : 'Latitude: ${address['latitude'] ?? 'N/A'}, Longitude: ${address['longitude'] ?? 'N/A'}',
-                            style:  TextStyle(
+                            style:  AppTextStyle.description(
                               color:AppColors.appDescriptionColor ,
-                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -1071,8 +1065,8 @@ class _AddressDialogState extends State<AddressDialog> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.9,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration:  BoxDecoration(
+        gradient: AppColors.appPagecolor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -1104,8 +1098,8 @@ class _AddressDialogState extends State<AddressDialog> {
                     children: [
                       Text(
                         widget.index != null ? 'Edit Address' : 'Add New Address',
-                        style: TextStyle(
-                          fontSize: 18,
+                        style: AppTextStyle.title(
+
                           fontWeight: FontWeight.bold,
                           color: AppColors.appTitleColor
                         ),

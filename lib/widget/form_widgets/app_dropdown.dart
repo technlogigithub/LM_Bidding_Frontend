@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:libdding/core/app_color.dart';
 
+import '../../core/app_textstyle.dart';
+
 class CustomDropdown<T> extends StatelessWidget {
   final T? value;
   final List<T> items;
@@ -53,9 +55,8 @@ class CustomDropdown<T> extends StatelessWidget {
           // HINT TEXT
           hint: Text(
             hintText,
-            style: TextStyle(
+            style:  AppTextStyle.description(
               color: hintColor ?? AppColors.appDescriptionColor,
-              fontSize: 14,
             ),
           ),
 
@@ -71,9 +72,9 @@ class CustomDropdown<T> extends StatelessWidget {
               value: item,
               child: Text(
                 itemToString(item),
-                style: TextStyle(
+                style:  AppTextStyle.description(
                   color: textColor ?? AppColors.appTextColor,
-                  fontSize: 14,
+
                 ),
               ),
             );

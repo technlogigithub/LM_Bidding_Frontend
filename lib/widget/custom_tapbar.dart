@@ -31,7 +31,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: widget.height,
+      height: 52,
       alignment: Alignment.centerLeft,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,

@@ -143,17 +143,17 @@ class SplashScreenState extends State<SplashScreen> {
                           children: [
                             Text(
                               AppStrings.version,
-                              style: AppTextStyle.kTextStyle.copyWith(
+                              style: AppTextStyle.description(
                                 color: AppColors.appTextColor,
-                                fontSize: 14.sp, // Responsive font size
+
                               ),
                             ),
                             Text(
                               appVersion,
-                              style: AppTextStyle.kTextStyle.copyWith(
+                              style: AppTextStyle.title(
                                 color: AppColors.appTextColor,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16.sp, // Responsive font size
+
                               ),
                             ),
                           ],

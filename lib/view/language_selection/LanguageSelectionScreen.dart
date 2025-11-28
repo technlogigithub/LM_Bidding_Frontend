@@ -53,10 +53,10 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           controller.languagePageTitle.value.isNotEmpty
               ? controller.languagePageName.value
               : '',
-          style: TextStyle(
+          style: AppTextStyle.title(
             color: AppColors.appTextColor,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+
           ),
         ),
 
@@ -154,9 +154,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               SizedBox(height: 8.h),
                   Text(
                     title,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.title(
                       color: AppColors.appTitleColor,
-                      fontSize: 28.sp,
+
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
@@ -164,9 +164,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   SizedBox(height: 8.h),
                   Text(
                     description,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.description(
                       color: AppColors.appDescriptionColor,
-                      fontSize: 16.sp,
+
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -203,11 +203,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                             alignment: Alignment.center,
                             child: Text(
                               option['name']!,
-                              style: AppTextStyle.kTextStyle.copyWith(
+                              style: AppTextStyle.title(
                                 color: isSelected
                                       ? AppColors.appTextColor
                                     : AppColors.appMutedTextColor,
-                                fontSize: 16.sp,
+
                                 fontWeight:isSelected? FontWeight.bold: FontWeight.w400
                               ),
                             ),

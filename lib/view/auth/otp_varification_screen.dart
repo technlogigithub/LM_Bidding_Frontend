@@ -77,8 +77,8 @@ class OtpVarificationScreen extends StatelessWidget {
                         fit: BoxFit.contain,
                       ),
                     ),
-                    SizedBox(height: screenHeight*0.01,),
-                    Text(controllerApp.appName.toString(),style: TextStyle(color: AppColors.appTextColor,fontWeight: FontWeight.bold,fontSize: screenWidth*0.07),)
+                    // SizedBox(height: screenHeight*0.01,),
+                    // Text(controllerApp.appName.toString(),style: TextStyle(color: AppColors.appTextColor,fontWeight: FontWeight.bold,fontSize: screenWidth*0.07),)
                   ],
                 ),
               ),
@@ -105,9 +105,9 @@ class OtpVarificationScreen extends StatelessWidget {
                   final desc = v?.pageDescription ?? AppStrings.wevesentthecodetoyourmobilenumber;
                   return Text(
                     desc,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.description(
                       color: AppColors.appDescriptionColor,
-                      fontSize: width * 0.04,
+
                     ),
                     textAlign: TextAlign.center,
                   );
@@ -115,10 +115,9 @@ class OtpVarificationScreen extends StatelessWidget {
                 SizedBox(height: height * 0.005),
                 Text(
                   mobile,
-                  style: AppTextStyle.kTextStyle.copyWith(
+                  style: AppTextStyle.title(
                     color: AppColors.appTitleColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: width * 0.045,
                   ),
                 ),
                 SizedBox(height: height * 0.03),
@@ -172,10 +171,10 @@ class OtpVarificationScreen extends StatelessWidget {
                   final secs = (seconds % 60).toString().padLeft(2, '0');
                   return Text(
                     "$minutes:$secs",
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.title(
                       color: AppColors.appBodyTextColor,
                       fontWeight: FontWeight.bold,
-                      fontSize: width * 0.05,
+
                     ),
                   );
                 }),
@@ -190,11 +189,11 @@ class OtpVarificationScreen extends StatelessWidget {
                     controller.secondsRemaining.value == 0
                         ? AppStrings.resendCode
                         : AppStrings.verification,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.title(
                       color: controller.secondsRemaining.value == 0
                           ? AppColors.appLinkColor
                           : AppColors.appLinkColor,
-                      fontSize: width * 0.04,
+
                     ),
                   ),
                 )),

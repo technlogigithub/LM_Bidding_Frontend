@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../core/app_color.dart'; // For LengthLimitingTextInputFormatter
+import '../../core/app_color.dart';
+import '../../core/app_textstyle.dart'; // For LengthLimitingTextInputFormatter
 
 
 class CustomTextfield extends StatelessWidget {
@@ -62,9 +63,9 @@ class CustomTextfield extends StatelessWidget {
         ],
         onChanged: onChanged, // 🔹 callback added
         decoration: InputDecoration(
-          label:Text(label,style: TextStyle(color: AppColors.appDescriptionColor),) ,
+          label:Text(label,style:  AppTextStyle.description(color: AppColors.appDescriptionColor,),) ,
           hintText: hintText,
-          hintStyle: TextStyle(color: AppColors.appDescriptionColor),
+          hintStyle: AppTextStyle.description(color: AppColors.appDescriptionColor),
           suffixIcon: suffixIcon,
           counterText: "", // 🔹 hides default counter
           enabledBorder: OutlineInputBorder(

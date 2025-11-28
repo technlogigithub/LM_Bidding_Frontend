@@ -4,6 +4,7 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
 import '../../controller/bottom/bottom_bar_controller.dart';
+import '../../core/app_textstyle.dart';
 import '../Home_screen/Home_screen.dart';
 import '../Participate_screens/participate_screen.dart';
 import '../Post_new_screen/Post_new_screen.dart';
@@ -60,11 +61,11 @@ class BottomNavigationScreen extends StatelessWidget {
                    ),
                    Text(
                      controller.navItems[index]["label"],
-                     style: TextStyle(
+                     style: AppTextStyle.body(
                        color: controller.currentPage.value == index
                            ? AppColors.appColor
                            : AppColors.textgrey,
-                       fontSize: 12,
+
                      ),
                    )
                  ],

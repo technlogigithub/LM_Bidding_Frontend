@@ -182,9 +182,18 @@ class AppSettingsController extends GetxController {
 
         /// Font style
         fontFamily.value = result?.fontStyle?.fontFamily ?? "";
-        fontTitleSize.value = result?.fontStyle?.title ?? 0.0;
-        fontDescriptionSize.value = result?.fontStyle?.description ?? 0.0;
-        fontBodySize.value = result?.fontStyle?.body ?? 0.0;
+        // Load saved font sizes first, then fallback to API defaults if not saved
+        await loadFontSizes();
+        // Only use API defaults if no saved values exist
+        if (fontTitleSize.value == 0.0 && result?.fontStyle?.title != null) {
+          fontTitleSize.value = result?.fontStyle?.title ?? 0.0;
+        }
+        if (fontDescriptionSize.value == 0.0 && result?.fontStyle?.description != null) {
+          fontDescriptionSize.value = result?.fontStyle?.description ?? 0.0;
+        }
+        if (fontBodySize.value == 0.0 && result?.fontStyle?.body != null) {
+          fontBodySize.value = result?.fontStyle?.body ?? 0.0;
+        }
 
         /// SEO Meta
         seoTitle.value = result?.seo?.meta?.title ?? "";
@@ -562,6 +571,89 @@ class AppSettingsController extends GetxController {
   Future<String?> getAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("auth_token");
+  }
+
+
+  void increaseTitle() {
+    fontTitleSize.value++;
+    saveFontSizes();
+  }
+  
+  void increaseDescription() {
+    fontDescriptionSize.value++;
+    saveFontSizes();
+  }
+  
+  void increaseBody() {
+    fontBodySize.value++;
+    saveFontSizes();
+  }
+
+  // Decrease
+  void decreaseTitle() {
+    if (fontTitleSize.value > 16) {
+      fontTitleSize.value--;
+      saveFontSizes();
+    }
+  }
+
+  void decreaseDescription() {
+    if (fontDescriptionSize.value > 14) {
+      fontDescriptionSize.value--;
+      saveFontSizes();
+    }
+  }
+
+  void decreaseBody() {
+    if (fontBodySize.value > 12) {
+      fontBodySize.value--;
+      saveFontSizes();
+    }
+  }
+
+  RxInt fontCounter = 1.obs;
+
+  void increaseCounter() {
+    fontCounter.value++;
+    saveFontSizes();
+  }
+
+  void decreaseCounter() {
+    if (fontCounter.value > 1) {
+      fontCounter.value--;
+      saveFontSizes();
+    }
+  }
+
+  // Save font sizes to SharedPreferences
+  Future<void> saveFontSizes() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('font_title_size', fontTitleSize.value);
+    await prefs.setDouble('font_description_size', fontDescriptionSize.value);
+    await prefs.setDouble('font_body_size', fontBodySize.value);
+    await prefs.setInt('font_counter', fontCounter.value);
+  }
+
+  // Load font sizes from SharedPreferences
+  Future<void> loadFontSizes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTitleSize = prefs.getDouble('font_title_size');
+    final savedDescriptionSize = prefs.getDouble('font_description_size');
+    final savedBodySize = prefs.getDouble('font_body_size');
+    final savedCounter = prefs.getInt('font_counter');
+
+    if (savedTitleSize != null) {
+      fontTitleSize.value = savedTitleSize;
+    }
+    if (savedDescriptionSize != null) {
+      fontDescriptionSize.value = savedDescriptionSize;
+    }
+    if (savedBodySize != null) {
+      fontBodySize.value = savedBodySize;
+    }
+    if (savedCounter != null) {
+      fontCounter.value = savedCounter;
+    }
   }
 
 

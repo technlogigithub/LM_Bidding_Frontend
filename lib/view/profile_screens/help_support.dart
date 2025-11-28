@@ -6,6 +6,7 @@ import 'package:libdding/core/app_color.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../core/app_images.dart';
+import '../../core/app_textstyle.dart';
 
 class HelpSupport extends StatelessWidget {
   const HelpSupport({super.key});
@@ -41,10 +42,10 @@ class HelpSupport extends StatelessWidget {
             centerTitle: true,
             title: Text(
               support?.label ?? 'Help & Support',
-              style:  TextStyle(
+              style:  AppTextStyle.title(
                 color: AppColors.appTextColor,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+
               ),
             ),
           ),
@@ -100,8 +101,7 @@ class HelpSupport extends StatelessWidget {
                   // Title from support.title
                   Text(
                     support?.title ?? "",
-                    style: TextStyle(
-                      fontSize: screenHeight * 0.03,
+                    style: AppTextStyle.title(
                       color: AppColors.appTitleColor,
                       fontWeight: FontWeight.w600,
                     ),
@@ -115,8 +115,7 @@ class HelpSupport extends StatelessWidget {
                     child: Text(
                       support?.description ?? "",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: screenHeight * 0.02,
+                      style: AppTextStyle.description(
                         color: AppColors.appDescriptionColor,
                       ),
                     ),
@@ -165,13 +164,13 @@ class HelpSupport extends StatelessWidget {
 
                   // ✔ OR Divider
                   Row(
-                    children: const [
-                      Expanded(child: Divider(thickness: 1)),
+                    children:  [
+                      Expanded(child: Divider(thickness: 1,color: AppColors.appDescriptionColor,)),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text("OR"),
+                        child: Text("OR",style:AppTextStyle.description(color: AppColors.appDescriptionColor),),
                       ),
-                      Expanded(child: Divider(thickness: 1)),
+                      Expanded(child: Divider(thickness: 1,color:AppColors.appDescriptionColor)),
                     ],
                   ),
 
@@ -261,9 +260,9 @@ class HelpSupport extends StatelessWidget {
         width: screenWidth * 0.17,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: AppColors.appWhite,
+        gradient: AppColors.appPagecolor,
           border: Border.all(
-            color: AppColors.subTitleColor.withOpacity(0.6),
+            color: AppColors.appDescriptionColor,
             width: 1,
           ),
         ),
@@ -304,10 +303,9 @@ class HelpSupport extends StatelessWidget {
           height: screenHeight * 0.08,
           width: screenWidth * 0.17,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: AppColors.appWhite,
+            borderRadius: BorderRadius.circular(12),gradient: AppColors.appPagecolor,
             border: Border.all(
-              color: AppColors.subTitleColor.withOpacity(0.6),
+              color: AppColors.appDescriptionColor,
               width: 1,
             ),
           ),

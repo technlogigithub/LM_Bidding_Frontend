@@ -47,11 +47,11 @@ class PostNewScreen extends GetView<PostFormController> {
           title: Obx(() {
             final postForm = appController.postFormPage.value;
             return Text(
-              postForm?.pageTitle ?? 'Create Post',
-              style: TextStyle(
+              postForm?.pageTitle ?? '',
+              style: AppTextStyle.title(
                 color: AppColors.appTextColor,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+
               ),
             );
           }),
@@ -63,8 +63,8 @@ class PostNewScreen extends GetView<PostFormController> {
           final postForm = appController.postFormPage.value;
 
           if (postForm == null) {
-            return const Center(
-              child: Text('Post form configuration not available'),
+            return  Center(
+              child: Text('Post form configuration not available',style: AppTextStyle.description(color: AppColors.appDescriptionColor),),
             );
           }
 
@@ -77,9 +77,8 @@ class PostNewScreen extends GetView<PostFormController> {
                 if (postForm.pageDescription?.isNotEmpty == true) ...[
                   Text(
                     postForm.pageDescription!,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.description(
                       color: AppColors.appDescriptionColor,
-                      fontSize: 16,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -144,10 +143,10 @@ class PostNewScreen extends GetView<PostFormController> {
             currentStep < postForm.stepTitles!.length) ...[
           Text(
             postForm.stepTitles![currentStep],
-            style: AppTextStyle.kTextStyle.copyWith(
+            style: AppTextStyle.title(
               color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+
             ),
           ),
         ],
@@ -167,8 +166,8 @@ class PostNewScreen extends GetView<PostFormController> {
     }
 
     if (currentStepInputs == null || currentStepInputs.isEmpty) {
-      return const Center(
-        child: Text('No form fields available for this step'),
+      return  Center(
+        child: Text('No form fields available for this step',style: AppTextStyle.title(color: AppColors.appDescriptionColor),),
       );
     }
 
@@ -226,21 +225,14 @@ class PostNewScreen extends GetView<PostFormController> {
         children: [
           Text(
             title ?? 'Items',
-            style: const TextStyle(
-              color: Color(0xFF1D1D1D),
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+            style:  AppTextStyle.title(),
           ),
           const SizedBox(height: 20),
 
           if (list.isEmpty)
-            const Text(
+             Text(
               'No items added',
-              style: TextStyle(
-                color: Color(0xFF757575),
-                fontSize: 16,
-              ),
+              style: AppTextStyle.description(),
             )
           else
             Column(
@@ -269,10 +261,9 @@ class PostNewScreen extends GetView<PostFormController> {
                             Text(
                               data.values.first?.toString() ??
                                   'Item ${index + 1}',
-                              style: TextStyle(
+                              style: AppTextStyle.title(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.appTextColor,
-                                fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -280,10 +271,7 @@ class PostNewScreen extends GetView<PostFormController> {
                               subtitle,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFF757575),
-                                fontSize: 14,
-                              ),
+                              style: AppTextStyle.description(),
                             ),
                           ],
                         ),
@@ -513,8 +501,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
                     children: [
                       Text(
                         widget.index != null ? 'Edit Item' : 'Add New Item',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: AppTextStyle.title(
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1D1D1D),
                         ),

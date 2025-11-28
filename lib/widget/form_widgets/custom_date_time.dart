@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/app_color.dart';
+import '../../core/app_textstyle.dart';
 
 class CustomDateTimePicker extends StatelessWidget {
   final String label;
@@ -46,7 +47,7 @@ class CustomDateTimePicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: AppColors.appBodyTextColor)),
+        Text(label, style: AppTextStyle.description(color: AppColors.appBodyTextColor, fontWeight: FontWeight.w600,)),
         const SizedBox(height: 6),
         pickerContainerforDateandTime(
           text: value != null
@@ -185,8 +186,8 @@ class CustomDateRangePicker extends StatelessWidget {
       children: [
         Text(
           label,
-          style:  TextStyle(
-            fontSize: 16,
+          style:  AppTextStyle.description(
+            fontWeight: FontWeight.w600,
             color: AppColors.appBodyTextColor,
           ),
         ),
@@ -204,9 +205,8 @@ class CustomDateRangePicker extends StatelessWidget {
               /// Selected date or placeholder
               Text(
                 displayText,
-                style: TextStyle(
+                style:  AppTextStyle.description(
                   color: AppColors.appDescriptionColor,
-                  fontSize: 14,
                 ),
               ),
 
@@ -252,7 +252,7 @@ class CustomDatePicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: AppColors.appBodyTextColor)),
+        Text(label, style:  AppTextStyle.description(color: AppColors.appBodyTextColor, fontWeight: FontWeight.w600,)),
         const SizedBox(height: 6),
         pickerContainer(
           text: value != null
@@ -295,7 +295,7 @@ class CustomDateTimeRangePicker extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: AppColors.appBodyTextColor)),
+        Text(label, style:  AppTextStyle.description(color: AppColors.appBodyTextColor, fontWeight: FontWeight.w600,)),
         const SizedBox(height: 6),
 
         InkWell(
@@ -315,9 +315,9 @@ class CustomDateTimeRangePicker extends StatelessWidget {
                 Expanded(
                   child: Text(
                     displayText,
-                    style: TextStyle(
+                    style:  AppTextStyle.description(
                       color: AppColors.appDescriptionColor,
-                      fontSize: 14,
+
                     ),
                     maxLines: 2,
                   ),
@@ -416,9 +416,9 @@ Widget pickerContainer({
         children: [
           Text(
             text,
-            style: TextStyle(
+            style:  AppTextStyle.description(
               color: AppColors.appDescriptionColor,
-              fontSize: 14,
+
             ),
           ),
           Icon(icon.icon, size: 20, color: AppColors.appBodyTextColor),
@@ -446,9 +446,9 @@ Widget pickerContainerforDateandTime({
         children: [
           Text(
             text,
-            style: TextStyle(
+            style:  AppTextStyle.description(
               color: AppColors.appDescriptionColor,
-              fontSize: 14,
+
             ),
           ),
           Row(

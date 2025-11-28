@@ -103,10 +103,10 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                       final title = v?.pageTitle ?? AppStrings.logInYourAccount;
                       return Text(
                         title,
-                        style: AppTextStyle.kTextStyle.copyWith(
+                        style: AppTextStyle.title(
                             color: AppColors.appTitleColor,
                             fontWeight: FontWeight.bold,
-                            fontSize: 18.0),
+                            ),
                       );
                     }),
                   ),
@@ -116,7 +116,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                     final inputs = page?.inputs ?? [];
                     final List<Widget> fields = [];
                     if ((page?.pageDescription ?? '').isNotEmpty) {
-                      fields.add(Text(page!.pageDescription!, style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appDescriptionColor)));
+                      fields.add(Text(page!.pageDescription!, style: AppTextStyle.description(color: AppColors.appDescriptionColor)));
                       fields.add(SizedBox(height: screenHeight * 0.02));
                     }
                     for (final field in inputs) {
@@ -141,8 +141,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                         onTap: () =>Utils.gotoNextPage(() => LoginScreen()),
                         child: Text(
                           AppStrings.loginwitPassword,
-                          style: AppTextStyle.kTextStyle
-                              .copyWith(color: AppColors.appLinkColor),
+                          style: AppTextStyle.description(color: AppColors.appLinkColor),
                           textAlign: TextAlign.end,
                         ),
                       ),
@@ -182,12 +181,11 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                       child: RichText(
                         text: TextSpan(
                           text:AppStrings.donthaveanaccount,
-                          style: AppTextStyle.kTextStyle
-                              .copyWith(color: AppColors.appBodyTextColor),
+                          style: AppTextStyle.description(color: AppColors.appBodyTextColor),
                           children: [
                             TextSpan(
                               text: AppStrings.createNewAccount,
-                              style: AppTextStyle.kTextStyle.copyWith(
+                              style: AppTextStyle.description(
                                   color: AppColors.appLinkColor,
                                   fontWeight: FontWeight.bold),
                             ),

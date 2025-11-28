@@ -109,8 +109,8 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                 /// TITLE
                 Text(
                   title,
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    fontSize: 24.sp,
+                  style: AppTextStyle.title(
+
                     fontWeight: FontWeight.bold,
                     color: AppColors.appTitleColor,
                   ),
@@ -122,8 +122,7 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                 /// DESCRIPTION
                 Text(
                   description,
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    fontSize: 16.sp,
+                  style: AppTextStyle.description(
                     color:
                     AppColors.appDescriptionColor,
                   ),
@@ -174,8 +173,8 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                           SizedBox(width: 8.w),
                           Text(
                             "${AppStrings.currentVersion} $currentVersion",
-                            style: AppTextStyle.kTextStyle.copyWith(
-                              fontSize: 14.sp,
+                            style: AppTextStyle.description(
+
                               color: AppColors.appMutedTextColor
                             ),
                           ),
@@ -186,8 +185,8 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                         SizedBox(height: 4.h),
                         Text(
                           "${AppStrings.requiredVersion} ${controller.getRequiredVersion()}",
-                          style: AppTextStyle.kTextStyle.copyWith(
-                            fontSize: 12.sp,
+                          style: AppTextStyle.body(
+
                             color: AppColors.appMutedTextColor
 
                           ),

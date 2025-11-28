@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -84,37 +85,37 @@ class CustomHeader extends StatelessWidget {
                   builder: (context, snapshot) {
                     bool isLoggedIn = snapshot.data ?? false;
 
-                    return Text(
+                    return Obx(() => Text(
                       isLoggedIn ? username : "Guest",
-                      style: AppTextStyle.kTextStyle.copyWith(
+                      style: AppTextStyle.title(
                         fontWeight: FontWeight.w600,
                         color: AppColors.appTextColor,
                       ),
                       overflow: TextOverflow.ellipsis,
-                    );
+                    ));
                   },
                 ),
 
                 // BALANCE
-                RichText(
+                Obx(() => RichText(
                   text: TextSpan(
                     text: 'Balance: ',
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.description(
                       color: AppColors.appTextColor,
-                      fontSize: 13,
+
                     ),
                     children: [
                       TextSpan(
                         text: "\$${balance.toStringAsFixed(2)}",
-                        style: AppTextStyle.kTextStyle.copyWith(
+                        style: AppTextStyle.description(
                           fontWeight: FontWeight.bold,
                           color: AppColors.appTextColor,
-                          fontSize: 13,
+
                         ),
                       ),
                     ],
                   ),
-                ),
+                )),
               ],
             ),
           ),

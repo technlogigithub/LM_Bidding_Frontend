@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:libdding/core/app_color.dart';
 
+import '../../core/app_textstyle.dart';
+
 class CustomRadioButton<T> extends StatelessWidget {
   final T value;
   final T groupValue;
@@ -60,8 +62,7 @@ class CustomRadioButton<T> extends StatelessWidget {
           // Title
           Text(
             title,
-            style: TextStyle(
-              fontSize: fontSize,
+            style:  AppTextStyle.description(
               color: AppColors.appBodyTextColor,
               fontWeight: FontWeight.w500,
             ),

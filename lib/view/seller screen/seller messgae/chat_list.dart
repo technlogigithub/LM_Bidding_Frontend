@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../../core/app_color.dart';
 import '../../../core/app_constant.dart';
@@ -35,49 +36,74 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        backgroundColor: AppColors.appWhite,
-        appBar: AppBar(
-          iconTheme: const IconThemeData(color: kNeutralColor),
-          backgroundColor: AppColors.appWhite,
-          elevation: 0.0,
-          centerTitle: true,
-          title: Text(
-            'Message',
-            style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
-          ),
+      child: Container(
+        decoration:  BoxDecoration(
+          gradient: AppColors.appPagecolor
         ),
-        body: Padding(
-          padding: const EdgeInsets.only(top: 10.0),
-          child: Container(
-            padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-            decoration: const BoxDecoration(
-              color: kWhite,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30.0),
-                topRight: Radius.circular(30.0),
+        child: Scaffold(
+          backgroundColor: Colors.transparent, // IMPORTANT
+          appBar: AppBar(
+            iconTheme:  IconThemeData(color:AppColors.appTextColor ),
+            elevation: 0.0,
+            centerTitle: true,
+
+            // Gradient Background
+            flexibleSpace: Container(
+              decoration:  BoxDecoration(
+                gradient: AppColors.appbarColor,
               ),
             ),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: list_data.map(
-                  (data) {
+
+            title: Text(
+              'Message',
+              style: AppTextStyle.title(
+                color: AppColors.appTextColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          body: Padding(
+            padding: const EdgeInsets.only(top: 10.0),
+            child: Container(
+              padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+              decoration:  BoxDecoration(
+                gradient: AppColors.appPagecolor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30.0),
+                  topRight: Radius.circular(30.0),
+                ),
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: list_data.map((data) {
                     return Column(
                       children: [
                         const SizedBox(height: 10.0),
                         SettingItemWidget(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           title: data.title.validate(),
                           subTitle: data.subTitle.validate(),
-                          leading: Image.network(data.image.validate(), height: 50, width: 50, fit: BoxFit.cover).cornerRadiusWithClipRRect(25),
+                          leading: Image.network(
+                            data.image.validate(),
+                            height: 50,
+                            width: 50,
+                            fit: BoxFit.cover,
+                          ).cornerRadiusWithClipRRect(25),
                           trailing: Column(
                             children: [
                               Text('11.05 AM', style: secondaryTextStyle()),
                             ],
                           ),
                           onTap: () {
-                            ChatInbox(img: data.image.validate(), name: data.title.validate()).launch(context);
+                            ChatInbox(
+                              img: data.image.validate(),
+                              name: data.title.validate(),
+                            ).launch(context);
                           },
                         ),
                         const Divider(
@@ -87,8 +113,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ],
                     );
-                  },
-                ).toList(),
+                  }).toList(),
+                ),
               ),
             ),
           ),
@@ -96,4 +122,5 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+
 }

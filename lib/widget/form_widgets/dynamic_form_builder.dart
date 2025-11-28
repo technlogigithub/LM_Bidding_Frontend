@@ -152,7 +152,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
             padding: const EdgeInsets.only(bottom: 16.0),
             child: Text(
               '${label + (isRequired ? ' *' : '')}\nNo options available',
-              style: AppTextStyle.kTextStyle.copyWith(
+              style: AppTextStyle.description(
                 color: Colors.red,
               ),
             ),
@@ -165,7 +165,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Text(
                   label + (isRequired ? ' *' : ''),
-                  style: AppTextStyle.kTextStyle.copyWith(
+                  style: AppTextStyle.description(
                     fontWeight: FontWeight.w600,
                     color: AppColors.appBodyTextColor
                   ),
@@ -175,7 +175,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
               CustomTabBar(
                 tabs: optionLabels,
                 height: 55,
-                textStyle: AppTextStyle.kTextStyle,
+                textStyle: AppTextStyle.description(),
                 // initialIndex: initialIndex,
                 onTap: (index) {
                   widget.onFieldChanged(fieldName, optionValues[index]);
@@ -362,7 +362,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
             padding: const EdgeInsets.only(bottom: 16.0),
             child: Text(
               '${label + (isRequired ? " *" : "")}\nNo options available',
-              style: AppTextStyle.kTextStyle.copyWith(
+              style: AppTextStyle.description(
                 color: Colors.red,
               ),
             ),
@@ -374,7 +374,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           fieldWidget = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label + (isRequired ? " *" : ""),style: TextStyle(color: AppColors.appBodyTextColor),),
+              Text(label + (isRequired ? " *" : ""),style:  AppTextStyle.description(color: AppColors.appBodyTextColor, fontWeight: FontWeight.w600,),),
               const SizedBox(height: 8),
 
               for (int i = 0; i < labels.length; i++)
@@ -416,7 +416,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         fieldWidget = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label + (isRequired ? " *" : ""),style: TextStyle(color: AppColors.appBodyTextColor),),
+            Text(label + (isRequired ? " *" : ""),style:  AppTextStyle.description(color: AppColors.appBodyTextColor,fontWeight: FontWeight.w600,),),
             const SizedBox(height: 8),
 
             CustomDropdown<String>(
@@ -518,9 +518,9 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
             const SizedBox(height: 4),
             Text(
               error,
-              style: AppTextStyle.kTextStyle.copyWith(
+              style:  AppTextStyle.body(
                 color: Colors.red,
-                fontSize: 12,
+
               ),
             ),
           ],
@@ -1035,7 +1035,7 @@ class _SelectTabBarWidgetState extends State<_SelectTabBarWidget> {
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
               widget.label,
-              style: AppTextStyle.kTextStyle,
+              style:  AppTextStyle.title(),
             ),
           ),
         Container(
@@ -1088,7 +1088,7 @@ class _SelectTabBarWidgetState extends State<_SelectTabBarWidget> {
                   ),
                   child: Text(
                     widget.optionLabels[index],
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style:  AppTextStyle.description(
                       color: isSelected ? Colors.white : AppColors.appTextColor,
                       fontWeight: FontWeight.w600,
                     ),

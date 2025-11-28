@@ -261,8 +261,8 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Gallery'),
+              leading:  Icon(Icons.photo_library_outlined,color: AppColors.appIconColor),
+              title:  Text('Gallery',style: AppTextStyle.description(color: AppColors.appTitleColor),),
               onTap: () async {
                 Navigator.pop(context);
                 final List<XFile>? picked = await _picker.pickMultiImage();
@@ -273,8 +273,8 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Camera'),
+              leading:  Icon(Icons.photo_camera_outlined,color: AppColors.appIconColor),
+              title:  Text('Camera',style: AppTextStyle.description(color: AppColors.appTitleColor),),
               onTap: () async {
                 Navigator.pop(context);
                 final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
@@ -297,17 +297,17 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.video_library_outlined),
-              title: const Text('Pick Videos from Gallery'),
-              subtitle: const Text('Select one video at a time'),
+              leading:  Icon(Icons.video_library_outlined,color: AppColors.appIconColor),
+              title:  Text('Pick Videos from Gallery',style: AppTextStyle.title(color: AppColors.appTitleColor),),
+              subtitle:  Text('Select one video at a time',style: AppTextStyle.description(color: AppColors.appTitleColor),),
               onTap: () async {
                 Navigator.pop(context);
                 await _pickVideoFromGallery();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.videocam_outlined),
-              title: const Text('Record Video'),
+              leading:  Icon(Icons.videocam_outlined,color: AppColors.appIconColor),
+              title:  Text('Record Video',style: AppTextStyle.description(color: AppColors.appTitleColor),),
               onTap: () async {
                 Navigator.pop(context);
                 final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
@@ -318,7 +318,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
                   } else {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Selected file is not a video.'), backgroundColor: Colors.red),
+                        const SnackBar(content: Text('Selected file is not a video.',), backgroundColor: Colors.red),
                       );
                     }
                   }
@@ -448,7 +448,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), shape: BoxShape.circle),
-            child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
+            child:  Icon(Icons.play_arrow, color: AppColors.appIconColor, size: 30),
           ),
         ),
       ],
@@ -593,9 +593,8 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
                 const SizedBox(height: 4),
                 Text(
                   extension,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey.shade600,
+                  style: AppTextStyle.body(
+                    color: AppColors.appMutedColor,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -623,10 +622,9 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
                 fileName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
+                style:  AppTextStyle.body(
+                  color: AppColors.appBodyTextColor,
                   fontWeight: FontWeight.w600,
-                  fontSize: 10,
                 ),
               ),
             ),
@@ -644,7 +642,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
         children: [
           Icon(Icons.insert_drive_file, size: 30, color: AppColors.appDescriptionColor),
           const SizedBox(height: 4),
-          Text('File', style: AppTextStyle.kTextStyle.copyWith(fontSize: 10, color: AppColors.appDescriptionColor)),
+          Text('File', style: AppTextStyle.body(color: AppColors.appDescriptionColor)),
         ],
       ),
     );
@@ -661,7 +659,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
         if (widget.label.isNotEmpty)
           Text(
             widget.label,
-            style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appBodyTextColor, fontWeight: FontWeight.w600),
+            style: AppTextStyle.title(color: AppColors.appBodyTextColor, fontWeight: FontWeight.w600),
           ),
         const SizedBox(height: 12),
 
@@ -694,23 +692,23 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
                     size: widget.category == 'video' ? 50 : 40,
                     color: _isDragging 
                         ? AppColors.appColor 
-                        : AppColors.appDescriptionColor,
+                        : AppColors.appIconColor,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _isDragging ? 'Drop Files Here' : 'Tap to Select Files',
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.description(
                       color: _isDragging 
                           ? AppColors.appColor 
                           : AppColors.appDescriptionColor,
                       fontWeight: _isDragging ? FontWeight.bold : FontWeight.normal,
-                      fontSize: widget.category == 'video' ? 14 : null,
+                      // fontSize: widget.category == 'video' ? 14 : null,
                     ),
                   ),
                   if (kIsWeb && !_isDragging)
                     Text(
                       'or Drag & Drop',
-                      style: AppTextStyle.kTextStyle.copyWith(color: AppColors.appDescriptionColor, fontSize: 12),
+                      style: AppTextStyle.body(color: AppColors.appDescriptionColor,),
                     ),
                 ],
               ),
@@ -951,7 +949,7 @@ class _VideoEditScreenState extends State<VideoEditScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("Edit Video"),
+        title:  Text("Edit Video",style: AppTextStyle.title(color: AppColors.appTitleColor),),
         backgroundColor: Colors.black,
         actions: [
           IconButton(

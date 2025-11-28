@@ -172,7 +172,7 @@ class ClientHomeScreen extends StatelessWidget {
                             ? Text(
                           profilecontroller.profileDetailsResponeModel.value
                               ?.result?.basicInfo?.name ??
-                              "",
+                              "Guest",
                           style: AppTextStyle.title(color: AppColors.appTextColor),
                           // style: AppTextStyle.kTextStyle.copyWith(
                           //   color: AppColors.appTextColor,

@@ -9,6 +9,7 @@ import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_images.dart';
+import '../../core/app_textstyle.dart';
 import '../../core/utils.dart';
 
 class Invitescreen extends StatelessWidget {
@@ -50,10 +51,10 @@ class Invitescreen extends StatelessWidget {
             title: Obx(() {
               return Text(
                 controller.referral.value?.label ?? '',
-                style:  TextStyle(
+                style:  AppTextStyle.title(
                   color: AppColors.appTextColor,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
+
                 ),
               );
             }),
@@ -179,8 +180,7 @@ class Invitescreen extends StatelessWidget {
 
                 Text(
                   referral?.title ?? "Invite & Earn",
-                  style: TextStyle(
-                    fontSize: screenHeight * 0.03,
+                  style:  AppTextStyle.title(
                     fontWeight: FontWeight.bold,
                     color: AppColors.appTitleColor,
                   ),
@@ -192,8 +192,8 @@ class Invitescreen extends StatelessWidget {
                   referral?.description ??
                       "Invite your friends and earn exciting rewards!",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: screenHeight * 0.02,
+                  style:  AppTextStyle.description(
+
                     color: AppColors.appDescriptionColor,
                   ),
                 ),
@@ -208,8 +208,7 @@ class Invitescreen extends StatelessWidget {
                     children: [
                       Text(
                         "Your Referral Code",
-                        style: TextStyle(
-                          fontSize: screenHeight * 0.022,
+                        style:  AppTextStyle.title(
                           fontWeight: FontWeight.w600,
                           color: AppColors.appBodyTextColor,
                         ),
@@ -219,10 +218,10 @@ class Invitescreen extends StatelessWidget {
                         padding:
                         const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                         decoration: BoxDecoration(
-                          color: AppColors.appWhite,
+                          gradient: AppColors.appPagecolor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.subTitleColor.withOpacity(0.5),
+                            color: AppColors.appDescriptionColor
                           ),
                         ),
                         child: Row(
@@ -230,8 +229,7 @@ class Invitescreen extends StatelessWidget {
                           children: [
                             Text(
                               referralCode,
-                              style: TextStyle(
-                                fontSize: screenHeight * 0.028,
+                              style:  AppTextStyle.title(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.appColor,
                               ),
@@ -241,10 +239,10 @@ class Invitescreen extends StatelessWidget {
                               onTap: () {
                                 copyToClipboard(referralCode);
                               },
-                              child: const Icon(
+                              child:  Icon(
                                 Icons.copy,
                                 size: 22,
-                                color: Colors.black87,
+                                color: AppColors.appIconColor,
                               ),
                             ),
                           ],
@@ -256,13 +254,13 @@ class Invitescreen extends StatelessWidget {
                 SizedBox(height: 35),
 
                 Row(
-                  children: const [
-                    Expanded(child: Divider()),
+                  children:  [
+                    Expanded(child: Divider(color: AppColors.appDescriptionColor,)),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text("OR"),
+                      child: Text("OR",style:AppTextStyle.title(),),
                     ),
-                    Expanded(child: Divider()),
+                    Expanded(child: Divider(color: AppColors.appDescriptionColor,)),
                   ],
                 ),
 
@@ -320,9 +318,11 @@ class Invitescreen extends StatelessWidget {
           height: sh * 0.08,
           width: sw * 0.17,
           decoration: BoxDecoration(
+            gradient: AppColors.appPagecolor,
             borderRadius: BorderRadius.circular(12),
-            color: AppColors.appWhite,
-            border: Border.all(color: Colors.grey.shade400),
+            border: Border.all(
+                color: AppColors.appDescriptionColor
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
