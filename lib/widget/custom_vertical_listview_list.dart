@@ -36,8 +36,8 @@ class CustomVerticalListviewList extends StatelessWidget {
     return Obx(
           () => isLoading.value
           ? _buildShimmerList()
-          : SizedBox(
-        height: items.length * 182.h,
+          : SizedBox( // height: isFromCartScreen ? 190.h : 140.h,
+        height: isFromCartScreen ? items.length * 200.h : items.length * 155.h,
         child: ListView.separated(
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.only(
@@ -175,9 +175,9 @@ class CustomVerticalListviewList extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: onItemTap ?? () => _openCustomDetailScreen(context, item),
-      child: Container(
+      child:  isFromCartScreen ? Container(
         width: 330,
-        height: isFromCartScreen ? 165 : 140,
+        height: isFromCartScreen ? 190.h : 140.h,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
           border: Border.all(color: AppColors.appDescriptionColor,width: 1),
@@ -201,21 +201,21 @@ class CustomVerticalListviewList extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                   InkWell(
-                     onTap: onRemoveTap ?? () {},
-                     child: Container(
-                       padding: EdgeInsetsGeometry.all(8),
-                       decoration: BoxDecoration(
-                         borderRadius: BorderRadius.circular(10.r),
-                         border: BoxBorder.all(color: AppColors.kBorderColorTextField)
-                       ),
-                       child: Text(AppStrings.remove, style: TextStyle(
-                         color: AppColors.appButtonTextColor,
-                         fontSize: screenWidth * 0.04,
-                         fontWeight: FontWeight.bold,
-                       ),),
-                     ),
-                   ),
+                    InkWell(
+                      onTap: onRemoveTap ?? () {},
+                      child: Container(
+                        padding: EdgeInsetsGeometry.all(8),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: BoxBorder.all(color: AppColors.kBorderColorTextField)
+                        ),
+                        child: Text(AppStrings.remove, style: TextStyle(
+                          color: AppColors.appButtonTextColor,
+                          fontSize: screenWidth * 0.04,
+                          fontWeight: FontWeight.bold,
+                        ),),
+                      ),
+                    ),
                     InkWell(
                       onTap: onSaveForLaterTap ?? () {},
                       child: Container(
@@ -251,7 +251,76 @@ class CustomVerticalListviewList extends StatelessWidget {
               )
           ],
         ),
-      ),
+      ) :Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.topLeft,
+            children: [
+              Container(
+                height: isFromCartScreen ? 165 : 140,
+                width: 120.h,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(8.0),
+                    topLeft: Radius.circular(8.0),
+                  ),
+                  image: DecorationImage(
+                    image: AssetImage(item.imagePath),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Obx(() => GestureDetector(
+                onTap: () => onFavoriteToggle(index, !item.isFavorite.value),
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Container(
+                    height: 25,
+                    width: 25,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10.0,
+                          spreadRadius: 1.0,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        item.isFavorite.value ? Icons.favorite : Icons.favorite_border,
+                        color: item.isFavorite.value ? Colors.red : AppColors.appIconColor,
+                        size: 16.0,
+                      ),
+                    ),
+                  ),
+                ),
+              )),
+            ],
+          ),
+          Container(
+              width: 210.w,
+              height: isFromCartScreen ? 165 : 140,
+              decoration: BoxDecoration(
+                gradient: AppColors.appPagecolor,
+                border: Border(
+                  top: BorderSide(color: AppColors.appDescriptionColor, width: 1),
+                  right: BorderSide(color: AppColors.appDescriptionColor, width: 1),
+                  bottom: BorderSide(color: AppColors.appDescriptionColor, width: 1),
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(8.r),
+                  topRight: Radius.circular(8.r),
+                ),
+
+              ),
+              child: _buildContentSection(item)),
+        ],
+      )
     );
   }
 

@@ -1,6 +1,6 @@
 // Web-specific implementation using dart:html
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+import 'dart:ui_web' as ui_web;
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -142,7 +142,7 @@ class _WebFileDropZoneState extends State<WebFileDropZone> {
     });
 
     // Register platform view
-    ui.platformViewRegistry.registerViewFactory(
+    ui_web.platformViewRegistry.registerViewFactory(
       _viewId,
       (int viewId) => _dropZoneElement!,
     );

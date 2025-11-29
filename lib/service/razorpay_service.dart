@@ -35,6 +35,23 @@ class RazorpayService {
       },
       'external': {
         'wallets': ['paytm']
+      },
+      'theme': {
+        'color':'#28282B',
+        'backdrop_color': '#28282B',
+        "backgroundColor": "#28282B",
+      },
+      "display": {
+        "widget": {
+          "main": {
+            "isDarkMode": true,
+            "content": {
+              "backgroundColor": "#28282B",
+              "color": "#28282B",
+              "fontSize": "13px"
+            }
+          }
+        }
       }
     };
 

@@ -1215,6 +1215,7 @@ class AppContentResponse {
     );
   }
 
+
   Map<String, dynamic> toJson() => {
         'response_code': responseCode,
         'success': success,

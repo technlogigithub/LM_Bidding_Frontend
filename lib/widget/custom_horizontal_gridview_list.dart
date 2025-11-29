@@ -147,32 +147,39 @@ class CustomHorizontalGridViewList extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 10.h),
       child: GestureDetector(
         onTap: onItemTap,
-        child: Container(
-          height: 220.h,
-          width: 156.w,
-          decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor,
-            border: Border.all(color: AppColors.appDescriptionColor,width: 1),
-            borderRadius: BorderRadius.circular(8.r),
-
-          ),
-          child: Column(
-            children: [
-              Container(
-                height: 135.h,
-                width: 156.w,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(8.r),
-                    topLeft: Radius.circular(8.r),
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(item.imagePath),
-                    fit: BoxFit.cover,
-                  ),
+        child: Column(
+          children: [
+            Container(
+              height: 135.h,
+              width: 156.w,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(8.r),
+                  topLeft: Radius.circular(8.r),
+                ),
+                image: DecorationImage(
+                  image: AssetImage(item.imagePath),
+                  fit: BoxFit.cover,
                 ),
               ),
-              Padding(
+            ),
+            Container(
+              height: 85.h,
+              width: 156.w,
+              decoration: BoxDecoration(
+                gradient: AppColors.appPagecolor,
+                border: Border(
+                  left: BorderSide(color: AppColors.appDescriptionColor, width: 1),
+                  right: BorderSide(color: AppColors.appDescriptionColor, width: 1),
+                  bottom: BorderSide(color: AppColors.appDescriptionColor, width: 1),
+                ),
+                // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(8.r),
+                  bottomLeft: Radius.circular(8.r),
+                ),
+              ),
+              child: Padding(
                 padding: EdgeInsets.all(6.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,8 +243,100 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            // Container(
+            //   height: 220.h,
+            //   width: 156.w,
+            //   decoration: BoxDecoration(
+            //     gradient: AppColors.appPagecolor,
+            //     border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+            //     borderRadius: BorderRadius.circular(8.r),
+            //
+            //   ),
+            //   child: Column(
+            //     children: [
+            //       Container(
+            //         height: 135.h,
+            //         width: 156.w,
+            //         decoration: BoxDecoration(
+            //           borderRadius: BorderRadius.only(
+            //             topRight: Radius.circular(8.r),
+            //             topLeft: Radius.circular(8.r),
+            //           ),
+            //           image: DecorationImage(
+            //             image: AssetImage(item.imagePath),
+            //             fit: BoxFit.cover,
+            //           ),
+            //         ),
+            //       ),
+            //       Padding(
+            //         padding: EdgeInsets.all(6.w),
+            //         child: Column(
+            //           crossAxisAlignment: CrossAxisAlignment.start,
+            //           children: [
+            //             Text(
+            //               item.sellerName,
+            //               style: AppTextStyle.title(
+            //                 color: AppColors.appTitleColor,
+            //                 fontWeight: FontWeight.bold,
+            //
+            //               ),
+            //               maxLines: 1,
+            //               overflow: TextOverflow.ellipsis,
+            //             ),
+            //             SizedBox(height: 6.h),
+            //             Row(
+            //               mainAxisAlignment: MainAxisAlignment.start,
+            //               children: [
+            //                 Icon(
+            //                   IconlyBold.star,
+            //                   color: Colors.amber,
+            //                   size: 18.sp,
+            //                 ),
+            //                 SizedBox(width: 2.w),
+            //                 Text(
+            //                   item.rating.toStringAsFixed(1),
+            //                   style: AppTextStyle.body(
+            //                     color: AppColors.appTitleColor,
+            //
+            //                   ),
+            //                 ),
+            //                 SizedBox(width: 2.w),
+            //                 Text(
+            //                   '(${item.reviewCount} review)',
+            //                   style: AppTextStyle.body(
+            //                     color: AppColors.appDescriptionColor,
+            //
+            //                   ),
+            //                 ),
+            //               ],
+            //             ),
+            //             SizedBox(height: 6.h),
+            //             RichText(
+            //               text: TextSpan(
+            //                 text: 'Seller Level - ',
+            //                 style: AppTextStyle.body(
+            //                   color: AppColors.appTitleColor,
+            //
+            //                 ),
+            //                 children: [
+            //                   TextSpan(
+            //                     text: item.sellerLevel,
+            //                     style: AppTextStyle.body(
+            //                       color: AppColors.appDescriptionColor,
+            //
+            //                     ),
+            //                   ),
+            //                 ],
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+          ],
         ),
       ),
     );
