@@ -41,7 +41,7 @@ class ParticipateScreen extends StatelessWidget {
             children: [
               SizedBox(height: screenHeight * 0.010),
               CustomTabBar(
-                height: 50,
+                // height: 50,
                 tabs: const ['Active', 'Pending', 'Completed', 'Cancelled'],
                 // primaryColor: AppColors.appColor,
                 // borderColor: Colors.grey.shade300,

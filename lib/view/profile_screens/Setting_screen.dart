@@ -430,9 +430,9 @@ class SettingScreen extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        controller.decreaseTitle();
-                        controller.decreaseDescription();
-                        controller.decreaseBody();
+                        // controller.decreaseTitle();
+                        // controller.decreaseDescription();
+                        // controller.decreaseBody();
                         controller.decreaseCounter();
                       },
                       child: Container(
@@ -459,9 +459,9 @@ class SettingScreen extends StatelessWidget {
                     )),
                     GestureDetector(
                       onTap: () {
-                        controller.increaseTitle();
-                        controller.increaseDescription();
-                        controller.increaseBody();
+                        // controller.increaseTitle();
+                        // controller.increaseDescription();
+                        // controller.increaseBody();
                         controller.increaseCounter();
                       },
                       child: Container(

@@ -174,7 +174,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
               CustomTabBar(
                 tabs: optionLabels,
-                height: 55,
+                // height: 55,
                 textStyle: AppTextStyle.description(),
                 // initialIndex: initialIndex,
                 onTap: (index) {
