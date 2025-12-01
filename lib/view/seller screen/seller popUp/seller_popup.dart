@@ -5,6 +5,7 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:libdding/core/app_color.dart';
+import 'package:libdding/core/app_textstyle.dart';
 import 'package:libdding/view/auth/login_screen.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../../core/app_constant.dart';
@@ -503,13 +504,9 @@ class _ImportDocumentPopUpState extends State<ImportDocumentPopUp> {
         children: [
           Row(
             children: [
-              const Text(
+               Text(
                 'Choose your Need',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: AppTextStyle.title(),
               ),
               const Spacer(),
               GestureDetector(
@@ -526,19 +523,19 @@ class _ImportDocumentPopUpState extends State<ImportDocumentPopUp> {
                 onTap: _pickFromGallery,
                 child: Column(
                   children:  [
-                    Icon(FontAwesomeIcons.images, color: AppColors.appColor, size: 40),
+                    Icon(FontAwesomeIcons.images, color: AppColors.appIconColor, size: 40),
                     SizedBox(height: 10.0),
-                    Text('Photo Gallery', style: TextStyle(color:AppColors.appColor)),
+                    Text('Photo Gallery', style: AppTextStyle.description(color:AppColors.appBodyTextColor)),
                   ],
                 ),
               ),
               GestureDetector(
                 onTap: _pickFile,
                 child: Column(
-                  children: const [
-                    Icon(IconlyBold.document, color: Colors.grey, size: 40),
+                  children:  [
+                    Icon(IconlyBold.document, color: AppColors.appIconColor, size: 40),
                     SizedBox(height: 10.0),
-                    Text('Open File', style: TextStyle(color: Colors.grey)),
+                    Text('Open File', style: AppTextStyle.description(color:AppColors.appBodyTextColor)),
                   ],
                 ),
               ),

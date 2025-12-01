@@ -474,7 +474,7 @@ class ClientHomeScreen extends StatelessWidget {
                   CustomHorizontalListViewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
                   SizedBox(height: screenHeight * 0.03),
                   CustomTabBar(
-                    height: 50,
+                    // height: 50,
                     tabs: controller.serviceList,
                     // primaryColor: AppColors.appColor,
                     // borderColor: Colors.grey.shade300,

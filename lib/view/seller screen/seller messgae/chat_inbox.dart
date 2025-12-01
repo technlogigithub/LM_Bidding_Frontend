@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:libdding/core/app_color.dart';
+import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../../core/app_constant.dart';
 import '../../../service/socket_service.dart';
@@ -142,12 +143,18 @@ class _ChatInboxState extends State<ChatInbox>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.appWhite,
+      // backgroundColor: AppColors.appWhite,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         leadingWidth: 24,
         iconTheme: const IconThemeData(color: kNeutralColor),
-        backgroundColor: AppColors.appWhite,
+        backgroundColor: Colors.transparent,   // important
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appbarColor,   // <-- your gradient applied here
+          ),
+        ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -156,8 +163,8 @@ class _ChatInboxState extends State<ChatInbox>
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.name.validate(), style: boldTextStyle()),
-                Text('Online', style: secondaryTextStyle()),
+                Text(widget.name.validate(), style: AppTextStyle.title(color: AppColors.appTextColor)),
+                Text('Online', style: AppTextStyle.description(color: AppColors.appTextColor)),
               ],
             ),
           ],
@@ -167,66 +174,69 @@ class _ChatInboxState extends State<ChatInbox>
             padding: const EdgeInsets.only(right: 10.0),
             child: Container(
               padding: const EdgeInsets.all(5.0),
-              decoration:  BoxDecoration(shape: BoxShape.circle, color: AppColors.appWhite,),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.transparent),
               child: PopupMenuButton(
-                color: AppColors.appWhite,
+                color: AppColors.appColor,
                 itemBuilder: (BuildContext bc) => [
                   PopupMenuItem(
-                    child: Text('Block', style: kTextStyle.copyWith(color: AppColors.appTextColor,))
+                    child: Text('Block', style: AppTextStyle.body(color: AppColors.appTextColor))
                         .onTap(() => showBlockPopUp()),
                   ),
                   PopupMenuItem(
-                    child: Text('Report', style: kTextStyle.copyWith(color:  AppColors.appTextColor)),
+                    child: Text('Report', style:  AppTextStyle.body(color: AppColors.appTextColor)),
                   ),
                 ],
-                child:  Icon(FeatherIcons.moreVertical, color:  AppColors.appTextColor),
+                child: Icon(FeatherIcons.moreVertical, color: AppColors.appTextColor),
               ),
             ),
           ),
         ],
-        elevation: 0,
       ),
 
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            Container(
-              color: AppColors.appWhite,
-              child: Column(
-                children: [
-                  8.height,
-                  AnimatedOpacity(
-                    opacity: showTime ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Text('10 June 25 9:41 AM', style: secondaryTextStyle(size: 16)),
-                  ),
-                  8.height,
 
-                  /// ✅ Message list
-                  ListView.builder(
-                    padding: const EdgeInsets.all(10),
-                    controller: scrollController,
-                    scrollDirection: Axis.vertical,
-                    reverse: true,
-                    shrinkWrap: true,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: data.length,
-                    itemBuilder: (context, index) {
-                      final item = data[index];
-                      final isSender = item.id == 0;
-
-                      return isSender
-                          ? _buildSenderBubble(item)
-                          : _buildReceiverBubble(item);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,  // 🎨 FULL PAGE GRADIENT HERE
         ),
-      ).paddingTop(8.0),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                8.height,
+                AnimatedOpacity(
+                  opacity: showTime ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Text('10 June 25 9:41 AM', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                ),
+                8.height,
+
+                /// Message list
+                ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  controller: scrollController,
+                  scrollDirection: Axis.vertical,
+                  reverse: true,
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final item = data[index];
+                    final isSender = item.id == 0;
+
+                    return isSender
+                        ? _buildSenderBubble(item)
+                        : _buildReceiverBubble(item);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+
 
       bottomNavigationBar: _buildBottomBar(context),
     );
@@ -279,21 +289,21 @@ class _ChatInboxState extends State<ChatInbox>
                   ? Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.insert_drive_file,
-                      color: Colors.white),
+                   Icon(Icons.insert_drive_file,
+                      color: AppColors.appTextColor),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       message.split('/').last,
                       overflow: TextOverflow.ellipsis,
-                      style: primaryTextStyle(color: white),
+                      style: AppTextStyle.body(color: AppColors.appTextColor),
                     ),
                   ),
                 ],
               )
                   : Text(
                 message,
-                style: primaryTextStyle(color: white),
+                style: AppTextStyle.description(color: AppColors.appTextColor),
               ),
             ),
           ),
@@ -327,7 +337,7 @@ class _ChatInboxState extends State<ChatInbox>
           Flexible(
             child: Container(
               decoration: boxDecorationWithRoundedCorners(
-                backgroundColor: kDarkWhite,
+                backgroundColor: AppColors.appMutedColor,
                 borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(20.0),
                   topLeft: Radius.circular(20.0),
@@ -355,14 +365,14 @@ class _ChatInboxState extends State<ChatInbox>
                     child: Text(
                       message.split('/').last,
                       overflow: TextOverflow.ellipsis,
-                      style: primaryTextStyle(),
+                      style: AppTextStyle.description(color: AppColors.appMutedTextColor),
                     ),
                   ),
                 ],
               )
                   : Text(
                 message,
-                style: primaryTextStyle(),
+                style: AppTextStyle.description(color: AppColors.appMutedTextColor),
               ),
             ),
           ),
@@ -373,11 +383,11 @@ class _ChatInboxState extends State<ChatInbox>
 
 
   Widget _buildBottomBar(BuildContext context) {
+
     return Container(
       padding: MediaQuery.of(context).viewInsets,
-      decoration: boxDecorationWithRoundedCorners(
-        backgroundColor: AppColors.appWhite,
-        borderRadius: radius(0.0),
+      decoration: BoxDecoration(
+      gradient: AppColors.appPagecolor,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -401,14 +411,14 @@ class _ChatInboxState extends State<ChatInbox>
                   )
                       : Row(
                     children: [
-                      const Icon(Icons.insert_drive_file, color: Colors.grey),
+                       Icon(Icons.insert_drive_file, color: AppColors.appIconColor),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: 180,
                         child: Text(
                           selectedPath!.split('/').last,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.black87),
+                          style:  AppTextStyle.body(color: AppColors.appBodyTextColor),
                         ),
                       ),
                     ],
@@ -441,16 +451,16 @@ class _ChatInboxState extends State<ChatInbox>
                       shape: BoxShape.circle,
                       color: AppColors.appColor,
                     ),
-                    child: Icon(FeatherIcons.link, color: AppColors.appWhite),
+                    child: Icon(FeatherIcons.link, color: AppColors.appTextColor),
                   ),
                 ),
                 8.width,
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    padding:  EdgeInsets.symmetric(horizontal: 10.0),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30.0),
-                      color: kDarkWhite,
+                      color: AppColors.appMutedColor,
                     ),
                     child: AppTextField(
                       controller: messageController,
@@ -459,7 +469,7 @@ class _ChatInboxState extends State<ChatInbox>
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: 'Message...',
-                        hintStyle: secondaryTextStyle(size: 16),
+                        hintStyle: AppTextStyle.description(color: AppColors.appMutedTextColor),
                         suffixIcon: Icon(Icons.send_outlined,
                             size: 24, color: AppColors.appColor)
                             .paddingAll(4.0)

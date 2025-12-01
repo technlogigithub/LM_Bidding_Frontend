@@ -182,18 +182,9 @@ class AppSettingsController extends GetxController {
 
         /// Font style
         fontFamily.value = result?.fontStyle?.fontFamily ?? "";
-        // Load saved font sizes first, then fallback to API defaults if not saved
-        await loadFontSizes();
-        // Only use API defaults if no saved values exist
-        if (fontTitleSize.value == 0.0 && result?.fontStyle?.title != null) {
-          fontTitleSize.value = result?.fontStyle?.title ?? 0.0;
-        }
-        if (fontDescriptionSize.value == 0.0 && result?.fontStyle?.description != null) {
-          fontDescriptionSize.value = result?.fontStyle?.description ?? 0.0;
-        }
-        if (fontBodySize.value == 0.0 && result?.fontStyle?.body != null) {
-          fontBodySize.value = result?.fontStyle?.body ?? 0.0;
-        }
+        fontTitleSize.value = result?.fontStyle?.title ?? 0.0;
+        fontDescriptionSize.value = result?.fontStyle?.description ?? 0.0;
+        fontBodySize.value = result?.fontStyle?.body ?? 0.0;
 
         /// SEO Meta
         seoTitle.value = result?.seo?.meta?.title ?? "";
@@ -243,7 +234,7 @@ class AppSettingsController extends GetxController {
         orientation.value = result?.general?.orientation ?? "";
         demoMode.value = result?.general?.demoMode ?? false;
         loginRequired.value = result?.general?.loginRequired ?? false;
-        
+
         /// Social Login
         socialLogin.value = result?.socialLogin;
         googleClientId.value = result?.socialLogin?.google?.clientId ?? "";
@@ -452,10 +443,10 @@ class AppSettingsController extends GetxController {
   Future<void> loadSelectedLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     final savedLanguageKey = prefs.getString('selected_language_key') ?? 'en';
-    
+
     // Set the selected language key
     selectedLanguageKey.value = savedLanguageKey;
-    
+
     // Find the corresponding language name from available languages
     try {
       final language = availableLanguages.firstWhere((lang) => lang.code == savedLanguageKey);
@@ -468,9 +459,9 @@ class AppSettingsController extends GetxController {
   Future<void> setSelectedLanguage(String languageKey) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_language_key', languageKey);
-    
+
     selectedLanguageKey.value = languageKey;
-    
+
     // Find the corresponding language name from available languages
     try {
       final language = availableLanguages.firstWhere((lang) => lang.code == languageKey);
@@ -482,14 +473,14 @@ class AppSettingsController extends GetxController {
 
   List<Map<String, String>> getLanguageOptions() {
     List<Map<String, String>> options = [];
-    
+
     for (var language in availableLanguages) {
       options.add({
         'key': language.code ?? '',
         'name': language.name ?? '',
       });
     }
-    
+
     return options;
   }
 
@@ -502,28 +493,28 @@ class AppSettingsController extends GetxController {
     try {
       // Get current app version from AppInfo
       final currentVersion = await AppInfo.getCurrentVersion();
-      
+
       String? requiredVersion;
       if (GetPlatform.isAndroid) {
         requiredVersion = androidVersion.value;
       } else if (GetPlatform.isIOS) {
         requiredVersion = iosVersion.value;
       }
-      
+
       if (requiredVersion == null || requiredVersion.isEmpty) {
         print('No required version set, allowing app to continue');
         return false;
       }
-      
+
       print('Version Check - Current: $currentVersion, Required: $requiredVersion');
       if(currentVersion != requiredVersion)
-        {
-          return true;
-        }
+      {
+        return true;
+      }
       else
-        {
-          return false;
-        }
+      {
+        return false;
+      }
     } catch (e) {
       print("Error checking version: $e");
       return false;
@@ -532,12 +523,12 @@ class AppSettingsController extends GetxController {
 
   String getUpdateUrl() {
     if (GetPlatform.isAndroid) {
-      return forceUpdatePlaystoreUrl.value.isNotEmpty 
-          ? forceUpdatePlaystoreUrl.value 
+      return forceUpdatePlaystoreUrl.value.isNotEmpty
+          ? forceUpdatePlaystoreUrl.value
           : playstoreUrl.value;
     } else if (GetPlatform.isIOS) {
-      return forceUpdateAppstoreUrl.value.isNotEmpty 
-          ? forceUpdateAppstoreUrl.value 
+      return forceUpdateAppstoreUrl.value.isNotEmpty
+          ? forceUpdateAppstoreUrl.value
           : appstoreUrl.value;
     }
     return "";
@@ -574,86 +565,44 @@ class AppSettingsController extends GetxController {
   }
 
 
-  void increaseTitle() {
-    fontTitleSize.value++;
-    saveFontSizes();
-  }
-  
-  void increaseDescription() {
-    fontDescriptionSize.value++;
-    saveFontSizes();
-  }
-  
-  void increaseBody() {
-    fontBodySize.value++;
-    saveFontSizes();
-  }
+  void increaseTitle() => fontTitleSize.value++;
+  void increaseDescription() => fontDescriptionSize.value++;
+  void increaseBody() => fontBodySize.value++;
 
   // Decrease
   void decreaseTitle() {
-    if (fontTitleSize.value > 16) {
-      fontTitleSize.value--;
-      saveFontSizes();
-    }
+    if (fontTitleSize.value > 16) fontTitleSize.value--;
   }
 
   void decreaseDescription() {
-    if (fontDescriptionSize.value > 14) {
-      fontDescriptionSize.value--;
-      saveFontSizes();
-    }
+    if (fontDescriptionSize.value > 14) fontDescriptionSize.value--;
   }
 
   void decreaseBody() {
-    if (fontBodySize.value > 12) {
-      fontBodySize.value--;
-      saveFontSizes();
-    }
+    if (fontBodySize.value > 12) fontBodySize.value--;
   }
 
   RxInt fontCounter = 1.obs;
 
   void increaseCounter() {
-    fontCounter.value++;
-    saveFontSizes();
+    if (fontCounter.value < 7) {
+      fontCounter.value++;
+
+      fontTitleSize.value++;
+      fontDescriptionSize.value++;
+      fontBodySize.value++;
+    }
   }
 
+// DECREASE COUNTER AND FONT SIZES
   void decreaseCounter() {
     if (fontCounter.value > 1) {
       fontCounter.value--;
-      saveFontSizes();
+      fontTitleSize.value--;
+      fontDescriptionSize.value--;
+      fontBodySize.value--;
     }
-  }
 
-  // Save font sizes to SharedPreferences
-  Future<void> saveFontSizes() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('font_title_size', fontTitleSize.value);
-    await prefs.setDouble('font_description_size', fontDescriptionSize.value);
-    await prefs.setDouble('font_body_size', fontBodySize.value);
-    await prefs.setInt('font_counter', fontCounter.value);
-  }
-
-  // Load font sizes from SharedPreferences
-  Future<void> loadFontSizes() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedTitleSize = prefs.getDouble('font_title_size');
-    final savedDescriptionSize = prefs.getDouble('font_description_size');
-    final savedBodySize = prefs.getDouble('font_body_size');
-    final savedCounter = prefs.getInt('font_counter');
-
-    if (savedTitleSize != null) {
-      fontTitleSize.value = savedTitleSize;
-    }
-    if (savedDescriptionSize != null) {
-      fontDescriptionSize.value = savedDescriptionSize;
-    }
-    if (savedBodySize != null) {
-      fontBodySize.value = savedBodySize;
-    }
-    if (savedCounter != null) {
-      fontCounter.value = savedCounter;
-    }
   }
 
 

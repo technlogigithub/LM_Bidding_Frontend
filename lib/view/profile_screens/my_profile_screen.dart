@@ -390,7 +390,19 @@ class SetupClientProfileView extends StatelessWidget {
         decoration: BoxDecoration(
           // color: Colors.white,
           gradient: AppColors.appPagecolor,
-          border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+          // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.appMutedColor,
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: Offset(0, 10),
+              // blurRadius: 1,
+              // spreadRadius: 1,
+              // offset: Offset(0, 6),
+            ),
+          ],
+
           borderRadius: BorderRadius.circular(12.r),
           // boxShadow: [
           //   BoxShadow(
@@ -467,7 +479,19 @@ class SetupClientProfileView extends StatelessWidget {
             padding: EdgeInsets.all(15.w),
             decoration: BoxDecoration(
               gradient: AppColors.appPagecolor,
-              border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+              // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.appMutedColor,
+                  blurRadius: 5,
+                  spreadRadius: 1,
+                  offset: Offset(0, 10),
+                  // blurRadius: 1,
+                  // spreadRadius: 1,
+                  // offset: Offset(0, 6),
+                ),
+              ],
+
               borderRadius: BorderRadius.circular(12.r),
               // boxShadow: [
               //   BoxShadow(
@@ -519,15 +543,28 @@ class SetupClientProfileView extends StatelessWidget {
               padding: EdgeInsets.all(15.w),
               decoration: BoxDecoration(
                 gradient: AppColors.appPagecolor,
-                border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+                // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    color: AppColors.appMutedColor,
+                    blurRadius: 5,
+                    spreadRadius: 1,
+                    offset: Offset(0, 10),
+                    // blurRadius: 1,
+                    // spreadRadius: 1,
+                    // offset: Offset(0, 6),
                   ),
                 ],
+
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black12,
+                //     blurRadius: 4,
+                //     offset: const Offset(0, 2),
+                //   ),
+                // ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -551,15 +588,27 @@ class SetupClientProfileView extends StatelessWidget {
               padding: EdgeInsets.all(15.w),
               decoration: BoxDecoration(
                 gradient: AppColors.appPagecolor,
-                border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+                // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    color: AppColors.appMutedColor,
+                    blurRadius: 5,
+                    spreadRadius: 1,
+                    offset: Offset(0, 10),
+                    // blurRadius: 1,
+                    // spreadRadius: 1,
+                    // offset: Offset(0, 6),
                   ),
                 ],
+
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black12,
+                //     blurRadius: 4,
+                //     offset: const Offset(0, 2),
+                //   ),
+                // ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,15 +632,27 @@ class SetupClientProfileView extends StatelessWidget {
               padding: EdgeInsets.all(15.w),
               decoration: BoxDecoration(
                 gradient: AppColors.appPagecolor,
-                border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+                // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+                    color: AppColors.appMutedColor,
+                    blurRadius: 5,
+                    spreadRadius: 1,
+                    offset: Offset(0, 10),
+                    // blurRadius: 1,
+                    // spreadRadius: 1,
+                    // offset: Offset(0, 6),
                   ),
                 ],
+
+                // boxShadow: [
+                //   BoxShadow(
+                //     color: Colors.black12,
+                //     blurRadius: 4,
+                //     offset: const Offset(0, 2),
+                //   ),
+                // ],
               ),
               child: _buildDocumentImage(imageUrl, "", context),
             ),

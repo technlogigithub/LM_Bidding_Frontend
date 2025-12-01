@@ -36,8 +36,8 @@ class CustomVerticalListviewList extends StatelessWidget {
     return Obx(
           () => isLoading.value
           ? _buildShimmerList()
-          : SizedBox( // height: isFromCartScreen ? 190.h : 140.h,
-        height: isFromCartScreen ? items.length * 200.h : items.length * 155.h,
+          : SizedBox(
+        height: items.length * 182.h,
         child: ListView.separated(
           physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.only(
@@ -48,8 +48,8 @@ class CustomVerticalListviewList extends StatelessWidget {
           itemBuilder: (_, index) {
             final item = items[index];
             return Padding(
-                padding: EdgeInsetsGeometry.only(top: 10),
-            child: _buildItemCard(context, item, index),);
+              padding: EdgeInsetsGeometry.only(top: 10),
+              child: _buildItemCard(context, item, index),);
           },
         ),
       ),
@@ -175,12 +175,27 @@ class CustomVerticalListviewList extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: onItemTap ?? () => _openCustomDetailScreen(context, item),
-      child:  isFromCartScreen ? Container(
+      child: Container(
         width: 330,
-        height: isFromCartScreen ? 190.h : 140.h,
+        height: isFromCartScreen ? 165 : 140,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
-          border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+          // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
+
+
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.appMutedColor,
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: Offset(0, 10),
+              // blurRadius: 1,
+              // spreadRadius: 1,
+              // offset: Offset(0, 6),
+            ),
+          ],
+
+
           borderRadius: BorderRadius.circular(8.0),
 
         ),
@@ -251,76 +266,7 @@ class CustomVerticalListviewList extends StatelessWidget {
               )
           ],
         ),
-      ) :Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            alignment: Alignment.topLeft,
-            children: [
-              Container(
-                height: isFromCartScreen ? 165 : 140,
-                width: 120.h,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(8.0),
-                    topLeft: Radius.circular(8.0),
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(item.imagePath),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Obx(() => GestureDetector(
-                onTap: () => onFavoriteToggle(index, !item.isFavorite.value),
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Container(
-                    height: 25,
-                    width: 25,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10.0,
-                          spreadRadius: 1.0,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        item.isFavorite.value ? Icons.favorite : Icons.favorite_border,
-                        color: item.isFavorite.value ? Colors.red : AppColors.appIconColor,
-                        size: 16.0,
-                      ),
-                    ),
-                  ),
-                ),
-              )),
-            ],
-          ),
-          Container(
-              width: 210.w,
-              height: isFromCartScreen ? 165 : 140,
-              decoration: BoxDecoration(
-                gradient: AppColors.appPagecolor,
-                border: Border(
-                  top: BorderSide(color: AppColors.appDescriptionColor, width: 1),
-                  right: BorderSide(color: AppColors.appDescriptionColor, width: 1),
-                  bottom: BorderSide(color: AppColors.appDescriptionColor, width: 1),
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(8.r),
-                  topRight: Radius.circular(8.r),
-                ),
-
-              ),
-              child: _buildContentSection(item)),
-        ],
-      )
+      ),
     );
   }
 
@@ -391,7 +337,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                   color: AppColors.appTitleColor,
                   fontWeight: FontWeight.bold,
                 ),
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -417,8 +363,8 @@ class CustomVerticalListviewList extends StatelessWidget {
               ),
               const SizedBox(width: 40),
               Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.description(
-    color: AppColors.appTitleColor,
-    fontWeight: FontWeight.bold,))
+                color: AppColors.appTitleColor,
+                fontWeight: FontWeight.bold,))
 
             ],
           ),

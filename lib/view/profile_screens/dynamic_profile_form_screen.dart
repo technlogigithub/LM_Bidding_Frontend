@@ -438,7 +438,20 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.appBodyTextColor),
+        gradient: AppColors.appPagecolor,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.appMutedColor,
+            blurRadius: 5,
+            spreadRadius: 1,
+            offset: Offset(0, 10),
+            // blurRadius: 1,
+            // spreadRadius: 1,
+            // offset: Offset(0, 6),
+          ),
+        ],
+
+        // border: Border.all(color: AppColors.appBodyTextColor),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
