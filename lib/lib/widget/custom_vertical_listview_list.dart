@@ -176,8 +176,8 @@ class CustomVerticalListviewList extends StatelessWidget {
     return GestureDetector(
       onTap: onItemTap ?? () => _openCustomDetailScreen(context, item),
       child: Container(
-        width: 330,
-        height: isFromCartScreen ? 165 : 140,
+        width: 330.w,
+        height: isFromCartScreen ? 165.h : 140.h,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
           // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
@@ -275,8 +275,8 @@ class CustomVerticalListviewList extends StatelessWidget {
       alignment: Alignment.topLeft,
       children: [
         Container(
-          height: 138,
-          width: 120,
+          height: 140.h,
+          width: 120.w,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(8.0),

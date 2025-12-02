@@ -4,10 +4,9 @@ import '../core/app_color.dart';
 class CustomTabBar extends StatefulWidget implements PreferredSizeWidget {
   final List<String> tabs;
   final Function(int)? onTap;
-
   final TextStyle textStyle;
+  final int? initialIndex;
 
-  /// Remove fixed height, use kToolbarHeight as safe fallback
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
@@ -16,6 +15,7 @@ class CustomTabBar extends StatefulWidget implements PreferredSizeWidget {
     required this.tabs,
     this.onTap,
     required this.textStyle,
+    this.initialIndex,
   });
 
   @override
@@ -23,7 +23,38 @@ class CustomTabBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CustomTabBarState extends State<CustomTabBar> {
-  int selectedIndex = 0;
+  int? selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ ONLY select if valid index is passed from backend
+    if (widget.initialIndex != null &&
+        widget.initialIndex! >= 0 &&
+        widget.initialIndex! < widget.tabs.length) {
+      selectedIndex = widget.initialIndex;
+    } else {
+      selectedIndex = null; // ✅ GUARANTEED no default selection
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant CustomTabBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // ✅ If backend value changes later, update selection
+    if (widget.initialIndex != oldWidget.initialIndex) {
+      if (widget.initialIndex != null &&
+          widget.initialIndex! >= 0 &&
+          widget.initialIndex! < widget.tabs.length) {
+        selectedIndex = widget.initialIndex;
+      } else {
+        selectedIndex = null;
+      }
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +65,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: List.generate(widget.tabs.length, (index) {
-            final isSelected = index == selectedIndex;
+            final isSelected = selectedIndex == index;
 
             return GestureDetector(
               onTap: () {
@@ -43,10 +74,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10, // Auto height
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
                   color: isSelected
@@ -85,3 +113,5 @@ class _CustomTabBarState extends State<CustomTabBar> {
     );
   }
 }
+
+

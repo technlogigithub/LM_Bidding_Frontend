@@ -407,7 +407,7 @@ class ClientHomeController extends GetxController {
     
     razorpayService.openCheckout(
       amount: staticAmount,
-      name: 'Libdding',
+      name: 'LM Bidding',
       description: 'Payment for services',
       prefillEmail: 'demo@libdding.com',
       prefillContact: '9999999999',

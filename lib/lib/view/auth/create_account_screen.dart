@@ -355,10 +355,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                       // Checkbox
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Obx(() => Checkbox(
-                            activeColor: AppColors.appColor,
+                            activeColor: AppColors.appButtonColor,
                             value: controller.isCheck.value,
                             onChanged: (value) => controller.toggleCheck(),
                             visualDensity: VisualDensity(horizontal: -2.w, vertical: -2.w),

@@ -18,6 +18,7 @@ import '../../widget/form_widgets/reusable_location_picker.dart';
 import '../../widget/form_widgets/custom_toggle.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:geocoding/geocoding.dart';
 
 class DynamicProfileFormScreen extends GetView<SetupProfileController> {
   const DynamicProfileFormScreen({super.key});
@@ -964,6 +965,7 @@ class _AddressDialogState extends State<AddressDialog> {
   final Map<String, String> _errors = {};
   final controller = Get.find<SetupProfileController>();
   bool _useGoogleAutoComplete = false;
+  bool _isGettingLocation = false;
 
   @override
   void initState() {
@@ -1024,14 +1026,49 @@ class _AddressDialogState extends State<AddressDialog> {
   }
 
   Future<void> _openLocationPicker() async {
-    // Get current location or use default
     final homeController = Get.find<ClientHomeController>();
-    final currentLat = homeController.currentLatLng.value.latitude;
-    final currentLng = homeController.currentLatLng.value.longitude;
+    
+    // Try to get existing lat/lng from _addressData (for editing existing address)
+    double initialLat;
+    double initialLng;
+    
+    final existingLat = _addressData['latitude'];
+    final existingLng = _addressData['longitude'];
+    
+    if (existingLat != null && existingLng != null) {
+      // Use existing address coordinates if available
+      final lat = double.tryParse(existingLat.toString());
+      final lng = double.tryParse(existingLng.toString());
+      if (lat != null && lng != null) {
+        initialLat = lat;
+        initialLng = lng;
+      } else {
+        // Parsing failed → try geocoding from address string, else fallback
+        final coords = await _tryGeocodeFromAddress(_addressData['address']);
+        if (coords != null) {
+          initialLat = coords.latitude;
+          initialLng = coords.longitude;
+        } else {
+          initialLat = homeController.currentLatLng.value.latitude;
+          initialLng = homeController.currentLatLng.value.longitude;
+        }
+      }
+    } else {
+      // No coords saved yet → try geocoding from address text first
+      final coords = await _tryGeocodeFromAddress(_addressData['address']);
+      if (coords != null) {
+        initialLat = coords.latitude;
+        initialLng = coords.longitude;
+      } else {
+        // Fallback to current location if we can't geocode
+        initialLat = homeController.currentLatLng.value.latitude;
+        initialLng = homeController.currentLatLng.value.longitude;
+      }
+    }
 
     await Get.to(() => ReusableLocationPickerScreen(
-      initialLat: currentLat,
-      initialLng: currentLng,
+      initialLat: initialLat,
+      initialLng: initialLng,
       onLocationSelected: (latLng, address, landmark) {
         setState(() {
           _addressData['latitude'] = latLng.latitude.toString();
@@ -1043,8 +1080,28 @@ class _AddressDialogState extends State<AddressDialog> {
     ));
   }
 
+  /// Try to convert a free-text address into coordinates using geocoding.
+  /// Returns null if geocoding fails.
+  Future<Location?> _tryGeocodeFromAddress(dynamic addressValue) async {
+    try {
+      final text = addressValue?.toString().trim();
+      if (text == null || text.isEmpty) return null;
+      final results = await locationFromAddress(text);
+      if (results.isNotEmpty) return results.first;
+    } catch (_) {
+      // Ignore geocoding errors and let caller fallback to current location
+    }
+    return null;
+  }
+
   Future<void> _getCurrentLocation() async {
     try {
+      if (mounted) {
+        setState(() {
+          _isGettingLocation = true;
+        });
+      }
+
       final homeController = Get.find<ClientHomeController>();
       // Get current location using the public method
       await homeController.getCurrentLocation();
@@ -1060,15 +1117,23 @@ class _AddressDialogState extends State<AddressDialog> {
         }
       }
 
-      setState(() {
-        _addressData['latitude'] = homeController.currentLatLng.value.latitude.toString();
-        _addressData['longitude'] = homeController.currentLatLng.value.longitude.toString();
-        _addressData['address'] = homeController.currentLocation.value;
-        _addressData['landmark'] = landmark;
-      });
+      if (mounted) {
+        setState(() {
+          _addressData['latitude'] = homeController.currentLatLng.value.latitude.toString();
+          _addressData['longitude'] = homeController.currentLatLng.value.longitude.toString();
+          _addressData['address'] = homeController.currentLocation.value;
+          _addressData['landmark'] = landmark;
+        });
+      }
     } catch (e) {
       Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to get current location: $e');
 
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGettingLocation = false;
+        });
+      }
     }
   }
 
@@ -1147,13 +1212,13 @@ class _AddressDialogState extends State<AddressDialog> {
                         ),
                       ),
                       // Location Picker Button (only show when toggle is enabled)
-                      if (_useGoogleAutoComplete) ...[
-                        const SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: _openLocationPicker,
-                          child: Icon(Icons.place_outlined, color: AppColors.appIconColor, size: 20),
-                        ),
-                      ],
+                      // if (_useGoogleAutoComplete) ...[
+                      //   const SizedBox(width: 16),
+                      //   GestureDetector(
+                      //     onTap: _openLocationPicker,
+                      //     child: Icon(Icons.place_outlined, color: AppColors.appIconColor, size: 20),
+                      //   ),
+                      // ],
                     ],
                   ),
 
@@ -1162,7 +1227,35 @@ class _AddressDialogState extends State<AddressDialog> {
                   const SizedBox(height: 20),
 
                   // Dynamic Form Fields
-                  if (widget.addressInputs != null)
+                  if (_isGettingLocation) ...[
+                    Shimmer.fromColors(
+                      baseColor: AppColors.simmerColor,
+                      highlightColor: AppColors.appWhite,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 16,
+                            width: 120,
+                            decoration: BoxDecoration(
+                              color: AppColors.appWhite,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            height: 100,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: AppColors.appWhite,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ] else if (widget.addressInputs != null)
                     DynamicFormBuilder(
                       inputs: widget.addressInputs!,
                       formData: _addressData,
@@ -1185,7 +1278,7 @@ class _AddressDialogState extends State<AddressDialog> {
                       Expanded(
                         child: CustomButton(
                           text: 'Save',
-                          onTap: _saveAddress,
+                          onTap: _isGettingLocation ? null : _saveAddress,
                         ),
                       ),
                     ],

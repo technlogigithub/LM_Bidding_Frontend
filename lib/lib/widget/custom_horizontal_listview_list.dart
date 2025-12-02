@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import '../core/app_color.dart';
@@ -213,8 +214,8 @@ class CustomHorizontalListViewList extends StatelessWidget {
       alignment: Alignment.topLeft,
       children: [
         Container(
-          height: 130,
-          width: 120,
+          height: 135.h,
+          width: 120.w,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(8.0),
@@ -261,7 +262,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
 
   Widget _buildContentSection(ServiceItem item) {
     return Padding(
-      padding: const EdgeInsets.all(5.0),
+      padding: const EdgeInsets.all(4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

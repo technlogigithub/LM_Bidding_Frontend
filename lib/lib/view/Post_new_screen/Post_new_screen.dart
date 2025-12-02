@@ -23,6 +23,16 @@ class PostNewScreen extends GetView<PostFormController> {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final appController = Get.find<AppSettingsController>();
+    final inputs = appController.postFormPage.value?.inputs;
+    for (final step in inputs!.getAvailableSteps()) {
+      final stepInputs = inputs.getStepInputs(step);
+      for (final input in stepInputs ?? []) {
+        debugPrint(
+            "Step ${step + 1} | ${input.name} | autoForward: ${input.autoForward}"
+        );
+      }
+    }
+
 
     return Container(
       // FULL PAGE GRADIENT — FIXES WHITE SPACE ISSUE
@@ -161,6 +171,7 @@ class PostNewScreen extends GetView<PostFormController> {
     List<RegisterInput>? currentStepInputs;
 
     final totalSteps = postForm.totalSteps ?? 26;
+    final bool isLastStep = currentStep >= totalSteps - 1;
     if (currentStep >= 0 && currentStep < totalSteps) {
       currentStepInputs = _getStepInputs(postForm, currentStep);
     }
@@ -180,6 +191,13 @@ class PostNewScreen extends GetView<PostFormController> {
         .where((e) => (e.name ?? '').toLowerCase() != 'step_type')
         .toList();
 
+    // Check if all inputs have autoForward: true
+    final allAutoForward = filteredInputs.every((input) {
+      // Skip group fields
+      if ((input.inputType ?? '').toLowerCase() == 'group') return true;
+      return input.autoForward == true;
+    });
+
     return Column(
       children: [
         if (hasMultipleMarker)
@@ -194,6 +212,24 @@ class PostNewScreen extends GetView<PostFormController> {
             formData: controller.formData,
             onFieldChanged: controller.updateFormData,
             errors: controller.formErrors,
+            onAutoForward: allAutoForward ? () {
+              // Auto-advance to next step if all fields have autoForward: true
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (isLastStep) {
+                  controller.submitForm();
+                } else {
+                  controller.nextStep();
+                }
+              });
+            } : null,
+            // Keyboard Enter/Next navigation for enterEnable = true inputs
+            onStepNext: () {
+              if (isLastStep) {
+                controller.submitForm();
+              } else {
+                controller.nextStep();
+              }
+            },
           ),
       ],
     );

@@ -73,7 +73,7 @@ class CustomDropdown<T> extends StatelessWidget {
               child: Text(
                 itemToString(item),
                 style:  AppTextStyle.description(
-                  color: textColor ?? AppColors.appTextColor,
+                  color: textColor ?? AppColors.appBodyTextColor,
 
                 ),
               ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:libdding/core/app_images.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import '../controller/app_main/App_main_controller.dart';
 import '../core/app_color.dart';
 
 class RazorpayService {
@@ -9,7 +11,8 @@ class RazorpayService {
   // Static Razorpay Key (Demo purpose - replace with your actual key)
   // For testing, you can use Razorpay's test keys
   static const String _razorpayKey = 'rzp_test_1DP5mmOlF5G5ag'; // Replace with your actual Razorpay key
-
+  AppSettingsController appController = Get.put(AppSettingsController());
+  AppSettingsController appSettingsController = Get.put(AppSettingsController());
   void initRazorpay() {
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
@@ -27,7 +30,8 @@ class RazorpayService {
     var options = {
       'key': _razorpayKey,
       'amount': (amount * 100).toInt(),
-      'name': name ?? '',
+      'image': appSettingsController.logoSplash.value,
+      'name': appSettingsController.appName.value,
       'description': description ?? 'Payment for services',
       'prefill': {
         'contact': prefillContact ?? '9999999999',
@@ -37,22 +41,33 @@ class RazorpayService {
         'wallets': ['paytm']
       },
       'theme': {
-        'color':'#28282B',
-        'backdrop_color': '#28282B',
-        "backgroundColor": "#28282B",
+        'color': appSettingsController.primaryColor.value, /// Header Color
+        "isDarkMode": appController.isDarkMode.value
       },
       "display": {
         "widget": {
           "main": {
-            "isDarkMode": true,
-            "content": {
-              "backgroundColor": "#28282B",
-              "color": "#28282B",
-              "fontSize": "13px"
-            }
+            "isDarkMode": appController.isDarkMode.value
           }
         }
       }
+      // 'theme': {
+      //   'color':'#28282B',
+      //   'backdrop_color': '#28282B',
+      //   "backgroundColor": "#28282B",
+      // },
+      // "display": {
+      //   "widget": {
+      //     "main": {
+      //       "isDarkMode": true,
+      //       "content": {
+      //         "backgroundColor": "#28282B",
+      //         "color": "#28282B",
+      //         "fontSize": "13px"
+      //       }
+      //     }
+      //   }
+      // }
     };
 
     try {
@@ -68,6 +83,33 @@ class RazorpayService {
       );
     }
   }
+
+  // void openCheckout() async {
+  //   var options = {
+  //     'key': 'RAZORPAY_KEY_HERE',
+  //     'amount': 5000,
+  //     'name': 'Your App Name',
+  //     'description': 'Order Payment',
+  //     // ✅ Add Application Logo (must be a URL)
+  //     'image': 'https://phplaravel-1517766-5835172.cloudwaysapps.com/assets/images/lobalmart/logo_splash.png',
+  //
+  //     'prefill': {
+  //       'contact': '9876543210',
+  //       'email': 'test@example.com',
+  //     },
+  //
+  //     // 🎨 Theme Color
+  //     'theme': {
+  //       'color': '#7b3df8'
+  //     }
+  //   };
+  //
+  //   try {
+  //     _razorpay.open(options);
+  //   } catch (e) {
+  //     debugPrint('Error: $e');
+  //   }
+  // }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     debugPrint('Payment Success: ${response.paymentId}');

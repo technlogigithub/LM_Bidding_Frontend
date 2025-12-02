@@ -1312,64 +1312,112 @@ class RegisterPage {
 }
 
 class RegisterInput {
-  String? inputType; // text, textarea, password, toggle, radio, check, file, dropdown, date_time, date_range
+  String? inputType; // select, text, textarea, checkbox, radio, toggle, file, files, number, date, datetime, daterange, datetimerange, group, address, dropdown
   String? label;
   String? placeholder;
   String? name;
   bool? required;
-  List<InputValidation>? validations;
-  List<String>? options; // legacy simple string options
-  List<OptionItem>? optionItems; // structured options with label/value
-  dynamic value; // Can be String, int, bool, List, Map, or null
 
-  RegisterInput({this.inputType, this.label, this.placeholder, this.name, this.required, this.validations, this.options, this.optionItems, this.value});
+  bool? autoForward;
+  bool? enterEnable;
+
+  List<InputValidation>? validations;
+
+  // For simple string options
+  List<String>? options;
+
+  // For structured options [{label, value}]
+  List<OptionItem>? optionItems;
+
+  // For group type fields (like addresses, user_documents)
+  List<dynamic>? groupValue;
+
+  // Step settings for group type inputs
+  List<dynamic>? stepSetting;
+
+  dynamic value; // String, int, bool, List, Map, null
+
+  RegisterInput({
+    this.inputType,
+    this.label,
+    this.placeholder,
+    this.name,
+    this.required,
+    this.autoForward,
+    this.enterEnable,
+    this.validations,
+    this.options,
+    this.optionItems,
+    this.groupValue,
+    this.stepSetting,
+    this.value,
+  });
 
   factory RegisterInput.fromJson(Map<String, dynamic> json) {
+    // Validations
     List<InputValidation>? rules;
     if (json['validations'] != null) {
-      rules = <InputValidation>[];
-      (json['validations'] as List).forEach((v) {
-        rules!.add(InputValidation.fromJson(v));
-      });
+      rules = (json['validations'] as List)
+          .map((e) => InputValidation.fromJson(e))
+          .toList();
     }
+
+    // Options (supports both string & object)
     List<String>? opts;
     List<OptionItem>? structuredOptions;
     if (json['options'] != null) {
-      final list = (json['options'] as List);
+      final list = json['options'] as List;
       for (final e in list) {
         if (e is Map<String, dynamic>) {
-          structuredOptions ??= <OptionItem>[];
+          structuredOptions ??= [];
           structuredOptions.add(OptionItem.fromJson(e));
         } else {
-          opts ??= <String>[];
+          opts ??= [];
           opts.add(e.toString());
         }
       }
     }
+
     return RegisterInput(
       inputType: json['input_type'],
       label: json['label'],
       placeholder: json['placeholder'],
       name: json['name'],
       required: json['required'],
+      autoForward: json['auto_forward'],
+      enterEnable: json['enter_enable'],
       validations: rules,
       options: opts,
       optionItems: structuredOptions,
+      groupValue: json['input_type'] == 'group'
+          ? (json['value'] as List?) ?? []
+          : null,
+      stepSetting: json['step_setting'] != null
+          ? (json['step_setting'] as List)
+          : null,
       value: json['value'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'input_type': inputType,
-        'label': label,
-        'placeholder': placeholder,
-        'name': name,
-        'required': required,
-        if (validations != null) 'validations': validations!.map((e) => e.toJson()).toList(),
-        if (optionItems != null) 'options': optionItems!.map((e) => e.toJson()).toList() else if (options != null) 'options': options,
-        'value': value,
-      };
+    'input_type': inputType,
+    'label': label,
+    'placeholder': placeholder,
+    'name': name,
+    'required': required,
+    'auto_forward': autoForward,
+    'enter_enable': enterEnable,
+    if (validations != null)
+      'validations': validations!.map((e) => e.toJson()).toList(),
+    if (optionItems != null)
+      'options': optionItems!.map((e) => e.toJson()).toList()
+    else if (options != null)
+      'options': options,
+    if (stepSetting != null) 'step_setting': stepSetting,
+    'value': value,
+  };
 }
+
 
 class OptionItem {
   String? label;
@@ -2022,10 +2070,14 @@ class ProfileFormApiEndpoints {
   }
 
   Map<String, dynamic> toJson() {
-    Map<String, dynamic> result = {
-      'submit_form': submitForm,
-      'upload_file': uploadFile,
-    };
+    Map<String, dynamic> result = {};
+
+    if (submitForm != null) {
+      result['submit_form'] = submitForm;
+    }
+    if (uploadFile != null) {
+      result['upload_file'] = uploadFile;
+    }
 
     stepEndpoints.forEach((key, value) {
       if (value != null) {

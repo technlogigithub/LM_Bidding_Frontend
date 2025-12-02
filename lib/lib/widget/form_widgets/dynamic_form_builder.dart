@@ -1,15 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:libdding/widget/form_widgets/reusable_location_picker.dart';
+import 'package:geocoding/geocoding.dart';
+import '../../controller/home/home_controller.dart';
 import '../../core/app_textstyle.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../custom_tapbar.dart';
 import 'app_button.dart';
 import 'app_checkbox.dart';
-import 'app_date_picker.dart';
 import 'app_dropdown.dart';
 import 'app_radiobutton.dart';
 import 'app_textfield.dart';
 import 'custom_textarea.dart';
+import 'custom_textfield_address.dart';
 import 'custom_toggle.dart';
 import 'custom_file_picker.dart';
 import 'custom_multiple_file_picker.dart';
@@ -21,6 +26,9 @@ class DynamicFormBuilder extends StatefulWidget {
   final Map<String, dynamic> formData;
   final Function(String, dynamic) onFieldChanged;
   final Map<String, String> errors;
+  final VoidCallback? onAutoForward;
+  // Called when user presses "Next/Done" on the last enter-enabled field
+  final VoidCallback? onStepNext;
 
   const DynamicFormBuilder({
     super.key,
@@ -28,6 +36,8 @@ class DynamicFormBuilder extends StatefulWidget {
     required this.formData,
     required this.onFieldChanged,
     required this.errors,
+    this.onAutoForward,
+    this.onStepNext,
   });
 
   @override
@@ -35,9 +45,95 @@ class DynamicFormBuilder extends StatefulWidget {
 }
 
 class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
+  // Helpers for Enter/Next navigation based on enterEnable flag from API
+  bool _isEnterNavigableField(RegisterInput input, String fieldType) {
+    if (input.enterEnable != true) return false;
+    if ((input.name ?? '').toLowerCase() == 'step_type') return false;
+    if (fieldType == 'group') return false;
+    // Limit to single-line text-like inputs where keyboard next makes sense
+    return fieldType == 'text' ||
+        fieldType == 'email' ||
+        fieldType == 'password' ||
+        fieldType == 'number';
+  }
+
+  bool _isLastEnterEnabledField(RegisterInput input, String fieldType) {
+    if (!_isEnterNavigableField(input, fieldType)) return false;
+
+    final currentIndex = widget.inputs.indexOf(input);
+    if (currentIndex == -1) return false;
+
+    // If there is ANY later visible input in this step (of any type),
+    // then this is NOT the last field. Only when this is the last
+    // actual widget in the step should "Done" move to the next step.
+    for (int i = currentIndex + 1; i < widget.inputs.length; i++) {
+      final other = widget.inputs[i];
+      final otherName = (other.name ?? '').toLowerCase();
+      final otherType = (other.inputType ?? '').toLowerCase();
+
+      // Ignore purely technical fields which don't render UI
+      if (otherName == 'step_type' || otherType == 'group') {
+        continue;
+      }
+
+      // There is a later real widget → not last
+      return false;
+    }
+    return true;
+  }
+
+  // Check if all fields have autoForward: true and all have values
+  bool _shouldAutoForward() {
+    if (widget.onAutoForward == null) return false;
+    
+    // Check if all inputs have autoForward: true
+    final allAutoForward = widget.inputs.every((input) {
+      // Skip step_type fields
+      if ((input.name ?? '').toLowerCase() == 'step_type') return true;
+      // Skip group fields
+      if ((input.inputType ?? '').toLowerCase() == 'group') return true;
+      return input.autoForward == true;
+    });
+    
+    if (!allAutoForward) return false;
+    
+    // Check if all required fields have values
+    for (final input in widget.inputs) {
+      final fieldName = input.name ?? '';
+      // Skip step_type and group fields
+      if (fieldName.toLowerCase() == 'step_type' || 
+          (input.inputType ?? '').toLowerCase() == 'group') {
+        continue;
+      }
+      
+      final value = widget.formData[fieldName];
+      final isRequired = input.required ?? false;
+      
+      // If field is required and has no value, don't auto-forward
+      if (isRequired && (value == null || value.toString().isEmpty)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  // Wrapper for onFieldChanged that checks auto-forward
+  void _handleFieldChanged(String fieldName, dynamic value) {
+    widget.onFieldChanged(fieldName, value);
+    
+    // Check auto-forward after a short delay to ensure formData is updated
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_shouldAutoForward() && widget.onAutoForward != null) {
+        widget.onAutoForward!();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Column(
       children: widget.inputs.map((input) => _buildFormField(input)).toList(),
     );
@@ -45,7 +141,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
   Widget _buildFormField(RegisterInput input) {
     final fieldName = input.name ?? '';
-    final fieldType = (input.inputType ?? 'text').toLowerCase();
+    final fieldType = (input.inputType ?? '').toLowerCase();
     final label = input.label ?? '';
     final placeholder = input.placeholder ?? '';
     final isRequired = input.required ?? false;
@@ -54,13 +150,35 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
     Widget fieldWidget;
 
+    // Common config for Enter/Next behavior driven by enterEnable flag
+    final isEnterEnabled = _isEnterNavigableField(input, fieldType);
+    final isLastEnterField = _isLastEnterEnabledField(input, fieldType);
+
+    TextInputAction _resolveTextInputAction() {
+      if (!isEnterEnabled) {
+        // When enterEnable is false, do not show "Next" behavior
+        return TextInputAction.done;
+      }
+      return isLastEnterField ? TextInputAction.done : TextInputAction.next;
+    }
+
+    Function(String)? _resolveOnSubmitted() {
+      if (isEnterEnabled && isLastEnterField && widget.onStepNext != null) {
+        // On last enter-enabled field, pressing keyboard action moves to next step
+        return (_) => widget.onStepNext!();
+      }
+      return null;
+    }
+
     switch (fieldType) {
       case 'text':
         fieldWidget = _TextField(
           label: label + (isRequired ? ' *' : ''),
           hintText: placeholder,
           initialValue: currentValue?.toString() ?? '',
-          onChanged: (value) => widget.onFieldChanged(fieldName, value),
+          onChanged: (value) => _handleFieldChanged(fieldName, value),
+          textInputAction: _resolveTextInputAction(),
+          onSubmitted: _resolveOnSubmitted(),
           keyboardType: _getKeyboardType(input),
           maxLength: _getMaxLength(input),
           textCapitalization: _getTextCapitalization(fieldName, label),
@@ -72,7 +190,9 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           label: label + (isRequired ? ' *' : ''),
           hintText: placeholder,
           initialValue: currentValue?.toString() ?? '',
-          onChanged: (value) => widget.onFieldChanged(fieldName, value),
+          onChanged: (value) => _handleFieldChanged(fieldName, value),
+          textInputAction: _resolveTextInputAction(),
+          onSubmitted: _resolveOnSubmitted(),
           keyboardType: TextInputType.emailAddress,
         );
         break;
@@ -82,7 +202,9 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           label: label + (isRequired ? ' *' : ''),
           hintText: placeholder,
           initialValue: currentValue?.toString() ?? '',
-          onChanged: (value) => widget.onFieldChanged(fieldName, value),
+          onChanged: (value) => _handleFieldChanged(fieldName, value),
+          textInputAction: _resolveTextInputAction(),
+          onSubmitted: _resolveOnSubmitted(),
         );
         break;
 
@@ -92,73 +214,104 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           hintText: placeholder,
           initialValue: currentValue?.toString() ?? '',
           isRequired: isRequired,
-          onChanged: (value) => widget.onFieldChanged(fieldName, value),
+          onChanged: (value) => _handleFieldChanged(fieldName, value),
         );
         break;
 
+      case 'address':
+        final bool isAddressField =
+            fieldName.toLowerCase().contains('address') ||
+                label.toLowerCase().contains('address');
+
+        if (isAddressField) {
+          fieldWidget = _AddressField(
+            label: label + (isRequired ? ' *' : ''),
+            hintText: placeholder,
+            initialValue: currentValue?.toString() ?? '',
+            fieldName: fieldName,
+            formData: widget.formData,
+            onFieldChanged: _handleFieldChanged,
+            keyboardType: _getKeyboardType(input),
+            maxLength: _getMaxLength(input),
+            textCapitalization: _getTextCapitalization(fieldName, label),
+          );
+        } else {
+          fieldWidget = _TextField(
+            label: label + (isRequired ? ' *' : ''),
+            hintText: placeholder,
+            initialValue: currentValue?.toString() ?? '',
+            onChanged: (value) =>
+                _handleFieldChanged(fieldName, value),
+            textInputAction: _resolveTextInputAction(),
+            onSubmitted: _resolveOnSubmitted(),
+            keyboardType: _getKeyboardType(input),
+            maxLength: _getMaxLength(input),
+            textCapitalization:
+            _getTextCapitalization(fieldName, label),
+          );
+        }
+
+        break;
+
       case 'select':
-        // Use CustomTabBar for ALL select fields
+      // Use CustomTabBar for ALL select fields
         List<String> optionLabels = [];
         List<String> optionValues = [];
-        
+
+        /// ✅ Build options safely
         if (input.optionItems != null && input.optionItems!.isNotEmpty) {
-          // Extract labels and values from optionItems
-          optionLabels = input.optionItems!.map((e) => e.label ?? '').where((l) => l.isNotEmpty).toList();
-          optionValues = input.optionItems!.map((e) {
-            // Prefer value over label, but use label if value is null/empty
-            return (e.value != null && e.value!.isNotEmpty) ? e.value! : (e.label ?? '');
-          }).where((v) => v.isNotEmpty).toList();
-          
-          // Ensure both lists have same length
+          optionLabels = input.optionItems!
+              .map((e) => e.label ?? '')
+              .where((l) => l.trim().isNotEmpty)
+              .toList();
+
+          optionValues = input.optionItems!
+              .map((e) =>
+          (e.value != null && e.value!.trim().isNotEmpty)
+              ? e.value!.trim()
+              : (e.label ?? '').trim())
+              .where((v) => v.isNotEmpty)
+              .toList();
+
+          /// ✅ Force same length
           if (optionLabels.length != optionValues.length) {
-            // If mismatch, use labels as values
             optionValues = List<String>.from(optionLabels);
           }
-        } else if (input.options != null && input.options!.isNotEmpty) {
-          // Use legacy options list
+        }
+        else if (input.options != null && input.options!.isNotEmpty) {
           optionLabels = _extractOptionLabels(input.options!);
           optionValues = _extractOptionValues(input.options!);
-          
-          // If optionValues are empty, use labels as values
+
           if (optionValues.isEmpty || optionValues.every((v) => v.isEmpty)) {
             optionValues = List<String>.from(optionLabels);
           }
-        } else {
-          // Fallback to empty lists (will show empty tab bar)
-          optionLabels = [];
-          optionValues = [];
         }
 
-        // Find initial selected index based on current value
-        String? currentValueStr = currentValue?.toString();
-        int initialIndex = 0;
-        if (currentValueStr != null && currentValueStr.isNotEmpty && optionValues.isNotEmpty) {
-          // Try to find index by value first
-          final valueIndex = optionValues.indexWhere((v) => v == currentValueStr);
-          if (valueIndex != -1) {
-            initialIndex = valueIndex;
-          } else {
-            // Try to find index by label
-            final labelIndex = optionLabels.indexWhere((l) => l == currentValueStr);
-            if (labelIndex != -1) {
-              initialIndex = labelIndex;
-            }
+        /// ✅ SAFE initial index (NO DEFAULT SELECTION)
+        int? safeInitialIndex;
+        if (currentValue != null &&
+            currentValue.toString().trim().isNotEmpty &&
+            optionValues.isNotEmpty) {
+
+          final idx = optionValues.indexOf(currentValue.toString().trim());
+          if (idx != -1) {
+            safeInitialIndex = idx; // ✅ only valid backend match selects
           }
         }
 
-        // Ensure we have options before rendering
+        /// ✅ UI rendering
         if (optionLabels.isEmpty) {
           fieldWidget = Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: Text(
               '${label + (isRequired ? ' *' : '')}\nNo options available',
-              style: AppTextStyle.description(
-                color: Colors.red,
-              ),
+              style: AppTextStyle.description(color: Colors.red),
             ),
           );
-        } else {
+        }
+        else {
           fieldWidget = Column(
+            key: ValueKey(fieldName),
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
@@ -167,25 +320,30 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
                   label + (isRequired ? ' *' : ''),
                   style: AppTextStyle.description(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.appBodyTextColor
+                    color: AppColors.appBodyTextColor,
                   ),
                 ),
               ),
 
+              /// ✅ TAB BAR WITH NO DEFAULT SELECTION
               CustomTabBar(
                 tabs: optionLabels,
-                // height: 55,
                 textStyle: AppTextStyle.description(),
-                // initialIndex: initialIndex,
+                initialIndex: safeInitialIndex, // ✅ NULL = NOTHING SELECTED
                 onTap: (index) {
-                  widget.onFieldChanged(fieldName, optionValues[index]);
+                  _handleFieldChanged(fieldName, optionValues[index]);
+
+                  if ((input.autoForward ?? false) &&
+                      widget.onStepNext != null) {
+                    widget.onStepNext!();
+                  }
                 },
               ),
             ],
           );
-
         }
         break;
+
 
       case 'toggle':
         // Convert currentValue to bool, handling String, bool, and null cases
@@ -203,7 +361,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         fieldWidget = CustomToggle(
           label: label + (isRequired ? ' *' : ''),
           value: boolValue,
-          onChanged: (value) => widget.onFieldChanged(fieldName, value),
+          onChanged: (value) => _handleFieldChanged(fieldName, value),
           isRequired: isRequired,
         );
         break;
@@ -225,7 +383,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           isImageFile: category == 'image',
           allowedExtensions: allowedExt,
           category: category,
-          onPicked: (file) => widget.onFieldChanged(fieldName, file),
+          onPicked: (file) => _handleFieldChanged(fieldName, file),
         );
         break;
 
@@ -246,7 +404,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         
         // Additional check: If label contains "video" or fieldName contains "video", force video category
         final lowerLabel = label.toLowerCase();
-        final lowerFieldName = fieldName?.toLowerCase() ?? '';
+        final lowerFieldName = fieldName.toLowerCase();
         final hasVideoInLabel = lowerLabel.contains('video') || lowerFieldName.contains('video');
         final hasImageInLabel = lowerLabel.contains('image') || lowerLabel.contains('photo') || lowerLabel.contains('picture');
         
@@ -282,7 +440,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           isImageFile: finalCategory == 'image',
           allowedExtensions: allowedExt,
           category: finalCategory, // Use finalCategory instead of category
-          onPicked: (files) => widget.onFieldChanged(fieldName, files),
+          onPicked: (files) => _handleFieldChanged(fieldName, files),
         );
         break;
 
@@ -302,9 +460,9 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           value: dateTimeValue,
           onChanged: (value) {
             if (value != null) {
-              widget.onFieldChanged(fieldName, value.toIso8601String());
+              _handleFieldChanged(fieldName, value.toIso8601String());
             } else {
-              widget.onFieldChanged(fieldName, '');
+              _handleFieldChanged(fieldName, '');
             }
           },
         );
@@ -315,31 +473,119 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           label: label + (isRequired ? ' *' : ''),
           hintText: placeholder,
           initialValue: currentValue?.toString() ?? '',
-          onChanged: (value) => widget.onFieldChanged(fieldName, value),
+          onChanged: (value) => _handleFieldChanged(fieldName, value),
+          textInputAction: _resolveTextInputAction(),
+          onSubmitted: _resolveOnSubmitted(),
           keyboardType: TextInputType.number,
         );
         break;
       case 'button':
         fieldWidget = CustomButton(
           text: label,
-          onTap: () => widget.onFieldChanged(fieldName, true),
+          onTap: () => _handleFieldChanged(fieldName, true),
           backgroundColor: AppColors.appButtonColor,
         );
         break;
       case 'checkbox':
-        bool boolValue = false;
+        // Support both single checkbox and multi-select checkbox (with options)
+        final hasOptions = (input.optionItems != null && input.optionItems!.isNotEmpty) ||
+            (input.options != null && input.options!.isNotEmpty);
 
-        if (currentValue is bool) {
-          boolValue = currentValue;
-        } else if (currentValue is String) {
-          boolValue = currentValue.toLowerCase() == "true" || currentValue == "1";
+        if (!hasOptions) {
+          // Original single boolean checkbox behavior
+          bool boolValue = false;
+
+          if (currentValue is bool) {
+            boolValue = currentValue;
+          } else if (currentValue is String) {
+            boolValue = currentValue.toLowerCase() == "true" || currentValue == "1";
+          }
+
+          fieldWidget = CustomCheckbox(
+            value: boolValue,
+            title: label + (isRequired ? " *" : ""),
+            onChanged: (val) => _handleFieldChanged(fieldName, val),
+          );
+        } else {
+          // Multi-select checkbox list using same UI (CustomCheckbox) for each option
+          // Normalize options to (label, value)
+          final List<String> optionLabels = [];
+          final List<String> optionValues = [];
+
+          if (input.optionItems != null && input.optionItems!.isNotEmpty) {
+            for (final item in input.optionItems!) {
+              final optLabel = (item.label ?? '').trim();
+              final optValue = (item.value ?? item.label ?? '').toString().trim();
+              if (optLabel.isNotEmpty && optValue.isNotEmpty) {
+                optionLabels.add(optLabel);
+                optionValues.add(optValue);
+              }
+            }
+          } else if (input.options != null && input.options!.isNotEmpty) {
+            // Legacy options list which may be plain strings or "label:value"
+            final labels = _extractOptionLabels(input.options!);
+            final values = _extractOptionValues(input.options!);
+
+            for (int i = 0; i < labels.length; i++) {
+              final l = labels[i].trim();
+              final v = (i < values.length ? values[i] : '').trim();
+              if (l.isEmpty) continue;
+              optionLabels.add(l);
+              optionValues.add(v.isNotEmpty ? v : l);
+            }
+          }
+
+          // Prepare selected values set (always work with List<String> in formData)
+          final Set<String> selected = {};
+          if (currentValue is List) {
+            for (final v in currentValue) {
+              if (v != null) selected.add(v.toString());
+            }
+          } else if (currentValue is String && currentValue.isNotEmpty) {
+            // Support comma-separated string from API / backend
+            final parts = currentValue.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
+            selected.addAll(parts);
+          }
+
+          fieldWidget = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label + (isRequired ? " *" : ""),
+                style:  AppTextStyle.description(
+                  color: AppColors.appBodyTextColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...List.generate(optionLabels.length, (index) {
+                final optLabel = optionLabels[index];
+                final optValue = index < optionValues.length && optionValues[index].isNotEmpty
+                    ? optionValues[index]
+                    : optLabel;
+                final isChecked = selected.contains(optValue);
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: CustomCheckbox(
+                    value: isChecked,
+                    title: optLabel,
+                    onChanged: (val) {
+                      final next = Set<String>.from(selected);
+                      if (val == true) {
+                        next.add(optValue);
+                      } else {
+                        next.remove(optValue);
+                      }
+                      // Store as List<String> in formData
+                      _handleFieldChanged(fieldName, next.toList());
+                    },
+                  ),
+                );
+              }),
+            ],
+          );
         }
-
-        fieldWidget = CustomCheckbox(
-          value: boolValue,
-          title: label + (isRequired ? " *" : ""),
-          onChanged: (val) => widget.onFieldChanged(fieldName, val),
-        );
         break;
       case 'radio':
         List<String> labels = [];
@@ -384,7 +630,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
                     value: values[i],
                     groupValue: currentValueStr,
                     title: labels[i],
-                    onChanged: (val) => widget.onFieldChanged(fieldName, val),
+                    onChanged: (val) => _handleFieldChanged(fieldName, val),
                   ),
                 ),
             ],
@@ -422,12 +668,20 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
             CustomDropdown<String>(
               value: selectedValue,
               items: values,
-              hintText: placeholder ?? "Select",
+              hintText: placeholder.isNotEmpty ? placeholder : "Select",
               itemToString: (v) {
                 final index = values.indexOf(v);
                 return labels[index];
               },
-              onChanged: (val) => widget.onFieldChanged(fieldName, val),
+              onChanged: (val) {
+                _handleFieldChanged(fieldName, val);
+
+                // If this dropdown is marked for auto-forward, move to next step
+                // immediately after user selects an option.
+                if ((input.autoForward ?? false) && widget.onStepNext != null) {
+                  widget.onStepNext!();
+                }
+              },
             ),
           ],
         );
@@ -451,9 +705,9 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           value: dateValue,
           onChanged: (pickedDate) {
             if (pickedDate != null) {
-              widget.onFieldChanged(fieldName, pickedDate.toIso8601String());
+              _handleFieldChanged(fieldName, pickedDate.toIso8601String());
             } else {
-              widget.onFieldChanged(fieldName, "");
+              _handleFieldChanged(fieldName, "");
             }
           },
         );
@@ -478,16 +732,16 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         fieldWidget = CustomDateRangePicker(
           label: label + (isRequired ? ' *' : ''),
           value: (start != null && end != null)
-              ? DateTimeRange(start: start!, end: end!)
+              ? DateTimeRange(start: start, end: end)
               : null,
           onChanged: (range) {
             if (range != null) {
-              widget.onFieldChanged(
+              _handleFieldChanged(
                 fieldName,
                 "${range.start.toIso8601String()}|${range.end.toIso8601String()}",
               );
             } else {
-              widget.onFieldChanged(fieldName, "");
+              _handleFieldChanged(fieldName, "");
             }
           },
         );
@@ -504,7 +758,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           label: label + (isRequired ? ' *' : ''),
           hintText: placeholder,
           initialValue: currentValue?.toString() ?? '',
-          onChanged: (value) => widget.onFieldChanged(fieldName, value),
+          onChanged: (value) => _handleFieldChanged(fieldName, value),
         );
     }
 
@@ -585,33 +839,6 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
       }
       return '';
     }).toList();
-  }
-
-  // Check if file input accepts image files (jpg, jpeg, png)
-  bool _isImageFileInput(RegisterInput input) {
-    final validations = input.validations ?? [];
-    for (final validation in validations) {
-      // Check validation value (might be int or string)
-      final valueStr = validation.value?.toString().toLowerCase() ?? '';
-      // Check pattern field
-      final pattern = (validation.pattern?.toString().toLowerCase() ?? '');
-      // Check patternErrorMessage (sometimes extensions are stored here)
-      final patternErrorMsg = (validation.patternErrorMessage?.toString().toLowerCase() ?? '');
-      // Check errorMessage (sometimes extensions are stored here)
-      final errorMsg = (validation.errorMessage?.toString().toLowerCase() ?? '');
-      
-      // Combined check across all possible fields
-      final combinedText = '$valueStr $pattern $patternErrorMsg $errorMsg';
-      
-      // Check if any field contains image extensions
-      if (combinedText.contains('jpg') || 
-          combinedText.contains('jpeg') || 
-          combinedText.contains('png') ||
-          combinedText.contains('image')) {
-        return true;
-      }
-    }
-    return false;
   }
 
   // Extract allowed extensions from validations
@@ -711,6 +938,8 @@ class _TextField extends StatefulWidget {
   final String hintText;
   final String initialValue;
   final Function(String) onChanged;
+  final TextInputAction textInputAction;
+  final Function(String)? onSubmitted;
   final TextInputType keyboardType;
   final int? maxLength;
   final TextCapitalization textCapitalization;
@@ -720,6 +949,8 @@ class _TextField extends StatefulWidget {
     required this.hintText,
     required this.initialValue,
     required this.onChanged,
+    this.textInputAction = TextInputAction.next,
+    this.onSubmitted,
     this.keyboardType = TextInputType.text,
     this.maxLength,
     this.textCapitalization = TextCapitalization.none,
@@ -760,6 +991,8 @@ class _TextFieldState extends State<_TextField> {
       label: widget.label,
       hintText: widget.hintText,
       controller: _controller,
+      textInputAction: widget.textInputAction,
+      onSubmitted: widget.onSubmitted,
       keyboardType: widget.keyboardType,
       maxLength: widget.maxLength,
       textCapitalization: widget.textCapitalization,
@@ -773,12 +1006,16 @@ class _PasswordField extends StatefulWidget {
   final String hintText;
   final String initialValue;
   final Function(String) onChanged;
+  final TextInputAction textInputAction;
+  final Function(String)? onSubmitted;
 
   const _PasswordField({
     required this.label,
     required this.hintText,
     required this.initialValue,
     required this.onChanged,
+    this.textInputAction = TextInputAction.next,
+    this.onSubmitted,
   });
 
   @override
@@ -818,6 +1055,8 @@ class _PasswordFieldState extends State<_PasswordField> {
       hintText: widget.hintText,
       controller: _controller,
       obscureText: _obscureText,
+      textInputAction: widget.textInputAction,
+      onSubmitted: widget.onSubmitted,
       keyboardType: TextInputType.visiblePassword,
       onChanged: widget.onChanged,
       suffixIcon: IconButton(
@@ -892,6 +1131,160 @@ class _TextareaFieldState extends State<_TextareaField> {
       hintText: widget.hintText,
       controller: _controller,
       isRequired: widget.isRequired,
+    );
+  }
+}
+
+class _AddressField extends StatefulWidget {
+  final String label;
+  final String hintText;
+  final String initialValue;
+  final String fieldName;
+  final Map<String, dynamic> formData;
+  final Function(String, dynamic) onFieldChanged;
+  final TextInputType keyboardType;
+  final int? maxLength;
+  final TextCapitalization textCapitalization;
+
+  const _AddressField({
+    required this.label,
+    required this.hintText,
+    required this.initialValue,
+    required this.fieldName,
+    required this.formData,
+    required this.onFieldChanged,
+    this.keyboardType = TextInputType.text,
+    this.maxLength,
+    this.textCapitalization = TextCapitalization.none,
+  });
+
+  @override
+  State<_AddressField> createState() => _AddressFieldState();
+}
+
+class _AddressFieldState extends State<_AddressField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void didUpdateWidget(_AddressField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update controller when initial value changes from parent
+    if (oldWidget.initialValue != widget.initialValue &&
+        _controller.text == oldWidget.initialValue) {
+      _controller.text = widget.initialValue;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openLocationPicker() async {
+    final homeController = Get.find<ClientHomeController>();
+
+    // Try to get existing lat/lng from formData (for editing existing address)
+    double initialLat;
+    double initialLng;
+
+    // Check for latitude and longitude in formData
+    final existingLat = widget.formData['latitude'];
+    final existingLng = widget.formData['longitude'];
+
+    if (existingLat != null && existingLng != null) {
+      // Use existing address coordinates if available
+      final lat = double.tryParse(existingLat.toString());
+      final lng = double.tryParse(existingLng.toString());
+      if (lat != null && lng != null) {
+        initialLat = lat;
+        initialLng = lng;
+      } else {
+        // Parsing failed → try geocoding from address string, else fallback
+        final coords = await _tryGeocodeFromAddress(
+          widget.formData[widget.fieldName] ?? widget.initialValue,
+        );
+        if (coords != null) {
+          initialLat = coords.latitude;
+          initialLng = coords.longitude;
+        } else {
+          initialLat = homeController.currentLatLng.value.latitude;
+          initialLng = homeController.currentLatLng.value.longitude;
+        }
+      }
+    } else {
+      // No coords saved yet → try geocoding from current address text first
+      final coords = await _tryGeocodeFromAddress(
+        widget.formData[widget.fieldName] ?? widget.initialValue,
+      );
+      if (coords != null) {
+        initialLat = coords.latitude;
+        initialLng = coords.longitude;
+      } else {
+        // Fallback to current location if we can't geocode
+        initialLat = homeController.currentLatLng.value.latitude;
+        initialLng = homeController.currentLatLng.value.longitude;
+      }
+    }
+
+    await Get.to(() => ReusableLocationPickerScreen(
+      initialLat: initialLat,
+      initialLng: initialLng,
+      onLocationSelected: (latLng, address, landmark) {
+        // Update the controller with selected address
+        setState(() {
+          _controller.text = address;
+        });
+        // Update the form field with address
+        widget.onFieldChanged(widget.fieldName, address);
+        // Also update latitude and longitude if they exist in formData structure
+        if (widget.formData.containsKey('latitude')) {
+          widget.onFieldChanged('latitude', latLng.latitude.toString());
+        }
+        if (widget.formData.containsKey('longitude')) {
+          widget.onFieldChanged('longitude', latLng.longitude.toString());
+        }
+      },
+    ));
+  }
+
+  /// Try to convert a free-text address into coordinates using geocoding.
+  /// Returns null if geocoding fails.
+  Future<Location?> _tryGeocodeFromAddress(dynamic addressValue) async {
+    try {
+      final text = addressValue?.toString().trim();
+      if (text == null || text.isEmpty) return null;
+      final results = await locationFromAddress(text);
+      if (results.isNotEmpty) return results.first;
+    } catch (_) {
+      // Ignore geocoding errors and let caller fallback
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomTextfieldForAddress(
+      label: widget.label,
+      hintText: widget.hintText,
+      controller: _controller,
+      readOnly: true, // User cannot type manually
+      enabled: true, // Field is enabled for tapping
+      onTap: _openLocationPicker, // Open location picker on tap
+      keyboardType: widget.keyboardType,
+      maxLength: widget.maxLength,
+      textCapitalization: widget.textCapitalization,
+      suffixIcon: Icon(
+        Icons.location_on,
+        color: AppColors.appIconColor,
+      ),
+      onSuffixTap: _openLocationPicker, // Open location picker on suffix tap
     );
   }
 }

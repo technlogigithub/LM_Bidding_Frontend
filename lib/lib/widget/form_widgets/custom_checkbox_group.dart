@@ -35,7 +35,7 @@ class CustomCheckboxGroup extends StatelessWidget {
                 }
                 onChanged(next);
               },
-              title: Text(opt, style: TextStyle(color: AppColors.appTextColor)),
+              title: Text(opt, style: TextStyle(color: AppColors.appBodyTextColor)),
               activeColor: AppColors.appColor,
             );
           }),

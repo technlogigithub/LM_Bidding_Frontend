@@ -19,6 +19,8 @@ class CustomTextfield extends StatelessWidget {
   final FocusNode? focusNode;
   final List<TextInputFormatter>? inputFormatters;
   final TextCapitalization textCapitalization;
+  final TextInputAction textInputAction;
+  final Function(String)? onSubmitted;
 
   const CustomTextfield({
     super.key,
@@ -35,6 +37,8 @@ class CustomTextfield extends StatelessWidget {
     this.focusNode,
     this.inputFormatters,
     this.textCapitalization = TextCapitalization.none,
+    this.textInputAction = TextInputAction.next,
+    this.onSubmitted,
   });
 
   @override
@@ -49,6 +53,7 @@ class CustomTextfield extends StatelessWidget {
         ),
       ),
       child: TextField(
+        textInputAction: textInputAction,
         controller: controller, // can be null
         style: TextStyle(color: AppColors.appTitleColor),
         obscureText: obscureText,
@@ -62,6 +67,7 @@ class CustomTextfield extends StatelessWidget {
           ...?inputFormatters,
         ],
         onChanged: onChanged, // 🔹 callback added
+        onSubmitted: onSubmitted,
         decoration: InputDecoration(
           label:Text(label,style:  AppTextStyle.description(color: AppColors.appDescriptionColor,),) ,
           hintText: hintText,

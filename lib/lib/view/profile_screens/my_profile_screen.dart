@@ -227,14 +227,14 @@ class SetupClientProfileView extends StatelessWidget {
                                 : Container(
                                     width: 80.w,
                                     height: 80.h,
-                                    decoration: const BoxDecoration(
+                                    decoration:  BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.grey,
+                                      color:AppColors.appMutedColor,
                                     ),
                                     child: Icon(
                                       Icons.person,
                                       size: 50.sp,
-                                      color: Colors.white,
+                                      color: AppColors.appIconColor,
                                     ),
                                   ),
                           ),
@@ -266,57 +266,60 @@ class SetupClientProfileView extends StatelessWidget {
                       SizedBox(height: 20.h),
 
                       /// BANNER IMAGE
-                      if (bannerUrl != null && _isImageFile(bannerUrl))
-                        Card(
-                          elevation: 6,
-                          child: Container(
-                            height: 100.h,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.r),
-                              // boxShadow: [
-                              //   BoxShadow(
-                              //     color: Colors.black.withValues(alpha: 0.15),
-                              //     blurRadius: 18,
-                              //     spreadRadius: 2,
-                              //     offset: Offset(0, 6),
-                              //   ),
-                              //   BoxShadow(
-                              //     color: Colors.grey.withValues(alpha: 0.2),
-                              //     blurRadius: 4,
-                              //     spreadRadius: -1,
-                              //     offset: Offset(0, -2),
-                              //   ),
-                              // ],
-                              // border: Border.all(
-                              //   color: AppColors.appTextColor.withValues(alpha: 0.3),
-                              // ),
+                      // if (bannerUrl != null && _isImageFile(bannerUrl))
+                      Container(
+                        height: 140.h,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.appMutedColor,
+                              blurRadius: 5,
+                              spreadRadius: 1,
+                              offset: Offset(0, 10),
+                              // blurRadius: 1,
+                              // spreadRadius: 1,
+                              // offset: Offset(0, 6),
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10.r),
-                              child: CachedNetworkImage(
-                                imageUrl: bannerUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Shimmer.fromColors(
-                                  baseColor: AppColors.simmerColor,
-                                  highlightColor: AppColors.appWhite,
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 100.h,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.appWhite,
-                                      borderRadius: BorderRadius.circular(10.r),
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Icon(
-                                  Icons.image,
-                                  size: 40.sp,
-                                ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.r),
+                          child: (bannerUrl != null && _isImageFile(bannerUrl))
+                              ? CachedNetworkImage(
+                            imageUrl: bannerUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Shimmer.fromColors(
+                              baseColor: AppColors.simmerColor,
+                              highlightColor: AppColors.appWhite,
+                              child: Container(
+                                width: double.infinity,
+                                height: 100.h,
+                                color: AppColors.appWhite,
                               ),
+                            ),
+                            errorWidget: (context, url, error) => Center(
+                              child: Icon(Icons.image, size: 40.sp),
+                            ),
+                          )
+
+                          // ✅ WHEN bannerUrl IS NULL
+                              : Container(
+                            decoration: BoxDecoration(
+                              gradient: AppColors.appPagecolor,
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.image_not_supported,
+                              size: 36.sp,
+                              color: AppColors.appIconColor,
                             ),
                           ),
                         ),
+                      ),
+
+
 
                       SizedBox(height: 25.h),
 

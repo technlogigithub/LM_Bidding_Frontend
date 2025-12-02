@@ -4,6 +4,7 @@
   import 'package:flutter/material.dart';
   import 'package:flutter/foundation.dart';
   import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
   import 'package:image_picker/image_picker.dart';
   import 'package:pdfx/pdfx.dart';
   import 'package:pro_image_editor/pro_image_editor.dart';
@@ -484,7 +485,7 @@
                 onTap: () => _pick(context),
                 child: Container(
                   width: double.infinity,
-                  height: 180,
+                  height: 180.h,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.transparent,
