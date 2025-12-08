@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:get/get.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../controller/post/post_form_controller.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../core/app_color.dart';
@@ -10,6 +11,7 @@ import '../../core/app_string.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
+import '../../models/Post/Post_Form_Genrate_Model.dart' as PostModel;
 
 class PostNewScreen extends GetView<PostFormController> {
   const PostNewScreen({super.key});
@@ -24,13 +26,15 @@ class PostNewScreen extends GetView<PostFormController> {
     final screenHeight = MediaQuery.of(context).size.height;
     final appController = Get.find<AppSettingsController>();
     // appController.fetchAppContent();
-    final inputs = appController.postFormPage.value?.inputs;
-    for (final step in inputs!.getAvailableSteps()) {
-      final stepInputs = inputs.getStepInputs(step);
-      for (final input in stepInputs ?? []) {
-        debugPrint(
-          "Step ${step + 1} | ${input.name} | autoForward: ${input.autoForward}",
-        );
+    final inputs = appController.postFormFromApi.value?.inputs;
+    if (inputs != null) {
+      for (final step in inputs.getAvailableSteps()) {
+        final stepInputs = inputs.getStepInputs(step);
+        for (final input in stepInputs ?? []) {
+          debugPrint(
+            "Step ${step + 1} | ${input.name} | autoForward: ${input.autoForward}",
+          );
+        }
       }
     }
 
@@ -53,7 +57,7 @@ class PostNewScreen extends GetView<PostFormController> {
             ),
           ),
           title: Obx(() {
-            final postForm = appController.postFormPage.value;
+            final postForm = appController.postFormFromApi.value;
             return Text(
               postForm?.pageTitle ?? '',
               style: AppTextStyle.title(
@@ -66,17 +70,42 @@ class PostNewScreen extends GetView<PostFormController> {
 
         // BODY
         body: Obx(() {
-          final postForm = appController.postFormPage.value;
+          final postForm = appController.postFormFromApi.value;
+          final isLoadingForm = controller
+              .isLoadingForm
+              .value; // Use isLoadingForm for initial loading
 
-          if (postForm == null) {
-            return Center(
-              child: Text(
-                'Post form configuration not available',
-                style: AppTextStyle.description(
-                  color: AppColors.appDescriptionColor,
+          // Show shimmer loading effect ONLY during initial form loading (getPostForm)
+          if (isLoadingForm || postForm == null) {
+            // Show shimmer if initial form is loading
+            if (isLoadingForm) {
+              return _buildShimmerLoading(screenHeight);
+            } else {
+              // API call completed but no data available
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        FeatherIcons.alertCircle,
+                        size: 48,
+                        color: AppColors.appDescriptionColor,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Post form configuration not available',
+                        style: AppTextStyle.description(
+                          color: AppColors.appDescriptionColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           }
 
           return SingleChildScrollView(
@@ -102,11 +131,8 @@ class PostNewScreen extends GetView<PostFormController> {
                 ],
 
                 // Form Content with PageView
-                GetBuilder<PostFormController>(
-                  id: 'form_content',
-                  builder: (controller) =>
-                      _buildFormContentWithPageView(postForm, screenHeight),
-                ),
+                // Don't use GetBuilder here to avoid PageView rebuild issues
+                _buildFormContentWithPageView(postForm, screenHeight),
 
                 const SizedBox(height: 160), // For bottom nav spacing
               ],
@@ -116,14 +142,17 @@ class PostNewScreen extends GetView<PostFormController> {
 
         // BOTTOM BAR
         bottomNavigationBar: Obx(() {
-          final postForm = appController.postFormPage.value;
-          if (postForm == null) return const SizedBox.shrink();
+          final postForm = appController.postFormFromApi.value;
+          final isLoadingForm = controller.isLoadingForm.value;
+          // Hide bottom bar only during initial form loading or if no form data
+          // Don't hide during step-wise API calls (isLoading)
+          if (isLoadingForm || postForm == null) return const SizedBox.shrink();
 
           return Container(
             padding: const EdgeInsets.all(16.0),
             color: Colors
                 .transparent, // FIX: do not apply gradient again → no white gap
-            child: SafeArea(child: _buildActionButtons(postForm, screenHeight)),
+            child: SafeArea(child: _buildActionButtons(postForm, screenHeight,context)),
           );
         }),
       ),
@@ -132,7 +161,7 @@ class PostNewScreen extends GetView<PostFormController> {
 
   // ------------------------- PROGRESS BAR -------------------------
 
-  Widget _buildProgressBar(ProfileFormPage postForm) {
+  Widget _buildProgressBar(PostModel.PostForm postForm) {
     final currentStep = controller.currentStep.value;
     final totalSteps = postForm.totalSteps ?? 26;
 
@@ -165,27 +194,45 @@ class PostNewScreen extends GetView<PostFormController> {
   // ------------------------- FORM CONTENT WITH PAGEVIEW -------------------------
 
   Widget _buildFormContentWithPageView(
-    ProfileFormPage postForm,
+    PostModel.PostForm postForm,
     double screenHeight,
   ) {
     final totalSteps = postForm.totalSteps ?? 26;
 
-    // Initialize PageController if not already initialized and sync with current step
+    // Ensure PageController is initialized (should be done in onInit, but check here)
     if (controller.pageController == null) {
       controller.pageController = PageController(
         initialPage: controller.currentStep.value,
       );
-    } else {
-      // Sync PageController with current step if they're out of sync
-      if (controller.pageController!.hasClients &&
-          controller.pageController!.page?.round() !=
-              controller.currentStep.value) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (controller.pageController != null &&
-              controller.pageController!.hasClients) {
-            controller.pageController!.jumpToPage(controller.currentStep.value);
+    }
+
+    // Sync PageController with current step if they're out of sync
+    // Only do this if controller has clients (PageView is attached) and exactly one PageView
+    if (controller.pageController!.hasClients) {
+      // Check that only one PageView is attached to avoid the error
+      try {
+        final positions = controller.pageController!.positions;
+        if (positions.length == 1) {
+          final currentPage = controller.pageController!.page?.round();
+          if (currentPage != null &&
+              currentPage != controller.currentStep.value) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (controller.pageController != null &&
+                  controller.pageController!.hasClients) {
+                final positions = controller.pageController!.positions;
+                // Only jump if there's exactly one position (one PageView attached)
+                if (positions.length == 1) {
+                  controller.pageController!.jumpToPage(
+                    controller.currentStep.value,
+                  );
+                }
+              }
+            });
           }
-        });
+        }
+      } catch (e) {
+        // If there are multiple PageViews attached, ignore the sync
+        print('Warning: Multiple PageViews detected, skipping sync: $e');
       }
     }
 
@@ -213,6 +260,9 @@ class PostNewScreen extends GetView<PostFormController> {
         return SizedBox(
           height: height,
           child: PageView.builder(
+            key: ValueKey(
+              'post_form_pageview_${controller.hashCode}',
+            ), // Unique key to prevent multiple instances
             controller: controller.pageController,
             physics: const ClampingScrollPhysics(), // Enable swipe gestures
             onPageChanged: (int page) {
@@ -234,7 +284,7 @@ class PostNewScreen extends GetView<PostFormController> {
                       ? 20.0
                       : 8.0, // Extra bottom padding when keyboard is visible
                 ),
-                child: _buildFormContentForStep(postForm, index, screenHeight),
+                child: _buildFormContentForStep(postForm, index, screenHeight,context),
               );
             },
           ),
@@ -244,9 +294,10 @@ class PostNewScreen extends GetView<PostFormController> {
   }
 
   Widget _buildFormContentForStep(
-    ProfileFormPage postForm,
+    PostModel.PostForm postForm,
     int stepIndex,
     double screenHeight,
+      BuildContext context
   ) {
     List<RegisterInput>? currentStepInputs;
 
@@ -308,7 +359,7 @@ class PostNewScreen extends GetView<PostFormController> {
                       // Auto-advance to next step if all fields have autoForward: true
                       Future.delayed(const Duration(milliseconds: 300), () {
                         if (isLastStep) {
-                          controller.submitForm();
+                          controller.submitForm(context);
                         } else {
                           controller.nextStep();
                         }
@@ -318,7 +369,7 @@ class PostNewScreen extends GetView<PostFormController> {
               // Keyboard Enter/Next navigation for enterEnable = true inputs
               onStepNext: () {
                 if (isLastStep) {
-                  controller.submitForm();
+                  controller.submitForm(context);
                 } else {
                   controller.nextStep();
                 }
@@ -329,12 +380,25 @@ class PostNewScreen extends GetView<PostFormController> {
     );
   }
 
-  List<RegisterInput>? _getStepInputs(ProfileFormPage postForm, int stepIndex) {
+  List<RegisterInput>? _getStepInputs(
+    PostModel.PostForm postForm,
+    int stepIndex,
+  ) {
     if (postForm.inputs == null) return null;
-    return postForm.inputs!.getStepInputs(stepIndex);
+
+    // Get StepInput from PostForm and convert to RegisterInput
+    List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
+      stepIndex,
+    );
+    if (stepInputs == null) return null;
+
+    // Convert StepInput to RegisterInput using controller's converter
+    return stepInputs
+        .map((si) => controller.convertStepInputToRegisterInput(si))
+        .toList();
   }
 
-  String? _getCurrentStepTitle(ProfileFormPage postForm, int stepIndex) {
+  String? _getCurrentStepTitle(PostModel.PostForm postForm, int stepIndex) {
     if (postForm.stepTitles == null ||
         stepIndex >= postForm.stepTitles!.length) {
       return null;
@@ -465,7 +529,7 @@ class PostNewScreen extends GetView<PostFormController> {
 
   // ------------------------- ACTION BUTTONS -------------------------
 
-  Widget _buildActionButtons(ProfileFormPage postForm, double screenHeight) {
+  Widget _buildActionButtons(PostModel.PostForm postForm, double screenHeight,BuildContext context) {
     return Obx(() {
       final currentStep = controller.currentStep.value;
 
@@ -473,22 +537,35 @@ class PostNewScreen extends GetView<PostFormController> {
         final buttons = postForm.buttons ?? [];
         final currentStepOneBased = currentStep + 1;
         for (final b in buttons) {
-          final a = (b.action ?? '').toLowerCase();
-          if (a != action) continue;
+          // Handle both PostModel.Buttons and ProfileFormButton types
+          String? buttonAction;
+          int? visibleFromStep;
+          int? visibleUntilStep;
+          int? visibleOnStep;
+          String? label;
+
+          // PostForm uses PostModel.Buttons
+          buttonAction = b.action?.toLowerCase();
+          visibleFromStep = b.visibleFromStep;
+          visibleUntilStep = b.visibleUntilStep;
+          visibleOnStep = b.visibleOnStep;
+          label = b.label;
+
+          if (buttonAction != action) continue;
+
           if (action == 'prev_step' &&
-              (b.visibleFromStep == null ||
-                  currentStepOneBased >= b.visibleFromStep!)) {
-            return b.label;
+              (visibleFromStep == null ||
+                  currentStepOneBased >= visibleFromStep)) {
+            return label;
           }
           if (action == 'next_step' &&
-              (b.visibleUntilStep == null ||
-                  currentStepOneBased <= b.visibleUntilStep!)) {
-            return b.label;
+              (visibleUntilStep == null ||
+                  currentStepOneBased <= visibleUntilStep)) {
+            return label;
           }
           if (action == 'submit_form' &&
-              (b.visibleOnStep != null &&
-                  currentStepOneBased == b.visibleOnStep!)) {
-            return b.label;
+              (visibleOnStep != null && currentStepOneBased == visibleOnStep)) {
+            return label;
           }
         }
         return null;
@@ -522,7 +599,7 @@ class PostNewScreen extends GetView<PostFormController> {
                 onTap: controller.isLoading.value
                     ? null
                     : () => controller.showSubmitButton.value
-                          ? controller.submitForm()
+                          ? controller.submitForm(context)
                           : controller.nextStep(),
                 isLoading: controller.isLoading.value,
               ),
@@ -530,6 +607,114 @@ class PostNewScreen extends GetView<PostFormController> {
         ],
       );
     });
+  }
+
+  // ------------------------- SHIMMER LOADING -------------------------
+
+  Widget _buildShimmerLoading(double screenHeight) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Page Description Shimmer
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              height: 20,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Progress Bar Shimmer
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              height: 8,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Step Title Shimmer
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              height: 24,
+              width: 200,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          // Form Fields Shimmer (5 fields)
+          ...List.generate(
+            5,
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Label Shimmer
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      height: 16,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Input Field Shimmer
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      height: 50,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          // Button Shimmer
+          Shimmer.fromColors(
+            baseColor: Colors.grey[300]!,
+            highlightColor: Colors.grey[100]!,
+            child: Container(
+              height: 50,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -1271,6 +1271,7 @@ class AppContentResult {
 }
 
 class RegisterPage {
+  String? pageName;
   String? pageTitle;
   String? pageDescription;
   bool? loginRequired;
@@ -1279,7 +1280,7 @@ class RegisterPage {
   String? loginLabel;
   String? loginLink;
 
-  RegisterPage({this.pageTitle, this.pageDescription, this.loginRequired, this.inputs, this.submitButtonLabel, this.loginLabel, this.loginLink});
+  RegisterPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs, this.submitButtonLabel, this.loginLabel, this.loginLink});
 
   factory RegisterPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -1290,6 +1291,7 @@ class RegisterPage {
       });
     }
     return RegisterPage(
+      pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       loginRequired: json['login_required'],
@@ -1301,6 +1303,7 @@ class RegisterPage {
   }
 
   Map<String, dynamic> toJson() => {
+        'page_name': pageName,
         'page_title': pageTitle,
         'page_description': pageDescription,
         'login_required': loginRequired,
@@ -1312,7 +1315,7 @@ class RegisterPage {
 }
 
 class RegisterInput {
-  String? inputType; // select, text, textarea, checkbox, radio, toggle, file, files, number, date, datetime, daterange, datetimerange, group, address, dropdown
+  String? inputType; // select, text, textarea, checkbox, radio, toggle, file, files, number, date, datetime, daterange, datetimerange, group, address, dropdown, email, hidden, single, multiple
   String? label;
   String? placeholder;
   String? name;
@@ -1439,9 +1442,9 @@ class OptionItem {
 }
 
 class InputValidation {
-  String? type; // numeric, exact_length, min_length, max_length, pattern, matches, password, file, max_size, min, in
+  String? type; // numeric, exact_length, min_length, max_length, pattern, matches, password, file, max_size, min, in, allow_past, regex
   int? value; // for exact_length, min_length, max_length, max_size, min
-  String? stringValue; // Allow values for String type Data like "jpg, jpeg, png",
+  String? stringValue; // Allow values for String type Data like "jpg, jpeg, png", or boolean values like "false" for allow_past
   String? pattern; // regex pattern
   String? field; // for matches
   String? errorMessage; // generic error
@@ -1533,12 +1536,13 @@ class InputValidation {
 // New models for the updated API response structure
 
 class IntroSliderPage {
+  String? pageName;
   String? pageTitle;
   String? pageDescription;
   bool? loginRequired;
   List<IntroSlider>? introSlider;
 
-  IntroSliderPage({this.pageTitle, this.pageDescription, this.loginRequired, this.introSlider});
+  IntroSliderPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.introSlider});
 
   factory IntroSliderPage.fromJson(Map<String, dynamic> json) {
     List<IntroSlider>? sliders;
@@ -1549,6 +1553,7 @@ class IntroSliderPage {
       });
     }
     return IntroSliderPage(
+      pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       loginRequired: json['login_required'],
@@ -1557,6 +1562,7 @@ class IntroSliderPage {
   }
 
   Map<String, dynamic> toJson() => {
+        'page_name': pageName,
         'page_title': pageTitle,
         'page_description': pageDescription,
         'login_required': loginRequired,
@@ -1565,15 +1571,17 @@ class IntroSliderPage {
 }
 
 class HomePage {
+  String? pageName;
   String? pageTitle;
   String? pageDescription;
   bool? loginRequired;
   HomePageDesign? design;
 
-  HomePage({this.pageTitle, this.pageDescription, this.loginRequired, this.design});
+  HomePage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.design});
 
   factory HomePage.fromJson(Map<String, dynamic> json) {
     return HomePage(
+      pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       loginRequired: json['login_required'],
@@ -1582,6 +1590,7 @@ class HomePage {
   }
 
   Map<String, dynamic> toJson() => {
+        'page_name': pageName,
         'page_title': pageTitle,
         'page_description': pageDescription,
         'login_required': loginRequired,
@@ -1874,12 +1883,13 @@ class GridViewScrollItem {
 }
 
 class LoginWithPasswordPage {
+  String? pageName;
   String? pageTitle;
   String? pageDescription;
   bool? loginRequired;
   List<RegisterInput>? inputs;
 
-  LoginWithPasswordPage({this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
+  LoginWithPasswordPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
 
   factory LoginWithPasswordPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -1890,6 +1900,7 @@ class LoginWithPasswordPage {
       });
     }
     return LoginWithPasswordPage(
+      pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       loginRequired: json['login_required'],
@@ -1898,6 +1909,7 @@ class LoginWithPasswordPage {
   }
 
   Map<String, dynamic> toJson() => {
+        'page_name': pageName,
         'page_title': pageTitle,
         'page_description': pageDescription,
         'login_required': loginRequired,
@@ -1906,12 +1918,13 @@ class LoginWithPasswordPage {
 }
 
 class LoginWithOtpPage {
+  String? pageName;
   String? pageTitle;
   String? pageDescription;
   bool? loginRequired;
   List<RegisterInput>? inputs;
 
-  LoginWithOtpPage({this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
+  LoginWithOtpPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
 
   factory LoginWithOtpPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -1922,6 +1935,7 @@ class LoginWithOtpPage {
       });
     }
     return LoginWithOtpPage(
+      pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       loginRequired: json['login_required'],
@@ -1930,6 +1944,7 @@ class LoginWithOtpPage {
   }
 
   Map<String, dynamic> toJson() => {
+        'page_name': pageName,
         'page_title': pageTitle,
         'page_description': pageDescription,
         'login_required': loginRequired,
@@ -1938,12 +1953,13 @@ class LoginWithOtpPage {
 }
 
 class VerifyOtpPage {
+  String? pageName;
   String? pageTitle;
   String? pageDescription;
   bool? loginRequired;
   List<RegisterInput>? inputs;
 
-  VerifyOtpPage({this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
+  VerifyOtpPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
 
   factory VerifyOtpPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -1954,6 +1970,7 @@ class VerifyOtpPage {
       });
     }
     return VerifyOtpPage(
+      pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       loginRequired: json['login_required'],
@@ -1962,6 +1979,7 @@ class VerifyOtpPage {
   }
 
   Map<String, dynamic> toJson() => {
+        'page_name': pageName,
         'page_title': pageTitle,
         'page_description': pageDescription,
         'login_required': loginRequired,
@@ -1970,6 +1988,8 @@ class VerifyOtpPage {
 }
 
 class ProfileFormPage {
+  int? postKey;
+  String? pageName;
   String? pageTitle;
   String? pageDescription;
   bool? progressBar;
@@ -1982,6 +2002,8 @@ class ProfileFormPage {
   ProfileFormInputs? inputs;
 
   ProfileFormPage({
+    this.postKey,
+    this.pageName,
     this.pageTitle,
     this.pageDescription,
     this.progressBar,
@@ -2008,6 +2030,8 @@ class ProfileFormPage {
     }
 
     return ProfileFormPage(
+      postKey: json['post_key'] is int ? json['post_key'] : (json['post_key'] is String ? int.tryParse(json['post_key']) : null),
+      pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       progressBar: json['progress_bar'],
@@ -2026,6 +2050,8 @@ class ProfileFormPage {
   }
 
   Map<String, dynamic> toJson() => {
+    if (postKey != null) 'post_key': postKey,
+    if (pageName != null) 'page_name': pageName,
     'page_title': pageTitle,
     'page_description': pageDescription,
     'progress_bar': progressBar,

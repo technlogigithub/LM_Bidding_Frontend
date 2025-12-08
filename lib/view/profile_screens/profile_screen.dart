@@ -15,6 +15,7 @@ import '../../widget/app_appbar.dart';
 import '../seller screen/buyer request/seller_buyer_request.dart';
 import '../seller screen/report/seller_report.dart';
 import '../seller screen/withdraw_money/seller_withdraw_history.dart';
+import 'Dashboard_screen.dart';
 import 'Deposit_history_screen.dart';
 import 'Invitescreen.dart';
 import 'Setting_screen.dart';
@@ -108,6 +109,7 @@ class ProfileScreen extends StatelessWidget {
 
                       /// ---------------- DASHBOARD ----------------
                       ListTile(
+                        onTap: () => Get.to(DashBoardScreen()),
                         visualDensity: const VisualDensity(vertical: -3),
                         horizontalTitleGap: 10,
                         contentPadding: const EdgeInsets.only(bottom: 20),

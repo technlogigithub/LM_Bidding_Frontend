@@ -7,6 +7,7 @@ import '../../core/app_constant.dart';
 import '../../core/app_config.dart';
 import '../../core/network.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
+import '../../models/Post/Post_Form_Genrate_Model.dart';
 
 class AppSettingsController extends GetxController {
   Rx<AppModelResponse?> appSettings = Rx<AppModelResponse?>(null);
@@ -69,13 +70,13 @@ class AppSettingsController extends GetxController {
   RxString facebookClientSecret = "".obs;
 
   // App Menu
-// App Menu
+  // App Menu
   Rx<AppMenu?> appMenu = Rx<AppMenu?>(null);
   Rx<UserInfo?> userInfo = Rx<UserInfo?>(null);
   Rx<MenuItem?> myProfile = Rx<MenuItem?>(null);
   Rx<SupportMenuItem?> support = Rx<SupportMenuItem?>(null);
 
-// NEW
+  // NEW
   Rx<SettingsMenuItem?> settings = Rx<SettingsMenuItem?>(null);
   Rx<ReferralMenuItem?> referral = Rx<ReferralMenuItem?>(null);
 
@@ -112,7 +113,9 @@ class AppSettingsController extends GetxController {
   // Register page (dynamic)
   Rx<RegisterPage?> registerPage = Rx<RegisterPage?>(null);
   // Login pages (dynamic)
-  Rx<LoginWithPasswordPage?> loginWithPasswordPage = Rx<LoginWithPasswordPage?>(null);
+  Rx<LoginWithPasswordPage?> loginWithPasswordPage = Rx<LoginWithPasswordPage?>(
+    null,
+  );
   Rx<LoginWithOtpPage?> loginWithOtpPage = Rx<LoginWithOtpPage?>(null);
   // Verify OTP page (dynamic)
   Rx<VerifyOtpPage?> verifyOtpPage = Rx<VerifyOtpPage?>(null);
@@ -120,6 +123,8 @@ class AppSettingsController extends GetxController {
   Rx<ProfileFormPage?> profileFormPage = Rx<ProfileFormPage?>(null);
   // Post Form page (dynamic)
   Rx<ProfileFormPage?> postFormPage = Rx<ProfileFormPage?>(null);
+  // PostForm from get-post-form API
+  Rx<PostForm?> postFormFromApi = Rx<PostForm?>(null);
   Rx<HomePage?> homePage = Rx<HomePage?>(null);
   Rx<HeaderMenuSection?> homePageheader = Rx<HeaderMenuSection?>(null);
 
@@ -128,15 +133,12 @@ class AppSettingsController extends GetxController {
   RxString selectedLanguageKey = "en".obs;
   RxString selectedLanguageName = "English".obs;
 
-
-
   // Language Page (from settings)
   RxString languagePageTitle = "".obs;
   RxString languagePageDescription = "".obs;
   RxString languageSubmitButtonLabel = "".obs;
   RxString languagePageImage = "".obs;
   RxString languagePageName = "".obs;
-
 
   // Force Update Page (from settings)
   RxString forceUpdatePageTitle = "".obs;
@@ -160,7 +162,7 @@ class AppSettingsController extends GetxController {
         endPoint: AppConstants.settings,
         method: "POST",
         headers: {
-          "Authorization": "Bearer $token",  // ⬅️ token added
+          "Authorization": "Bearer $token", // ⬅️ token added
           "Accept": "application/json",
         },
         body: {"app_key": "b2QgKe1+OFbaIVbBc76cWVVfj2W94jqB6x2yTOJI7ds"},
@@ -220,6 +222,7 @@ class AppSettingsController extends GetxController {
         appName.value = result?.general?.appName ?? "";
         companyName.value = result?.general?.companyName ?? "";
         logo.value = result?.general?.logo ?? "";
+
         /// EXTRA LOGOS (new)
         logoSplash.value = result?.general?.logoSplash ?? "";
         logoName.value = result?.general?.logoName ?? "";
@@ -238,11 +241,15 @@ class AppSettingsController extends GetxController {
         /// Social Login
         socialLogin.value = result?.socialLogin;
         googleClientId.value = result?.socialLogin?.google?.clientId ?? "";
-        googleClientSecret.value = result?.socialLogin?.google?.clientSecret ?? "";
+        googleClientSecret.value =
+            result?.socialLogin?.google?.clientSecret ?? "";
         facebookClientId.value = result?.socialLogin?.facebook?.clientId ?? "";
-        facebookClientSecret.value = result?.socialLogin?.facebook?.clientSecret ?? "";
+        facebookClientSecret.value =
+            result?.socialLogin?.facebook?.clientSecret ?? "";
         // Check if social login is enabled (if any provider has client_id configured)
-        socialLoginRequired.value = (googleClientId.value.isNotEmpty || facebookClientId.value.isNotEmpty);
+        socialLoginRequired.value =
+            (googleClientId.value.isNotEmpty ||
+            facebookClientId.value.isNotEmpty);
 
         /// App Menu
         appMenu.value = result?.appMenu;
@@ -251,7 +258,7 @@ class AppSettingsController extends GetxController {
         myProfile.value = result?.appMenu?.myProfile;
         support.value = result?.appMenu?.support;
 
-// NEW
+        // NEW
         settings.value = result?.appMenu?.settings;
         referral.value = result?.appMenu?.referral;
 
@@ -263,7 +270,9 @@ class AppSettingsController extends GetxController {
           await saveLoginRequiredStatusforinvite(referral.value?.loginRequired);
         }
         if (settings.value != null) {
-          await saveLoginRequiredStatusforsetting(settings.value?.loginRequired);
+          await saveLoginRequiredStatusforsetting(
+            settings.value?.loginRequired,
+          );
         }
 
         /// Intro Sliders
@@ -272,24 +281,29 @@ class AppSettingsController extends GetxController {
         /// Language Page
         languagePageTitle.value = result?.languagePage?.title ?? "";
         languagePageDescription.value = result?.languagePage?.description ?? "";
-        languageSubmitButtonLabel.value = result?.languagePage?.submitButtonLabel ?? "";
+        languageSubmitButtonLabel.value =
+            result?.languagePage?.submitButtonLabel ?? "";
         languagePageImage.value = result?.languagePage?.pageImage ?? "";
         languagePageName.value = result?.languagePage?.pageName ?? "";
 
-
         /// Force Update Page
         forceUpdatePageTitle.value = result?.forceUpdatePage?.pageTitle ?? "";
-        forceUpdatePageDescription.value = result?.forceUpdatePage?.pageDescription ?? "";
-        forceUpdateSubmitButtonLabel.value = result?.forceUpdatePage?.submitButtonLabel ?? "";
-        forceUpdatePlaystoreUrl.value = result?.forceUpdatePage?.submitButtonPlaystoreUrl ?? "";
-        forceUpdateAppstoreUrl.value = result?.forceUpdatePage?.submitButtonAppstoreUrl ?? "";
+        forceUpdatePageDescription.value =
+            result?.forceUpdatePage?.pageDescription ?? "";
+        forceUpdateSubmitButtonLabel.value =
+            result?.forceUpdatePage?.submitButtonLabel ?? "";
+        forceUpdatePlaystoreUrl.value =
+            result?.forceUpdatePage?.submitButtonPlaystoreUrl ?? "";
+        forceUpdateAppstoreUrl.value =
+            result?.forceUpdatePage?.submitButtonAppstoreUrl ?? "";
 
         /// Languages
         availableLanguages.assignAll(result?.languages ?? []);
         await loadSelectedLanguage();
 
         /// Set initial theme based on system brightness
-        final Brightness systemBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+        final Brightness systemBrightness =
+            WidgetsBinding.instance.platformDispatcher.platformBrightness;
         updateTheme(systemBrightness == Brightness.dark);
       } else {
         toast(response['message'] ?? "Something went wrong");
@@ -301,16 +315,15 @@ class AppSettingsController extends GetxController {
     }
   }
 
-
   // Fetch app_content using selected/saved language and update introSliders
   Future<void> fetchAppContent() async {
     try {
       isLoading.value = true;
 
       final prefs = await SharedPreferences.getInstance();
-      final languageKey = prefs.getString('selected_language_key') ?? selectedLanguageKey.value;
+      final languageKey =
+          prefs.getString('selected_language_key') ?? selectedLanguageKey.value;
       final token = await getAuthToken();
-
 
       final apiService = ApiServices();
 
@@ -339,7 +352,9 @@ class AppSettingsController extends GetxController {
         final parsed = AppContentResponse.fromJson(response);
 
         // Update intro sliders and pages
-        introSliders.assignAll(parsed.result?.introSliderPage?.introSlider ?? []);
+        introSliders.assignAll(
+          parsed.result?.introSliderPage?.introSlider ?? [],
+        );
         registerPage.value = parsed.result?.register;
         loginWithPasswordPage.value = parsed.result?.loginWithPassword;
         loginWithOtpPage.value = parsed.result?.loginWithOtp;
@@ -356,25 +371,27 @@ class AppSettingsController extends GetxController {
           // Save loginRequired flag to SP
           await saveLoginRequiredStatus(profileFormPage.value?.loginRequired);
         }
-// ---------------------------------------------------
-// 1. Parse the response (you already have `parsed`)
-// ---------------------------------------------------
+        // ---------------------------------------------------
+        // 1. Parse the response (you already have `parsed`)
+        // ---------------------------------------------------
         if (parsed.result?.profileForm != null) {
           profileFormPage.value = parsed.result?.profileForm;
 
           // Save loginRequired flag to SharedPreferences
-          await saveLoginRequiredStatus(profileFormPage.value?.loginRequired ?? false);
+          await saveLoginRequiredStatus(
+            profileFormPage.value?.loginRequired ?? false,
+          );
         }
 
-// ---------------------------------------------------
-// 2. Grab step_1 inputs (0-based index)
-// ---------------------------------------------------
+        // ---------------------------------------------------
+        // 2. Grab step_1 inputs (0-based index)
+        // ---------------------------------------------------
         final ProfileFormInputs? formInputs = profileFormPage.value?.inputs;
         final List<RegisterInput>? step1Inputs = formInputs?.getStepInputs(0);
 
-// ---------------------------------------------------
-// 3. Print the values (terminal / debug console)
-// ---------------------------------------------------
+        // ---------------------------------------------------
+        // 3. Print the values (terminal / debug console)
+        // ---------------------------------------------------
         if (step1Inputs != null && step1Inputs.isNotEmpty) {
           debugPrint('=== PROFILE FORM – STEP 1 VALUES ===');
           for (final RegisterInput input in step1Inputs) {
@@ -390,7 +407,9 @@ class AppSettingsController extends GetxController {
             if (rawValue == null) {
               displayValue = '<null>';
             } else if (rawValue is List) {
-              displayValue = rawValue.isEmpty ? '[]' : '[${rawValue.join(', ')}]';
+              displayValue = rawValue.isEmpty
+                  ? '[]'
+                  : '[${rawValue.join(', ')}]';
             } else if (rawValue is Map) {
               displayValue = rawValue.isEmpty ? '{}' : '{…}';
             } else {
@@ -415,8 +434,6 @@ class AppSettingsController extends GetxController {
       isLoading.value = false;
     }
   }
-
-
 
   void updateTheme(bool darkMode) {
     isDarkMode.value = darkMode;
@@ -449,7 +466,9 @@ class AppSettingsController extends GetxController {
 
     // Find the corresponding language name from available languages
     try {
-      final language = availableLanguages.firstWhere((lang) => lang.code == savedLanguageKey);
+      final language = availableLanguages.firstWhere(
+        (lang) => lang.code == savedLanguageKey,
+      );
       selectedLanguageName.value = language.name ?? 'English';
     } catch (e) {
       selectedLanguageName.value = 'English';
@@ -464,7 +483,9 @@ class AppSettingsController extends GetxController {
 
     // Find the corresponding language name from available languages
     try {
-      final language = availableLanguages.firstWhere((lang) => lang.code == languageKey);
+      final language = availableLanguages.firstWhere(
+        (lang) => lang.code == languageKey,
+      );
       selectedLanguageName.value = language.name ?? 'English';
     } catch (e) {
       selectedLanguageName.value = 'English';
@@ -475,10 +496,7 @@ class AppSettingsController extends GetxController {
     List<Map<String, String>> options = [];
 
     for (var language in availableLanguages) {
-      options.add({
-        'key': language.code ?? '',
-        'name': language.name ?? '',
-      });
+      options.add({'key': language.code ?? '', 'name': language.name ?? ''});
     }
 
     return options;
@@ -506,13 +524,12 @@ class AppSettingsController extends GetxController {
         return false;
       }
 
-      print('Version Check - Current: $currentVersion, Required: $requiredVersion');
-      if(currentVersion != requiredVersion)
-      {
+      print(
+        'Version Check - Current: $currentVersion, Required: $requiredVersion',
+      );
+      if (currentVersion != requiredVersion) {
         return true;
-      }
-      else
-      {
+      } else {
         return false;
       }
     } catch (e) {
@@ -542,18 +559,22 @@ class AppSettingsController extends GetxController {
     }
     return "";
   }
+
   Future<void> saveLoginRequiredStatus(bool? value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('profile_form_login_required', value ?? false);
   }
+
   Future<void> saveLoginRequiredStatusforsupport(bool? value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('support_login_required', value ?? false);
   }
+
   Future<void> saveLoginRequiredStatusforinvite(bool? value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('invite_login_required', value ?? false);
   }
+
   Future<void> saveLoginRequiredStatusforsetting(bool? value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('setting_login_required', value ?? false);
@@ -563,7 +584,6 @@ class AppSettingsController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("auth_token");
   }
-
 
   void increaseTitle() => fontTitleSize.value++;
   void increaseDescription() => fontDescriptionSize.value++;
@@ -594,7 +614,7 @@ class AppSettingsController extends GetxController {
     }
   }
 
-// DECREASE COUNTER AND FONT SIZES
+  // DECREASE COUNTER AND FONT SIZES
   void decreaseCounter() {
     if (fontCounter.value > 1) {
       fontCounter.value--;
@@ -602,9 +622,5 @@ class AppSettingsController extends GetxController {
       fontDescriptionSize.value--;
       fontBodySize.value--;
     }
-
   }
-
-
 }
-

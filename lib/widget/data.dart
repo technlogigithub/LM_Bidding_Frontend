@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:libdding/core/app_color.dart';
+import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../core/app_constant.dart';
@@ -247,11 +250,11 @@ class Summary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 72,
+      height: 120.h,
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.0),
-        color: kDarkWhite,
+        color: AppColors.appMutedColor,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,12 +262,12 @@ class Summary extends StatelessWidget {
         children: [
           Text(
             title,
-            style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+            style:AppTextStyle.description(color: AppColors.appTitleColor,fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 10.0),
           Text(
             subtitle,
-            style: kTextStyle.copyWith(color: kSubTitleColor),
+            style:AppTextStyle.body(color: AppColors.appDescriptionColor),
           ),
         ],
       ),
@@ -326,7 +329,7 @@ class Summary2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 72,
+      height: 120.h,
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.0),
@@ -444,18 +447,27 @@ class DashBoardInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 140.h,
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12.0),
-        color: kWhite,
-        border: Border.all(color: kBorderColorTextField),
+        gradient: AppColors.appPagecolor,
+        boxShadow: [
+        BoxShadow(
+        color: AppColors.appMutedColor,
+        blurRadius: 5,
+        spreadRadius: 1,
+        offset: Offset(0, 10),
+
+      ),
+      ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 50.0,
-            width: 50.0,
+            height: 50.0.h,
+            width: 50.0.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: kPrimaryColor,
@@ -468,12 +480,12 @@ class DashBoardInfo extends StatelessWidget {
           const SizedBox(height: 5.0),
           Text(
             count,
-            style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+            style:AppTextStyle.description(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 5.0),
           Text(
             title,
-            style: kTextStyle.copyWith(color: kSubTitleColor),
+            style:AppTextStyle.body(color: AppColors.appDescriptionColor),
           ),
         ],
       ),

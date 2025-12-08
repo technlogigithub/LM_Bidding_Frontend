@@ -5,9 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../core/utils.dart';
+import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
+import '../../view/Home_screen/Home_screen.dart';
 import '../app_main/App_main_controller.dart';
 import '../../controller/home/home_controller.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
+import '../../models/Post/Post_Form_Genrate_Model.dart' as PostModel;
 import '../../core/app_constant.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 
@@ -23,9 +26,11 @@ class PostFormController extends GetxController {
   final showPreviousButton = true.obs;
   final showNextButton = true.obs;
   final showSubmitButton = false.obs;
+  final Postkey = ''.obs;
 
   // Loading State
-  final isLoading = false.obs;
+  final isLoading = false.obs; // For step-wise API calls (next/previous)
+  final isLoadingForm = false.obs; // For initial form loading (getPostForm)
 
   // Generic multi-entry storage per step (keyed by 0-based step index)
   final multiStepEntries = <int, List<Map<String, dynamic>>>{}.obs;
@@ -39,11 +44,10 @@ class PostFormController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-    _initializeDefaultValues();
-    _updateButtonVisibility(); // Initialize button visibility
     // Initialize PageController
     pageController = PageController(initialPage: 0);
+    // Load form from API - initialization will happen after form loads
+    getPostForm();
   }
 
   @override
@@ -56,13 +60,30 @@ class PostFormController extends GetxController {
     // Get form configuration from app settings
     final appController = Get.find<AppSettingsController>();
 
-    final postForm = appController.postFormPage.value;
+    // Use postFormFromApi if available, otherwise fallback to postFormPage
+    final postForm = appController.postFormFromApi.value;
+    final fallbackForm = appController.postFormPage.value;
 
     if (postForm != null && postForm.inputs != null) {
       // Initialize defaults for all available steps dynamically
       List<int> availableSteps = postForm.inputs!.getAvailableSteps();
       for (int stepIndex in availableSteps) {
-        List<RegisterInput>? stepInputs = postForm.inputs!.getStepInputs(
+        List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
+          stepIndex,
+        );
+        if (stepInputs != null) {
+          // Convert StepInput to RegisterInput
+          List<RegisterInput> registerInputs = stepInputs
+              .map((si) => convertStepInputToRegisterInput(si))
+              .toList();
+          _setDefaultsForStep(registerInputs);
+        }
+      }
+    } else if (fallbackForm != null && fallbackForm.inputs != null) {
+      // Fallback to postFormPage if postFormFromApi is not available
+      List<int> availableSteps = fallbackForm.inputs!.getAvailableSteps();
+      for (int stepIndex in availableSteps) {
+        List<RegisterInput>? stepInputs = fallbackForm.inputs!.getStepInputs(
           stepIndex,
         );
         _setDefaultsForStep(stepInputs);
@@ -105,16 +126,18 @@ class PostFormController extends GetxController {
   // Update button visibility based on API response
   void _updateButtonVisibility() {
     final appController = Get.find<AppSettingsController>();
-    final postForm = appController.postFormPage.value;
-    final buttons = postForm?.buttons;
+    // Use postFormFromApi if available, otherwise fallback to postFormPage
+    final postForm = appController.postFormFromApi.value;
+    final fallbackForm = appController.postFormPage.value;
+    final buttons = postForm?.buttons ?? fallbackForm?.buttons;
+
+    final totalSteps = postForm?.totalSteps ?? fallbackForm?.totalSteps ?? 26;
 
     if (buttons == null) {
       // Default behavior if no button configuration
       showPreviousButton.value = currentStep.value > 0;
-      showNextButton.value =
-          currentStep.value < (postForm?.totalSteps ?? 26) - 1;
-      showSubmitButton.value =
-          currentStep.value == (postForm?.totalSteps ?? 26) - 1;
+      showNextButton.value = currentStep.value < totalSteps - 1;
+      showSubmitButton.value = currentStep.value == totalSteps - 1;
       return;
     }
 
@@ -125,25 +148,40 @@ class PostFormController extends GetxController {
 
     // Check each button configuration
     for (final button in buttons) {
-      final action = button.action?.toLowerCase();
+      // Handle both Buttons (from PostForm) and ProfileFormButton (from ProfileFormPage)
+      String? action;
+      int? visibleFromStep;
+      int? visibleUntilStep;
+      int? visibleOnStep;
+
+      if (button is PostModel.Buttons) {
+        action = button.action?.toLowerCase();
+        visibleFromStep = button.visibleFromStep;
+        visibleUntilStep = button.visibleUntilStep;
+        visibleOnStep = button.visibleOnStep;
+      } else if (button is ProfileFormButton) {
+        action = button.action?.toLowerCase();
+        visibleFromStep = button.visibleFromStep;
+        visibleUntilStep = button.visibleUntilStep;
+        visibleOnStep = button.visibleOnStep;
+      }
+
       final currentStepValue = currentStep.value + 1;
 
       switch (action) {
         case 'prev_step':
-          if (button.visibleFromStep != null &&
-              currentStepValue >= button.visibleFromStep!) {
+          if (visibleFromStep != null && currentStepValue >= visibleFromStep) {
             showPreviousButton.value = true;
           }
           break;
         case 'next_step':
-          if (button.visibleUntilStep != null &&
-              currentStepValue <= button.visibleUntilStep!) {
+          if (visibleUntilStep != null &&
+              currentStepValue <= visibleUntilStep) {
             showNextButton.value = true;
           }
           break;
         case 'submit_form':
-          if (button.visibleOnStep != null &&
-              currentStepValue == button.visibleOnStep!) {
+          if (visibleOnStep != null && currentStepValue == visibleOnStep) {
             showSubmitButton.value = true;
           }
           break;
@@ -159,8 +197,8 @@ class PostFormController extends GetxController {
       formErrors.remove(fieldName);
       formErrors.refresh();
     }
-    // Trigger update to refresh UI immediately
-    update(['form_content']);
+    // Don't trigger update here to avoid PageView rebuild issues
+    // The form will update automatically through reactive variables
   }
 
   Future<void> nextStep1() async {
@@ -173,8 +211,7 @@ class PostFormController extends GetxController {
     if (!isValid) {
       // Force UI update to show errors immediately
       formErrors.refresh();
-      // Trigger a rebuild of the form to show errors
-      update(['form_content']);
+      // Don't trigger update to avoid PageView rebuild issues
       return;
     }
 
@@ -205,8 +242,9 @@ class PostFormController extends GetxController {
 
     // Get total steps from API configuration
     final appController = Get.find<AppSettingsController>();
-    final postForm = appController.postFormPage.value;
-    final totalSteps = postForm?.totalSteps ?? 26;
+    final postForm = appController.postFormFromApi.value;
+    final fallbackForm = appController.postFormPage.value;
+    final totalSteps = postForm?.totalSteps ?? fallbackForm?.totalSteps ?? 26;
     print('Total steps: $totalSteps');
 
     if (currentStep.value < totalSteps - 1) {
@@ -229,7 +267,7 @@ class PostFormController extends GetxController {
     if (!isValid) {
       // Force UI update to show errors immediately
       formErrors.refresh();
-      update(['form_content']);
+      // Don't trigger update to avoid PageView rebuild issues
       return;
     }
 
@@ -262,8 +300,9 @@ class PostFormController extends GetxController {
 
     // 3) After successful API call, actually move to next step using PageView
     final appController = Get.find<AppSettingsController>();
-    final postForm = appController.postFormPage.value;
-    final totalSteps = postForm?.totalSteps ?? 26;
+    final postForm = appController.postFormFromApi.value;
+    final fallbackForm = appController.postFormPage.value;
+    final totalSteps = postForm?.totalSteps ?? fallbackForm?.totalSteps ?? 26;
     print('Total steps (button next): $totalSteps');
 
     if (currentStep.value < totalSteps - 1 && pageController != null) {
@@ -305,7 +344,7 @@ class PostFormController extends GetxController {
           pageController!.jumpToPage(previousPage);
         }
         formErrors.refresh();
-        update(['form_content']);
+        // Don't trigger update to avoid PageView rebuild issues
         return;
       }
 
@@ -356,18 +395,28 @@ class PostFormController extends GetxController {
     // Update current step
     currentStep.value = newPage;
     _updateButtonVisibility();
-    update(['form_content']);
+    // Don't trigger update to avoid PageView rebuild issues
   }
 
   // Step-wise API endpoints
   String? _getStepApiEndpoint(int step) {
     final appController = Get.find<AppSettingsController>();
-    final postForm = appController.postFormPage.value;
+    final postForm = appController.postFormFromApi.value;
+    final fallbackForm = appController.postFormPage.value;
 
-    if (postForm?.apiEndpoints == null) return null;
+    // Try postFormFromApi first, then fallback to postFormPage
+    if (postForm?.apiEndpoints != null) {
+      String? endpoint = postForm!.apiEndpoints!.getStepEndpoint(step);
+      if (endpoint != null && !endpoint.startsWith('http')) {
+        endpoint = '${AppConstants.baseUrl}$endpoint';
+      }
+      return endpoint;
+    }
+
+    if (fallbackForm?.apiEndpoints == null) return null;
 
     // Use the dynamic method from the model
-    String? endpoint = postForm!.apiEndpoints!.getStepEndpoint(step);
+    String? endpoint = fallbackForm!.apiEndpoints!.getStepEndpoint(step);
 
     // If endpoint is just a path (like "post/store"), add base URL
     if (endpoint != null && !endpoint.startsWith('http')) {
@@ -521,6 +570,10 @@ class PostFormController extends GetxController {
           multipleFilesToUpload[entry.key] = entry.value as List<File>;
         }
       }
+      final appController = Get.find<AppSettingsController>();
+
+      final postForm = appController.postFormPage.value;
+      final postformname = postForm?.pageName;
 
       // Create multipart request
       final request = http.MultipartRequest('POST', Uri.parse(endpoint));
@@ -532,10 +585,10 @@ class PostFormController extends GetxController {
       });
 
       // Add static form fields as per new API format
-      request.fields['form_name'] = 'post_form';
+      request.fields['form_name'] = postformname ?? " ";
       request.fields['user_key'] = userKey;
-      request.fields['post_key'] = '5';
-      request.fields['app_page_id'] = '10';
+      request.fields['post_key'] = Postkey.value;
+      // request.fields['app_page_id'] = '10';
 
       // Build fields JSON from step inputs
       final fieldsJson = _buildFieldsJson(currentStepInputs);
@@ -637,11 +690,17 @@ class PostFormController extends GetxController {
       print('Step ${step + 1} API Response: $decodedResponse');
 
       if (response.statusCode == 200 && decodedResponse['success'] == true) {
+        // ✅ Store post_id in Postkey
+        Postkey.value = decodedResponse['post_id'].toString();
+
+        print('Saved PostKey: ${Postkey.value}');
+
         Utils.showSnackbar(
           isSuccess: true,
           title: 'Success',
           message: 'Step ${step + 1} data saved successfully',
         );
+
         return true;
       } else {
         Utils.showSnackbar(
@@ -708,11 +767,28 @@ class PostFormController extends GetxController {
 
   List<RegisterInput>? getCurrentStepInputs(int stepIndex) {
     final appController = Get.find<AppSettingsController>();
-    final postForm = appController.postFormPage.value;
+    final postForm = appController.postFormFromApi.value;
+    final fallbackForm = appController.postFormPage.value;
 
-    if (postForm == null) return null;
+    // Use postFormFromApi if available
+    if (postForm != null && postForm.inputs != null) {
+      List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
+        stepIndex,
+      );
+      if (stepInputs != null) {
+        // Convert StepInput to RegisterInput
+        return stepInputs
+            .map((si) => convertStepInputToRegisterInput(si))
+            .toList();
+      }
+    }
 
-    return _getStepInputs(postForm, stepIndex);
+    // Fallback to postFormPage
+    if (fallbackForm != null) {
+      return _getStepInputs(fallbackForm, stepIndex);
+    }
+
+    return null;
   }
 
   bool _validateCurrentStep() {
@@ -722,50 +798,63 @@ class PostFormController extends GetxController {
 
     // Get current step inputs from app settings
     final appController = Get.find<AppSettingsController>();
-    final postForm = appController.postFormPage.value;
+    final postForm = appController.postFormFromApi.value;
+    final fallbackForm = appController.postFormPage.value;
 
-    if (postForm == null) return true;
+    List<RegisterInput>? currentStepInputs;
 
-    // Get current step inputs dynamically
-    List<RegisterInput>? currentStepInputs = _getStepInputs(
-      postForm,
-      currentStep.value,
-    );
-
-    if (currentStepInputs != null) {
-      // Filter out special marker fields from validation
-      final inputsForValidation = currentStepInputs.where((input) {
-        final fieldName = (input.name ?? '').toLowerCase();
-        final t = (input.inputType ?? '').toLowerCase();
-        return fieldName != 'step_type' && t != 'single' && t != 'multiple';
-      }).toList();
-
-      // If step is marked as multiple, ensure at least one entry is added
-      final hasMultipleMarker = currentStepInputs.any(
-        (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+    // Use postFormFromApi if available
+    if (postForm != null && postForm.inputs != null) {
+      List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
+        currentStep.value,
       );
-      if (hasMultipleMarker) {
-        final list = multiStepEntries[currentStep.value] ?? const [];
-        if (list.isEmpty) {
-          Utils.showSnackbar(
-            isSuccess: false,
-            title: 'Validation Error',
-            message: 'Please add at least one item before proceeding',
-          );
-
-          return false;
-        }
-        return true;
+      if (stepInputs != null) {
+        currentStepInputs = stepInputs
+            .map((si) => convertStepInputToRegisterInput(si))
+            .toList();
       }
-      // Validate and update errors
-      final newErrors = DynamicFormValidator.validateForm(
-        inputsForValidation,
-        formData,
-      );
-      formErrors.value = newErrors;
-      // Force refresh of the reactive variable
-      formErrors.refresh();
     }
+
+    if (currentStepInputs == null && fallbackForm != null) {
+      // Fallback to postFormPage
+      currentStepInputs = _getStepInputs(fallbackForm, currentStep.value);
+    }
+
+    if (currentStepInputs == null) return true;
+    if (currentStepInputs.isEmpty) return true;
+
+    // Filter out special marker fields from validation
+    final inputsForValidation = currentStepInputs.where((input) {
+      final fieldName = (input.name ?? '').toLowerCase();
+      final t = (input.inputType ?? '').toLowerCase();
+      return fieldName != 'step_type' && t != 'single' && t != 'multiple';
+    }).toList();
+
+    // If step is marked as multiple, ensure at least one entry is added
+    final hasMultipleMarker = currentStepInputs.any(
+      (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+    );
+    if (hasMultipleMarker) {
+      final list = multiStepEntries[currentStep.value] ?? const [];
+      if (list.isEmpty) {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Validation Error',
+          message: 'Please add at least one item before proceeding',
+        );
+
+        return false;
+      }
+      return true;
+    }
+    // Validate and update errors
+    final newErrors = DynamicFormValidator.validateForm(
+      inputsForValidation,
+      formData,
+    );
+    formErrors.value = newErrors;
+    // Force refresh of the reactive variable
+    formErrors.refresh();
 
     return formErrors.isEmpty;
   }
@@ -778,11 +867,56 @@ class PostFormController extends GetxController {
     return postForm.inputs!.getStepInputs(stepIndex);
   }
 
-  Future<void> submitForm() async {
+  // Helper method to convert StepInput to RegisterInput (public for view access)
+  RegisterInput convertStepInputToRegisterInput(PostModel.StepInput stepInput) {
+    // Convert StepValidation to InputValidation
+    List<InputValidation>? validations;
+    if (stepInput.validations != null) {
+      validations = stepInput.validations!.map((sv) {
+        return InputValidation(
+          type: sv.type,
+          value: sv.value is int ? sv.value : null,
+          stringValue: sv.stringValue ?? (sv.value?.toString()),
+          pattern: sv.pattern,
+          field: sv.field,
+          errorMessage: sv.errorMessage,
+          minLength: sv.minLength,
+          maxLength: sv.maxLength,
+          minLengthError: sv.minLengthError,
+          maxLengthError: sv.maxLengthError,
+          patternErrorMessage: sv.patternErrorMessage,
+        );
+      }).toList();
+    }
+
+    // Convert OptionItem to OptionItem (same structure, but ensure compatibility)
+    List<OptionItem>? optionItems;
+    if (stepInput.options != null) {
+      optionItems = stepInput.options!.map((opt) {
+        return OptionItem(label: opt.label, value: opt.value);
+      }).toList();
+    }
+
+    return RegisterInput(
+      inputType: stepInput.inputType,
+      label: stepInput.label,
+      placeholder: stepInput.placeholder,
+      name: stepInput.name,
+      required: stepInput.required,
+      autoForward: stepInput.autoForward,
+      enterEnable: stepInput.enterEnable,
+      validations: validations,
+      optionItems: optionItems,
+      stepSetting: stepInput.stepSetting,
+      value: stepInput.value,
+    );
+  }
+
+  Future<void> submitForm(BuildContext context ) async {
     if (!_validateCurrentStep()) {
       // Force UI update to show errors immediately
       formErrors.refresh();
-      update(['form_content']);
+      // Don't trigger update to avoid PageView rebuild issues
       Utils.showSnackbar(
         isSuccess: false,
         title: 'Validation Error',
@@ -797,13 +931,17 @@ class PostFormController extends GetxController {
     try {
       // Get API endpoint from app settings
       final appController = Get.find<AppSettingsController>();
-      final postForm = appController.postFormPage.value;
+      final fallbackForm = appController.postFormPage.value;
+      // ApiEndpoints from PostForm doesn't have submitForm, only step endpoints
+      // So use fallbackForm's submitForm or default URL
       final submitUrl =
-          postForm?.apiEndpoints?.submitForm ??
+          fallbackForm?.apiEndpoints?.submitForm ??
           '${AppConstants.baseUrl}post/store';
       // Submit only current step data with step_no formatting like nextStep
       final success = await _callStepApi(submitUrl, currentStep.value);
       if (success) {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => BottomNavigationScreen()));
+        print(" Post created successfully");
         Utils.showSnackbar(
           isSuccess: true,
           title: 'Success',
@@ -849,6 +987,133 @@ class PostFormController extends GetxController {
       list.removeAt(index);
       multiStepEntries[stepIndex] = list;
       multiStepEntries.refresh();
+    }
+  }
+
+  // Fetch post form from API
+  Future<void> getPostForm() async {
+    try {
+      isLoadingForm.value = true; // Use separate loading state for form loading
+
+      final appController = Get.find<AppSettingsController>();
+
+      final postForm = appController.postFormPage.value;
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      final userKey = prefs.getString('ukey');
+      if (postForm != null && postForm.postKey != null) {
+        Postkey.value = postForm.postKey.toString();
+      }
+      final appPageKey = postForm?.pageName;
+      final languageKey =
+          prefs.getString('selected_language_key') ??
+          appController.selectedLanguageKey.value;
+      print('Post Key: ${Postkey.value}');
+      print('token : $token');
+      print('userKey : $userKey');
+      print('appPageKey : $appPageKey');
+      print('languageKey : $languageKey');
+
+      if (token == null) {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: 'Authentication token not found',
+        );
+        isLoadingForm.value = false;
+        return;
+      }
+
+      if (userKey == null) {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: 'User key not found',
+        );
+        isLoadingForm.value = false;
+        return;
+      }
+
+      // Get language code from preferences if not provided
+      // final langCode =
+      //     languageCode ?? prefs.getString('selected_language_key') ?? 'en';
+
+      // Build API endpoint
+      final endpoint = '${AppConstants.baseUrl}get-post-form';
+
+      // Create multipart request
+      final request = http.MultipartRequest('POST', Uri.parse(endpoint));
+
+      // Add headers
+      request.headers.addAll({
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+
+      // Add form fields
+      request.fields['language_code'] = languageKey;
+      request.fields['user_key'] = userKey;
+      request.fields['post_key'] = Postkey.value;
+      request.fields['app_page_key'] = appPageKey ?? "";
+
+      print('Get Post Form API Request URL: $endpoint');
+      print('Get Post Form API Request Fields: ${jsonEncode(request.fields)}');
+
+      // Send request
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final decodedResponse = jsonDecode(responseBody);
+
+      print('Get Post Form API Status: ${response.statusCode}');
+      print('Get Post Form API Response: $decodedResponse');
+
+      if (response.statusCode == 200) {
+        // Parse response
+        final postFormResponse =
+            PostModel.PostFormGenrateResponseModel.fromJson(decodedResponse);
+
+        if (postFormResponse.success == true &&
+            postFormResponse.result?.postForm != null) {
+          // Store in AppSettingsController
+          final appController = Get.find<AppSettingsController>();
+          appController.postFormFromApi.value =
+              postFormResponse.result?.postForm;
+
+          // Initialize form data and button visibility after form loads
+          _initializeDefaultValues();
+          _updateButtonVisibility();
+          Postkey.value = '';
+
+          // Utils.showSnackbar(
+          //   isSuccess: true,
+          //   title: 'Success',
+          //   message:
+          //       postFormResponse.message ?? 'Post form loaded successfully',
+          // );
+        } else {
+          Utils.showSnackbar(
+            isSuccess: false,
+            title: 'Error',
+            message: postFormResponse.message ?? 'Failed to load post form',
+          );
+        }
+      } else {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: decodedResponse['message'] ?? 'Failed to load post form',
+        );
+      }
+    } catch (e) {
+      print('Get Post Form API Error: $e');
+      Utils.showSnackbar(
+        isSuccess: false,
+        title: 'Error',
+        message: 'Failed to load post form: $e',
+      );
+    } finally {
+      isLoadingForm.value = false;
     }
   }
 }
