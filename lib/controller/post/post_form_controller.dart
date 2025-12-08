@@ -1,0 +1,854 @@
+import 'dart:io';
+import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../core/utils.dart';
+import '../app_main/App_main_controller.dart';
+import '../../controller/home/home_controller.dart';
+import '../../models/App_moduls/AppResponseModel.dart';
+import '../../core/app_constant.dart';
+import '../../widget/form_widgets/dynamic_form_builder.dart';
+
+class PostFormController extends GetxController {
+  static PostFormController get to => Get.find();
+
+  // Dynamic Form State
+  final currentStep = 0.obs;
+  final formData = <String, dynamic>{}.obs;
+  final formErrors = <String, String>{}.obs;
+
+  // Button visibility states
+  final showPreviousButton = true.obs;
+  final showNextButton = true.obs;
+  final showSubmitButton = false.obs;
+
+  // Loading State
+  final isLoading = false.obs;
+
+  // Generic multi-entry storage per step (keyed by 0-based step index)
+  final multiStepEntries = <int, List<Map<String, dynamic>>>{}.obs;
+
+  // PageController for PageView navigation
+  PageController? pageController;
+  bool _isPageChanging = false; // Prevent multiple simultaneous API calls
+  bool _isButtonNavigation =
+      false; // Track if navigation is from button (no API call)
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    _initializeDefaultValues();
+    _updateButtonVisibility(); // Initialize button visibility
+    // Initialize PageController
+    pageController = PageController(initialPage: 0);
+  }
+
+  @override
+  void onClose() {
+    pageController?.dispose();
+    super.onClose();
+  }
+
+  void _initializeDefaultValues() {
+    // Get form configuration from app settings
+    final appController = Get.find<AppSettingsController>();
+
+    final postForm = appController.postFormPage.value;
+
+    if (postForm != null && postForm.inputs != null) {
+      // Initialize defaults for all available steps dynamically
+      List<int> availableSteps = postForm.inputs!.getAvailableSteps();
+      for (int stepIndex in availableSteps) {
+        List<RegisterInput>? stepInputs = postForm.inputs!.getStepInputs(
+          stepIndex,
+        );
+        _setDefaultsForStep(stepInputs);
+      }
+    }
+  }
+
+  void _setDefaultsForStep(List<RegisterInput>? inputs) {
+    if (inputs == null) return;
+
+    for (final input in inputs) {
+      final fieldName = input.name ?? '';
+      final fieldType = (input.inputType ?? 'text').toLowerCase();
+
+      // Set default values based on field type and name
+      if (!formData.containsKey(fieldName)) {
+        switch (fieldType) {
+          case 'select':
+            if (input.optionItems != null && input.optionItems!.isNotEmpty) {
+              formData[fieldName] = input.optionItems!.first.value ?? '';
+            }
+            break;
+          case 'checkbox':
+            formData[fieldName] = false;
+            break;
+          case 'text':
+          case 'email':
+          case 'password':
+          case 'textarea':
+          case 'number':
+          case 'datetime':
+          default:
+            formData[fieldName] = '';
+            break;
+        }
+      }
+    }
+  }
+
+  // Update button visibility based on API response
+  void _updateButtonVisibility() {
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormPage.value;
+    final buttons = postForm?.buttons;
+
+    if (buttons == null) {
+      // Default behavior if no button configuration
+      showPreviousButton.value = currentStep.value > 0;
+      showNextButton.value =
+          currentStep.value < (postForm?.totalSteps ?? 26) - 1;
+      showSubmitButton.value =
+          currentStep.value == (postForm?.totalSteps ?? 26) - 1;
+      return;
+    }
+
+    // Reset all buttons
+    showPreviousButton.value = false;
+    showNextButton.value = false;
+    showSubmitButton.value = false;
+
+    // Check each button configuration
+    for (final button in buttons) {
+      final action = button.action?.toLowerCase();
+      final currentStepValue = currentStep.value + 1;
+
+      switch (action) {
+        case 'prev_step':
+          if (button.visibleFromStep != null &&
+              currentStepValue >= button.visibleFromStep!) {
+            showPreviousButton.value = true;
+          }
+          break;
+        case 'next_step':
+          if (button.visibleUntilStep != null &&
+              currentStepValue <= button.visibleUntilStep!) {
+            showNextButton.value = true;
+          }
+          break;
+        case 'submit_form':
+          if (button.visibleOnStep != null &&
+              currentStepValue == button.visibleOnStep!) {
+            showSubmitButton.value = true;
+          }
+          break;
+      }
+    }
+  }
+
+  // Dynamic Form Methods
+  void updateFormData(String fieldName, dynamic value) {
+    formData[fieldName] = value;
+    // Clear error for this field when user starts typing
+    if (formErrors.containsKey(fieldName)) {
+      formErrors.remove(fieldName);
+      formErrors.refresh();
+    }
+    // Trigger update to refresh UI immediately
+    update(['form_content']);
+  }
+
+  Future<void> nextStep1() async {
+    print('Next step called. Current step: ${currentStep.value}');
+
+    // Always validate and show errors immediately
+    final isValid = _validateCurrentStep();
+    print('Validation result: $isValid');
+
+    if (!isValid) {
+      // Force UI update to show errors immediately
+      formErrors.refresh();
+      // Trigger a rebuild of the form to show errors
+      update(['form_content']);
+      return;
+    }
+
+    // Call step-wise API before moving to next step
+
+    final apiEndpoint = _getStepApiEndpoint(currentStep.value);
+    if (apiEndpoint != null) {
+      print('Calling API for step ${currentStep.value + 1}: $apiEndpoint');
+
+      isLoading.value = true;
+      try {
+        final success = await _callStepApi(apiEndpoint, currentStep.value);
+        if (!success) {
+          isLoading.value = false;
+          return; // Don't proceed if API call failed
+        }
+      } catch (e) {
+        isLoading.value = false;
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: 'Failed to save step data: $e',
+        );
+        return;
+      }
+      isLoading.value = false;
+    }
+
+    // Get total steps from API configuration
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormPage.value;
+    final totalSteps = postForm?.totalSteps ?? 26;
+    print('Total steps: $totalSteps');
+
+    if (currentStep.value < totalSteps - 1) {
+      currentStep.value++;
+      print('Moved to step: ${currentStep.value}');
+
+      // Update button visibility after step change
+      _updateButtonVisibility();
+    }
+  }
+
+  /// Below Is Static Next Button API Not Calling
+  Future<void> nextStep() async {
+    print('Next step (button) called. Current step: ${currentStep.value}');
+
+    // 1) Validate current step before moving ahead
+    final isValid = _validateCurrentStep();
+    print('Validation result (button next): $isValid');
+
+    if (!isValid) {
+      // Force UI update to show errors immediately
+      formErrors.refresh();
+      update(['form_content']);
+      return;
+    }
+
+    // 2) Call step-wise API for this step (same as swipe/nextStep1)
+
+    final apiEndpoint = _getStepApiEndpoint(currentStep.value);
+    if (apiEndpoint != null) {
+      print(
+        'Calling API (button next) for step ${currentStep.value + 1}: $apiEndpoint',
+      );
+
+      isLoading.value = true;
+      try {
+        final success = await _callStepApi(apiEndpoint, currentStep.value);
+        if (!success) {
+          isLoading.value = false;
+          return; // Don't proceed if API call failed
+        }
+      } catch (e) {
+        isLoading.value = false;
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: 'Failed to save step data: $e',
+        );
+        return;
+      }
+      isLoading.value = false;
+    }
+
+    // 3) After successful API call, actually move to next step using PageView
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormPage.value;
+    final totalSteps = postForm?.totalSteps ?? 26;
+    print('Total steps (button next): $totalSteps');
+
+    if (currentStep.value < totalSteps - 1 && pageController != null) {
+      // Mark as button navigation so onPageChanged me dobara API na लगे
+      _isButtonNavigation = true;
+      pageController!.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void previousStep() {
+    if (currentStep.value > 0 && pageController != null) {
+      // Mark as button navigation (no API call)
+      _isButtonNavigation = true;
+      // Use PageController to navigate
+      pageController!.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  // Handle page change from PageView (swipe gesture or button)
+  Future<void> onPageChanged(int newPage, int? previousPage) async {
+    if (_isPageChanging) return; // Prevent multiple simultaneous calls
+
+    final isSwipeNavigation =
+        !_isButtonNavigation; // API call only on swipe, not button
+
+    // If going forward (swiping right/next) and it's a swipe gesture
+    if (previousPage != null && newPage > previousPage && isSwipeNavigation) {
+      // Validate previous step before moving forward
+      final isValid = _validateCurrentStep();
+      if (!isValid) {
+        // Revert to previous page if validation fails
+        if (pageController != null && pageController!.hasClients) {
+          pageController!.jumpToPage(previousPage);
+        }
+        formErrors.refresh();
+        update(['form_content']);
+        return;
+      }
+
+      // Call API for the previous step (the one we're leaving)
+      _isPageChanging = true;
+      final apiEndpoint = _getStepApiEndpoint(previousPage);
+      if (apiEndpoint != null) {
+        print(
+          'Calling API for step ${previousPage + 1} (swipe forward): $apiEndpoint',
+        );
+        isLoading.value = true;
+        try {
+          final success = await _callStepApi(apiEndpoint, previousPage);
+          if (!success) {
+            isLoading.value = false;
+            _isPageChanging = false;
+            // Revert to previous page if API call failed
+            if (pageController != null && pageController!.hasClients) {
+              pageController!.jumpToPage(previousPage);
+            }
+            _isButtonNavigation = false; // Reset flag
+            return;
+          }
+        } catch (e) {
+          isLoading.value = false;
+          _isPageChanging = false;
+          Utils.showSnackbar(
+            isSuccess: false,
+            title: 'Error',
+            message: 'Failed to save step data: $e',
+          );
+          // Revert to previous page if API call failed
+          if (pageController != null && pageController!.hasClients) {
+            pageController!.jumpToPage(previousPage);
+          }
+          _isButtonNavigation = false; // Reset flag
+          return;
+        }
+        isLoading.value = false;
+      }
+      _isPageChanging = false;
+    }
+    // If going backward (swiping left/previous) or button navigation, no API call needed
+
+    // Reset button navigation flag
+    _isButtonNavigation = false;
+
+    // Update current step
+    currentStep.value = newPage;
+    _updateButtonVisibility();
+    update(['form_content']);
+  }
+
+  // Step-wise API endpoints
+  String? _getStepApiEndpoint(int step) {
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormPage.value;
+
+    if (postForm?.apiEndpoints == null) return null;
+
+    // Use the dynamic method from the model
+    String? endpoint = postForm!.apiEndpoints!.getStepEndpoint(step);
+
+    // If endpoint is just a path (like "post/store"), add base URL
+    if (endpoint != null && !endpoint.startsWith('http')) {
+      // Use the proper base URL from AppConstants
+      endpoint = '${AppConstants.baseUrl}$endpoint';
+    }
+
+    return endpoint;
+  }
+
+  // Helper method to map inputType to API field type
+  String _mapInputTypeToApiType(RegisterInput input) {
+    final inputType = (input.inputType ?? '').toLowerCase();
+    final fieldName = (input.name ?? '').toLowerCase();
+    final label = (input.label ?? '').toLowerCase();
+
+    // Check for video-specific fields
+    if (inputType == 'files' || inputType == 'file') {
+      if (fieldName.contains('video') || label.contains('video')) {
+        return 'video';
+      }
+    }
+
+    // Map input types to API types
+    switch (inputType) {
+      case 'number':
+        return 'number';
+      case 'date':
+      case 'datetime':
+      case 'daterange':
+      case 'datetimerange':
+        return 'date';
+      case 'files':
+        return 'files';
+      case 'file':
+        return 'file';
+      case 'text':
+      case 'email':
+      case 'password':
+      case 'textarea':
+      case 'address':
+      case 'select':
+      case 'dropdown':
+      case 'radio':
+      case 'toggle':
+      case 'checkbox':
+      default:
+        return 'string';
+    }
+  }
+
+  // Build fields JSON from step inputs
+  Map<String, dynamic> _buildFieldsJson(List<RegisterInput>? inputs) {
+    final fields = <String, dynamic>{};
+
+    if (inputs == null) return fields;
+
+    for (final input in inputs) {
+      final fieldName = input.name ?? '';
+      final inputTypeLower = (input.inputType ?? '').toLowerCase();
+      final lowerName = fieldName.toLowerCase();
+
+      // Skip special marker fields
+      if (lowerName == 'step_type' ||
+          inputTypeLower == 'single' ||
+          inputTypeLower == 'multiple' ||
+          inputTypeLower == 'group' ||
+          inputTypeLower == 'hidden') {
+        continue;
+      }
+
+      // Map input type to API type
+      final apiType = _mapInputTypeToApiType(input);
+      fields[fieldName] = {'type': apiType};
+    }
+
+    return fields;
+  }
+
+  // Get first input name for title field
+  String? _getFirstInputName(List<RegisterInput>? inputs) {
+    if (inputs == null || inputs.isEmpty) return null;
+
+    for (final input in inputs) {
+      final fieldName = input.name ?? '';
+      final inputTypeLower = (input.inputType ?? '').toLowerCase();
+      final lowerName = fieldName.toLowerCase();
+
+      // Skip special marker fields
+      if (lowerName == 'step_type' ||
+          inputTypeLower == 'single' ||
+          inputTypeLower == 'multiple' ||
+          inputTypeLower == 'group' ||
+          inputTypeLower == 'hidden') {
+        continue;
+      }
+
+      return fieldName;
+    }
+
+    return null;
+  }
+
+  // Call step-wise API
+  Future<bool> _callStepApi(String endpoint, int step) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      final userKey = prefs.getString('ukey');
+
+      if (token == null) {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: 'Authentication token not found',
+        );
+
+        return false;
+      }
+
+      if (userKey == null) {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: 'User key not found',
+        );
+
+        return false;
+      }
+
+      // Get current step inputs
+      final currentStepInputs = getCurrentStepInputs(step);
+
+      // Check if step has multiple input_type
+      final hasMultipleInput =
+          currentStepInputs?.any(
+            (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+          ) ??
+          false;
+
+      // Prepare step-specific data
+      final stepData = _prepareStepData(step);
+
+      // Handle file uploads for this step
+      final filesToUpload = <String, File>{};
+      final multipleFilesToUpload = <String, List<File>>{};
+      for (final entry in stepData.entries) {
+        if (entry.value is File) {
+          filesToUpload[entry.key] = entry.value as File;
+        } else if (entry.value is List<File>) {
+          multipleFilesToUpload[entry.key] = entry.value as List<File>;
+        }
+      }
+
+      // Create multipart request
+      final request = http.MultipartRequest('POST', Uri.parse(endpoint));
+
+      // Add headers
+      request.headers.addAll({
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+
+      // Add static form fields as per new API format
+      request.fields['form_name'] = 'post_form';
+      request.fields['user_key'] = userKey;
+      request.fields['post_key'] = '5';
+      request.fields['app_page_id'] = '10';
+
+      // Build fields JSON from step inputs
+      final fieldsJson = _buildFieldsJson(currentStepInputs);
+      request.fields['fields'] = jsonEncode(fieldsJson);
+
+      // Get first input name for title field
+      final firstInputName = _getFirstInputName(currentStepInputs);
+      if (firstInputName != null) {
+        request.fields['title'] = firstInputName;
+      }
+
+      // Add dynamic step number (1-based)
+      request.fields['step_no'] = (step + 1).toString();
+
+      // If input_type is multiple, format data as arrays
+      if (hasMultipleInput) {
+        // Get the list of entries
+        List<Map<String, dynamic>> entriesList =
+            List<Map<String, dynamic>>.from(multiStepEntries[step] ?? []);
+
+        // Get field names from inputs (excluding special markers)
+        final fieldNames = <String>[];
+        if (currentStepInputs != null) {
+          for (final input in currentStepInputs) {
+            final fieldName = input.name ?? '';
+            final inputTypeLower = (input.inputType ?? '').toLowerCase();
+            // Skip special marker fields
+            if (fieldName.toLowerCase() != 'step_type' &&
+                inputTypeLower != 'single' &&
+                inputTypeLower != 'multiple') {
+              fieldNames.add(fieldName);
+            }
+          }
+        }
+
+        // Format each entry as array fields: fieldName[0], fieldName[1], etc.
+        for (int index = 0; index < entriesList.length; index++) {
+          final entry = entriesList[index];
+
+          // Add all field values with array notation (excluding File objects)
+          for (final fieldName in fieldNames) {
+            final value = entry[fieldName];
+            if (value != null && value is! File && value is! List<File>) {
+              request.fields['$fieldName[$index]'] = value.toString();
+            }
+          }
+        }
+      } else {
+        // For non-multiple steps, add form fields normally (excluding File objects)
+        for (final entry in stepData.entries) {
+          if (entry.value is! File && entry.value is! List<File>) {
+            request.fields[entry.key] = entry.value.toString();
+          }
+        }
+      }
+
+      // Debug: Print request details
+      try {
+        print('Step ${step + 1} API Request URL: $endpoint');
+        print(
+          'Step ${step + 1} API Request Fields: ${jsonEncode(request.fields)}',
+        );
+        if (filesToUpload.isNotEmpty) {
+          print(
+            'Step ${step + 1} API Single Files: ${filesToUpload.keys.toList()}',
+          );
+        }
+        if (multipleFilesToUpload.isNotEmpty) {
+          print(
+            'Step ${step + 1} API Multiple Files: ${multipleFilesToUpload.keys.toList()}',
+          );
+        }
+      } catch (_) {}
+
+      // Add single files
+      for (final entry in filesToUpload.entries) {
+        request.files.add(
+          await http.MultipartFile.fromPath(entry.key, entry.value.path),
+        );
+      }
+
+      // Add multiple files (for files input type)
+      for (final entry in multipleFilesToUpload.entries) {
+        for (int i = 0; i < entry.value.length; i++) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              '${entry.key}[$i]',
+              entry.value[i].path,
+            ),
+          );
+        }
+      }
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final decodedResponse = jsonDecode(responseBody);
+
+      print('Step ${step + 1} API Status: ${response.statusCode}');
+      print('Step ${step + 1} API Response: $decodedResponse');
+
+      if (response.statusCode == 200 && decodedResponse['success'] == true) {
+        Utils.showSnackbar(
+          isSuccess: true,
+          title: 'Success',
+          message: 'Step ${step + 1} data saved successfully',
+        );
+        return true;
+      } else {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Error',
+          message: decodedResponse['message'] ?? 'Failed to save step data',
+        );
+        return false;
+      }
+    } catch (e) {
+      print('Step API Error: $e');
+      Utils.showSnackbar(
+        isSuccess: false,
+        title: 'Error',
+        message: 'Failed to save step data: $e',
+      );
+
+      return false;
+    }
+  }
+
+  // Prepare step-specific data
+  Map<String, dynamic> _prepareStepData(int step) {
+    final stepData = <String, dynamic>{};
+
+    // Get current step inputs
+    final currentStepInputs = getCurrentStepInputs(step);
+    if (currentStepInputs == null) return stepData;
+
+    // Add form data for current step fields
+    for (final input in currentStepInputs) {
+      final fieldName = input.name ?? '';
+      final lowerName = fieldName.toLowerCase();
+      final inputTypeLower = (input.inputType ?? '').toLowerCase();
+
+      // Skip special marker fields
+      if (lowerName == 'step_type' ||
+          inputTypeLower == 'single' ||
+          inputTypeLower == 'multiple') {
+        continue;
+      }
+
+      // Special handling: current_lat / current_long => always user ki current location
+      if ((lowerName == 'current_lat' || lowerName == 'current_long') &&
+          Get.isRegistered<ClientHomeController>()) {
+        final home = ClientHomeController.to;
+        final latLng = home.currentLatLng.value;
+        if (lowerName == 'current_lat') {
+          stepData[fieldName] = latLng.latitude.toString();
+        } else {
+          stepData[fieldName] = latLng.longitude.toString();
+        }
+        continue;
+      }
+
+      // Default: use formData value if present
+      if (formData.containsKey(fieldName)) {
+        stepData[fieldName] = formData[fieldName];
+      }
+    }
+
+    return stepData;
+  }
+
+  List<RegisterInput>? getCurrentStepInputs(int stepIndex) {
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormPage.value;
+
+    if (postForm == null) return null;
+
+    return _getStepInputs(postForm, stepIndex);
+  }
+
+  bool _validateCurrentStep() {
+    print('Validating step: ${currentStep.value}');
+    // Clear previous errors
+    formErrors.clear();
+
+    // Get current step inputs from app settings
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormPage.value;
+
+    if (postForm == null) return true;
+
+    // Get current step inputs dynamically
+    List<RegisterInput>? currentStepInputs = _getStepInputs(
+      postForm,
+      currentStep.value,
+    );
+
+    if (currentStepInputs != null) {
+      // Filter out special marker fields from validation
+      final inputsForValidation = currentStepInputs.where((input) {
+        final fieldName = (input.name ?? '').toLowerCase();
+        final t = (input.inputType ?? '').toLowerCase();
+        return fieldName != 'step_type' && t != 'single' && t != 'multiple';
+      }).toList();
+
+      // If step is marked as multiple, ensure at least one entry is added
+      final hasMultipleMarker = currentStepInputs.any(
+        (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+      );
+      if (hasMultipleMarker) {
+        final list = multiStepEntries[currentStep.value] ?? const [];
+        if (list.isEmpty) {
+          Utils.showSnackbar(
+            isSuccess: false,
+            title: 'Validation Error',
+            message: 'Please add at least one item before proceeding',
+          );
+
+          return false;
+        }
+        return true;
+      }
+      // Validate and update errors
+      final newErrors = DynamicFormValidator.validateForm(
+        inputsForValidation,
+        formData,
+      );
+      formErrors.value = newErrors;
+      // Force refresh of the reactive variable
+      formErrors.refresh();
+    }
+
+    return formErrors.isEmpty;
+  }
+
+  // Helper method to get inputs for any step dynamically
+  List<RegisterInput>? _getStepInputs(ProfileFormPage postForm, int stepIndex) {
+    if (postForm.inputs == null) return null;
+
+    // Use the dynamic method from the model
+    return postForm.inputs!.getStepInputs(stepIndex);
+  }
+
+  Future<void> submitForm() async {
+    if (!_validateCurrentStep()) {
+      // Force UI update to show errors immediately
+      formErrors.refresh();
+      update(['form_content']);
+      Utils.showSnackbar(
+        isSuccess: false,
+        title: 'Validation Error',
+        message: 'Please fix the errors before submitting',
+      );
+
+      return;
+    }
+
+    isLoading.value = true;
+
+    try {
+      // Get API endpoint from app settings
+      final appController = Get.find<AppSettingsController>();
+      final postForm = appController.postFormPage.value;
+      final submitUrl =
+          postForm?.apiEndpoints?.submitForm ??
+          '${AppConstants.baseUrl}post/store';
+      // Submit only current step data with step_no formatting like nextStep
+      final success = await _callStepApi(submitUrl, currentStep.value);
+      if (success) {
+        Utils.showSnackbar(
+          isSuccess: true,
+          title: 'Success',
+          message: 'Post created successfully',
+        );
+        Get.back();
+      }
+    } catch (e) {
+      Utils.showSnackbar(
+        isSuccess: false,
+        title: 'Error',
+        message: 'An error occurred: $e',
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Generic multi-entry management
+  List<Map<String, dynamic>> getEntriesForStep(int stepIndex) {
+    return multiStepEntries[stepIndex] ?? <Map<String, dynamic>>[];
+  }
+
+  void addEntryForStep(int stepIndex, Map<String, dynamic> data) {
+    final list = List<Map<String, dynamic>>.from(getEntriesForStep(stepIndex));
+    list.add(data);
+    multiStepEntries[stepIndex] = list;
+    multiStepEntries.refresh();
+  }
+
+  void updateEntryForStep(int stepIndex, int index, Map<String, dynamic> data) {
+    final list = List<Map<String, dynamic>>.from(getEntriesForStep(stepIndex));
+    if (index >= 0 && index < list.length) {
+      list[index] = data;
+      multiStepEntries[stepIndex] = list;
+      multiStepEntries.refresh();
+    }
+  }
+
+  void removeEntryForStep(int stepIndex, int index) {
+    final list = List<Map<String, dynamic>>.from(getEntriesForStep(stepIndex));
+    if (index >= 0 && index < list.length) {
+      list.removeAt(index);
+      multiStepEntries[stepIndex] = list;
+      multiStepEntries.refresh();
+    }
+  }
+}
