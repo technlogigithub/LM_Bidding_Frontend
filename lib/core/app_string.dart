@@ -32,6 +32,7 @@ class AppStrings{
   static String didntreceivecode  = 'Didn’t receive code?';
   static String myProfile  = 'My Profile';
   static String dashboard  = 'Dashboard';
+  static String myPost  = 'My Posts';
   static String Deposit  = 'Deposit';
   static String withdraw  = 'Withdraw';
   static String Transaction  = 'Transaction';

@@ -13,15 +13,76 @@ import '../../widget/form_widgets/app_button.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../../models/Post/Post_Form_Genrate_Model.dart' as PostModel;
 
-class PostNewScreen extends GetView<PostFormController> {
+class PostNewScreen extends StatefulWidget {
   const PostNewScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<PostNewScreen> createState() => _PostNewScreenState();
+}
+
+class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserver {
+  late PostFormController controller;
+  bool _hasInitialized = false;
+  DateTime? _lastRefreshTime;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     // Register controller if not already registered
     if (!Get.isRegistered<PostFormController>()) {
       Get.put(PostFormController());
     }
+    controller = Get.find<PostFormController>();
+
+    // Load form data when screen is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_hasInitialized) {
+        _hasInitialized = true;
+        controller.refreshFormData();
+        _lastRefreshTime = DateTime.now();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh form data when screen is revisited (navigation back)
+    // Only refresh if it's been more than 1 second since last refresh to avoid excessive calls
+    if (mounted && _hasInitialized) {
+      final now = DateTime.now();
+      if (_lastRefreshTime == null ||
+          now.difference(_lastRefreshTime!).inSeconds > 1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            controller.refreshFormData();
+            _lastRefreshTime = DateTime.now();
+          }
+        });
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // When app comes back to foreground, refresh form data
+    if (state == AppLifecycleState.resumed && mounted && _hasInitialized) {
+      controller.refreshFormData();
+      _lastRefreshTime = DateTime.now();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final appController = Get.find<AppSettingsController>();
@@ -194,9 +255,9 @@ class PostNewScreen extends GetView<PostFormController> {
   // ------------------------- FORM CONTENT WITH PAGEVIEW -------------------------
 
   Widget _buildFormContentWithPageView(
-    PostModel.PostForm postForm,
-    double screenHeight,
-  ) {
+      PostModel.PostForm postForm,
+      double screenHeight,
+      ) {
     final totalSteps = postForm.totalSteps ?? 26;
 
     // Ensure PageController is initialized (should be done in onInit, but check here)
@@ -277,7 +338,7 @@ class PostNewScreen extends GetView<PostFormController> {
               ).viewInsets.bottom;
               return SingleChildScrollView(
                 physics:
-                    const AlwaysScrollableScrollPhysics(), // Ensure scrollable even when content fits
+                const AlwaysScrollableScrollPhysics(), // Ensure scrollable even when content fits
                 padding: EdgeInsets.only(
                   top: 8.0,
                   bottom: currentKeyboardHeight > 0
@@ -294,11 +355,11 @@ class PostNewScreen extends GetView<PostFormController> {
   }
 
   Widget _buildFormContentForStep(
-    PostModel.PostForm postForm,
-    int stepIndex,
-    double screenHeight,
+      PostModel.PostForm postForm,
+      int stepIndex,
+      double screenHeight,
       BuildContext context
-  ) {
+      ) {
     List<RegisterInput>? currentStepInputs;
 
     final totalSteps = postForm.totalSteps ?? 26;
@@ -319,7 +380,7 @@ class PostNewScreen extends GetView<PostFormController> {
     final currentStepTitle = _getCurrentStepTitle(postForm, stepIndex);
 
     final hasMultipleMarker = currentStepInputs.any(
-      (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+          (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
     );
 
     final filteredInputs = currentStepInputs
@@ -350,21 +411,22 @@ class PostNewScreen extends GetView<PostFormController> {
             )
           else
             DynamicFormBuilder(
+              key: ValueKey('form_${controller.currentStep.value}_${controller.formData.length}'),
               inputs: filteredInputs,
               formData: controller.formData,
               onFieldChanged: controller.updateFormData,
               errors: controller.formErrors,
               onAutoForward: allAutoForward
                   ? () {
-                      // Auto-advance to next step if all fields have autoForward: true
-                      Future.delayed(const Duration(milliseconds: 300), () {
-                        if (isLastStep) {
-                          controller.submitForm(context);
-                        } else {
-                          controller.nextStep();
-                        }
-                      });
-                    }
+                // Auto-advance to next step if all fields have autoForward: true
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  if (isLastStep) {
+                    controller.submitForm(context);
+                  } else {
+                    controller.nextStep();
+                  }
+                });
+              }
                   : null,
               // Keyboard Enter/Next navigation for enterEnable = true inputs
               onStepNext: () {
@@ -381,9 +443,9 @@ class PostNewScreen extends GetView<PostFormController> {
   }
 
   List<RegisterInput>? _getStepInputs(
-    PostModel.PostForm postForm,
-    int stepIndex,
-  ) {
+      PostModel.PostForm postForm,
+      int stepIndex,
+      ) {
     if (postForm.inputs == null) return null;
 
     // Get StepInput from PostForm and convert to RegisterInput
@@ -409,10 +471,10 @@ class PostNewScreen extends GetView<PostFormController> {
   // ------------------------- MULTI ENTRY STEP -------------------------
 
   Widget _buildGenericMultipleStep(
-    int stepIndex,
-    List<RegisterInput>? inputs, {
-    String? title,
-  }) {
+      int stepIndex,
+      List<RegisterInput>? inputs, {
+        String? title,
+      }) {
     return Obx(() {
       final list = controller.getEntriesForStep(stepIndex);
 
@@ -504,11 +566,11 @@ class PostNewScreen extends GetView<PostFormController> {
   }
 
   void _showGenericEntryDialog(
-    int stepIndex,
-    List<RegisterInput>? inputs, {
-    Map<String, dynamic>? existingData,
-    int? index,
-  }) {
+      int stepIndex,
+      List<RegisterInput>? inputs, {
+        Map<String, dynamic>? existingData,
+        int? index,
+      }) {
     Get.bottomSheet(
       GenericMultiEntryDialog(
         inputs: inputs,
@@ -599,8 +661,8 @@ class PostNewScreen extends GetView<PostFormController> {
                 onTap: controller.isLoading.value
                     ? null
                     : () => controller.showSubmitButton.value
-                          ? controller.submitForm(context)
-                          : controller.nextStep(),
+                    ? controller.submitForm(context)
+                    : controller.nextStep(),
                 isLoading: controller.isLoading.value,
               ),
             ),
@@ -662,7 +724,7 @@ class PostNewScreen extends GetView<PostFormController> {
           // Form Fields Shimmer (5 fields)
           ...List.generate(
             5,
-            (index) => Padding(
+                (index) => Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -18,6 +18,7 @@ import '../seller screen/withdraw_money/seller_withdraw_history.dart';
 import 'Dashboard_screen.dart';
 import 'Deposit_history_screen.dart';
 import 'Invitescreen.dart';
+import 'My Posts/My_Post_screen.dart';
 import 'Setting_screen.dart';
 import 'favoriteScreen.dart';
 import 'help_support.dart';
@@ -121,6 +122,22 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         title: Obx(() => Text(AppStrings.dashboard, maxLines: 1, style: AppTextStyle.description(color: text))),
                         trailing: Icon(FeatherIcons.chevronRight, color: text),
+                      ),
+
+                      /// ---------------- DASHBOARD ----------------
+                      ListTile(
+                        onTap: () => Get.to(MyPostScreen()),
+                        visualDensity: const VisualDensity(vertical: -3),
+                        horizontalTitleGap: 10,
+                        contentPadding: const EdgeInsets.only(bottom: 20),
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration:  BoxDecoration(
+                              shape: BoxShape.circle, color: Colors.greenAccent.withOpacity(0.2)),
+                          child: const Icon(Icons.article_outlined, color: Colors.green),
+                        ),
+                        title: Obx(() => Text(AppStrings.myPost, maxLines: 1, style: AppTextStyle.description(color: text))),
+                        trailing:Icon(FeatherIcons.chevronRight, color: text),
                       ),
 
                       /// ---------------- BUYER REQUEST ----------------
