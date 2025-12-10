@@ -13,15 +13,76 @@ import '../../widget/form_widgets/app_button.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../../models/Post/Post_Form_Genrate_Model.dart' as PostModel;
 
-class PostNewScreen extends GetView<PostFormController> {
+class PostNewScreen extends StatefulWidget {
   const PostNewScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<PostNewScreen> createState() => _PostNewScreenState();
+}
+
+class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserver {
+  late PostFormController controller;
+  bool _hasInitialized = false;
+  DateTime? _lastRefreshTime;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    
     // Register controller if not already registered
     if (!Get.isRegistered<PostFormController>()) {
       Get.put(PostFormController());
     }
+    controller = Get.find<PostFormController>();
+    
+    // Load form data when screen is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_hasInitialized) {
+        _hasInitialized = true;
+        controller.refreshFormData();
+        _lastRefreshTime = DateTime.now();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh form data when screen is revisited (navigation back)
+    // Only refresh if it's been more than 1 second since last refresh to avoid excessive calls
+    if (mounted && _hasInitialized) {
+      final now = DateTime.now();
+      if (_lastRefreshTime == null || 
+          now.difference(_lastRefreshTime!).inSeconds > 1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            controller.refreshFormData();
+            _lastRefreshTime = DateTime.now();
+          }
+        });
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // When app comes back to foreground, refresh form data
+    if (state == AppLifecycleState.resumed && mounted && _hasInitialized) {
+      controller.refreshFormData();
+      _lastRefreshTime = DateTime.now();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final appController = Get.find<AppSettingsController>();
@@ -350,6 +411,7 @@ class PostNewScreen extends GetView<PostFormController> {
             )
           else
             DynamicFormBuilder(
+              key: ValueKey('form_${controller.currentStep.value}_${controller.formData.length}'),
               inputs: filteredInputs,
               formData: controller.formData,
               onFieldChanged: controller.updateFormData,

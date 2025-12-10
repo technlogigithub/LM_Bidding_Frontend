@@ -1988,7 +1988,7 @@ class VerifyOtpPage {
 }
 
 class ProfileFormPage {
-  int? postKey;
+  String? postKey;
   String? pageName;
   String? pageTitle;
   String? pageDescription;
@@ -2030,7 +2030,7 @@ class ProfileFormPage {
     }
 
     return ProfileFormPage(
-      postKey: json['post_key'] is int ? json['post_key'] : (json['post_key'] is String ? int.tryParse(json['post_key']) : null),
+      postKey: json['post_key'].toString() ,
       pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],

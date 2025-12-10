@@ -31,6 +31,7 @@ class PostFormController extends GetxController {
   // Loading State
   final isLoading = false.obs; // For step-wise API calls (next/previous)
   final isLoadingForm = false.obs; // For initial form loading (getPostForm)
+  bool _formLoaded = false; // Track if form was loaded at least once
 
   // Generic multi-entry storage per step (keyed by 0-based step index)
   final multiStepEntries = <int, List<Map<String, dynamic>>>{}.obs;
@@ -54,6 +55,249 @@ class PostFormController extends GetxController {
   void onClose() {
     pageController?.dispose();
     super.onClose();
+  }
+
+  // Populate formData with existing values from API response
+  void _populateFormDataFromApi() {
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormFromApi.value;
+
+    if (postForm == null || postForm.inputs == null) return;
+
+    // Get all available steps
+    List<int> availableSteps = postForm.inputs!.getAvailableSteps();
+
+    for (int stepIndex in availableSteps) {
+      List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
+        stepIndex,
+      );
+
+      if (stepInputs == null) continue;
+
+      // Populate formData with values from API
+      for (final stepInput in stepInputs) {
+        final fieldName = stepInput.name ?? '';
+        final fieldType = (stepInput.inputType ?? '').toLowerCase();
+        final value = stepInput.value;
+
+        // Skip special marker fields
+        if (fieldName.toLowerCase() == 'step_type' ||
+            fieldType == 'single' ||
+            fieldType == 'multiple' ||
+            fieldType == 'group') {
+          continue;
+        }
+
+        // Only set value if it's not null and not empty
+        if (value != null) {
+          // Handle different value types based on input type
+          if (fieldType == 'checkbox') {
+            // Checkbox can be single boolean or multi-select list
+            if (value is List) {
+              // Already a list, store as-is
+              if (value.isNotEmpty) {
+                formData[fieldName] = value;
+              }
+            } else if (value is String) {
+              final trimmedValue = value.trim();
+              if (trimmedValue.isNotEmpty) {
+                // Check if it's a string representation of a list like "[used, new]"
+                if (trimmedValue.startsWith('[') &&
+                    trimmedValue.endsWith(']')) {
+                  try {
+                    // Try to parse as JSON array
+                    final parsed = jsonDecode(trimmedValue) as List;
+                    formData[fieldName] = parsed
+                        .map((e) => e.toString())
+                        .toList();
+                  } catch (e) {
+                    // If JSON parsing fails, try manual parsing
+                    final cleaned = trimmedValue
+                        .replaceAll('[', '')
+                        .replaceAll(']', '')
+                        .replaceAll('"', '')
+                        .replaceAll("'", '');
+                    final items = cleaned
+                        .split(',')
+                        .map((e) => e.trim())
+                        .where((e) => e.isNotEmpty)
+                        .toList();
+                    if (items.isNotEmpty) {
+                      formData[fieldName] = items;
+                    }
+                  }
+                } else {
+                  // Single checkbox value (boolean string)
+                  final boolValue =
+                      trimmedValue.toLowerCase() == 'true' ||
+                      trimmedValue == '1' ||
+                      trimmedValue.toLowerCase() == 'yes';
+                  formData[fieldName] = boolValue;
+                }
+              }
+            } else if (value is bool) {
+              formData[fieldName] = value;
+            } else if (value is num) {
+              formData[fieldName] = value != 0;
+            }
+          } else if (value is String) {
+            final trimmedValue = value.trim();
+            if (trimmedValue.isNotEmpty) {
+              formData[fieldName] = trimmedValue;
+            }
+          } else if (value is bool) {
+            formData[fieldName] = value;
+          } else if (value is num) {
+            formData[fieldName] = value.toString();
+          } else if (value is List) {
+            // For lists (e.g., files), store as-is
+            if (value.isNotEmpty) {
+              // Check if it's a list of file objects with url property
+              if (fieldType == 'files' || fieldType == 'file') {
+                // Convert to List<dynamic> to ensure proper type handling
+                final listValue = List<dynamic>.from(value);
+                print(
+                  '📸 Storing files list for "$fieldName": ${listValue.length} items',
+                );
+                print('📸 First item type: ${listValue.first.runtimeType}');
+                print('📸 First item: ${listValue.first}');
+                if (listValue.first is Map) {
+                  print(
+                    '📸 First item keys: ${(listValue.first as Map).keys.toList()}',
+                  );
+                  print(
+                    '📸 First item url: ${(listValue.first as Map)['url']}',
+                  );
+                }
+                formData[fieldName] = listValue;
+                print(
+                  '📸 Stored in formData["$fieldName"]: ${formData[fieldName]}',
+                );
+                print(
+                  '📸 Stored value type: ${formData[fieldName].runtimeType}',
+                );
+              } else {
+                // For other list types, store as-is
+                formData[fieldName] = value;
+              }
+            }
+          } else if (value is Map) {
+            // For complex objects, convert to JSON string
+            try {
+              formData[fieldName] = jsonEncode(value);
+            } catch (e) {
+              formData[fieldName] = value.toString();
+            }
+          } else {
+            // For other types, convert to string
+            final stringValue = value.toString();
+            if (stringValue.isNotEmpty && stringValue != 'null') {
+              formData[fieldName] = stringValue;
+            }
+          }
+        }
+      }
+    }
+
+    // Refresh formData to trigger UI update
+    formData.refresh();
+
+    print('FormData populated from API: ${formData.keys.toList()}');
+    print(
+      'FormData values: ${formData.entries.map((e) => '${e.key}: ${e.value}').join(', ')}',
+    );
+  }
+
+  // Find first step with null value and set it as initial step
+  void _setInitialStepFromApi() {
+    final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormFromApi.value;
+
+    if (postForm == null || postForm.inputs == null) {
+      currentStep.value = 0;
+      return;
+    }
+
+    // Get all available steps (sorted)
+    List<int> availableSteps = postForm.inputs!.getAvailableSteps();
+    availableSteps.sort();
+
+    // Find first step with at least one null value
+    int? firstIncompleteStep;
+
+    for (int stepIndex in availableSteps) {
+      List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
+        stepIndex,
+      );
+
+      if (stepInputs == null || stepInputs.isEmpty) {
+        // If step has no inputs, consider it incomplete
+        firstIncompleteStep = stepIndex;
+        break;
+      }
+
+      // Check if any input in this step has null value
+      bool hasNullValue = false;
+      bool hasVisibleField = false;
+
+      for (final stepInput in stepInputs) {
+        final fieldName = stepInput.name ?? '';
+        final fieldType = (stepInput.inputType ?? '').toLowerCase();
+        final value = stepInput.value;
+
+        // Skip special marker fields
+        if (fieldName.toLowerCase() == 'step_type' ||
+            fieldType == 'single' ||
+            fieldType == 'multiple' ||
+            fieldType == 'group') {
+          continue;
+        }
+
+        // Count visible fields (excluding hidden)
+        if (fieldType != 'hidden') {
+          hasVisibleField = true;
+        }
+
+        // Check if value is null or empty (only for visible fields)
+        if (fieldType != 'hidden') {
+          if (value == null ||
+              (value is String && value.trim().isEmpty) ||
+              (value is List && value.isEmpty)) {
+            hasNullValue = true;
+            break;
+          }
+        }
+      }
+
+      // If step has visible fields and at least one is null, this is incomplete
+      if (hasVisibleField && hasNullValue) {
+        firstIncompleteStep = stepIndex;
+        break;
+      }
+    }
+
+    // Set initial step (default to 0 if all steps are complete)
+    final initialStep = firstIncompleteStep ?? 0;
+    currentStep.value = initialStep;
+
+    // Update PageController after a frame to ensure it's built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (pageController != null && pageController!.hasClients) {
+        try {
+          final positions = pageController!.positions;
+          if (positions.length == 1) {
+            final currentPage = pageController!.page?.round() ?? 0;
+            if (currentPage != initialStep) {
+              pageController!.jumpToPage(initialStep);
+            }
+          }
+        } catch (e) {
+          print('Warning: Error updating PageController: $e');
+        }
+      }
+    });
+
+    print('Initial step set to: ${initialStep + 1} (0-based: $initialStep)');
   }
 
   void _initializeDefaultValues() {
@@ -99,7 +343,10 @@ class PostFormController extends GetxController {
       final fieldType = (input.inputType ?? 'text').toLowerCase();
 
       // Set default values based on field type and name
-      if (!formData.containsKey(fieldName)) {
+      // Only set if field doesn't exist or has empty/null value
+      if (!formData.containsKey(fieldName) ||
+          formData[fieldName] == null ||
+          formData[fieldName].toString().isEmpty) {
         switch (fieldType) {
           case 'select':
             if (input.optionItems != null && input.optionItems!.isNotEmpty) {
@@ -690,15 +937,17 @@ class PostFormController extends GetxController {
       print('Step ${step + 1} API Response: $decodedResponse');
 
       if (response.statusCode == 200 && decodedResponse['success'] == true) {
-        // ✅ Store post_id in Postkey
-        Postkey.value = decodedResponse['post_id'].toString();
+        // ✅ Correct path: result -> post_key
+        Postkey.value = decodedResponse['result']['post_key'].toString();
 
         print('Saved PostKey: ${Postkey.value}');
 
         Utils.showSnackbar(
           isSuccess: true,
           title: 'Success',
-          message: 'Step ${step + 1} data saved successfully',
+          message:
+              decodedResponse['message'] ??
+              'Step ${step + 1} data saved successfully',
         );
 
         return true;
@@ -912,48 +1161,75 @@ class PostFormController extends GetxController {
     );
   }
 
-  Future<void> submitForm(BuildContext context ) async {
+  RxString apiMessage = ''.obs;
+
+  Future<void> submitForm(BuildContext context) async {
+    final appController = Get.find<AppSettingsController>();
+
+    final postForm = appController.postFormPage.value;
+
     if (!_validateCurrentStep()) {
-      // Force UI update to show errors immediately
       formErrors.refresh();
-      // Don't trigger update to avoid PageView rebuild issues
+
       Utils.showSnackbar(
         isSuccess: false,
         title: 'Validation Error',
         message: 'Please fix the errors before submitting',
       );
-
       return;
     }
 
     isLoading.value = true;
 
     try {
-      // Get API endpoint from app settings
       final appController = Get.find<AppSettingsController>();
       final fallbackForm = appController.postFormPage.value;
-      // ApiEndpoints from PostForm doesn't have submitForm, only step endpoints
-      // So use fallbackForm's submitForm or default URL
+
       final submitUrl =
           fallbackForm?.apiEndpoints?.submitForm ??
           '${AppConstants.baseUrl}post/store';
-      // Submit only current step data with step_no formatting like nextStep
+
       final success = await _callStepApi(submitUrl, currentStep.value);
+
       if (success) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => BottomNavigationScreen()));
-        print(" Post created successfully");
+        if (postForm != null && postForm.postKey != null) {
+          postForm.postKey = '';
+        }
+        //
+        // Postkey.value = '';
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BottomNavigationScreen()),
+        );
+
         Utils.showSnackbar(
           isSuccess: true,
           title: 'Success',
-          message: 'Post created successfully',
+          message: apiMessage.value.isNotEmpty
+              ? apiMessage
+                    .value // ✅ API MESSAGE
+              : 'Post created successfully',
         );
+
         Get.back();
+      } else {
+        // ✅ API Failed Message
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: 'Failed',
+          message: apiMessage.value.isNotEmpty
+              ? apiMessage.value
+              : 'Something went wrong',
+        );
       }
     } catch (e) {
       Utils.showSnackbar(
         isSuccess: false,
         title: 'Error',
-        message: 'An error occurred: $e',
+        message: apiMessage.value.isNotEmpty
+            ? apiMessage.value
+            : 'An error occurred: $e',
       );
     } finally {
       isLoading.value = false;
@@ -988,6 +1264,21 @@ class PostFormController extends GetxController {
       multiStepEntries[stepIndex] = list;
       multiStepEntries.refresh();
     }
+  }
+
+  // Refresh form data when screen is revisited
+  Future<void> refreshFormData() async {
+    if (!_formLoaded) {
+      // If form was never loaded, do full load
+      await getPostForm();
+      return;
+    }
+
+    // If form was already loaded, just refresh the data
+    print('🔄 Refreshing form data...');
+
+    // Reload form from API to get latest data
+    await getPostForm();
   }
 
   // Fetch post form from API
@@ -1080,10 +1371,16 @@ class PostFormController extends GetxController {
           appController.postFormFromApi.value =
               postFormResponse.result?.postForm;
 
+          // Populate formData with existing values and find first incomplete step
+          _populateFormDataFromApi();
+          _setInitialStepFromApi();
+
           // Initialize form data and button visibility after form loads
           _initializeDefaultValues();
           _updateButtonVisibility();
-          Postkey.value = '';
+
+          // Mark form as loaded
+          _formLoaded = true;
 
           // Utils.showSnackbar(
           //   isSuccess: true,

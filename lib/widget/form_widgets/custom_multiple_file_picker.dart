@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:video_editor/video_editor.dart';
 import 'package:video_player/video_player.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 // Conditional import for web drag & drop
@@ -43,6 +44,7 @@ class CustomMultipleFilePicker extends StatefulWidget {
 
 class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
   List<File> _localFiles = [];
+  List<String> _imageUrls = []; // Local copy of imageUrls that can be modified
   final ImagePicker _picker = ImagePicker();
   bool _isDragging = false;
   final Map<String, VideoPlayerController> _videoControllers = {};
@@ -53,6 +55,19 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
     if (widget.value != null) {
       _localFiles = List.from(widget.value!);
       _initializeVideoControllers();
+    }
+    // Initialize local imageUrls from widget
+    if (widget.imageUrls != null) {
+      _imageUrls = List<String>.from(widget.imageUrls!);
+    }
+  }
+
+  @override
+  void didUpdateWidget(CustomMultipleFilePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update local imageUrls if widget.imageUrls changed
+    if (widget.imageUrls != null && widget.imageUrls != oldWidget.imageUrls) {
+      _imageUrls = List<String>.from(widget.imageUrls!);
     }
   }
 
@@ -455,6 +470,90 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
     );
   }
 
+  // === IMAGE URL PREVIEW (with shimmer) ===
+  Widget _buildImageUrlPreview(String imageUrl, int index) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8, bottom: 8),
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.transparent,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(7),
+              child: GestureDetector(
+              onTap: () {
+                // Navigate to full image view
+                // Create a dummy File for URL images (ImageViewScreen requires it)
+                final dummyFile = File('');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ImageViewScreen(
+                      imageFile: dummyFile,
+                      imageUrl: imageUrl,
+                    ),
+                  ),
+                );
+              },
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  // Show shimmer while loading
+                  return Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      color: Colors.white,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return _buildPlaceholder();
+                },
+              ),
+            ),
+          ),
+          // Remove Icon
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: () => _removeImageUrl(index),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _removeImageUrl(int index) {
+    if (index >= 0 && index < _imageUrls.length) {
+      setState(() {
+        _imageUrls.removeAt(index);
+      });
+    }
+  }
+
   // === FILE PREVIEW ===
   Widget _buildFilePreview(File file, int index) {
     final isVideo = _isVideoFile(file.path);
@@ -716,7 +815,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
           ),
         ),
 
-        if (effectiveFiles.isNotEmpty) ...[
+        if (effectiveFiles.isNotEmpty || _imageUrls.isNotEmpty) ...[
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -726,14 +825,27 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               final totalSpacing = spacing * (crossAxisCount - 1);
               final itemWidth = (screenWidth - totalSpacing) / crossAxisCount;
 
+              // Combine local files and URL images
+              final totalItems = effectiveFiles.length + _imageUrls.length;
+              
               return Wrap(
                 spacing: spacing,
                 runSpacing: spacing,
-                children: List.generate(effectiveFiles.length, (i) {
-                  return SizedBox(
-                    width: itemWidth,
-                    child: _buildFilePreview(effectiveFiles[i], i),
-                  );
+                children: List.generate(totalItems, (i) {
+                  // First show URL images, then local files
+                  if (i < _imageUrls.length) {
+                    return SizedBox(
+                      width: itemWidth,
+                      child: _buildImageUrlPreview(_imageUrls[i], i),
+                    );
+                  } else {
+                    // Then show local files
+                    final fileIndex = i - _imageUrls.length;
+                    return SizedBox(
+                      width: itemWidth,
+                      child: _buildFilePreview(effectiveFiles[fileIndex], fileIndex),
+                    );
+                  }
                 }),
               );
             },

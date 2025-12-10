@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -134,6 +135,9 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
     widget.onFieldChanged(fieldName, value);
 
+    // Force rebuild to show selected values in UI
+    setState(() {});
+
     // Check auto-forward after a short delay to ensure formData is updated
     // Only check auto-forward if this was a user interaction
     if (isUserInteraction) {
@@ -160,8 +164,29 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
     final label = input.label ?? '';
     final placeholder = input.placeholder ?? '';
     final isRequired = input.required ?? false;
+    // Access formData value - GetX RxMap can be accessed like a regular Map
     final currentValue = widget.formData[fieldName];
     final error = widget.errors[fieldName];
+    
+    // Debug for files/photo fields
+    if (fieldType == 'files' || fieldName == 'photo') {
+      print('🎨 Building field "$fieldName" (type: $fieldType)');
+      print('🎨 currentValue: $currentValue');
+      print('🎨 currentValue type: ${currentValue?.runtimeType}');
+      print('🎨 formData type: ${widget.formData.runtimeType}');
+      print('🎨 formData keys: ${widget.formData.keys.toList()}');
+      print('🎨 formData contains "$fieldName": ${widget.formData.containsKey(fieldName)}');
+      if (currentValue != null) {
+        print('🎨 currentValue is List: ${currentValue is List}');
+        if (currentValue is List) {
+          print('🎨 List length: ${currentValue.length}');
+          if (currentValue.isNotEmpty) {
+            print('🎨 First item: ${currentValue.first}');
+            print('🎨 First item type: ${currentValue.first.runtimeType}');
+          }
+        }
+      }
+    }
 
     Widget fieldWidget;
 
@@ -302,22 +327,21 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           }
         }
 
-        /// ✅ SAFE initial index (NO DEFAULT SELECTION on first load)
-        /// Only show selection if user has previously interacted with this field
+        /// ✅ SAFE initial index - Show selection if value exists in formData (from API or user interaction)
         int? safeInitialIndex;
-        final hasUserInteracted = _userInteractedFields.contains(fieldName);
 
-        if (hasUserInteracted &&
-            currentValue != null &&
+        if (currentValue != null &&
             currentValue.toString().trim().isNotEmpty &&
             optionValues.isNotEmpty) {
-          final idx = optionValues.indexOf(currentValue.toString().trim());
+          final valueStr = currentValue.toString().trim();
+          final idx = optionValues.indexOf(valueStr);
           if (idx != -1) {
-            safeInitialIndex = idx; // ✅ only show if user has interacted
+            safeInitialIndex = idx; // ✅ Show selection if value matches
+            // Mark as interacted so it persists
+            _userInteractedFields.add(fieldName);
           }
         }
-        // If no user interaction, always keep it null (no selection shown)
-        debugPrint("initialIndex:>>>$safeInitialIndex (userInteracted: $hasUserInteracted)");
+        debugPrint("Select field '$fieldName' initialIndex: $safeInitialIndex, currentValue: $currentValue");
         /// ✅ UI rendering
         if (optionLabels.isEmpty) {
           fieldWidget = Padding(
@@ -362,7 +386,6 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         }
         break;
 
-
       case 'toggle':
       // Convert currentValue to bool, handling String, bool, and null cases
         bool boolValue = false;
@@ -389,9 +412,27 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         final allowedExt = _getAllowedExtensions(input);
         final category = _getFileCategory(allowedExt);
         // Get image URL if saved (for non-File values that might be URLs)
-        final imageUrl = currentValue is String && currentValue.toString().startsWith('http')
-            ? currentValue.toString()
-            : null;
+        String? imageUrl;
+        if (currentValue is String && currentValue.toString().startsWith('http')) {
+          imageUrl = currentValue.toString();
+        } else if (currentValue is Map) {
+          // Object with url property: {id: 2, type: null, url: "https://..."}
+          final url = currentValue['url'];
+          if (url != null && url.toString().startsWith('http')) {
+            imageUrl = url.toString();
+          }
+        } else if (currentValue is List && currentValue.isNotEmpty) {
+          // If it's a list, take the first item
+          final firstItem = currentValue.first;
+          if (firstItem is Map) {
+            final url = firstItem['url'];
+            if (url != null && url.toString().startsWith('http')) {
+              imageUrl = url.toString();
+            }
+          } else if (firstItem is String && firstItem.toString().startsWith('http')) {
+            imageUrl = firstItem.toString();
+          }
+        }
 
         fieldWidget = CustomFilePicker(
           label: label + (isRequired ? ' *' : ''),
@@ -441,14 +482,73 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
         // Get image URLs if saved (for non-File values that might be URLs)
         List<String>? imageUrls;
+        
+        print('🔍 Files field "$fieldName" currentValue type: ${currentValue.runtimeType}');
+        print('🔍 Files field "$fieldName" currentValue: $currentValue');
+        
         if (currentValue is List) {
-          imageUrls = currentValue
-              .where((item) => item is String && item.toString().startsWith('http'))
-              .map((item) => item.toString())
-              .toList();
+          final tempUrls = <String>[];
+          print('🔍 Processing List with ${currentValue.length} items');
+          for (int i = 0; i < currentValue.length; i++) {
+            final item = currentValue[i];
+            print('🔍 Item $i type: ${item.runtimeType}, value: $item');
+            
+            if (item is String && item.startsWith('http')) {
+              // Direct URL string
+              print('✅ Found direct URL string: $item');
+              tempUrls.add(item);
+            } else if (item is Map) {
+              // Object with url property: {id: 2, type: null, url: "https://..."}
+              // Handle both Map<dynamic, dynamic> and Map<String, dynamic>
+              print('✅ Found Map object, keys: ${item.keys.toList()}');
+              dynamic url;
+              if (item.containsKey('url')) {
+                url = item['url'];
+              } else if (item.containsKey('URL')) {
+                url = item['URL'];
+              }
+              print('🔍 Extracted URL: $url (type: ${url.runtimeType})');
+              if (url != null) {
+                final urlStr = url.toString().trim();
+                if (urlStr.startsWith('http')) {
+                  print('✅ Adding URL: $urlStr');
+                  tempUrls.add(urlStr);
+                } else {
+                  print('⚠️ URL does not start with http: $urlStr');
+                }
+              } else {
+                print('⚠️ URL is null');
+              }
+            } else if (item != null) {
+              final itemStr = item.toString().trim();
+              if (itemStr.startsWith('http')) {
+                print('✅ Found URL from toString: $itemStr');
+                tempUrls.add(itemStr);
+              }
+            }
+          }
+          if (tempUrls.isNotEmpty) {
+            imageUrls = tempUrls;
+            print('✅ Final imageUrls: $imageUrls');
+          } else {
+            print('⚠️ No URLs extracted from list');
+          }
         } else if (currentValue is String && currentValue.toString().startsWith('http')) {
           imageUrls = [currentValue.toString()];
+          print('✅ Found single URL string: $imageUrls');
+        } else if (currentValue is Map) {
+          // Single object with url property
+          print('✅ Found single Map object, keys: ${currentValue.keys.toList()}');
+          final url = currentValue['url'];
+          if (url != null && url.toString().startsWith('http')) {
+            imageUrls = [url.toString()];
+            print('✅ Extracted single URL: $imageUrls');
+          }
+        } else {
+          print('⚠️ currentValue is not List, String, or Map. Type: ${currentValue.runtimeType}');
         }
+        
+        print('🎯 Final imageUrls for "$fieldName": $imageUrls');
 
         fieldWidget = CustomMultipleFilePicker(
           label: label + (isRequired ? ' *' : ''),
@@ -560,9 +660,33 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
               if (v != null) selected.add(v.toString());
             }
           } else if (currentValue is String && currentValue.isNotEmpty) {
-            // Support comma-separated string from API / backend
-            final parts = currentValue.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
-            selected.addAll(parts);
+            final valueStr = currentValue.trim();
+            // Check if it's a string representation of a list like "[used, new]"
+            if (valueStr.startsWith('[') && valueStr.endsWith(']')) {
+              try {
+                // Try to parse as JSON array
+                final parsed = jsonDecode(valueStr) as List;
+                for (final v in parsed) {
+                  if (v != null) selected.add(v.toString());
+                }
+              } catch (e) {
+                // If JSON parsing fails, try manual parsing
+                final cleaned = valueStr
+                    .replaceAll('[', '')
+                    .replaceAll(']', '')
+                    .replaceAll('"', '')
+                    .replaceAll("'", '');
+                final parts = cleaned
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty);
+                selected.addAll(parts);
+              }
+            } else {
+              // Support comma-separated string from API / backend
+              final parts = valueStr.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
+              selected.addAll(parts);
+            }
           }
 
           fieldWidget = Column(
