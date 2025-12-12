@@ -127,6 +127,7 @@ class AppSettingsController extends GetxController {
   Rx<PostForm?> postFormFromApi = Rx<PostForm?>(null);
   Rx<HomePage?> homePage = Rx<HomePage?>(null);
   Rx<HeaderMenuSection?> homePageheader = Rx<HeaderMenuSection?>(null);
+  Rx<MyPostModel?> myPostModel = Rx<MyPostModel?>(null);
 
   // Languages
   RxList<Language> availableLanguages = <Language>[].obs;
@@ -257,6 +258,8 @@ class AppSettingsController extends GetxController {
         userInfo.value = result?.appMenu?.userInfo;
         myProfile.value = result?.appMenu?.myProfile;
         support.value = result?.appMenu?.support;
+        myPostModel.value = result?.appMenu?.myPost;
+
 
         // NEW
         settings.value = result?.appMenu?.settings;

@@ -24,6 +24,7 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   late PostFormController controller;
   bool _hasInitialized = false;
   DateTime? _lastRefreshTime;
+  bool _isUserInteracting = false; // Track if user is actively interacting with form
 
   @override
   void initState() {
@@ -56,13 +57,14 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Refresh form data when screen is revisited (navigation back)
+    // BUT: Don't refresh if user is actively interacting with the form (uploading images, etc.)
     // Only refresh if it's been more than 1 second since last refresh to avoid excessive calls
-    if (mounted && _hasInitialized) {
+    if (mounted && _hasInitialized && !_isUserInteracting) {
       final now = DateTime.now();
       if (_lastRefreshTime == null ||
           now.difference(_lastRefreshTime!).inSeconds > 1) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
+          if (mounted && !_isUserInteracting) {
             controller.refreshFormData();
             _lastRefreshTime = DateTime.now();
           }
@@ -414,11 +416,21 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
               key: ValueKey('form_${controller.currentStep.value}_${controller.formData.length}'),
               inputs: filteredInputs,
               formData: controller.formData,
-              onFieldChanged: controller.updateFormData,
+              onFieldChanged: (fieldName, value) {
+                // Mark as user interacting when field changes (especially file uploads)
+                _isUserInteracting = true;
+                controller.updateFormData(fieldName, value);
+                // Reset interaction flag after a delay to allow refresh on navigation back
+                Future.delayed(const Duration(seconds: 3), () {
+                  if (mounted) {
+                    _isUserInteracting = false;
+                  }
+                });
+              },
               errors: controller.formErrors,
-              onAutoForward: allAutoForward
-                  ? () {
-                // Auto-advance to next step if all fields have autoForward: true
+              onAutoForward: () {
+                // Auto-advance to next step when auto-forward is triggered
+                // This can be triggered by individual field autoForward or all fields autoForward
                 Future.delayed(const Duration(milliseconds: 300), () {
                   if (isLastStep) {
                     controller.submitForm(context);
@@ -426,8 +438,7 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
                     controller.nextStep();
                   }
                 });
-              }
-                  : null,
+              },
               // Keyboard Enter/Next navigation for enterEnable = true inputs
               onStepNext: () {
                 if (isLastStep) {

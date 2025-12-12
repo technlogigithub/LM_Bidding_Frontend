@@ -10,9 +10,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
   import 'package:pro_image_editor/pro_image_editor.dart';
   import 'package:video_player/video_player.dart';
   import 'package:video_thumbnail/video_thumbnail.dart';
+  import 'package:get/get.dart';
   import '../../core/app_color.dart';
   import '../../core/app_textstyle.dart';
   import '../../core/app_string.dart';
+  import '../../controller/post/post_form_controller.dart';
   import '../../view/image_view_screen/image_view_screen.dart';
   import '../../view/video_view_screen/video_view_screen.dart';
   import 'web_file_drop_zone_stub.dart'
@@ -113,6 +115,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
   
   
     Future<void> _pick(BuildContext context) async {
+      // Set interaction flag immediately when user taps to pick files
+      // This prevents refresh during file picking process
+      try {
+        final controller = Get.find<PostFormController>();
+        controller.setUserInteracting(true);
+        // Reset after delay (will be reset again when file is picked)
+        Future.delayed(const Duration(seconds: 5), () {
+          if (mounted) {
+            controller.setUserInteracting(false);
+          }
+        });
+      } catch (e) {
+        // Controller might not be available, ignore
+      }
+      
       final category = widget.category ?? (widget.isImageFile ? 'image' : 'any');
   
       if (category == 'image') {
@@ -208,6 +225,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
             _localFile = file;
             _pdfThumb = null; // Reset PDF thumb when new file is picked
           });
+          // Keep interaction flag set for a bit longer after file is picked
+          try {
+            final controller = Get.find<PostFormController>();
+            controller.setUserInteracting(true);
+            Future.delayed(const Duration(seconds: 3), () {
+              controller.setUserInteracting(false);
+            });
+          } catch (e) {
+            // Controller might not be available, ignore
+          }
           // Load PDF thumbnail if it's a PDF
           if (_isPdf(file.path)) {
             await _loadPdfThumbnail(file);

@@ -676,15 +676,15 @@ class SocialLoginProvider {
 class AppMenu {
   UserInfo? userInfo;
   MenuItem? myProfile;
-
-  SettingsMenuItem? settings;   // NEW
-  ReferralMenuItem? referral;   // NEW
-
+  MyPostModel? myPost;
+  SettingsMenuItem? settings;
+  ReferralMenuItem? referral;
   SupportMenuItem? support;
 
   AppMenu({
     this.userInfo,
     this.myProfile,
+    this.myPost,
     this.settings,
     this.referral,
     this.support,
@@ -697,6 +697,10 @@ class AppMenu {
 
     myProfile = json['my_profile'] != null
         ? MenuItem.fromJson(json['my_profile'])
+        : null;
+
+    myPost = json['my_post'] != null
+        ? MyPostModel.fromJson(json['my_post'])
         : null;
 
     settings = json['settings'] != null
@@ -715,6 +719,7 @@ class AppMenu {
   Map<String, dynamic> toJson() => {
     if (userInfo != null) 'user_info': userInfo!.toJson(),
     if (myProfile != null) 'my_profile': myProfile!.toJson(),
+    if (myPost != null) 'my_post': myPost!.toJson(),
     if (settings != null) 'settings': settings!.toJson(),
     if (referral != null) 'referral': referral!.toJson(),
     if (support != null) 'support': support!.toJson(),
@@ -894,18 +899,23 @@ class SupportDesign {
 class ContactItem {
   String? icon;
   String? detail;
+  String? message;
 
-  ContactItem({this.icon, this.detail});
+  ContactItem({this.icon, this.detail, this.message});
 
   ContactItem.fromJson(Map<String, dynamic> json) {
     icon = json['icon'];
     detail = json['detail'];
+    message = json['message'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['icon'] = this.icon;
     data['detail'] = this.detail;
+    if (this.message != null) {
+      data['message'] = this.message;
+    }
     return data;
   }
 }
@@ -1108,6 +1118,61 @@ class SettingsMenuItem {
     if (design != null) 'design': design!.toJson(),
   };
 }
+
+class MyPostModel {
+  bool? isActive;
+  bool? loginRequired;
+  String? label;
+  String? apiEndpoint;
+  String? pageType;
+  String? pageName;
+  String? pageImage;
+  String? title;
+  String? description;
+  SettingsDesign? design;
+
+  MyPostModel({
+    this.isActive,
+    this.loginRequired,
+    this.label,
+    this.apiEndpoint,
+    this.pageType,
+    this.pageName,
+    this.pageImage,
+    this.title,
+    this.description,
+    this.design,
+  });
+
+  MyPostModel.fromJson(Map<String, dynamic> json) {
+    isActive = json['is_active'];
+    loginRequired = json['login_required'];
+    label = json['label'];
+    apiEndpoint = json['api_endpoint'];
+    pageType = json['page_type'];
+    pageName = json['page_name'];
+    pageImage = json['page_image'];
+    title = json['title'];
+    description = json['description'];
+    design = json['design'] != null
+        ? SettingsDesign.fromJson(json['design'])
+        : null;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'is_active': isActive,
+    'login_required': loginRequired,
+    'label': label,
+    'api_endpoint': apiEndpoint,
+    'page_type': pageType,
+    'page_name': pageName,
+    'page_image': pageImage,
+    'title': title,
+    'description': description,
+    if (design != null) 'design': design!.toJson(),
+  };
+}
+
 class SettingsDesign {
   Map<String, SettingsInput>? inputs;
   List<SettingsLink>? link;
@@ -1143,6 +1208,10 @@ class SettingsInput {
   String? name;
   bool? required;
   String? apiEndpoint;
+  // For simple string options
+  List<String>? options;
+  // For structured options [{label, value}]
+  List<OptionItem>? optionItems;
 
   SettingsInput({
     this.inputType,
@@ -1151,6 +1220,8 @@ class SettingsInput {
     this.name,
     this.required,
     this.apiEndpoint,
+    this.options,
+    this.optionItems,
   });
 
   SettingsInput.fromJson(Map<String, dynamic> json) {
@@ -1160,6 +1231,24 @@ class SettingsInput {
     name = json['name'];
     required = json['required'];
     apiEndpoint = json['api_endpoint'];
+    
+    // Parse options (supports both string & object)
+    if (json['options'] != null) {
+      final list = json['options'] as List;
+      List<String>? opts;
+      List<OptionItem>? structuredOptions;
+      for (final e in list) {
+        if (e is Map<String, dynamic>) {
+          structuredOptions ??= [];
+          structuredOptions.add(OptionItem.fromJson(e));
+        } else {
+          opts ??= [];
+          opts.add(e.toString());
+        }
+      }
+      options = opts;
+      optionItems = structuredOptions;
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -1169,6 +1258,10 @@ class SettingsInput {
     'name': name,
     'required': required,
     'api_endpoint': apiEndpoint,
+    if (optionItems != null)
+      'options': optionItems!.map((e) => e.toJson()).toList()
+    else if (options != null)
+      'options': options,
   };
 }
 

@@ -131,6 +131,7 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
     String fieldName,
     dynamic value, {
     bool isUserInteraction = false,
+    RegisterInput? input, // Pass input directly to avoid searching
   }) {
     // Mark field as user-interacted
     if (isUserInteraction) {
@@ -145,11 +146,34 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
     // Check auto-forward after a short delay to ensure formData is updated
     // Only check auto-forward if this was a user interaction
     if (isUserInteraction) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_shouldAutoForward() && widget.onAutoForward != null) {
-          widget.onAutoForward!();
-        }
-      });
+      // Find the input field to check if it has autoForward: true (if not passed)
+      final fieldInput = input ?? widget.inputs.firstWhere(
+        (inp) => (inp.name ?? '') == fieldName,
+        orElse: () => RegisterInput(),
+      );
+      
+      // If this specific field has autoForward: true and value is not empty, trigger immediately
+      final hasValue = value != null && 
+          value.toString().trim().isNotEmpty && 
+          value.toString().trim() != 'null';
+      
+      print('🔍 Auto-forward check for "$fieldName": autoForward=${fieldInput.autoForward}, hasValue=$hasValue, value=$value');
+      
+      if (fieldInput.autoForward == true && hasValue && widget.onAutoForward != null) {
+        print('✅ Triggering auto-forward for field "$fieldName"');
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (widget.onAutoForward != null) {
+            widget.onAutoForward!();
+          }
+        });
+      } else {
+        // Otherwise, check if all fields have autoForward: true
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (_shouldAutoForward() && widget.onAutoForward != null) {
+            widget.onAutoForward!();
+          }
+        });
+      }
     }
   }
 
@@ -917,10 +941,13 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
                 return labels[index];
               },
               onChanged: (val) {
-                _handleFieldChanged(fieldName, val, isUserInteraction: true);
-
-                // Don't call onStepNext immediately here - let _shouldAutoForward handle it
-                // This prevents double step advancement
+                // Only trigger if value is not null (user actually selected something)
+                if (val != null) {
+                  print('📋 Dropdown "$fieldName" changed to: $val, autoForward: ${input.autoForward}');
+                  _handleFieldChanged(fieldName, val, isUserInteraction: true, input: input);
+                } else {
+                  print('⚠️ Dropdown "$fieldName" changed to null, skipping auto-forward');
+                }
               },
             ),
           ],
