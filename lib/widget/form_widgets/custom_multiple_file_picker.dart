@@ -8,8 +8,10 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:video_editor/video_editor.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:get/get.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
+import '../../controller/post/post_form_controller.dart';
 // Conditional import for web drag & drop
 import '../../view/image_view_screen/image_view_screen.dart';
 import '../../view/video_view_screen/video_view_screen.dart';
@@ -225,6 +227,21 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
 
   // === FILE PICKING ===
   Future<void> _pickFiles(BuildContext context) async {
+    // Set interaction flag immediately when user taps to pick files
+    // This prevents refresh during file picking process
+    try {
+      final controller = Get.find<PostFormController>();
+      controller.setUserInteracting(true);
+      // Reset after delay (will be reset again when files are picked)
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted) {
+          controller.setUserInteracting(false);
+        }
+      });
+    } catch (e) {
+      // Controller might not be available, ignore
+    }
+    
     final category = widget.category ?? (widget.isImageFile ? 'image' : 'any');
 
     if (category == 'video') {
@@ -412,11 +429,21 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
       }
     }
 
-    if (validFiles.isNotEmpty) {
+    if (validFiles.isNotEmpty && mounted) {
       setState(() {
         _localFiles.addAll(validFiles);
       });
       widget.onPicked(_localFiles);
+      // Keep interaction flag set for a bit longer after files are picked
+      try {
+        final controller = Get.find<PostFormController>();
+        controller.setUserInteracting(true);
+        Future.delayed(const Duration(seconds: 3), () {
+          controller.setUserInteracting(false);
+        });
+      } catch (e) {
+        // Controller might not be available, ignore
+      }
     }
   }
 

@@ -51,7 +51,7 @@ class CartScreen extends StatelessWidget {
               child:Column(
                 children: [
                   SizedBox(height: 10.h),
-                  CustomVerticalListviewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading,isFromCartScreen: true,),
+                  // CustomVerticalListviewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading,isFromCartScreen: true,),
                   CustomHtmlViewer(htmlContent: '''
   <h3>Service Description</h3>
   <p>This is a comprehensive service that includes:</p>

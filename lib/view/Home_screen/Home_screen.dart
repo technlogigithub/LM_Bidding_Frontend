@@ -11,6 +11,7 @@ import 'package:libdding/widget/custom_vertical_listview_list.dart';
 import 'package:libdding/widget/form_widgets/app_button.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../controller/home/home_controller.dart';
+import '../../controller/post/app_post_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_constant.dart';
@@ -39,6 +40,7 @@ class ClientHomeScreen extends StatelessWidget {
     final AppSettingsController appController = Get.put(AppSettingsController());
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
+    final AppPostController appPostController = Get.find<AppPostController>();
 
     final profilecontroller = Get.put(ProfileController());
 
@@ -70,6 +72,7 @@ class ClientHomeScreen extends StatelessWidget {
             leading: Icon(FeatherIcons.search, color: AppColors.appTextColor,size: 18,),
             title: Text(' Search...', style: AppTextStyle.description(color: AppColors.appTextColor)),
             onTap: () {
+              // Get.to(CustomSearchDelegate());
               showSearch(context: context, delegate: CustomSearchDelegate());
             },
           ),
@@ -307,6 +310,8 @@ class ClientHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
+
                   Obx(
                     () => CustomBanner(
                       banners: controller.bannerList.map((banner) => {'image': banner.image ?? '', 'redirectUrl': banner.redirectUrl ?? ''}).toList(),
@@ -336,6 +341,8 @@ class ClientHomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
+
+
                   Obx(
                     () => CustomCategoryHorizontalList(
                       categories: controller.categoryList.map((category) => {'image': category.image ?? '', 'name': category.name ?? ''}).toList(),
@@ -494,7 +501,21 @@ class ClientHomeScreen extends StatelessWidget {
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
-                    child: CustomVerticalListviewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
+                    child: CustomVerticalListviewList(
+                      model: appPostController.getPostListResponseModel,
+                      onFavoriteToggle: (index, newValue) {
+                        // Update favorite in the model
+                        final result =
+                            appPostController.getPostListResponseModel.value?.result;
+                        if (result != null && index < result.length) {
+                          if (result[index].info != null) {
+                            result[index].info!.favorite = newValue;
+                            appPostController.getPostListResponseModel.refresh();
+                          }
+                        }
+                      },
+                      isLoading: appPostController.isLoading,
+                    ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(

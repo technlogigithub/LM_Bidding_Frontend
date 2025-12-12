@@ -983,7 +983,7 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
                                   ],
                                 ),
                               ),
-                              CustomHorizontalListViewList(items: recentViewedList, onFavoriteToggle: toggleFavorite, isLoading: false.obs),
+                              // CustomHorizontalListViewList(items: recentViewedList, onFavoriteToggle: toggleFavorite, isLoading: false.obs),
                             ],
                           ),
                         ),

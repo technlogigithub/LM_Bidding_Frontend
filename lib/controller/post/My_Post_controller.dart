@@ -1,142 +1,175 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
-import '../../models/static models/participation_order.dart';
+import '../../models/App_moduls/AppResponseModel.dart';
+import '../../models/Post/Get_Post_List_Model.dart';
+import '../app_main/App_main_controller.dart';
+import 'app_post_controller.dart';
 
 class MyPostController extends GetxController {
+  // Get AppPostController instance
+  late final AppPostController appPostController;
+
   // Tab Index
   var selectedTabIndex = 0.obs;
 
-  // Loading States
-  var isLoadingActive = true.obs;
-  var isLoadingPending = true.obs;
-  var isLoadingCompleted = true.obs;
-  var isLoadingCancelled = true.obs;
+  // tab ke status value store karega (for backward compatibility)
+  var selectedStatusValue = ''.obs;
 
   // Lists
-  var activeOrders = <ParticipationOrder>[].obs;
-  var pendingOrders = <ParticipationOrder>[].obs;
-  var completedOrders = <ParticipationOrder>[].obs;
-  var cancelledOrders = <ParticipationOrder>[].obs;
+  // var activeOrders = <ParticipationOrder>[].obs;
+  // var pendingOrders = <ParticipationOrder>[].obs;
+  // var completedOrders = <ParticipationOrder>[].obs;
+  // var cancelledOrders = <ParticipationOrder>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadStaticData();
+    // Initialize AppPostController
+    appPostController = Get.put(AppPostController());
+    
+    // Listen to AppPostController's loading state
+    ever(appPostController.isLoading, (isLoading) {
+      // Sync loading state if needed
+    });
+    
+    // Listen to AppPostController's response model
+    ever(appPostController.getPostListResponseModel, (model) {
+      // Sync response model if needed
+    });
+    
+    extractStatusValue(); // ⬅️ Extract initial status value
+    getPostList(); // ⬅️ Call API with initial status value
   }
 
-  void loadStaticData() {
-    // Simulate API delay
-    Future.delayed(const Duration(seconds: 2), () {
-      // Active Orders
-      activeOrders.assignAll([
-        ParticipationOrder(
-          orderId: 'F025E15',
-          sellerName: 'Shaidul Islam',
-          orderDate: '24 Jun 2023',
-          title: 'Mobile UI UX design or app UI UX design',
-          duration: '3 Days',
-          amount: '5.00',
-          status: 'Active',
-          countdownDuration: const Duration(days: 2, hours: 10),
-        ),
-        ParticipationOrder(
-          orderId: 'F025E16',
-          sellerName: 'Rahim Khan',
-          orderDate: '22 Jun 2023',
-          title: 'Logo Design for Tech Startup',
-          duration: '5 Days',
-          amount: '15.00',
-          status: 'Active',
-          countdownDuration: const Duration(days: 4, hours: 5),
-        ),
-      ]);
+  void extractStatusValue() {
+    final app = Get.find<AppSettingsController>();
+    final model = app.myPostModel.value;
 
-      // Pending Orders
-      pendingOrders.assignAll([
-        ParticipationOrder(
-          orderId: 'F025E17',
-          sellerName: 'Karim Ahmed',
-          orderDate: '20 Jun 2023',
-          title: 'Website Development',
-          duration: '7 Days',
-          amount: '50.00',
-          status: 'Pending',
-          countdownDuration: const Duration(days: 6, hours: 12),
-        ),
-      ]);
+    if (model?.design?.inputs == null) return;
 
-      // Completed Orders
-      completedOrders.assignAll([
-        ParticipationOrder(
-          orderId: 'F025E18',
-          sellerName: 'John Doe',
-          orderDate: '15 May 2023',
-          title: 'E-commerce App UI',
-          duration: '10 Days',
-          amount: '100.00',
-          status: 'Completed',
-          countdownDuration: Duration.zero,
-        ),
-      ]);
+    SettingsInput? selectInput;
 
-      // Cancelled Orders
-      cancelledOrders.assignAll([
-        ParticipationOrder(
-          orderId: 'F025E19',
-          sellerName: 'Mike Johnson',
-          orderDate: '10 May 2023',
-          title: 'Social Media Banner',
-          duration: '2 Days',
-          amount: '8.00',
-          status: 'Cancelled',
-          countdownDuration: Duration.zero,
-        ),
-      ]);
+    // find select input
+    if (model!.design!.inputs!.containsKey('select')) {
+      selectInput = model.design!.inputs!['select'];
+    } else {
+      try {
+        selectInput = model.design!.inputs!.values.firstWhere(
+          (e) => e.inputType == "select",
+        );
+      } catch (e) {
+        return;
+      }
+    }
 
-      // Turn off loading
-      isLoadingActive.value = false;
-      isLoadingPending.value = false;
-      isLoadingCompleted.value = false;
-      isLoadingCancelled.value = false;
-    });
+    String? statusValue;
+
+    // optionItems → label + value case
+    if (selectInput?.optionItems != null &&
+        selectInput!.optionItems!.isNotEmpty) {
+      statusValue = selectInput.optionItems!.first.value ?? "";
+    } else if (selectInput?.options != null && selectInput!.options!.isNotEmpty) {
+      // simple options array
+      statusValue = selectInput.options!.first;
+    }
+
+    // Update both local and AppPostController status
+    if (statusValue != null && statusValue.isNotEmpty) {
+      selectedStatusValue.value = statusValue;
+      appPostController.updateStatus(statusValue);
+    }
   }
 
   // Get current list based on tab
-  List<ParticipationOrder> get currentList {
-    switch (selectedTabIndex.value) {
-      case 0:
-        return activeOrders;
-      case 1:
-        return pendingOrders;
-      case 2:
-        return completedOrders;
-      case 3:
-        return cancelledOrders;
-      default:
-        return activeOrders;
-    }
-  }
+  // List<ParticipationOrder> get currentList {
+  //   switch (selectedTabIndex.value) {
+  //     case 0:
+  //       return activeOrders;
+  //     case 1:
+  //       return pendingOrders;
+  //     case 2:
+  //       return completedOrders;
+  //     case 3:
+  //       return cancelledOrders;
+  //     default:
+  //       return activeOrders;
+  //   }
+  // }
 
-  // Get current loading state
+  // Get current loading state from AppPostController
   bool get currentLoading {
-    switch (selectedTabIndex.value) {
-      case 0:
-        return isLoadingActive.value;
-      case 1:
-        return isLoadingPending.value;
-      case 2:
-        return isLoadingCompleted.value;
-      case 3:
-        return isLoadingCancelled.value;
-      default:
-        return true;
-    }
+    return appPostController.isLoading.value;
   }
 
-  // Update tab
+  // Get response model from AppPostController
+  Rx<GetPostListResponseModel?> get getPostListResponseModel {
+    return appPostController.getPostListResponseModel;
+  }
+
+  // Get isLoading from AppPostController
+  RxBool get isLoading {
+    return appPostController.isLoading;
+  }
+
+  // Update tab and fetch posts for selected status
   void updateTab(int index) {
     selectedTabIndex.value = index;
+
+    // Extract status value for the selected tab
+    final app = Get.find<AppSettingsController>();
+    final model = app.myPostModel.value;
+
+    if (model?.design?.inputs == null) return;
+
+    SettingsInput? selectInput;
+
+    // Find select input
+    if (model!.design!.inputs!.containsKey('select')) {
+      selectInput = model.design!.inputs!['select'];
+    } else {
+      try {
+        selectInput = model.design!.inputs!.values.firstWhere(
+          (e) => e.inputType == "select",
+        );
+      } catch (e) {
+        return;
+      }
+    }
+
+    // Get status value for selected tab index
+    String? statusValue;
+
+    // optionItems → label + value case
+    if (selectInput?.optionItems != null &&
+        selectInput!.optionItems!.isNotEmpty) {
+      if (index < selectInput.optionItems!.length) {
+        statusValue = selectInput.optionItems![index].value;
+      }
+    } else if (selectInput?.options != null &&
+        selectInput!.options!.isNotEmpty) {
+      // simple options array
+      if (index < selectInput.options!.length) {
+        statusValue = selectInput.options![index];
+      }
+    }
+
+    // Update status in both local and AppPostController, then call API
+    if (statusValue != null && statusValue.isNotEmpty) {
+      selectedStatusValue.value = statusValue;
+      appPostController.updateStatus(statusValue); // Store in AppPostController
+      getPostList(); // Call API with new status value
+    }
+  }
+
+  // Use AppPostController to make API call
+  Future<void> getPostList() async {
+    // Ensure status is updated in AppPostController
+    if (selectedStatusValue.value.isNotEmpty) {
+      appPostController.updateStatus(selectedStatusValue.value);
+    }
+    
+    // Call API using AppPostController
+    await appPostController.getPostList();
   }
 }

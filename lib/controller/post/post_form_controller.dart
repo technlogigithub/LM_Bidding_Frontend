@@ -33,6 +33,13 @@ class PostFormController extends GetxController {
   final isLoading = false.obs; // For step-wise API calls (next/previous)
   final isLoadingForm = false.obs; // For initial form loading (getPostForm)
   bool _formLoaded = false; // Track if form was loaded at least once
+  bool _isUserInteracting =
+      false; // Track if user is actively interacting (uploading files, etc.)
+
+  // Public method to set interaction flag (used by file pickers)
+  void setUserInteracting(bool value) {
+    _isUserInteracting = value;
+  }
 
   // Generic multi-entry storage per step (keyed by 0-based step index)
   final multiStepEntries = <int, List<Map<String, dynamic>>>{}.obs;
@@ -87,6 +94,23 @@ class PostFormController extends GetxController {
             fieldType == 'multiple' ||
             fieldType == 'group') {
           continue;
+        }
+
+        // IMPORTANT: Preserve user-uploaded File objects - don't overwrite with API values
+        // If formData already has a File or List<File> for this field, keep it
+        if ((fieldType == 'file' || fieldType == 'files') &&
+            formData.containsKey(fieldName)) {
+          final existingValue = formData[fieldName];
+          // If user has uploaded files (File or List<File>), preserve them
+          if (existingValue is File ||
+              (existingValue is List &&
+                  existingValue.isNotEmpty &&
+                  existingValue.first is File)) {
+            print(
+              '📸 Preserving user-uploaded files for "$fieldName", skipping API value',
+            );
+            continue; // Skip overwriting with API value
+          }
         }
 
         // Only set value if it's not null and not empty
@@ -439,6 +463,16 @@ class PostFormController extends GetxController {
 
   // Dynamic Form Methods
   void updateFormData(String fieldName, dynamic value) {
+    // Mark as user interacting when updating form data (especially file uploads)
+    if (value is File ||
+        (value is List && value.isNotEmpty && value.first is File)) {
+      _isUserInteracting = true;
+      // Reset interaction flag after delay to allow refresh on navigation back
+      Future.delayed(const Duration(seconds: 3), () {
+        _isUserInteracting = false;
+      });
+    }
+
     formData[fieldName] = value;
     // Clear error for this field when user starts typing
     if (formErrors.containsKey(fieldName)) {
@@ -1274,6 +1308,12 @@ class PostFormController extends GetxController {
 
   // Refresh form data when screen is revisited
   Future<void> refreshFormData() async {
+    // Don't refresh if user is actively interacting (uploading files, etc.)
+    if (_isUserInteracting) {
+      print('🔄 Skipping refresh - user is actively interacting with form');
+      return;
+    }
+
     if (!_formLoaded) {
       // If form was never loaded, do full load
       await getPostForm();

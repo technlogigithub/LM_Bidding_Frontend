@@ -153,7 +153,7 @@ class CustomCategoryHorizontalList extends StatelessWidget {
                   //   ),
                   // ),
                   SizedBox(
-                    width: (avatarRadius * 2).r,   // Same as CircleAvatar diameter
+                    width: (avatarRadius * 6).r,   // 2 X 2 Same as CircleAvatar diameter
                     height: (avatarRadius * 2).r,
                     child: categoryImage.isNotEmpty
                         ? (categoryImage.startsWith('http')

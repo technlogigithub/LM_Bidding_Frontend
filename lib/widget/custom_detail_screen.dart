@@ -396,11 +396,11 @@ class _CustomDetailScreenState extends State<CustomDetailScreen> with TickerProv
                                         ],
                                       ),
                                       const SizedBox(height: 10.0),
-                                      CustomHorizontalListViewList(
-                                        items: widget.recentViewedList,
-                                        onFavoriteToggle: toggleFavorite,
-                                        isLoading: false.obs,
-                                      ),
+                                      // CustomHorizontalListViewList(
+                                      //   items: widget.recentViewedList,
+                                      //   onFavoriteToggle: toggleFavorite,
+                                      //   isLoading: false.obs,
+                                      // ),
                                       const SizedBox(height: 20.0),
                                     ],
                                     const SizedBox(height: 15.0),

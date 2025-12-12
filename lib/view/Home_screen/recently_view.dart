@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
-import 'package:nb_utils/nb_utils.dart';
-import '../../controller/home/home_controller.dart';
-import '../../core/api_config.dart';
+import '../../controller/app_main/App_main_controller.dart';
+import '../../controller/post/app_post_controller.dart';
 import '../../core/app_color.dart';
-import '../../core/app_constant.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/custom_vertical_listview_list.dart';
-import '../client service details/client_service_details.dart';
 
 class RecentlyView extends StatefulWidget {
   const RecentlyView({super.key});
@@ -20,36 +16,31 @@ class RecentlyView extends StatefulWidget {
 }
 
 class _RecentlyViewState extends State<RecentlyView> {
-   List<dynamic> notifications = [];
-  bool isLoading = true;
-   final ClientHomeController controller = Get.put(ClientHomeController());
-
   @override
   void initState() {
     super.initState();
-    fetchOrders();
+    // Initialize AppPostController and load data
+    final appPostController = Get.put(AppPostController());
+    // Defer API call until after the first frame is built to avoid setState during build error
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      appPostController.getPostList();
+    });
   }
-  Future<void> fetchOrders() async {
-    try {
-      final res = await  ApiService.getRequest("ordersApi");
-      setState(() {
-        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-      toast("Error: $e");
-    }
-  
-  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final AppPostController appPostController = Get.find<AppPostController>();
+    final AppSettingsController appController =
+        Get.find<AppSettingsController>();
+    final homePage = appController.homePage.value; // <-- HomePage? model
+    final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
+    final appbartitle = headerConfig?.headerMenu?[1].label;
 
+    return Scaffold(
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: true,
-        iconTheme:  IconThemeData(color: AppColors.appTextColor,),
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: AppColors.appbarColor,
@@ -63,11 +54,10 @@ class _RecentlyViewState extends State<RecentlyView> {
         centerTitle: true,
         title: Obx(() {
           return Text(
-             'Recently Post',
-            style:  AppTextStyle.title(
+            appbartitle ?? '',
+            style: AppTextStyle.title(
               color: AppColors.appTextColor,
               fontWeight: FontWeight.bold,
-
             ),
           );
         }),
@@ -75,14 +65,25 @@ class _RecentlyViewState extends State<RecentlyView> {
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
-        child:    Padding(
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+        child: Padding(
           padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
-          child: CustomVerticalListviewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
+          child: CustomVerticalListviewList(
+            model: appPostController.getPostListResponseModel,
+            onFavoriteToggle: (index, newValue) {
+              // Update favorite in the model
+              final result =
+                  appPostController.getPostListResponseModel.value?.result;
+              if (result != null && index < result.length) {
+                if (result[index].info != null) {
+                  result[index].info!.favorite = newValue;
+                  appPostController.getPostListResponseModel.refresh();
+                }
+              }
+            },
+            isLoading: appPostController.isLoading,
+          ),
         ),
-
       ),
     );
   }

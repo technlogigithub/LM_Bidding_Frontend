@@ -9,11 +9,13 @@ import 'package:libdding/view/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api_config.dart';
 import '../../core/utils.dart';
+import '../../models/Post/Get_Post_List_Model.dart';
 import '../../models/home/banner_response_model.dart';
 import '../../models/home/category_response_model.dart';
 import '../../models/static models/service_items_model.dart';
 import '../../widget/form_widgets/location_picker.dart';
 import '../../service/razorpay_service.dart';
+import '../post/app_post_controller.dart';
 
 class ClientHomeController extends GetxController {
   static ClientHomeController get to => Get.find();
@@ -33,6 +35,7 @@ class ClientHomeController extends GetxController {
 
   var services = <ServiceItem>[].obs;
   var recentViewedList = <ServiceItem>[].obs;
+  late final AppPostController appPostController;
 
   // Razorpay service
   final RazorpayService razorpayService = RazorpayService();
@@ -104,6 +107,11 @@ class ClientHomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // Initialize AppPostController if not already initialized
+    if (!Get.isRegistered<AppPostController>()) {
+      Get.put(AppPostController());
+    }
+    appPostController = Get.find<AppPostController>();
     razorpayService.initRazorpay();
     print(" hello");
     services.assignAll(
@@ -264,8 +272,11 @@ class ClientHomeController extends GetxController {
   Future<void> initializeData() async {
     print("Initializing home data...");
     isLoading.value = true;
+
       fetchCategory();
       fetchBanner();
+      appPostController.
+
     isLoading.value = false; // Stop loading
   }
 
@@ -419,6 +430,10 @@ class ClientHomeController extends GetxController {
     razorpayService.dispose();
     super.onClose();
   }
+
+
+  Rx<GetPostListResponseModel?> getPostListResponseModel =
+  Rx<GetPostListResponseModel?>(null);
 
 }
 

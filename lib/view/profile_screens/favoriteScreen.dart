@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
 import '../../controller/home/home_controller.dart';
+import '../../controller/post/app_post_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/custom_vertical_listview_list.dart';
@@ -15,6 +16,7 @@ class Favoritescreen extends StatefulWidget {
 
 class _FavoritescreenState extends State<Favoritescreen> {
   final ClientHomeController controller = Get.put(ClientHomeController());
+  final AppPostController appPostController = Get.find<AppPostController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +55,21 @@ class _FavoritescreenState extends State<Favoritescreen> {
         ),
         child:    Padding(
           padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
-          child: CustomVerticalListviewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
+          child: CustomVerticalListviewList(
+            model: appPostController.getPostListResponseModel,
+            onFavoriteToggle: (index, newValue) {
+              // Update favorite in the model
+              final result =
+                  appPostController.getPostListResponseModel.value?.result;
+              if (result != null && index < result.length) {
+                if (result[index].info != null) {
+                  result[index].info!.favorite = newValue;
+                  appPostController.getPostListResponseModel.refresh();
+                }
+              }
+            },
+            isLoading: appPostController.isLoading,
+          )
         ),
 
       ),
