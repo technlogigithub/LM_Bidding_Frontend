@@ -1,18 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:libdding/core/app_textstyle.dart';
-import 'package:libdding/widget/form_widgets/app_textfield.dart';
-import 'package:nb_utils/nb_utils.dart';
 
-import '../controller/app_main/App_main_controller.dart';
-import '../controller/home/search_controller.dart';
-import '../controller/post/My_Post_controller.dart';
 import '../core/app_color.dart';
-import '../models/App_moduls/AppResponseModel.dart';
-import '../view/profile_screens/My Posts/Post_Details_screen.dart';
-import 'my_post_list_custom.dart';
-
 
 class CustomSearchDelegate extends SearchDelegate {
   List<String> searchItems = [
@@ -23,6 +12,73 @@ class CustomSearchDelegate extends SearchDelegate {
   ];
 
   @override
+  bool get showBottomDivider => false; // 🔥 black line gone
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final theme = Theme.of(context);
+    // Get first color from gradient as backgroundColor
+    final gradient = AppColors.appbarColor;
+    final backgroundColor = gradient.colors.isNotEmpty
+        ? gradient.colors.first
+        : Colors.transparent;
+
+    return theme.copyWith(
+      appBarTheme: AppBarTheme(
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
+        titleTextStyle: AppTextStyle.title(
+          color: AppColors.appTextColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: TextStyle(color: AppColors.appTextColor),
+        labelStyle: TextStyle(color: AppColors.appTextColor),
+        // Explicitly remove underline decoration using transparent UnderlineInputBorder
+        border: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent, width: 0),
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent, width: 0),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent, width: 0),
+        ),
+        disabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent, width: 0),
+        ),
+        errorBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent, width: 0),
+        ),
+        focusedErrorBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent, width: 0),
+        ),
+        isDense: true,
+        isCollapsed: true,
+        contentPadding: EdgeInsets.zero,
+        filled: false,
+        fillColor: Colors.transparent,
+        constraints: BoxConstraints(),
+      ),
+      // Override Material Design default underline
+      dividerTheme: DividerThemeData(
+        color: Colors.transparent,
+        thickness: 0,
+        space: 0,
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.appTextColor,
+        selectionColor: AppColors.appTextColor.withOpacity(0.3),
+      ),
+      textTheme: theme.textTheme.copyWith(
+        titleLarge: AppTextStyle.title(color: AppColors.appTextColor),
+      ),
+    );
+  }
+
+  @override
   List<Widget>? buildActions(BuildContext context) {
     return [
       Padding(
@@ -31,7 +87,7 @@ class CustomSearchDelegate extends SearchDelegate {
           onPressed: () {
             query = '';
           },
-          icon:  Icon(Icons.clear, color: AppColors.appIconColor),
+          icon: Icon(Icons.clear, color: AppColors.appTextColor),
         ),
       ),
     ];
@@ -42,10 +98,9 @@ class CustomSearchDelegate extends SearchDelegate {
     return IconButton(
       color: AppColors.appTextColor,
       onPressed: () => close(context, null),
-      icon: Icon(Icons.arrow_back, color: AppColors.appIconColor),
+      icon: Icon(Icons.arrow_back, color: AppColors.appTextColor),
     );
   }
-
 
   @override
   Widget buildResults(BuildContext context) {
@@ -54,9 +109,7 @@ class CustomSearchDelegate extends SearchDelegate {
         .toList();
 
     return Container(
-      decoration: BoxDecoration(
-        gradient:AppColors.appPagecolor
-      ),
+      decoration: BoxDecoration(gradient: AppColors.appPagecolor),
       child: ListView.builder(
         itemCount: matchQuery.length,
         itemBuilder: (_, i) {
@@ -73,7 +126,6 @@ class CustomSearchDelegate extends SearchDelegate {
     );
   }
 
-
   @override
   Widget buildSuggestions(BuildContext context) {
     List<String> matchQuery = searchItems
@@ -81,9 +133,7 @@ class CustomSearchDelegate extends SearchDelegate {
         .toList();
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: AppColors.appPagecolor
-      ),
+      decoration: BoxDecoration(gradient: AppColors.appPagecolor),
       child: ListView.builder(
         padding: const EdgeInsets.all(10),
         itemCount: matchQuery.length,
@@ -95,7 +145,8 @@ class CustomSearchDelegate extends SearchDelegate {
                 child: Text(
                   matchQuery[i],
                   style: AppTextStyle.description(
-                      color: AppColors.appDescriptionColor),
+                    color: AppColors.appDescriptionColor,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -106,7 +157,6 @@ class CustomSearchDelegate extends SearchDelegate {
       ),
     );
   }
-
 }
 
 

@@ -8,8 +8,8 @@ import '../../../controller/post/My_Post_controller.dart';
 import '../../../core/app_color.dart';
 import '../../../core/app_textstyle.dart';
 import '../../../models/App_moduls/AppResponseModel.dart';
-import '../../../widget/my_post_list_custom.dart';
 import '../../../widget/custom_tapbar.dart';
+import '../../../widget/post_view_widget.dart';
 import 'Post_Details_screen.dart';
 
 class MyPostScreen extends StatelessWidget {
@@ -136,16 +136,23 @@ class MyPostScreen extends StatelessWidget {
                   return const SizedBox.shrink();
                 }),
                 SizedBox(height: screenHeight * 0.010),
-                Obx(
-                  () => MypostListCustomWidget(
-                    model: controller.appPostController.getPostListResponseModel,
+                Obx(() {
+                  var myPostModel = appSettingcontroller.myPostModel.value;
+                  final viewType = myPostModel?.viewtype ?? '';
+                  print(" View type is $viewType");
+                  return PostViewWidget(
+                    type: viewType,
+                    controller: controller.appPostController,
                     statusValue: controller.selectedStatusValue.value,
-                    isLoading: controller.appPostController.isLoading,
                     onItemTap: () {
                       const PostDetailsScreen().launch(context);
                     },
-                  ),
-                ),
+                    // Optional callbacks for other view types
+                    onFavoriteToggle: (index, isFavorite) {
+                      // Handle favorite toggle if needed
+                    },
+                  );
+                }),
               ],
             ),
           ),

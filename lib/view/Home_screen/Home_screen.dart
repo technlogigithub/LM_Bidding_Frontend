@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_images.dart';
@@ -14,9 +15,8 @@ import '../../controller/home/home_controller.dart';
 import '../../controller/post/app_post_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
-import '../../core/app_constant.dart';
-import '../../models/static models/service_items_model.dart';
-import '../../widget/appSearchDelegate.dart';
+import '../../models/home/banner_response_model.dart';
+import 'search_screen.dart';
 import '../../widget/custom_banner.dart';
 import '../../widget/custom_category_horizontal_list.dart';
 import '../../widget/custom_horizontal_gridview_list.dart';
@@ -41,6 +41,7 @@ class ClientHomeScreen extends StatelessWidget {
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
     final AppPostController appPostController = Get.find<AppPostController>();
+    appPostController.getPostList();
 
     final profilecontroller = Get.put(ProfileController());
 
@@ -72,12 +73,30 @@ class ClientHomeScreen extends StatelessWidget {
             leading: Icon(FeatherIcons.search, color: AppColors.appTextColor,size: 18,),
             title: Text(' Search...', style: AppTextStyle.description(color: AppColors.appTextColor)),
             onTap: () {
-              // Get.to(CustomSearchDelegate());
-              showSearch(context: context, delegate: CustomSearchDelegate());
+              Get.to(() =>  SearchScreen());
             },
           ),
         ),
       );
+    }
+    List<Map<String, dynamic>> buildMediaItems(List<BannerResult> banners) {
+      return banners.map((banner) {
+        // 🎥 Video priority
+        if (banner.video != null && banner.video!.isNotEmpty) {
+          return {
+            'type': 'video',
+            'url': banner.video!,
+            'redirectUrl': banner.redirectUrl,
+          };
+        }
+
+        // 🖼 Image fallback
+        return {
+          'type': 'image',
+          'url': banner.image ?? '',
+          'redirectUrl': banner.redirectUrl,
+        };
+      }).toList();
     }
 
     final screenHeight = MediaQuery.of(context).size.height;
@@ -312,14 +331,34 @@ class ClientHomeScreen extends StatelessWidget {
                 children: [
 
 
-                  Obx(
-                    () => CustomBanner(
-                      banners: controller.bannerList.map((banner) => {'image': banner.image ?? '', 'redirectUrl': banner.redirectUrl ?? ''}).toList(),
-                      isLoading: controller.isLoading,
-                      width: screenWidth,
-                    ),
-                  ),
-                  CustomBannerWithVideo(mediaItems: controller.staticMediaItems),
+                  Obx(() {
+                    final banners = controller.bannerList;
+
+                    final mediaItems = buildMediaItems(banners);
+
+                    return Column(
+                      children: [
+                        /// IMAGE ONLY BANNER
+                        CustomBanner(
+                          banners: banners
+                              .map((banner) => {
+                            'image': banner.image ?? '',
+                            'redirectUrl': banner.redirectUrl ?? '',
+                          })
+                              .toList(),
+                          isLoading: controller.isLoading,
+                          width: screenWidth,
+                        ),
+                         SizedBox(height: 10.h),
+                        /// IMAGE + VIDEO BANNER (same API data)
+                        if (mediaItems.isNotEmpty)
+                          CustomBannerWithVideo(
+                            mediaItems: mediaItems,
+                          ),
+                      ],
+                    );
+                  }),
+
                   const SizedBox(height: 25.0),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
@@ -369,7 +408,21 @@ class ClientHomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  CustomHorizontalListViewList(items: controller.services, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
+                  CustomHorizontalListViewList(
+                    model: appPostController.getPostListResponseModel,
+                    onFavoriteToggle: (index, newValue) {
+                      // Update favorite in the model
+                      final result =
+                          appPostController.getPostListResponseModel.value?.result;
+                      if (result != null && index < result.length) {
+                        if (result[index].info != null) {
+                          result[index].info!.favorite = newValue;
+                          appPostController.getPostListResponseModel.refresh();
+                        }
+                      }
+                    },
+                    isLoading: appPostController.isLoading,
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                     child: Row(
@@ -389,78 +442,22 @@ class ClientHomeScreen extends StatelessWidget {
                     ),
                   ),
                   CustomHorizontalGridViewList(
-                    items: [
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                    ],
-                    isLoading: controller.isLoading,
+                    model: appPostController.getPostListResponseModel,
+                    isLoading: appPostController.isLoading,
                     onItemTap: () => controller.handleRestrictedFeature(() {
                       // Navigation logic
                     }),
+                    onFavoriteToggle: (index, newValue) {
+                      // Update favorite in the model
+                      final result =
+                          appPostController.getPostListResponseModel.value?.result;
+                      if (result != null && index < result.length) {
+                        if (result[index].info != null) {
+                          result[index].info!.favorite = newValue;
+                          appPostController.getPostListResponseModel.refresh();
+                        }
+                      }
+                    },
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
@@ -480,7 +477,21 @@ class ClientHomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  CustomHorizontalListViewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
+                  CustomHorizontalListViewList(
+                    model: appPostController.getPostListResponseModel,
+                    onFavoriteToggle: (index, newValue) {
+                      // Update favorite in the model
+                      final result =
+                          appPostController.getPostListResponseModel.value?.result;
+                      if (result != null && index < result.length) {
+                        if (result[index].info != null) {
+                          result[index].info!.favorite = newValue;
+                          appPostController.getPostListResponseModel.refresh();
+                        }
+                      }
+                    },
+                    isLoading: appPostController.isLoading,
+                  ),
                   SizedBox(height: screenHeight * 0.03),
                   CustomTabBar(
                     // height: 50,
@@ -496,7 +507,24 @@ class ClientHomeScreen extends StatelessWidget {
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
-                    child: CustomVerticalGridviewList(services: controller.services),
+                    child: CustomVerticalGridviewList(
+                      model: appPostController.getPostListResponseModel,
+                      isLoading: appPostController.isLoading,
+                      onItemTap: () {
+                        // Navigation logic
+                      },
+                      onFavoriteToggle: (index, newValue) {
+                        // Update favorite in the model
+                        final result =
+                            appPostController.getPostListResponseModel.value?.result;
+                        if (result != null && index < result.length) {
+                          if (result[index].info != null) {
+                            result[index].info!.favorite = newValue;
+                            appPostController.getPostListResponseModel.refresh();
+                          }
+                        }
+                      },
+                    ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(

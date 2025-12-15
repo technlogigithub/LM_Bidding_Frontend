@@ -284,8 +284,8 @@ class PostDetailCard extends StatelessWidget {
 
   Widget _buildShimmer() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: AppColors.simmerColor,
+      highlightColor: AppColors.appWhite,
       child: Container(
         padding: const EdgeInsets.all(10.0),
         width: double.infinity,
@@ -370,6 +370,6 @@ class PostDetailCard extends StatelessWidget {
   }
 
   Widget _shimmerBox(double width, double height) {
-    return Container(width: width, height: height, color: Colors.grey[300]);
+    return Container(width: width, height: height, color: AppColors.simmerColor);
   }
 }

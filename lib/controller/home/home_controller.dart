@@ -4,6 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_constant.dart';
 import 'package:libdding/view/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -290,6 +291,18 @@ class ClientHomeController extends GetxController {
       isLoading.value = true; // Set loading to true
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
+      final appcontroller=AppSettingsController();
+      final homePage = appcontroller.homePage.value;
+      final design = homePage?.design?.customSections?.values;
+      final endpoint = homePage
+          ?.design
+          ?.customSections?['custom_horizontal_listview_list']
+          ?.apiEndpoint;
+
+      print(endpoint);
+
+      print('Home side Token : $token');
+
 
       final headers = token != null
           ? {

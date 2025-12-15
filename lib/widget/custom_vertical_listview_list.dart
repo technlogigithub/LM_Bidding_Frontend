@@ -96,8 +96,8 @@ class CustomVerticalListviewList extends StatelessWidget {
         itemCount: 3, // Number of shimmer placeholders
         separatorBuilder: (_, __) => const SizedBox(width: 10.0),
         itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: AppColors.simmerColor,
+          highlightColor: AppColors.appWhite,
           child: _buildShimmerItemCard(),
         ),
       ),
@@ -337,17 +337,17 @@ class CustomVerticalListviewList extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: imageUrl,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: Colors.grey[300],
-                child: Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.appColor,
-                  ),
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: AppColors.simmerColor,
+                highlightColor: AppColors.appWhite,
+                child: Container(
+                  height: isFromCart ? 120.h : 140.h,
+                  width: 120.w,
+                  color: AppColors.simmerColor,
                 ),
               ),
               errorWidget: (context, url, error) => Container(
-                color: Colors.grey[300],
+                color: AppColors.simmerColor,
                 child: Icon(
                   Icons.image_not_supported,
                   color: Colors.grey[600],
@@ -356,7 +356,7 @@ class CustomVerticalListviewList extends StatelessWidget {
             ),
           )
               : Container(
-            color: Colors.grey[300],
+            color: AppColors.simmerColor,
             child: Icon(
               Icons.image_not_supported,
               color: Colors.grey[600],

@@ -692,8 +692,8 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
         children: [
           // Page Description Shimmer
           Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
             child: Container(
               height: 20,
               width: double.infinity,
@@ -706,8 +706,8 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
           const SizedBox(height: 20),
           // Progress Bar Shimmer
           Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
             child: Container(
               height: 8,
               width: double.infinity,
@@ -720,8 +720,8 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
           const SizedBox(height: 12),
           // Step Title Shimmer
           Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
             child: Container(
               height: 24,
               width: 200,
@@ -742,8 +742,8 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
                 children: [
                   // Label Shimmer
                   Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                    baseColor: AppColors.simmerColor,
+                    highlightColor: AppColors.appWhite,
                     child: Container(
                       height: 16,
                       width: 120,
@@ -756,8 +756,8 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
                   const SizedBox(height: 8),
                   // Input Field Shimmer
                   Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                    baseColor: AppColors.simmerColor,
+                    highlightColor: AppColors.appWhite,
                     child: Container(
                       height: 50,
                       width: double.infinity,
@@ -774,8 +774,8 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
           const SizedBox(height: 30),
           // Button Shimmer
           Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: AppColors.simmerColor,
+            highlightColor: AppColors.appWhite,
             child: Container(
               height: 50,
               width: double.infinity,

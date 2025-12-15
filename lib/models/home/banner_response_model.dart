@@ -37,6 +37,7 @@ class BannerResult {
   String? title;
   String? image;
   String? redirectUrl;
+  String? video ;
   int? status;
   dynamic createdAt;
   dynamic updatedAt;
@@ -47,6 +48,7 @@ class BannerResult {
     this.title,
     this.image,
     this.redirectUrl,
+    this.video,
     this.status,
     this.createdAt,
     this.updatedAt,
@@ -57,7 +59,8 @@ class BannerResult {
     ukey = json['ukey'];
     title = json['title'];
     image = json['image'];
-    redirectUrl = json['redirect_url'];
+    redirectUrl = json['redirect_url']; // ✅ correct
+    video = json['video'];               // ✅ correct
     status = json['status'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
@@ -70,6 +73,7 @@ class BannerResult {
     data['title'] = title;
     data['image'] = image;
     data['redirect_url'] = redirectUrl;
+    data['video'] = video;
     data['status'] = status;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;

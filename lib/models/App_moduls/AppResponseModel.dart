@@ -4,15 +4,20 @@ class AppModelResponse {
   String? message;
   Result? result;
 
-  AppModelResponse(
-      {this.responseCode, this.success, this.message, this.result});
+  AppModelResponse({
+    this.responseCode,
+    this.success,
+    this.message,
+    this.result,
+  });
 
   AppModelResponse.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
     success = json['success'];
     message = json['message'];
-    result =
-    json['result'] != null ? new Result.fromJson(json['result']) : null;
+    result = json['result'] != null
+        ? new Result.fromJson(json['result'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -41,19 +46,20 @@ class Result {
   AppMenu? appMenu;
   List<Language>? languages;
 
-  Result(
-      {this.mobileApp,
-        this.forceUpdatePage,
-        this.lightTheme,
-        this.darkTheme,
-        this.fontStyle,
-        this.general,
-        this.socialLogin,
-        this.seo,
-        this.introSlider,
-        this.languagePage,
-        this.appMenu,
-        this.languages});
+  Result({
+    this.mobileApp,
+    this.forceUpdatePage,
+    this.lightTheme,
+    this.darkTheme,
+    this.fontStyle,
+    this.general,
+    this.socialLogin,
+    this.seo,
+    this.introSlider,
+    this.languagePage,
+    this.appMenu,
+    this.languages,
+  });
 
   Result.fromJson(Map<String, dynamic> json) {
     mobileApp = json['mobile_app'] != null
@@ -71,8 +77,9 @@ class Result {
     fontStyle = json['font_style'] != null
         ? AppFontStyle.fromJson(json['font_style'])
         : null;
-    general =
-    json['general'] != null ? new General.fromJson(json['general']) : null;
+    general = json['general'] != null
+        ? new General.fromJson(json['general'])
+        : null;
     socialLogin = json['social_login'] != null
         ? new SocialLogin.fromJson(json['social_login'])
         : null;
@@ -145,11 +152,12 @@ class MobileApp {
   String? playstoreUrl;
   String? appstoreUrl;
 
-  MobileApp(
-      {this.androidVersion,
-        this.iosVersion,
-        this.playstoreUrl,
-        this.appstoreUrl});
+  MobileApp({
+    this.androidVersion,
+    this.iosVersion,
+    this.playstoreUrl,
+    this.appstoreUrl,
+  });
 
   MobileApp.fromJson(Map<String, dynamic> json) {
     androidVersion = json['android_version'];
@@ -183,21 +191,21 @@ class LightTheme {
   String? descriptionTextColor;
   String? bodyTextColor;
 
-  LightTheme(
-      {this.bgColorLtr,
-        this.bgColorTtb,
-        this.primaryColor,
-        this.primaryTextColor,
-        this.secondaryColor,
-        this.secondaryTextColor,
-        this.mutedColor,
-        this.mutedTextColor,
-        this.linkTextColor,
-        this.iconTexColor,
-        this.titleTextColor,
-        this.descriptionTextColor,
-        this.bodyTextColor
-      });
+  LightTheme({
+    this.bgColorLtr,
+    this.bgColorTtb,
+    this.primaryColor,
+    this.primaryTextColor,
+    this.secondaryColor,
+    this.secondaryTextColor,
+    this.mutedColor,
+    this.mutedTextColor,
+    this.linkTextColor,
+    this.iconTexColor,
+    this.titleTextColor,
+    this.descriptionTextColor,
+    this.bodyTextColor,
+  });
 
   LightTheme.fromJson(Map<String, dynamic> json) {
     bgColorLtr = json['bg_color_ltr'];
@@ -260,11 +268,11 @@ class AppFontStyle {
   }
 
   Map<String, dynamic> toJson() => {
-        'font_family': fontFamily,
-        'title': title?.toString(),
-        'description': description?.toString(),
-        'body': body?.toString(),
-      };
+    'font_family': fontFamily,
+    'title': title?.toString(),
+    'description': description?.toString(),
+    'body': body?.toString(),
+  };
 }
 
 class General {
@@ -285,25 +293,24 @@ class General {
   bool? loginRequired;
   bool? socialLogin;
 
-  General(
-      {
-        this.appName,
-        this.companyName,
-        this.logo,
-        this.favicon,
-        this.logoSplash,
-        this.logoName,
-        this.logoNameWhite,
-        this.logoWhite,
-        this.siteCopyright,
-        this.contactNumber,
-        this.whatsappNumber,
-        this.timezone,
-        this.orientation,
-        this.demoMode,
-        this.loginRequired,
-        this.socialLogin,
-      });
+  General({
+    this.appName,
+    this.companyName,
+    this.logo,
+    this.favicon,
+    this.logoSplash,
+    this.logoName,
+    this.logoNameWhite,
+    this.logoWhite,
+    this.siteCopyright,
+    this.contactNumber,
+    this.whatsappNumber,
+    this.timezone,
+    this.orientation,
+    this.demoMode,
+    this.loginRequired,
+    this.socialLogin,
+  });
 
   General.fromJson(Map<String, dynamic> json) {
     appName = json['app_name'];
@@ -360,8 +367,9 @@ class Seo {
     instagram = json['instagram'] != null
         ? new Instagram.fromJson(json['instagram'])
         : null;
-    twitter =
-    json['twitter'] != null ? new Twitter.fromJson(json['twitter']) : null;
+    twitter = json['twitter'] != null
+        ? new Twitter.fromJson(json['twitter'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -390,13 +398,14 @@ class Meta {
   String? description;
   String? keywords;
 
-  Meta(
-      {this.title,
-        this.author,
-        this.application,
-        this.copyright,
-        this.description,
-        this.keywords});
+  Meta({
+    this.title,
+    this.author,
+    this.application,
+    this.copyright,
+    this.description,
+    this.keywords,
+  });
 
   Meta.fromJson(Map<String, dynamic> json) {
     title = json['title'];
@@ -429,15 +438,16 @@ class Og {
   String? url;
   String? fbAppId;
 
-  Og(
-      {this.type,
-        this.image,
-        this.imageWidth,
-        this.imageHeight,
-        this.title,
-        this.description,
-        this.url,
-        this.fbAppId});
+  Og({
+    this.type,
+    this.image,
+    this.imageWidth,
+    this.imageHeight,
+    this.title,
+    this.description,
+    this.url,
+    this.fbAppId,
+  });
 
   Og.fromJson(Map<String, dynamic> json) {
     type = json['type'];
@@ -592,7 +602,6 @@ class LanguagePage {
   }
 }
 
-
 class ForceUpdatePage {
   String? pageTitle;
   String? pageDescription;
@@ -725,7 +734,6 @@ class AppMenu {
     if (support != null) 'support': support!.toJson(),
   };
 }
-
 
 class UserInfo {
   bool? dp;
@@ -864,9 +872,7 @@ class SupportDesign {
   SupportDesign({this.call, this.whatsapp, this.email, this.socialMedia});
 
   SupportDesign.fromJson(Map<String, dynamic> json) {
-    call = json['call'] != null
-        ? new ContactItem.fromJson(json['call'])
-        : null;
+    call = json['call'] != null ? new ContactItem.fromJson(json['call']) : null;
     whatsapp = json['whatsapp'] != null
         ? new ContactItem.fromJson(json['whatsapp'])
         : null;
@@ -1065,6 +1071,7 @@ class ReferralDesign {
     if (socialMedia != null) 'social_media': socialMedia!.toJson(),
   };
 }
+
 class SettingsMenuItem {
   bool? isActive;
   bool? loginRequired;
@@ -1124,6 +1131,7 @@ class MyPostModel {
   bool? loginRequired;
   String? label;
   String? apiEndpoint;
+  String? viewtype;
   String? pageType;
   String? pageName;
   String? pageImage;
@@ -1136,6 +1144,7 @@ class MyPostModel {
     this.loginRequired,
     this.label,
     this.apiEndpoint,
+    this.viewtype,
     this.pageType,
     this.pageName,
     this.pageImage,
@@ -1149,6 +1158,7 @@ class MyPostModel {
     loginRequired = json['login_required'];
     label = json['label'];
     apiEndpoint = json['api_endpoint'];
+    viewtype = json['view_type'];
     pageType = json['page_type'];
     pageName = json['page_name'];
     pageImage = json['page_image'];
@@ -1164,6 +1174,7 @@ class MyPostModel {
     'login_required': loginRequired,
     'label': label,
     'api_endpoint': apiEndpoint,
+    'view_type': viewtype,
     'page_type': pageType,
     'page_name': pageName,
     'page_image': pageImage,
@@ -1231,7 +1242,7 @@ class SettingsInput {
     name = json['name'];
     required = json['required'];
     apiEndpoint = json['api_endpoint'];
-    
+
     // Parse options (supports both string & object)
     if (json['options'] != null) {
       final list = json['options'] as List;
@@ -1285,11 +1296,6 @@ class SettingsLink {
   };
 }
 
-
-
-
-
-
 // New models for app_content endpoint minimal parsing
 class AppContentResponse {
   int? responseCode;
@@ -1297,24 +1303,30 @@ class AppContentResponse {
   String? message;
   AppContentResult? result;
 
-  AppContentResponse({this.responseCode, this.success, this.message, this.result});
+  AppContentResponse({
+    this.responseCode,
+    this.success,
+    this.message,
+    this.result,
+  });
 
   factory AppContentResponse.fromJson(Map<String, dynamic> json) {
     return AppContentResponse(
       responseCode: json['response_code'],
       success: json['success'],
       message: json['message'],
-      result: json['result'] != null ? AppContentResult.fromJson(json['result']) : null,
+      result: json['result'] != null
+          ? AppContentResult.fromJson(json['result'])
+          : null,
     );
   }
 
-
   Map<String, dynamic> toJson() => {
-        'response_code': responseCode,
-        'success': success,
-        'message': message,
-        if (result != null) 'result': result!.toJson(),
-      };
+    'response_code': responseCode,
+    'success': success,
+    'message': message,
+    if (result != null) 'result': result!.toJson(),
+  };
 }
 
 class AppContentResult {
@@ -1340,27 +1352,44 @@ class AppContentResult {
 
   factory AppContentResult.fromJson(Map<String, dynamic> json) {
     return AppContentResult(
-      introSliderPage: json['intro_slider'] != null ? IntroSliderPage.fromJson(json['intro_slider']) : null,
-      homePage: json['home_page'] != null ? HomePage.fromJson(json['home_page']) : null,
-      register: json['register'] != null ? RegisterPage.fromJson(json['register']) : null,
-      loginWithPassword: json['login_with_password'] != null ? LoginWithPasswordPage.fromJson(json['login_with_password']) : null,
-      loginWithOtp: json['login_with_otp'] != null ? LoginWithOtpPage.fromJson(json['login_with_otp']) : null,
-      verifyOtp: json['verify_otp'] != null ? VerifyOtpPage.fromJson(json['verify_otp']) : null,
-      profileForm: json['profile_form'] != null ? ProfileFormPage.fromJson(json['profile_form']) : null,
-      postForm: json['post_form'] != null ? ProfileFormPage.fromJson(json['post_form']) : null,
+      introSliderPage: json['intro_slider'] != null
+          ? IntroSliderPage.fromJson(json['intro_slider'])
+          : null,
+      homePage: json['home_page'] != null
+          ? HomePage.fromJson(json['home_page'])
+          : null,
+      register: json['register'] != null
+          ? RegisterPage.fromJson(json['register'])
+          : null,
+      loginWithPassword: json['login_with_password'] != null
+          ? LoginWithPasswordPage.fromJson(json['login_with_password'])
+          : null,
+      loginWithOtp: json['login_with_otp'] != null
+          ? LoginWithOtpPage.fromJson(json['login_with_otp'])
+          : null,
+      verifyOtp: json['verify_otp'] != null
+          ? VerifyOtpPage.fromJson(json['verify_otp'])
+          : null,
+      profileForm: json['profile_form'] != null
+          ? ProfileFormPage.fromJson(json['profile_form'])
+          : null,
+      postForm: json['post_form'] != null
+          ? ProfileFormPage.fromJson(json['post_form'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        if (introSliderPage != null) 'intro_slider': introSliderPage!.toJson(),
-        if (homePage != null) 'home_page': homePage!.toJson(),
-        if (register != null) 'register': register!.toJson(),
-        if (loginWithPassword != null) 'login_with_password': loginWithPassword!.toJson(),
-        if (loginWithOtp != null) 'login_with_otp': loginWithOtp!.toJson(),
-        if (verifyOtp != null) 'verify_otp': verifyOtp!.toJson(),
-        if (profileForm != null) 'profile_form': profileForm!.toJson(),
-        if (postForm != null) 'post_form': postForm!.toJson(),
-      };
+    if (introSliderPage != null) 'intro_slider': introSliderPage!.toJson(),
+    if (homePage != null) 'home_page': homePage!.toJson(),
+    if (register != null) 'register': register!.toJson(),
+    if (loginWithPassword != null)
+      'login_with_password': loginWithPassword!.toJson(),
+    if (loginWithOtp != null) 'login_with_otp': loginWithOtp!.toJson(),
+    if (verifyOtp != null) 'verify_otp': verifyOtp!.toJson(),
+    if (profileForm != null) 'profile_form': profileForm!.toJson(),
+    if (postForm != null) 'post_form': postForm!.toJson(),
+  };
 }
 
 class RegisterPage {
@@ -1373,7 +1402,16 @@ class RegisterPage {
   String? loginLabel;
   String? loginLink;
 
-  RegisterPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs, this.submitButtonLabel, this.loginLabel, this.loginLink});
+  RegisterPage({
+    this.pageName,
+    this.pageTitle,
+    this.pageDescription,
+    this.loginRequired,
+    this.inputs,
+    this.submitButtonLabel,
+    this.loginLabel,
+    this.loginLink,
+  });
 
   factory RegisterPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -1396,19 +1434,20 @@ class RegisterPage {
   }
 
   Map<String, dynamic> toJson() => {
-        'page_name': pageName,
-        'page_title': pageTitle,
-        'page_description': pageDescription,
-        'login_required': loginRequired,
-        if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
-        'submit_button_label': submitButtonLabel,
-        'login_label': loginLabel,
-        'login_link': loginLink,
-      };
+    'page_name': pageName,
+    'page_title': pageTitle,
+    'page_description': pageDescription,
+    'login_required': loginRequired,
+    if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
+    'submit_button_label': submitButtonLabel,
+    'login_label': loginLabel,
+    'login_link': loginLink,
+  };
 }
 
 class RegisterInput {
-  String? inputType; // select, text, textarea, checkbox, radio, toggle, file, files, number, date, datetime, daterange, datetimerange, group, address, dropdown, email, hidden, single, multiple
+  String?
+  inputType; // select, text, textarea, checkbox, radio, toggle, file, files, number, date, datetime, daterange, datetimerange, group, address, dropdown, email, hidden, single, multiple
   String? label;
   String? placeholder;
   String? name;
@@ -1514,7 +1553,6 @@ class RegisterInput {
   };
 }
 
-
 class OptionItem {
   String? label;
   String? value;
@@ -1528,16 +1566,15 @@ class OptionItem {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'label': label,
-        'value': value,
-      };
+  Map<String, dynamic> toJson() => {'label': label, 'value': value};
 }
 
 class InputValidation {
-  String? type; // numeric, exact_length, min_length, max_length, pattern, matches, password, file, max_size, min, in, allow_past, regex
+  String?
+  type; // numeric, exact_length, min_length, max_length, pattern, matches, password, file, max_size, min, in, allow_past, regex
   int? value; // for exact_length, min_length, max_length, max_size, min
-  String? stringValue; // Allow values for String type Data like "jpg, jpeg, png", or boolean values like "false" for allow_past
+  String?
+  stringValue; // Allow values for String type Data like "jpg, jpeg, png", or boolean values like "false" for allow_past
   String? pattern; // regex pattern
   String? field; // for matches
   String? errorMessage; // generic error
@@ -1602,10 +1639,14 @@ class InputValidation {
       errorMessage: json['error_message'],
       minLength: json['min_length'] is int
           ? json['min_length']
-          : (json['min_length'] is String ? int.tryParse(json['min_length']) : null),
+          : (json['min_length'] is String
+                ? int.tryParse(json['min_length'])
+                : null),
       maxLength: json['max_length'] is int
           ? json['max_length']
-          : (json['max_length'] is String ? int.tryParse(json['max_length']) : null),
+          : (json['max_length'] is String
+                ? int.tryParse(json['max_length'])
+                : null),
       minLengthError: json['min_length_error'],
       maxLengthError: json['max_length_error'],
       patternErrorMessage: json['pattern_error_message'],
@@ -1613,17 +1654,17 @@ class InputValidation {
   }
 
   Map<String, dynamic> toJson() => {
-        'type': type,
-        'value': value ?? stringValue,
-        'pattern': pattern,
-        'field': field,
-        'error_message': errorMessage,
-        'min_length': minLength,
-        'max_length': maxLength,
-        'min_length_error': minLengthError,
-        'max_length_error': maxLengthError,
-        'pattern_error_message': patternErrorMessage,
-      };
+    'type': type,
+    'value': value ?? stringValue,
+    'pattern': pattern,
+    'field': field,
+    'error_message': errorMessage,
+    'min_length': minLength,
+    'max_length': maxLength,
+    'min_length_error': minLengthError,
+    'max_length_error': maxLengthError,
+    'pattern_error_message': patternErrorMessage,
+  };
 }
 
 // New models for the updated API response structure
@@ -1635,7 +1676,13 @@ class IntroSliderPage {
   bool? loginRequired;
   List<IntroSlider>? introSlider;
 
-  IntroSliderPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.introSlider});
+  IntroSliderPage({
+    this.pageName,
+    this.pageTitle,
+    this.pageDescription,
+    this.loginRequired,
+    this.introSlider,
+  });
 
   factory IntroSliderPage.fromJson(Map<String, dynamic> json) {
     List<IntroSlider>? sliders;
@@ -1655,12 +1702,13 @@ class IntroSliderPage {
   }
 
   Map<String, dynamic> toJson() => {
-        'page_name': pageName,
-        'page_title': pageTitle,
-        'page_description': pageDescription,
-        'login_required': loginRequired,
-        if (introSlider != null) 'intro_slider': introSlider!.map((e) => e.toJson()).toList(),
-      };
+    'page_name': pageName,
+    'page_title': pageTitle,
+    'page_description': pageDescription,
+    'login_required': loginRequired,
+    if (introSlider != null)
+      'intro_slider': introSlider!.map((e) => e.toJson()).toList(),
+  };
 }
 
 class HomePage {
@@ -1670,7 +1718,13 @@ class HomePage {
   bool? loginRequired;
   HomePageDesign? design;
 
-  HomePage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.design});
+  HomePage({
+    this.pageName,
+    this.pageTitle,
+    this.pageDescription,
+    this.loginRequired,
+    this.design,
+  });
 
   factory HomePage.fromJson(Map<String, dynamic> json) {
     return HomePage(
@@ -1678,17 +1732,19 @@ class HomePage {
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
       loginRequired: json['login_required'],
-      design: json['design'] != null ? HomePageDesign.fromJson(json['design']) : null,
+      design: json['design'] != null
+          ? HomePageDesign.fromJson(json['design'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'page_name': pageName,
-        'page_title': pageTitle,
-        'page_description': pageDescription,
-        'login_required': loginRequired,
-        if (design != null) 'design': design!.toJson(),
-      };
+    'page_name': pageName,
+    'page_title': pageTitle,
+    'page_description': pageDescription,
+    'login_required': loginRequired,
+    if (design != null) 'design': design!.toJson(),
+  };
 }
 
 class HomePageDesign {
@@ -1699,31 +1755,29 @@ class HomePageDesign {
   // Custom sections - stored as dynamic map to handle various custom sections
   Map<String, dynamic>? customSections;
 
-  HomePageDesign({
-    this.headerMenu,
-    this.searchBar,
-    this.customSections,
-  });
+  HomePageDesign({this.headerMenu, this.searchBar, this.customSections});
 
   factory HomePageDesign.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic> customSectionsMap = {};
-    
+
     // Parse header_menu section
     HeaderMenuSection? headerMenuSection;
     if (json['header_menu'] != null) {
       headerMenuSection = HeaderMenuSection.fromJson(json['header_menu']);
     }
-    
+
     // Parse search_bar section
     SearchBarSection? searchBarSection;
     if (json['search_bar'] != null) {
       searchBarSection = SearchBarSection.fromJson(json['search_bar']);
     }
-    
+
     // Parse all custom sections (custom_category_horizontal_list, custom_banner, etc.)
     json.forEach((key, value) {
       if (key != 'header_menu' && key != 'search_bar' && value is Map) {
-        customSectionsMap[key] = CustomSection.fromJson(Map<String, dynamic>.from(value));
+        customSectionsMap[key] = CustomSection.fromJson(
+          Map<String, dynamic>.from(value),
+        );
       }
     });
 
@@ -1736,15 +1790,15 @@ class HomePageDesign {
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> result = {};
-    
+
     if (headerMenu != null) {
       result['header_menu'] = headerMenu!.toJson();
     }
-    
+
     if (searchBar != null) {
       result['search_bar'] = searchBar!.toJson();
     }
-    
+
     if (customSections != null) {
       customSections!.forEach((key, value) {
         if (value is CustomSection) {
@@ -1754,7 +1808,7 @@ class HomePageDesign {
         }
       });
     }
-    
+
     return result;
   }
 }
@@ -1793,12 +1847,13 @@ class HeaderMenuSection {
   }
 
   Map<String, dynamic> toJson() => {
-        'bg_color': bgColor,
-        'bg_img': bgImg,
-        'user_info': userInfo,
-        'current_location': currentLocation,
-        if (headerMenu != null) 'header_menu': headerMenu!.map((e) => e.toJson()).toList(),
-      };
+    'bg_color': bgColor,
+    'bg_img': bgImg,
+    'user_info': userInfo,
+    'current_location': currentLocation,
+    if (headerMenu != null)
+      'header_menu': headerMenu!.map((e) => e.toJson()).toList(),
+  };
 }
 
 class SearchBarSection {
@@ -1808,39 +1863,80 @@ class SearchBarSection {
   SearchBarSection({this.bgColor, this.bgImg});
 
   factory SearchBarSection.fromJson(Map<String, dynamic> json) {
-    return SearchBarSection(
-      bgColor: json['bg_color'],
-      bgImg: json['bg_img'],
-    );
+    return SearchBarSection(bgColor: json['bg_color'], bgImg: json['bg_img']);
   }
 
-  Map<String, dynamic> toJson() => {
-        'bg_color': bgColor,
-        'bg_img': bgImg,
-      };
+  Map<String, dynamic> toJson() => {'bg_color': bgColor, 'bg_img': bgImg};
 }
-
 class CustomSection {
   String? bgColor;
   String? bgImg;
+  String? sectionHeading;
   String? apiEndpoint;
+  String? viewType;
+  List<CustomOption>? options;
 
-  CustomSection({this.bgColor, this.bgImg, this.apiEndpoint});
+  CustomSection({
+    this.bgColor,
+    this.bgImg,
+    this.sectionHeading,
+    this.apiEndpoint,
+    this.viewType,
+    this.options,
+  });
 
   factory CustomSection.fromJson(Map<String, dynamic> json) {
     return CustomSection(
       bgColor: json['bg_color'],
       bgImg: json['bg_img'],
+      sectionHeading: json['section_heading'],
       apiEndpoint: json['api_endpoint'],
+      viewType: json['view_type'],
+      options: (json['options'] as List?)
+          ?.map((e) => CustomOption.fromJson(e))
+          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'bg_color': bgColor,
-        'bg_img': bgImg,
-        'api_endpoint': apiEndpoint,
-      };
+    'bg_color': bgColor,
+    'bg_img': bgImg,
+    'section_heading': sectionHeading,
+    'api_endpoint': apiEndpoint,
+    'view_type': viewType,
+    'options': options?.map((e) => e.toJson()).toList(),
+  };
 }
+class CustomOption {
+  String? label;
+  String? value;
+  String? apiEndpoint;
+  String? viewType;
+
+  CustomOption({
+    this.label,
+    this.value,
+    this.apiEndpoint,
+    this.viewType,
+  });
+
+  factory CustomOption.fromJson(Map<String, dynamic> json) {
+    return CustomOption(
+      label: json['label'],
+      value: json['value'],
+      apiEndpoint: json['api_endpoint'],
+      viewType: json['view_type'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'label': label,
+    'value': value,
+    'api_endpoint': apiEndpoint,
+    'view_type': viewType,
+  };
+}
+
 
 class HeaderMenu {
   String? icon;
@@ -1874,14 +1970,14 @@ class HeaderMenu {
   }
 
   Map<String, dynamic> toJson() => {
-        'icon': icon,
-        'label': label,
-        'description': description,
-        'redirect_to': redirectTo,
-        'api_endpoint': apiEndpoint,
-        'view_type': viewType,
-        'login_required': loginRequired,
-      };
+    'icon': icon,
+    'label': label,
+    'description': description,
+    'redirect_to': redirectTo,
+    'api_endpoint': apiEndpoint,
+    'view_type': viewType,
+    'login_required': loginRequired,
+  };
 }
 
 class BannerItem {
@@ -1902,11 +1998,11 @@ class BannerItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'image': image,
-        'title': title,
-        'description': description,
-        'redirect_to': redirectTo,
-      };
+    'image': image,
+    'title': title,
+    'description': description,
+    'redirect_to': redirectTo,
+  };
 }
 
 class ButtonItem {
@@ -1925,10 +2021,10 @@ class ButtonItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'label': label,
-        'redirect_to': redirectTo,
-        'view_type': viewType,
-      };
+    'label': label,
+    'redirect_to': redirectTo,
+    'view_type': viewType,
+  };
 }
 
 class ListViewScrollItem {
@@ -1947,10 +2043,10 @@ class ListViewScrollItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'label': label,
-        'redirect_to': redirectTo,
-        'view_type': viewType,
-      };
+    'label': label,
+    'redirect_to': redirectTo,
+    'view_type': viewType,
+  };
 }
 
 class GridViewScrollItem {
@@ -1969,10 +2065,10 @@ class GridViewScrollItem {
   }
 
   Map<String, dynamic> toJson() => {
-        'label': label,
-        'redirect_to': redirectTo,
-        'view_type': viewType,
-      };
+    'label': label,
+    'redirect_to': redirectTo,
+    'view_type': viewType,
+  };
 }
 
 class LoginWithPasswordPage {
@@ -1982,7 +2078,13 @@ class LoginWithPasswordPage {
   bool? loginRequired;
   List<RegisterInput>? inputs;
 
-  LoginWithPasswordPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
+  LoginWithPasswordPage({
+    this.pageName,
+    this.pageTitle,
+    this.pageDescription,
+    this.loginRequired,
+    this.inputs,
+  });
 
   factory LoginWithPasswordPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -2002,12 +2104,12 @@ class LoginWithPasswordPage {
   }
 
   Map<String, dynamic> toJson() => {
-        'page_name': pageName,
-        'page_title': pageTitle,
-        'page_description': pageDescription,
-        'login_required': loginRequired,
-        if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
-      };
+    'page_name': pageName,
+    'page_title': pageTitle,
+    'page_description': pageDescription,
+    'login_required': loginRequired,
+    if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
+  };
 }
 
 class LoginWithOtpPage {
@@ -2017,7 +2119,13 @@ class LoginWithOtpPage {
   bool? loginRequired;
   List<RegisterInput>? inputs;
 
-  LoginWithOtpPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
+  LoginWithOtpPage({
+    this.pageName,
+    this.pageTitle,
+    this.pageDescription,
+    this.loginRequired,
+    this.inputs,
+  });
 
   factory LoginWithOtpPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -2037,12 +2145,12 @@ class LoginWithOtpPage {
   }
 
   Map<String, dynamic> toJson() => {
-        'page_name': pageName,
-        'page_title': pageTitle,
-        'page_description': pageDescription,
-        'login_required': loginRequired,
-        if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
-      };
+    'page_name': pageName,
+    'page_title': pageTitle,
+    'page_description': pageDescription,
+    'login_required': loginRequired,
+    if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
+  };
 }
 
 class VerifyOtpPage {
@@ -2052,7 +2160,13 @@ class VerifyOtpPage {
   bool? loginRequired;
   List<RegisterInput>? inputs;
 
-  VerifyOtpPage({this.pageName, this.pageTitle, this.pageDescription, this.loginRequired, this.inputs});
+  VerifyOtpPage({
+    this.pageName,
+    this.pageTitle,
+    this.pageDescription,
+    this.loginRequired,
+    this.inputs,
+  });
 
   factory VerifyOtpPage.fromJson(Map<String, dynamic> json) {
     List<RegisterInput>? fields;
@@ -2072,12 +2186,12 @@ class VerifyOtpPage {
   }
 
   Map<String, dynamic> toJson() => {
-        'page_name': pageName,
-        'page_title': pageTitle,
-        'page_description': pageDescription,
-        'login_required': loginRequired,
-        if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
-      };
+    'page_name': pageName,
+    'page_title': pageTitle,
+    'page_description': pageDescription,
+    'login_required': loginRequired,
+    if (inputs != null) 'inputs': inputs!.map((e) => e.toJson()).toList(),
+  };
 }
 
 class ProfileFormPage {
@@ -2112,7 +2226,9 @@ class ProfileFormPage {
   factory ProfileFormPage.fromJson(Map<String, dynamic> json) {
     List<String>? stepTitlesList;
     if (json['step_titles'] != null) {
-      stepTitlesList = (json['step_titles'] as List).map((e) => e.toString()).toList();
+      stepTitlesList = (json['step_titles'] as List)
+          .map((e) => e.toString())
+          .toList();
     }
 
     List<ProfileFormButton>? buttonsList;
@@ -2123,7 +2239,7 @@ class ProfileFormPage {
     }
 
     return ProfileFormPage(
-      postKey: json['post_key'].toString() ,
+      postKey: json['post_key'].toString(),
       pageName: json['page_name'],
       pageTitle: json['page_title'],
       pageDescription: json['page_description'],
@@ -2153,12 +2269,10 @@ class ProfileFormPage {
     'total_steps': totalSteps,
     if (stepTitles != null) 'step_titles': stepTitles,
     if (apiEndpoints != null) 'api_endpoints': apiEndpoints!.toJson(),
-    if (buttons != null)
-      'buttons': buttons!.map((e) => e.toJson()).toList(),
+    if (buttons != null) 'buttons': buttons!.map((e) => e.toJson()).toList(),
     if (inputs != null) 'inputs': inputs!.toJson(),
   };
 }
-
 
 class ProfileFormApiEndpoints {
   String? submitForm;
@@ -2176,7 +2290,9 @@ class ProfileFormApiEndpoints {
 
     // Dynamically parse all step_X_api_endpoint keys
     json.forEach((key, value) {
-      if (key.startsWith('step_') && key.endsWith('_api_endpoint') && value is String) {
+      if (key.startsWith('step_') &&
+          key.endsWith('_api_endpoint') &&
+          value is String) {
         endpointsMap[key] = value;
       }
     });
@@ -2209,7 +2325,8 @@ class ProfileFormApiEndpoints {
 
   // Helper method to get API endpoint for a specific step
   String? getStepEndpoint(int stepIndex) {
-    String endpointKey = 'step_${stepIndex + 1}_api_endpoint'; // Convert 0-based index to 1-based key
+    String endpointKey =
+        'step_${stepIndex + 1}_api_endpoint'; // Convert 0-based index to 1-based key
     return stepEndpoints[endpointKey];
   }
 
@@ -2217,8 +2334,12 @@ class ProfileFormApiEndpoints {
   List<int> getAvailableStepEndpoints() {
     List<int> availableSteps = [];
     stepEndpoints.forEach((key, value) {
-      if (key.startsWith('step_') && key.endsWith('_api_endpoint') && value != null) {
-        String stepNumber = key.replaceFirst('step_', '').replaceFirst('_api_endpoint', '');
+      if (key.startsWith('step_') &&
+          key.endsWith('_api_endpoint') &&
+          value != null) {
+        String stepNumber = key
+            .replaceFirst('step_', '')
+            .replaceFirst('_api_endpoint', '');
         int stepIndex = int.tryParse(stepNumber) ?? 0;
         if (stepIndex > 0) {
           availableSteps.add(stepIndex - 1); // Convert to 0-based index
@@ -2259,13 +2380,13 @@ class ProfileFormButton {
   }
 
   Map<String, dynamic> toJson() => {
-        'label': label,
-        'action': action,
-        'style': style,
-        'visible_from_step': visibleFromStep,
-        'visible_until_step': visibleUntilStep,
-        'visible_on_step': visibleOnStep,
-      };
+    'label': label,
+    'action': action,
+    'style': style,
+    'visible_from_step': visibleFromStep,
+    'visible_until_step': visibleUntilStep,
+    'visible_on_step': visibleOnStep,
+  };
 }
 
 class ProfileFormInputs {
@@ -2302,7 +2423,8 @@ class ProfileFormInputs {
 
   // Helper method to get inputs for a specific step
   List<RegisterInput>? getStepInputs(int stepIndex) {
-    String stepKey = 'step_${stepIndex + 1}'; // Convert 0-based index to 1-based key
+    String stepKey =
+        'step_${stepIndex + 1}'; // Convert 0-based index to 1-based key
     return steps[stepKey];
   }
 
