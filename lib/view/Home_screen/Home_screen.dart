@@ -14,8 +14,6 @@ import '../../controller/home/home_controller.dart';
 import '../../controller/post/app_post_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
-import '../../core/app_constant.dart';
-import '../../models/static models/service_items_model.dart';
 import '../../widget/appSearchDelegate.dart';
 import '../../widget/custom_banner.dart';
 import '../../widget/custom_category_horizontal_list.dart';
@@ -41,6 +39,7 @@ class ClientHomeScreen extends StatelessWidget {
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
     final AppPostController appPostController = Get.find<AppPostController>();
+    appPostController.getPostList();
 
     final profilecontroller = Get.put(ProfileController());
 
@@ -369,7 +368,21 @@ class ClientHomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  CustomHorizontalListViewList(items: controller.services, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
+                  CustomHorizontalListViewList(
+                    model: appPostController.getPostListResponseModel,
+                    onFavoriteToggle: (index, newValue) {
+                      // Update favorite in the model
+                      final result =
+                          appPostController.getPostListResponseModel.value?.result;
+                      if (result != null && index < result.length) {
+                        if (result[index].info != null) {
+                          result[index].info!.favorite = newValue;
+                          appPostController.getPostListResponseModel.refresh();
+                        }
+                      }
+                    },
+                    isLoading: appPostController.isLoading,
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                     child: Row(
@@ -389,78 +402,22 @@ class ClientHomeScreen extends StatelessWidget {
                     ),
                   ),
                   CustomHorizontalGridViewList(
-                    items: [
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                      ServiceItem(
-                        imagePath: 'assets/images/dev1.png',
-                        title: 'Mobile UI/UX Design',
-                        rating: 5.0,
-                        reviewCount: 520,
-                        price: 30,
-                        profileImagePath: 'assets/images/profilepic2.png',
-                        sellerName: 'William Liam',
-                        sellerLevel: '2',
-                        isFavorite: false,
-                      ),
-                    ],
-                    isLoading: controller.isLoading,
+                    model: appPostController.getPostListResponseModel,
+                    isLoading: appPostController.isLoading,
                     onItemTap: () => controller.handleRestrictedFeature(() {
                       // Navigation logic
                     }),
+                    onFavoriteToggle: (index, newValue) {
+                      // Update favorite in the model
+                      final result =
+                          appPostController.getPostListResponseModel.value?.result;
+                      if (result != null && index < result.length) {
+                        if (result[index].info != null) {
+                          result[index].info!.favorite = newValue;
+                          appPostController.getPostListResponseModel.refresh();
+                        }
+                      }
+                    },
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0),
@@ -480,7 +437,21 @@ class ClientHomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  CustomHorizontalListViewList(items: controller.recentViewedList, onFavoriteToggle: controller.toggleFavorite, isLoading: controller.isLoading),
+                  CustomHorizontalListViewList(
+                    model: appPostController.getPostListResponseModel,
+                    onFavoriteToggle: (index, newValue) {
+                      // Update favorite in the model
+                      final result =
+                          appPostController.getPostListResponseModel.value?.result;
+                      if (result != null && index < result.length) {
+                        if (result[index].info != null) {
+                          result[index].info!.favorite = newValue;
+                          appPostController.getPostListResponseModel.refresh();
+                        }
+                      }
+                    },
+                    isLoading: appPostController.isLoading,
+                  ),
                   SizedBox(height: screenHeight * 0.03),
                   CustomTabBar(
                     // height: 50,
@@ -496,7 +467,24 @@ class ClientHomeScreen extends StatelessWidget {
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
                     padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
-                    child: CustomVerticalGridviewList(services: controller.services),
+                    child: CustomVerticalGridviewList(
+                      model: appPostController.getPostListResponseModel,
+                      isLoading: appPostController.isLoading,
+                      onItemTap: () {
+                        // Navigation logic
+                      },
+                      onFavoriteToggle: (index, newValue) {
+                        // Update favorite in the model
+                        final result =
+                            appPostController.getPostListResponseModel.value?.result;
+                        if (result != null && index < result.length) {
+                          if (result[index].info != null) {
+                            result[index].info!.favorite = newValue;
+                            appPostController.getPostListResponseModel.refresh();
+                          }
+                        }
+                      },
+                    ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(

@@ -46,8 +46,8 @@ class CustomCategoryHorizontalList extends StatelessWidget {
         padding: padding,
         itemCount: shimmerItemCount,
         itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: AppColors.simmerColor,
+          highlightColor: AppColors.appWhite,
           child: Padding(
             padding: itemPadding,
             child: Column(

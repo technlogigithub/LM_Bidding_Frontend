@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/app_images.dart';
+import '../core/app_color.dart';
 
 class CustomBanner extends StatelessWidget {
   final List<Map<String, String>> banners;
@@ -37,8 +38,8 @@ class CustomBanner extends StatelessWidget {
         padding: padding,
         itemCount: 3, // Default shimmer item count
         itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: AppColors.simmerColor,
+          highlightColor: AppColors.appWhite,
           child: Container(
             height: height.h,
             width: width.w, // Responsive width
