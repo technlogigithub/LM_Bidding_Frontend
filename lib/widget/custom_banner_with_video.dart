@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:video_player/video_player.dart';
@@ -9,6 +10,7 @@ import '../core/app_color.dart';
 
 class CustomBannerWithVideo extends StatefulWidget {
   final List<Map<String, dynamic>> mediaItems;
+  final RxBool? isLoading;
   final double height;
   final double width;
   final EdgeInsets padding;
@@ -19,6 +21,7 @@ class CustomBannerWithVideo extends StatefulWidget {
   const CustomBannerWithVideo({
     super.key,
     required this.mediaItems,
+    this.isLoading,
     this.height = 300.0,
     this.width = double.infinity,
     this.padding = const EdgeInsets.all(0),
@@ -75,8 +78,8 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
   // ************ SHIMMER WIDGET ************
   Widget _buildShimmer() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
+      baseColor: AppColors.simmerColor,
+      highlightColor: AppColors.appWhite,
       child: Container(
         height: widget.height.h,
         width: widget.width.w,
@@ -178,10 +181,25 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
 
   @override
   Widget build(BuildContext context) {
+    // Show shimmer if loading or if mediaItems is empty
+    if (widget.isLoading != null) {
+      return Obx(() {
+        if (widget.isLoading!.value || widget.mediaItems.isEmpty) {
+          return _buildShimmer();
+        }
+        return _buildBannerContent();
+      });
+    }
+
+    // If isLoading is not provided, show shimmer when mediaItems is empty
     if (widget.mediaItems.isEmpty) {
       return _buildShimmer();
     }
 
+    return _buildBannerContent();
+  }
+
+  Widget _buildBannerContent() {
     return Container(
       height: widget.height.h,
       width: widget.width.w,

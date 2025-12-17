@@ -1,4 +1,3 @@
-
 class CategoryModel {
   int? responseCode;
   String? response;
@@ -38,6 +37,7 @@ class CategoryResult {
   String? categoryDetail;
   String? image;
   String? title;
+  bool? hasSubcategories;
   int? status;
   dynamic createdAt;
   dynamic updatedAt;
@@ -49,6 +49,7 @@ class CategoryResult {
     this.categoryDetail,
     this.image,
     this.title,
+    this.hasSubcategories,
     this.status,
     this.createdAt,
     this.updatedAt,
@@ -61,6 +62,7 @@ class CategoryResult {
     categoryDetail = json['category_detail'];
     image = json['image'];
     title = json['title'];
+    hasSubcategories = json['has_subcategories'];
     status = json['status'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
@@ -74,20 +76,26 @@ class CategoryResult {
     data['category_detail'] = categoryDetail;
     data['image'] = image;
     data['title'] = title;
+    data['has_subcategories'] = hasSubcategories;
     data['status'] = status;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
     return data;
   }
 }
+
 class CategoryListModel {
   int? responseCode;
   bool? success;
   String? message;
   List<Result>? result;
 
-  CategoryListModel(
-      {this.responseCode, this.success, this.message, this.result});
+  CategoryListModel({
+    this.responseCode,
+    this.success,
+    this.message,
+    this.result,
+  });
 
   CategoryListModel.fromJson(Map<String, dynamic> json) {
     responseCode = json['response_code'];
@@ -122,14 +130,15 @@ class Result {
   String? image;
   bool? hasSubcategories;
 
-  Result(
-      {this.ukey,
-        this.parentUkey,
-        this.name,
-        this.title,
-        this.categoryDetail,
-        this.image,
-        this.hasSubcategories});
+  Result({
+    this.ukey,
+    this.parentUkey,
+    this.name,
+    this.title,
+    this.categoryDetail,
+    this.image,
+    this.hasSubcategories,
+  });
 
   Result.fromJson(Map<String, dynamic> json) {
     ukey = json['ukey'];

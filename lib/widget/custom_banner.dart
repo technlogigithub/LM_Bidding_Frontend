@@ -57,46 +57,51 @@ class CustomBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => isLoading.value
-          ? _buildBannerShimmer()
-          : SizedBox(
-        height: height.h,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          shrinkWrap: true,
-          padding: padding,
-          itemCount: banners.length,
-          itemBuilder: (_, i) {
-            final banner = banners[i];
-            return GestureDetector(
-              onTap: () {
-                if (banner['redirectUrl']?.isNotEmpty ?? false) {
-                  toast("Opening: ${banner['redirectUrl']}");
-                }
-              },
-              child: Container(
-                height: height.h,
-                width: width.w,
-                margin: margin,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(borderRadius.r),
+      () {
+        // Show shimmer when loading or when banners list is empty
+        if (isLoading.value || banners.isEmpty) {
+          return _buildBannerShimmer();
+        }
+        
+        return SizedBox(
+          height: height.h,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            shrinkWrap: true,
+            padding: padding,
+            itemCount: banners.length,
+            itemBuilder: (_, i) {
+              final banner = banners[i];
+              return GestureDetector(
+                onTap: () {
+                  if (banner['redirectUrl']?.isNotEmpty ?? false) {
+                    toast("Opening: ${banner['redirectUrl']}");
+                  }
+                },
+                child: Container(
+                  height: height.h,
+                  width: width.w,
+                  margin: margin,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(borderRadius.r),
+                  ),
+                  child: Image.network(
+                    banner['image'] ?? '',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        fallbackImage ?? AppImage.placeholder,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
                 ),
-                child: Image.network(
-                  banner['image'] ?? '',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      fallbackImage ?? AppImage.placeholder,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
