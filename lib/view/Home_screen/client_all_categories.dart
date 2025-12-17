@@ -243,51 +243,33 @@
 //   }
 // }
 
-
 import 'package:flutter/material.dart';
-import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:get/get.dart';
-import '../../controller/client_all_categories/client_all_categories_controller.dart';
+import '../../controller/home/home_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_string.dart';
 import '../../core/app_textstyle.dart';
 import '../../models/category_model/category_model.dart';
-import '../../widget/category_item_widget(un used).dart';
+import '../../widget/category_horizontal_icon_widget.dart';
 
 class ClientAllCategories extends StatelessWidget {
   const ClientAllCategories({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final List<Category> staticCategories = [
-      Category(
-        ukey: "85ca2dc6-91e0-418b-be39-ebec0ada27b5",
-        parentUkey: null,
-        name: "Cate 1",
-        title: "Cate Title",
-        categoryDetail: "Cate One Details",
-        image: "http://www.technlogi.com/assets/img/logo.png",
-        hasSubcategories: true,
-      ),
-      Category(
-        ukey: "85ca2dc6-91e0-418b-be39-ewec0ada27b5",
-        parentUkey: null,
-        name: "Cate 2",
-        title: "Cate Title 2",
-        categoryDetail: "Cate Two Details",
-        image: "http://www.technlogi.com/assets/img/logo.png",
-        hasSubcategories: false,
-      ),
-    ];
-    // Initialize the GetX controller
-    final ClientAllCategoriesController controller = Get.put(ClientAllCategoriesController());
+    // Get categoryList from home controller
+    final ClientHomeController homeController =
+        Get.find<ClientHomeController>();
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       // backgroundColor: AppColors.appWhite,
       appBar: AppBar(
-        title: Text(AppStrings.allCategories,style: AppTextStyle.title(color: AppColors.appTextColor)),
+        title: Text(
+          AppStrings.allCategories,
+          style: AppTextStyle.title(color: AppColors.appTextColor),
+        ),
         centerTitle: true,
         iconTheme: IconThemeData(color: AppColors.appTextColor),
         elevation: 0,
@@ -354,20 +336,35 @@ class ClientAllCategories extends StatelessWidget {
       body: Container(
         height: screenHeight,
         width: screenWidth,
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         padding: const EdgeInsets.only(top: 15.0),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: Column(
-              children: [
-                CategoryListWidget(categories: staticCategories),
-                const SizedBox(height: 15),
-              ],
-            ),
+            child: Obx(() {
+              // Convert CategoryResult to Category format
+              final categories = homeController.categoryList.map((
+                categoryResult,
+              ) {
+                return Category(
+                  ukey: categoryResult.ukey ?? '',
+                  parentUkey: null,
+                  name: categoryResult.name ?? '',
+                  title: categoryResult.title ?? '',
+                  categoryDetail: categoryResult.categoryDetail ?? '',
+                  image: categoryResult.image ?? '',
+                  hasSubcategories: categoryResult.hasSubcategories ?? false,
+                );
+              }).toList();
+
+              return Column(
+                children: [
+                  CategoryListWidget(categories: categories),
+                  const SizedBox(height: 15),
+                ],
+              );
+            }),
           ),
         ),
       ),

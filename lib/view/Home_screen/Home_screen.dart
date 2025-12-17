@@ -37,7 +37,9 @@ class ClientHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ClientHomeController controller = Get.put(ClientHomeController());
-    final AppSettingsController appController = Get.put(AppSettingsController());
+    final AppSettingsController appController = Get.put(
+      AppSettingsController(),
+    );
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
     final AppPostController appPostController = Get.find<AppPostController>();
@@ -49,7 +51,10 @@ class ClientHomeScreen extends StatelessWidget {
       return Container(
         height: size,
         width: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey.shade300),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.grey.shade300,
+        ),
       );
     }
 
@@ -57,44 +62,68 @@ class ClientHomeScreen extends StatelessWidget {
       return Container(
         height: height,
         width: width,
-        decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4)),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(4),
+        ),
       );
     }
-
 
     Widget buildSearchBar() {
       return Padding(
         padding: const EdgeInsets.all(15.0),
         child: Container(
-          decoration: BoxDecoration(color: AppColors.appTextColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10.0)),
+          decoration: BoxDecoration(
+            color: AppColors.appTextColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
           child: ListTile(
             horizontalTitleGap: 0,
             visualDensity: const VisualDensity(vertical: -2),
-            leading: Icon(FeatherIcons.search, color: AppColors.appTextColor,size: 18,),
-            title: Text(' Search...', style: AppTextStyle.description(color: AppColors.appTextColor)),
+            leading: Icon(
+              FeatherIcons.search,
+              color: AppColors.appTextColor,
+              size: 18,
+            ),
+            title: Text(
+              ' Search...',
+              style: AppTextStyle.description(color: AppColors.appTextColor),
+            ),
             onTap: () {
-              Get.to(() =>  SearchScreen());
+              Get.to(() => SearchScreen());
             },
           ),
         ),
       );
     }
-    List<Map<String, dynamic>> buildMediaItems(List<BannerResult> banners) {
+
+    List<Map<String, dynamic>> buildMediaItemsFromVideoList(
+      List<BannerVidepResult> banners,
+    ) {
       return banners.map((banner) {
-        // 🎥 Video priority
-        if (banner.video != null && banner.video!.isNotEmpty) {
+        // Filter based on media_type
+        if (banner.mediaType == 'video' &&
+            banner.filePath != null &&
+            banner.filePath!.isNotEmpty) {
           return {
             'type': 'video',
-            'url': banner.video!,
-            'redirectUrl': banner.redirectUrl,
+            'url': banner.filePath!,
+            'redirectUrl': banner.actionUrl,
+          };
+        } else if (banner.mediaType == 'image' &&
+            banner.filePath != null &&
+            banner.filePath!.isNotEmpty) {
+          return {
+            'type': 'image',
+            'url': banner.filePath!,
+            'redirectUrl': banner.actionUrl,
           };
         }
-
-        // 🖼 Image fallback
+        // Return empty map if media_type is not recognized
         return {
           'type': 'image',
-          'url': banner.image ?? '',
-          'redirectUrl': banner.redirectUrl,
+          'url': banner.filePath ?? '',
+          'redirectUrl': banner.actionUrl,
         };
       }).toList();
     }
@@ -105,7 +134,6 @@ class ClientHomeScreen extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Scaffold(
-
         appBar: AppBar(
           backgroundColor: parseColor(headerConfig?.bgColor),
           elevation: 0,
@@ -113,7 +141,11 @@ class ClientHomeScreen extends StatelessWidget {
           toolbarHeight: screenHeight * 0.072,
           flexibleSpace: Container(
             decoration: BoxDecoration(gradient: AppColors.appbarColor),
-            padding: EdgeInsets.only(top: screenHeight * 0.045, left: 10, right: 10),
+            padding: EdgeInsets.only(
+              top: screenHeight * 0.045,
+              left: 10,
+              right: 10,
+            ),
 
             child: Obx(() {
               // ============================
@@ -149,8 +181,13 @@ class ClientHomeScreen extends StatelessWidget {
               // ============================
               // 🔥 MAIN UI
               // ============================
-              final dpUrl = profilecontroller.profileDetailsResponeModel.value
-                  ?.result?.dp?.dp ??
+              final dpUrl =
+                  profilecontroller
+                      .profileDetailsResponeModel
+                      .value
+                      ?.result
+                      ?.dp
+                      ?.dp ??
                   "";
               print(headerConfig?.userInfo);
               return Row(
@@ -161,25 +198,28 @@ class ClientHomeScreen extends StatelessWidget {
                     onTap: () => controller.handleRestrictedFeature(() {}),
                     child: headerConfig?.userInfo == true
                         ? ClipOval(
-                      child: Image.network(
-                        dpUrl,
-                        height: 44,
-                        width: 44,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return shimmerCircle(44); // shimmer until loaded
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            AppImage.profile,
-                            height: 44,
-                            width: 44,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      ),
-                    )
+                            child: Image.network(
+                              dpUrl,
+                              height: 44,
+                              width: 44,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return shimmerCircle(
+                                      44,
+                                    ); // shimmer until loaded
+                                  },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  AppImage.profile,
+                                  height: 44,
+                                  width: 44,
+                                  fit: BoxFit.cover,
+                                );
+                              },
+                            ),
+                          )
                         : SizedBox.shrink(),
                   ),
 
@@ -192,42 +232,55 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         headerConfig?.userInfo == true
                             ? Text(
-                          profilecontroller.profileDetailsResponeModel.value
-                              ?.result?.basicInfo?.name ??
-                              "User",
-                          style: AppTextStyle.title(color: AppColors.appTextColor),
-                          // style: AppTextStyle.kTextStyle.copyWith(
-                          //   color: AppColors.appTextColor,
-                          //   fontWeight: FontWeight.bold,
-                          //   fontSize: 16,
-                          // ),
-                        )
+                                profilecontroller
+                                        .profileDetailsResponeModel
+                                        .value
+                                        ?.result
+                                        ?.basicInfo
+                                        ?.name ??
+                                    "User",
+                                style: AppTextStyle.title(
+                                  color: AppColors.appTextColor,
+                                ),
+                                // style: AppTextStyle.kTextStyle.copyWith(
+                                //   color: AppColors.appTextColor,
+                                //   fontWeight: FontWeight.bold,
+                                //   fontSize: 16,
+                                // ),
+                              )
                             : SizedBox.shrink(),
 
                         GestureDetector(
                           onTap: () => controller.changeLocation(),
                           child: headerConfig?.currentLocation == true
                               ? Row(
-                            children: [
-                              Icon(Icons.place_outlined,
-                                  color: AppColors.appTextColor),
-                              Obx(
-                                    () => SizedBox(
-                                  width: screenWidth * 0.45,
-                                  child: Marquee(
-                                    child: Text(
-                                      controller.currentLocation.value.isEmpty
-                                          ? 'Fetching location...'
-                                          : controller.currentLocation.value,
-                                      style: AppTextStyle.description(
-                                          color: AppColors.appTextColor,
+                                  children: [
+                                    Icon(
+                                      Icons.place_outlined,
+                                      color: AppColors.appTextColor,
+                                    ),
+                                    Obx(
+                                      () => SizedBox(
+                                        width: screenWidth * 0.45,
+                                        child: Marquee(
+                                          child: Text(
+                                            controller
+                                                    .currentLocation
+                                                    .value
+                                                    .isEmpty
+                                                ? 'Fetching location...'
+                                                : controller
+                                                      .currentLocation
+                                                      .value,
+                                            style: AppTextStyle.description(
+                                              color: AppColors.appTextColor,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
+                                  ],
+                                )
                               : SizedBox.shrink(),
                         ),
                       ],
@@ -247,7 +300,8 @@ class ClientHomeScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: AppColors.appColor.withValues(alpha: 0.2)),
+                              color: AppColors.appColor.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: ClipOval(
                             child: Image.network(
@@ -255,13 +309,16 @@ class ClientHomeScreen extends StatelessWidget {
                               height: 25,
                               width: 25,
                               fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return shimmerCircle(25);
-                              },
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return shimmerCircle(25);
+                                  },
                               errorBuilder: (context, error, stackTrace) {
-                                return Icon(IconlyLight.notification,
-                                    color: AppColors.appTextColor);
+                                return Icon(
+                                  IconlyLight.notification,
+                                  color: AppColors.appTextColor,
+                                );
                               },
                             ),
                           ),
@@ -280,7 +337,8 @@ class ClientHomeScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: AppColors.appColor.withValues(alpha: 0.2)),
+                              color: AppColors.appColor.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: ClipOval(
                             child: Image.network(
@@ -288,13 +346,16 @@ class ClientHomeScreen extends StatelessWidget {
                               height: 25,
                               width: 25,
                               fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return shimmerCircle(25);
-                              },
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return shimmerCircle(25);
+                                  },
                               errorBuilder: (context, error, stackTrace) {
-                                return Icon(IconlyLight.infoSquare,
-                                    color: AppColors.appTextColor);
+                                return Icon(
+                                  IconlyLight.infoSquare,
+                                  color: AppColors.appTextColor,
+                                );
                               },
                             ),
                           ),
@@ -312,7 +373,6 @@ class ClientHomeScreen extends StatelessWidget {
           ),
         ),
 
-
         body: Container(
           height: screenHeight,
           width: screenWidth,
@@ -329,32 +389,37 @@ class ClientHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-
                   Obx(() {
                     final banners = controller.bannerList;
+                    final videoAndImageBanners =
+                        controller.bannerVideoAndImageList;
 
-                    final mediaItems = buildMediaItems(banners);
+                    final mediaItems = buildMediaItemsFromVideoList(
+                      videoAndImageBanners,
+                    );
 
                     return Column(
                       children: [
                         /// IMAGE ONLY BANNER
                         CustomBanner(
                           banners: banners
-                              .map((banner) => {
-                            'image': banner.image ?? '',
-                            'redirectUrl': banner.redirectUrl ?? '',
-                          })
+                              .map(
+                                (banner) => {
+                                  'image': banner.filePath ?? '',
+                                  'redirectUrl': banner.actionUrl ?? '',
+                                },
+                              )
                               .toList(),
                           isLoading: controller.isLoading,
                           width: screenWidth,
                         ),
-                         SizedBox(height: 10.h),
-                        /// IMAGE + VIDEO BANNER (same API data)
-                        if (mediaItems.isNotEmpty)
-                          CustomBannerWithVideo(
-                            mediaItems: mediaItems,
-                          ),
+                        SizedBox(height: 10.h),
+
+                        /// IMAGE + VIDEO BANNER (from bannerVideoAndImageList)
+                        CustomBannerWithVideo(
+                          mediaItems: mediaItems,
+                          isLoading: controller.isLoading,
+                        ),
                       ],
                     );
                   }),
@@ -367,43 +432,68 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.categories,
-                          style: AppTextStyle.title(color: AppColors.appTitleColor),
+                          style: AppTextStyle.title(
+                            color: AppColors.appTitleColor,
+                          ),
                         ),
                         GestureDetector(
-                          onTap: () => const ClientAllCategories().launch(context),
+                          onTap: () =>
+                              const ClientAllCategories().launch(context),
                           // onTap: () => controller.handleRestrictedFeature(() {
                           //   Get.toNamed('/categories'); // Replace with actual categories route
                           // }),
-                          child: Text(AppStrings.viewAll, style: AppTextStyle.description(color: AppColors.appLinkColor)),
+                          child: Text(
+                            AppStrings.viewAll,
+                            style: AppTextStyle.description(
+                              color: AppColors.appLinkColor,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 10),
 
-
                   Obx(
                     () => CustomCategoryHorizontalList(
-                      categories: controller.categoryList.map((category) => {'image': category.image ?? '', 'name': category.name ?? ''}).toList(),
+                      categories: controller.categoryList
+                          .map(
+                            (category) => {
+                              'image': category.image ?? '',
+                              'name': category.title ?? '',
+                            },
+                          )
+                          .toList(),
                       isLoading: controller.isLoading,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
+                    padding: const EdgeInsets.only(
+                      left: 15.0,
+                      right: 15.0,
+                      top: 10,
+                    ),
                     child: Row(
                       children: [
                         Text(
                           AppStrings.upcomingPost,
-                          style: AppTextStyle.title(color: AppColors.appTitleColor),
+                          style: AppTextStyle.title(
+                            color: AppColors.appTitleColor,
+                          ),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () {
                             // const PopularServices().launch(context);
                           },
-                          child: Text(AppStrings.viewAll, style: AppTextStyle.description(color: AppColors.appLinkColor)),
+                          child: Text(
+                            AppStrings.viewAll,
+                            style: AppTextStyle.description(
+                              color: AppColors.appLinkColor,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -412,8 +502,10 @@ class ClientHomeScreen extends StatelessWidget {
                     model: appPostController.getPostListResponseModel,
                     onFavoriteToggle: (index, newValue) {
                       // Update favorite in the model
-                      final result =
-                          appPostController.getPostListResponseModel.value?.result;
+                      final result = appPostController
+                          .getPostListResponseModel
+                          .value
+                          ?.result;
                       if (result != null && index < result.length) {
                         if (result[index].info != null) {
                           result[index].info!.favorite = newValue;
@@ -429,14 +521,21 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Top Poster',
-                          style: AppTextStyle.title(color: AppColors.appTitleColor,),
+                          style: AppTextStyle.title(
+                            color: AppColors.appTitleColor,
+                          ),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => controller.handleRestrictedFeature(() {
                             // const TopSeller().launch(context);
                           }),
-                          child: Text('View All', style: AppTextStyle.description(color: AppColors.appLinkColor)),
+                          child: Text(
+                            'View All',
+                            style: AppTextStyle.description(
+                              color: AppColors.appLinkColor,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -449,8 +548,10 @@ class ClientHomeScreen extends StatelessWidget {
                     }),
                     onFavoriteToggle: (index, newValue) {
                       // Update favorite in the model
-                      final result =
-                          appPostController.getPostListResponseModel.value?.result;
+                      final result = appPostController
+                          .getPostListResponseModel
+                          .value
+                          ?.result;
                       if (result != null && index < result.length) {
                         if (result[index].info != null) {
                           result[index].info!.favorite = newValue;
@@ -465,14 +566,21 @@ class ClientHomeScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Recent Viewed',
-                          style: AppTextStyle.title(color: AppColors.appTitleColor),
+                          style: AppTextStyle.title(
+                            color: AppColors.appTitleColor,
+                          ),
                         ),
                         const Spacer(),
                         GestureDetector(
                           onTap: () => controller.handleRestrictedFeature(() {
                             const RecentlyView().launch(context);
                           }),
-                          child: Text('View All', style: AppTextStyle.description(color: AppColors.appLinkColor)),
+                          child: Text(
+                            'View All',
+                            style: AppTextStyle.description(
+                              color: AppColors.appLinkColor,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -481,8 +589,10 @@ class ClientHomeScreen extends StatelessWidget {
                     model: appPostController.getPostListResponseModel,
                     onFavoriteToggle: (index, newValue) {
                       // Update favorite in the model
-                      final result =
-                          appPostController.getPostListResponseModel.value?.result;
+                      final result = appPostController
+                          .getPostListResponseModel
+                          .value
+                          ?.result;
                       if (result != null && index < result.length) {
                         if (result[index].info != null) {
                           result[index].info!.favorite = newValue;
@@ -506,7 +616,11 @@ class ClientHomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
+                    padding: const EdgeInsets.only(
+                      left: 15.0,
+                      right: 15.0,
+                      top: 10,
+                    ),
                     child: CustomVerticalGridviewList(
                       model: appPostController.getPostListResponseModel,
                       isLoading: appPostController.isLoading,
@@ -515,12 +629,15 @@ class ClientHomeScreen extends StatelessWidget {
                       },
                       onFavoriteToggle: (index, newValue) {
                         // Update favorite in the model
-                        final result =
-                            appPostController.getPostListResponseModel.value?.result;
+                        final result = appPostController
+                            .getPostListResponseModel
+                            .value
+                            ?.result;
                         if (result != null && index < result.length) {
                           if (result[index].info != null) {
                             result[index].info!.favorite = newValue;
-                            appPostController.getPostListResponseModel.refresh();
+                            appPostController.getPostListResponseModel
+                                .refresh();
                           }
                         }
                       },
@@ -528,17 +645,24 @@ class ClientHomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
+                    padding: const EdgeInsets.only(
+                      left: 15.0,
+                      right: 15.0,
+                      top: 10,
+                    ),
                     child: CustomVerticalListviewList(
                       model: appPostController.getPostListResponseModel,
                       onFavoriteToggle: (index, newValue) {
                         // Update favorite in the model
-                        final result =
-                            appPostController.getPostListResponseModel.value?.result;
+                        final result = appPostController
+                            .getPostListResponseModel
+                            .value
+                            ?.result;
                         if (result != null && index < result.length) {
                           if (result[index].info != null) {
                             result[index].info!.favorite = newValue;
-                            appPostController.getPostListResponseModel.refresh();
+                            appPostController.getPostListResponseModel
+                                .refresh();
                           }
                         }
                       },
@@ -547,7 +671,11 @@ class ClientHomeScreen extends StatelessWidget {
                   ),
                   SizedBox(height: screenHeight * 0.03),
                   Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
+                    padding: const EdgeInsets.only(
+                      left: 15.0,
+                      right: 15.0,
+                      top: 10,
+                    ),
                     child: CustomButton(
                       onTap: () {
                         controller.initiatePayment();
@@ -556,7 +684,11 @@ class ClientHomeScreen extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10),
+                    padding: const EdgeInsets.only(
+                      left: 15.0,
+                      right: 15.0,
+                      top: 10,
+                    ),
                     child: CustomButton(
                       onTap: () {
                         Get.to(CartScreen());
@@ -579,7 +711,9 @@ class ClientHomeScreen extends StatelessWidget {
     if (!input.startsWith("linear-gradient")) return null;
 
     try {
-      final cleaned = input.replaceAll("linear-gradient(", "").replaceAll(")", "");
+      final cleaned = input
+          .replaceAll("linear-gradient(", "")
+          .replaceAll(")", "");
 
       final parts = cleaned.split(",");
 
@@ -587,9 +721,15 @@ class ClientHomeScreen extends StatelessWidget {
       final colors = parts.sublist(1).map((e) => e.trim()).toList();
 
       return LinearGradient(
-        begin: direction.contains("right") ? Alignment.centerLeft : Alignment.topCenter,
-        end: direction.contains("right") ? Alignment.centerRight : Alignment.bottomCenter,
-        colors: colors.map((hex) => Color(int.parse("0xFF${hex.replaceAll('#', '')}"))).toList(),
+        begin: direction.contains("right")
+            ? Alignment.centerLeft
+            : Alignment.topCenter,
+        end: direction.contains("right")
+            ? Alignment.centerRight
+            : Alignment.bottomCenter,
+        colors: colors
+            .map((hex) => Color(int.parse("0xFF${hex.replaceAll('#', '')}")))
+            .toList(),
       );
     } catch (e) {
       return null;

@@ -24,7 +24,7 @@ class CustomCategoryHorizontalList extends StatelessWidget {
     super.key,
     required this.categories,
     required this.isLoading,
-    this.height = 90.0,
+    this.height = 130.0,
     this.padding = const EdgeInsets.only(left: 15.0, right: 15.0),
     this.itemPadding = const EdgeInsets.only(right: 8.0),
     this.avatarRadius = 35.0,
@@ -152,50 +152,54 @@ class CustomCategoryHorizontalList extends StatelessWidget {
                   //     ),
                   //   ),
                   // ),
-                  SizedBox(
-                    width: (avatarRadius * 6).r,   // 2 X 2 Same as CircleAvatar diameter
-                    height: (avatarRadius * 2).r,
-                    child: categoryImage.isNotEmpty
-                        ? (categoryImage.startsWith('http')
-                        ? Image.network(
-                      categoryImage,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Image.asset(
-                          fallbackImage ?? AppImage.placeholder,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          fallbackImage ?? AppImage.placeholder,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    )
-                        : Image.asset(
-                      categoryImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          fallbackImage ?? AppImage.placeholder,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ))
-                        : Image.asset(
+                Container(
+                width: 80.w,
+                height: 80.h,
+                decoration: BoxDecoration(
+                  // shape: BoxShape.circle,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: categoryImage.isNotEmpty
+                    ? (categoryImage.startsWith('http')
+                    ? Image.network(
+                  categoryImage,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Image.asset(
                       fallbackImage ?? AppImage.placeholder,
                       fit: BoxFit.cover,
-                    ),
-                  ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      fallbackImage ?? AppImage.placeholder,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                )
+                    : Image.asset(
+                  categoryImage,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      fallbackImage ?? AppImage.placeholder,
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ))
+                    : Image.asset(
+                  fallbackImage ?? AppImage.placeholder,
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+              SizedBox(height: 10.h,),
                   Text(
                     categoryName,
                     style: textStyle ??
-                        AppTextStyle.kTextStyle.copyWith(
-                          color: AppColors.appTextColor,
-                          fontSize: fontSize.sp,
-                          fontWeight: FontWeight.w500,
+                        AppTextStyle.body(
+                          color: AppColors.appBodyTextColor,
                         ),
                   ),
                 ],
