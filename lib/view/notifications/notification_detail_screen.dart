@@ -54,8 +54,8 @@ class NotificationDetailScreen extends StatelessWidget {
         imageUrl: iconUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: Container(
             width: screenWidth * 0.4,
             height: screenWidth * 0.4,
@@ -132,7 +132,7 @@ class NotificationDetailScreen extends StatelessWidget {
                   ),
                 ),
                 child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+                  // physics: const BouncingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [

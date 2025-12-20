@@ -292,14 +292,14 @@ class ClientHomeController extends GetxController {
 
   Future<void> initializeData() async {
     print("Initializing home data...");
-    isLoading.value = true;
+    // isLoading.value = true;
 
     fetchCategory();
     fetchBanner();
     fetchBannerForVideo();
-    appPostController.getPostList();
+    // appPostController.getPostList();
 
-    isLoading.value = false; // Stop loading
+    // isLoading.value = false; // Stop loading
   }
 
   Future<void> checkLoginStatus() async {

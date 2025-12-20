@@ -118,8 +118,8 @@ class SplashScreenState extends State<SplashScreen> {
               if (controller.logo.value.isEmpty) {
                 // Full screen shimmer while loading
                 return Shimmer.fromColors(
-                  baseColor: Colors.grey.shade300.withValues(alpha: 0.6),
-                  highlightColor: Colors.grey.shade100.withValues(alpha: 0.6),
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: double.infinity,
                     height: double.infinity,

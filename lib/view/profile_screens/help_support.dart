@@ -65,8 +65,8 @@ class HelpSupport extends StatelessWidget {
                 imageUrl: support.pageImage!,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: double.infinity,
                     height: double.infinity,
@@ -272,8 +272,8 @@ class HelpSupport extends StatelessWidget {
             imageUrl: hasUrl ? iconUrl! : AppImage.placeholder,
             fit: BoxFit.contain,
             placeholder: (context, url) => Shimmer.fromColors(
-              baseColor: AppColors.simmerColor,
-              highlightColor: AppColors.appWhite,
+              baseColor: AppColors.appMutedColor,
+              highlightColor: AppColors.appMutedTextColor,
               child: Container(
                 width: double.infinity,
                 height: double.infinity,

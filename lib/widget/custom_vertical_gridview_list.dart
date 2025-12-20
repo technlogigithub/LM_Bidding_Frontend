@@ -91,8 +91,8 @@ class CustomVerticalGridviewList extends StatelessWidget {
       itemCount: 4, // Number of shimmer placeholders
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: _buildShimmerItemCard(),
         );
       },
@@ -218,18 +218,18 @@ class CustomVerticalGridviewList extends StatelessWidget {
                           width: double.infinity,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Shimmer.fromColors(
-                            baseColor: AppColors.simmerColor,
-                            highlightColor: AppColors.appWhite,
+                            baseColor: AppColors.appMutedColor,
+                            highlightColor: AppColors.appMutedTextColor,
                             child: Container(
                               height: 130,
                               width: double.infinity,
-                              color: AppColors.simmerColor,
+                              color: AppColors.appMutedColor,
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
                             height: 130,
                             width: double.infinity,
-                            color: AppColors.simmerColor,
+                            color: AppColors.appMutedColor,
                             child: Icon(
                               Icons.image_not_supported,
                               color: Colors.grey[600],
@@ -239,7 +239,7 @@ class CustomVerticalGridviewList extends StatelessWidget {
                       : Container(
                           height: 130,
                           width: double.infinity,
-                          color: AppColors.simmerColor,
+                          color: AppColors.appMutedColor,
                           child: Icon(
                             Icons.image_not_supported,
                             color: Colors.grey[600],

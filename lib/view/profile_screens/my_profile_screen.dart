@@ -196,8 +196,8 @@ class SetupClientProfileView extends StatelessWidget {
                                     width: 80.w,
                                     height: 80.h,
                                     placeholder: (context, url) => Shimmer.fromColors(
-                                      baseColor: AppColors.simmerColor,
-                                      highlightColor: AppColors.appWhite,
+                                      baseColor: AppColors.appMutedColor,
+                                      highlightColor: AppColors.appMutedTextColor,
                                       child: Container(
                                         width: 80.w,
                                         height: 80.h,
@@ -291,8 +291,8 @@ class SetupClientProfileView extends StatelessWidget {
                             imageUrl: bannerUrl!,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Shimmer.fromColors(
-                              baseColor: AppColors.simmerColor,
-                              highlightColor: AppColors.appWhite,
+                              baseColor: AppColors.appMutedColor,
+                              highlightColor: AppColors.appMutedTextColor,
                               child: Container(
                                 width: double.infinity,
                                 height: 100.h,
@@ -857,8 +857,8 @@ class SetupClientProfileView extends StatelessWidget {
                 imageUrl: url,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: double.infinity,
                     height: 200.h,
@@ -909,8 +909,8 @@ class SetupClientProfileView extends StatelessWidget {
                   // Profile Picture Shimmer
                   Center(
                     child: Shimmer.fromColors(
-                      baseColor: AppColors.simmerColor,
-                      highlightColor: AppColors.appWhite,
+                      baseColor: AppColors.appMutedColor,
+                      highlightColor: AppColors.appMutedTextColor,
                       child: Container(
                         height: 80.h,
                         width: 80.w,
@@ -924,8 +924,8 @@ class SetupClientProfileView extends StatelessWidget {
                   SizedBox(height: 20.h),
                   // Banner Shimmer
                   Shimmer.fromColors(
-                    baseColor: AppColors.simmerColor,
-                    highlightColor: AppColors.appWhite,
+                    baseColor: AppColors.appMutedColor,
+                    highlightColor: AppColors.appMutedTextColor,
                     child: Container(
                       height: 100.h,
                       width: double.infinity,
@@ -944,8 +944,8 @@ class SetupClientProfileView extends StatelessWidget {
                       children: [
                         // Section Title Shimmer
                         Shimmer.fromColors(
-                          baseColor: AppColors.simmerColor,
-                          highlightColor: AppColors.appWhite,
+                          baseColor: AppColors.appMutedColor,
+                          highlightColor: AppColors.appMutedTextColor,
                           child: Container(
                             height: 20.h,
                             width: 150.w,
@@ -979,8 +979,8 @@ class SetupClientProfileView extends StatelessWidget {
                                   Expanded(
                                     flex: 2,
                                     child: Shimmer.fromColors(
-                                      baseColor: AppColors.simmerColor,
-                                      highlightColor: AppColors.appWhite,
+                                      baseColor: AppColors.appMutedColor,
+                                      highlightColor: AppColors.appMutedTextColor,
                                       child: Container(
                                         height: 14.h,
                                         width: 80.w,
@@ -1005,8 +1005,8 @@ class SetupClientProfileView extends StatelessWidget {
                                         SizedBox(width: 10.w),
                                         Expanded(
                                           child: Shimmer.fromColors(
-                                            baseColor: AppColors.simmerColor,
-                                            highlightColor: AppColors.appWhite,
+                                            baseColor: AppColors.appMutedColor,
+                                            highlightColor: AppColors.appMutedTextColor,
                                             child: Container(
                                               height: 14.h,
                                               width: double.infinity,

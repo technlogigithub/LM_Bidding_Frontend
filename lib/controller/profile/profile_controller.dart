@@ -28,7 +28,7 @@ class ProfileController extends GetxController {
     super.onInit();
     fetchOrders();
     loadLoginStatus();
-    fetchProfileDetails();
+    // fetchProfileDetails();
   }
 
   Future<void> fetchOrders() async {

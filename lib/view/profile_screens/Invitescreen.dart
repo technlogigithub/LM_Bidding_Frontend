@@ -100,8 +100,8 @@ class Invitescreen extends StatelessWidget {
 
   Widget shimmerBox(double height, double width) {
     return Shimmer.fromColors(
-      baseColor: AppColors.simmerColor,
-      highlightColor: AppColors.appWhite,
+      baseColor: AppColors.appMutedColor,
+      highlightColor: AppColors.appMutedTextColor,
       child: Container(
         height: height,
         width: width,
@@ -133,8 +133,8 @@ class Invitescreen extends StatelessWidget {
               imageUrl: referral.pageImage!,
               fit: BoxFit.cover,
               placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.simmerColor,
-                highlightColor: AppColors.appWhite,
+                baseColor: AppColors.appMutedColor,
+                highlightColor: AppColors.appMutedTextColor,
                 child: Container(
                   width: double.infinity,
                   height: double.infinity,
@@ -190,7 +190,7 @@ class Invitescreen extends StatelessWidget {
 
                 Text(
                   referral?.description ??
-                      "Invite your friends and earn exciting rewards!",
+                      "",
                   textAlign: TextAlign.center,
                   style:  AppTextStyle.description(
 
@@ -231,7 +231,7 @@ class Invitescreen extends StatelessWidget {
                               referralCode,
                               style:  AppTextStyle.title(
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.appColor,
+                                color: AppColors.appDescriptionColor,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -330,8 +330,8 @@ class Invitescreen extends StatelessWidget {
               imageUrl: iconUrl ?? AppImage.placeholder,
               fit: BoxFit.contain,
               placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.simmerColor,
-                highlightColor: AppColors.appWhite,
+                baseColor: AppColors.appMutedColor,
+                highlightColor: AppColors.appMutedTextColor,
                 child: Container(
                   width: double.infinity,
                   height: double.infinity,

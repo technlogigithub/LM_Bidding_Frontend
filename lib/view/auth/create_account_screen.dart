@@ -357,13 +357,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Obx(() => Checkbox(
-                            activeColor: AppColors.appButtonColor,
-                            value: controller.isCheck.value,
-                            onChanged: (value) => controller.toggleCheck(),
-                            visualDensity: VisualDensity(horizontal: -2.w, vertical: -2.w),
-                          )),
-                          Flexible(
+                          Obx(
+                          () => GestureDetector(
+                onTap: controller.toggleCheck,
+                child: Container(
+                  height: 20.h,
+                  width: 20.w,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(
+                      color: controller.isCheck.value ? AppColors.appButtonColor :AppColors.appTitleColor,
+                      width: 2,
+                    ),
+                    color: controller.isCheck.value
+                        ? AppColors.appButtonColor
+                        : Colors.transparent,
+                  ),
+                  child: controller.isCheck.value
+                      ? const Icon(
+                    Icons.check,
+                    size: 16,
+                    color: Colors.white,
+                  )
+                      : null,
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w,),
+
+            Flexible(
                             child: RichText(
                               text: TextSpan(
                                 text: AppStrings.yesIunderstandandagreetothe,

@@ -54,8 +54,8 @@ class ParticipationListCustomWidget extends StatelessWidget {
       itemBuilder: (_, __) => Padding(
         padding: const EdgeInsets.all(10.0),
         child: Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: _buildShimmerCard(),
         ),
       ),

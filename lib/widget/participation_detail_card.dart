@@ -294,8 +294,8 @@ class ParticipationDetailCard extends StatelessWidget {
 
   Widget _buildShimmer() {
     return Shimmer.fromColors(
-      baseColor: AppColors.simmerColor,
-      highlightColor: AppColors.appWhite,
+      baseColor: AppColors.appMutedColor,
+      highlightColor: AppColors.appMutedTextColor,
       child: Container(
         padding: const EdgeInsets.all(10.0),
         width: double.infinity,
@@ -380,6 +380,6 @@ class ParticipationDetailCard extends StatelessWidget {
   }
 
   Widget _shimmerBox(double width, double height) {
-    return Container(width: width, height: height, color: AppColors.simmerColor);
+    return Container(width: width, height: height, color: AppColors.appMutedColor);
   }
 }

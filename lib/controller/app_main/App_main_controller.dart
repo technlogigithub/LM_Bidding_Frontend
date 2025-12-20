@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:convert'; // Added
 import '../../core/app_constant.dart';
 import '../../core/app_config.dart';
 import '../../core/network.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../../models/Post/Post_Form_Genrate_Model.dart';
+import '../../core/mock_response.dart'; // Added
 
 class AppSettingsController extends GetxController {
   Rx<AppModelResponse?> appSettings = Rx<AppModelResponse?>(null);
@@ -128,6 +129,8 @@ class AppSettingsController extends GetxController {
   Rx<HomePage?> homePage = Rx<HomePage?>(null);
   Rx<HeaderMenuSection?> homePageheader = Rx<HeaderMenuSection?>(null);
   Rx<MyPostModel?> myPostModel = Rx<MyPostModel?>(null);
+  Rx<SearchPage?> searchPage = Rx<SearchPage?>(null);
+  Rx<CategoryPage?> categoryPage = Rx<CategoryPage?>(null);
 
   // Languages
   RxList<Language> availableLanguages = <Language>[].obs;
@@ -176,8 +179,8 @@ class AppSettingsController extends GetxController {
         /// Save MobileApp
         androidVersion.value = result?.mobileApp?.androidVersion ?? "";
         iosVersion.value = result?.mobileApp?.iosVersion ?? "";
-        playstoreUrl.value = result?.mobileApp?.playstoreUrl ?? "";
-        appstoreUrl.value = result?.mobileApp?.appstoreUrl ?? "";
+        // playstoreUrl.value = result?.mobileApp?.playstoreUrl ?? "";
+        // appstoreUrl.value = result?.mobileApp?.appstoreUrl ?? "";
 
         /// Store themes
         _lightTheme = result?.lightTheme?.toJson() ?? {};
@@ -259,6 +262,8 @@ class AppSettingsController extends GetxController {
         myProfile.value = result?.appMenu?.myProfile;
         support.value = result?.appMenu?.support;
         myPostModel.value = result?.appMenu?.myPost;
+        searchPage.value = result?.searchPage;
+        categoryPage.value = result?.categoryPage;
 
 
         // NEW
@@ -318,6 +323,7 @@ class AppSettingsController extends GetxController {
     }
   }
 
+
   // Fetch app_content using selected/saved language and update introSliders
   Future<void> fetchAppContent() async {
     try {
@@ -341,7 +347,7 @@ class AppSettingsController extends GetxController {
         headers['Authorization'] = 'Bearer $token';
       }
 
-      final response = await apiService.makeRequestRaw(
+      var response = await apiService.makeRequestRaw(
         endPoint: AppConstants.appContent,
         method: AppConstants.POST,
         body: {
@@ -350,6 +356,16 @@ class AppSettingsController extends GetxController {
         },
         headers: headers,
       );
+
+      // 🔹 FALLBACK TO MOCK DATA IF API FAILS OR 401
+      if (response['response_code'] == 401 || response['success'] == false) {
+         print("⚠️ API returned ${response['response_code']}. Using MOCK DATA.");
+         try {
+           response = jsonDecode(mockAppContentResponse);
+         } catch(e) {
+           print("Error parsing mock data: $e");
+         }
+      }
 
       if (response['success'] == true && response['response_code'] == 200) {
         final parsed = AppContentResponse.fromJson(response);

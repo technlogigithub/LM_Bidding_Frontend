@@ -26,7 +26,10 @@ import '../../widget/custom_vertical_gridview_list.dart';
 import '../../widget/custom_banner_with_video.dart';
 import '../cart_screen/cart_screen.dart';
 import '../notifications/notifications_screen.dart';
+import '../cart_screen/cart_screen.dart';
+import '../notifications/notifications_screen.dart';
 import 'client_all_categories.dart';
+import '../../widget/custom_view_widget.dart';
 
 class ClientHomeScreen extends StatelessWidget {
   ClientHomeScreen({super.key});
@@ -42,8 +45,9 @@ class ClientHomeScreen extends StatelessWidget {
     );
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
+    final search = homePage?.design?.searchBar?.title;
     final AppPostController appPostController = Get.find<AppPostController>();
-    appPostController.getPostList();
+    // appPostController.getPostList();
 
     final profilecontroller = Get.put(ProfileController());
 
@@ -86,7 +90,7 @@ class ClientHomeScreen extends StatelessWidget {
               size: 18,
             ),
             title: Text(
-              ' Search...',
+              search ?? '',
               style: AppTextStyle.description(color: AppColors.appTextColor),
             ),
             onTap: () {
@@ -367,337 +371,218 @@ class ClientHomeScreen extends StatelessWidget {
               );
             }),
           ),
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(70.0),
-            child: buildSearchBar(),
-          ),
+          bottom: homePage?.design?.searchBar?.isActive == true
+              ? PreferredSize(
+                  preferredSize: Size.fromHeight(70.0),
+                  child: buildSearchBar(),
+                )
+              : null,
         ),
 
         body: Container(
           height: screenHeight,
           width: screenWidth,
           decoration: BoxDecoration(gradient: AppColors.appPagecolor),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            // padding: const EdgeInsets.only(top: 15.0),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                gradient: AppColors.appPagecolor,
-                // borderRadius: const BorderRadius.only(topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Obx(() {
-                    final banners = controller.bannerList;
-                    final videoAndImageBanners =
-                        controller.bannerVideoAndImageList;
+          child: RefreshIndicator(
+            color: AppColors.appButtonColor,
+            onRefresh: () async {
+              await controller.initializeData();
+              await profilecontroller.fetchProfileDetails();
+            },
+            child: SingleChildScrollView(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  gradient: AppColors.appPagecolor,
+                ),
+                child: Obx(() {
+                  final homePage = appController.homePage.value;
+                  final bodySections = homePage?.design?.body;
 
-                    final mediaItems = buildMediaItemsFromVideoList(
-                      videoAndImageBanners,
-                    );
+                  if (bodySections == null || bodySections.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
 
                     return Column(
-                      children: [
-                        /// IMAGE ONLY BANNER
-                        CustomBanner(
-                          banners: banners
-                              .map(
-                                (banner) => {
-                                  'image': banner.filePath ?? '',
-                                  'redirectUrl': banner.actionUrl ?? '',
-                                },
-                              )
+                    children: bodySections.map((section) {
+                      final viewType = section.viewType ?? '';
+
+                      // 🔹 Search Bar
+                      if (viewType == 'search_bar') {
+                        return CustomViewWidget(
+                          type: 'search_bar',
+                          title: section.title,
+                        );
+                      }
+
+                      // 🔹 Categories
+                      if (viewType == 'category_horizontal_icon_widget' || viewType == 'custom_category_horizontal_list') {
+                        return CustomViewWidget(
+                          type: 'category_horizontal_icon_widget',
+                          categories: controller.categoryList
+                              .map((category) => {
+                                'image': category.image ?? '',
+                                'name': category.title ?? '',
+                              })
                               .toList(),
-                          isLoading: controller.isLoading,
-                          width: screenWidth,
-                        ),
-                        SizedBox(height: 10.h),
-
-                        /// IMAGE + VIDEO BANNER (from bannerVideoAndImageList)
-                        CustomBannerWithVideo(
-                          mediaItems: mediaItems,
-                          isLoading: controller.isLoading,
-                        ),
-                      ],
-                    );
-                  }),
-
-                  const SizedBox(height: 25.0),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppStrings.categories,
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () =>
-                              const ClientAllCategories().launch(context),
-                          // onTap: () => controller.handleRestrictedFeature(() {
-                          //   Get.toNamed('/categories'); // Replace with actual categories route
-                          // }),
-                          child: Text(
-                            AppStrings.viewAll,
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  Obx(
-                    () => CustomCategoryHorizontalList(
-                      categories: controller.categoryList
-                          .map(
-                            (category) => {
-                              'image': category.image ?? '',
-                              'name': category.title ?? '',
-                            },
-                          )
-                          .toList(),
-                      isLoading: controller.isLoading,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          AppStrings.upcomingPost,
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                          ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () {
-                            // const PopularServices().launch(context);
-                          },
-                          child: Text(
-                            AppStrings.viewAll,
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CustomHorizontalListViewList(
-                    model: appPostController.getPostListResponseModel,
-                    onFavoriteToggle: (index, newValue) {
-                      // Update favorite in the model
-                      final result = appPostController
-                          .getPostListResponseModel
-                          .value
-                          ?.result;
-                      if (result != null && index < result.length) {
-                        if (result[index].info != null) {
-                          result[index].info!.favorite = newValue;
-                          appPostController.getPostListResponseModel.refresh();
-                        }
+                          categoryLoading: controller.isLoading,
+                        );
                       }
-                    },
-                    isLoading: appPostController.isLoading,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Top Poster',
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                          ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => controller.handleRestrictedFeature(() {
-                            // const TopSeller().launch(context);
-                          }),
-                          child: Text(
-                            'View All',
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CustomHorizontalGridViewList(
-                    model: appPostController.getPostListResponseModel,
-                    isLoading: appPostController.isLoading,
-                    onItemTap: () => controller.handleRestrictedFeature(() {
-                      // Navigation logic
-                    }),
-                    onFavoriteToggle: (index, newValue) {
-                      // Update favorite in the model
-                      final result = appPostController
-                          .getPostListResponseModel
-                          .value
-                          ?.result;
-                      if (result != null && index < result.length) {
-                        if (result[index].info != null) {
-                          result[index].info!.favorite = newValue;
-                          appPostController.getPostListResponseModel.refresh();
-                        }
+
+                      // 🔹 Banners
+                      if (viewType == 'custom_banner') {
+                        // Image only banner
+                        return CustomViewWidget(
+                          type: 'custom_banner',
+                          bannerItems: controller.bannerList
+                              .map((banner) => {
+                                'image': banner.filePath ?? '',
+                                'redirectUrl': banner.actionUrl ?? '',
+                              })
+                              .toList(),
+                          bannerLoading: controller.isLoading,
+                        );
                       }
-                    },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Recent Viewed',
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
+
+                      if (viewType == 'custom_banner_with_video') {
+                        // Video/Image banner
+                        return CustomViewWidget(
+                          type: 'custom_banner_with_video',
+                          bannerItems: buildMediaItemsFromVideoList(
+                            controller.bannerVideoAndImageList,
                           ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => controller.handleRestrictedFeature(() {
-                            const RecentlyView().launch(context);
-                          }),
-                          child: Text(
-                            'View All',
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CustomHorizontalListViewList(
-                    model: appPostController.getPostListResponseModel,
-                    onFavoriteToggle: (index, newValue) {
-                      // Update favorite in the model
-                      final result = appPostController
-                          .getPostListResponseModel
-                          .value
-                          ?.result;
-                      if (result != null && index < result.length) {
-                        if (result[index].info != null) {
-                          result[index].info!.favorite = newValue;
-                          appPostController.getPostListResponseModel.refresh();
-                        }
+                          bannerLoading: controller.isLoading,
+                        );
                       }
-                    },
-                    isLoading: appPostController.isLoading,
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  CustomTabBar(
-                    // height: 50,
-                    tabs: controller.serviceList,
-                    // primaryColor: AppColors.appColor,
-                    // borderColor: Colors.grey.shade300,
-                    textStyle: AppTextStyle.description(),
-                    onTap: (index) {
-                      // do something when tapped
-                      print("Selected tab index: $index");
-                    },
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
-                    ),
-                    child: CustomVerticalGridviewList(
-                      model: appPostController.getPostListResponseModel,
-                      isLoading: appPostController.isLoading,
-                      onItemTap: () {
-                        // Navigation logic
-                      },
-                      onFavoriteToggle: (index, newValue) {
-                        // Update favorite in the model
-                        final result = appPostController
-                            .getPostListResponseModel
-                            .value
-                            ?.result;
-                        if (result != null && index < result.length) {
-                          if (result[index].info != null) {
-                            result[index].info!.favorite = newValue;
-                            appPostController.getPostListResponseModel
-                                .refresh();
+
+                      // 🔹 Custom TabBar (Fast Move)
+                      if (viewType == 'custom_tapbar') {
+                        List<String> options = [];
+                        if (section.design is Map) {
+                          final inputs = section.design['inputs'];
+                          if (inputs is Map && inputs.containsKey('select')) {
+                            final select = inputs['select'];
+                            if (select['options'] is List) {
+                              // Check if it is a list of maps or strings
+                              final opts = select['options'] as List;
+                              if (opts.isNotEmpty) {
+                                if (opts.first is Map) {
+                                  options = opts.map<String>((e) => e['label'].toString()).toList();
+                                } else {
+                                  options = opts.map<String>((e) => e.toString()).toList();
+                                }
+                              }
+                            }
                           }
                         }
-                      },
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
-                    ),
-                    child: CustomVerticalListviewList(
-                      model: appPostController.getPostListResponseModel,
-                      onFavoriteToggle: (index, newValue) {
-                        // Update favorite in the model
-                        final result = appPostController
-                            .getPostListResponseModel
-                            .value
-                            ?.result;
-                        if (result != null && index < result.length) {
-                          if (result[index].info != null) {
-                            result[index].info!.favorite = newValue;
-                            appPostController.getPostListResponseModel
-                                .refresh();
-                          }
+
+                        if (options.isNotEmpty) {
+                          return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (section.label != null && section.label!.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+                                    child: Text(
+                                      section.label!,
+                                      style: AppTextStyle.title(color: AppColors.appTitleColor),
+                                    ),
+                                  ),
+                                CustomViewWidget(
+                                  type: 'custom_tapbar',
+                                  tabOptions: options,
+                                  onTabChanged: (index) {
+                                    print("Tab selected: $index");
+                                  },
+                                ),
+                              ]
+                          );
                         }
-                      },
-                      isLoading: appPostController.isLoading,
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
-                    ),
-                    child: CustomButton(
-                      onTap: () {
-                        controller.initiatePayment();
-                      },
-                      text: 'Pay 1000/- Rs. Now',
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
-                    ),
-                    child: CustomButton(
-                      onTap: () {
-                        Get.to(CartScreen());
-                      },
-                      text: 'Go To Cart Screen',
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+                        return const SizedBox.shrink();
+                      }
+
+
+                      // 🔹 Pre-defined Post Lists (Lists, Grids)
+                      if (viewType.contains('listview_list') || viewType.contains('gridview_list')) {
+                        Widget titleWidget = const SizedBox.shrink();
+                        if (section.label != null && section.label!.isNotEmpty) {
+                          titleWidget = Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
+                            child: Row(
+                              children: [
+                                Text(
+                                  section.label!,
+                                  style: AppTextStyle.title(
+                                    color: AppColors.appTitleColor,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (section.apiEndpoint != null)
+                                  GestureDetector(
+                                    onTap: () {
+                                      // Navigate to full list?
+                                    },
+                                    child: Text(
+                                      AppStrings.viewAll,
+                                      style: AppTextStyle.description(
+                                        color: AppColors.appLinkColor,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        // 🔹 Create unique controller for this section if it has an endpoint
+                        AppPostController? sectionController;
+                        if (section.apiEndpoint != null && section.apiEndpoint!.isNotEmpty) {
+                          // Use apiEndpoint as tag to ensure uniqueness per content source
+                          final tag = section.apiEndpoint!;
+                          sectionController = Get.put(AppPostController(), tag: tag);
+
+                          // specific API call for this section (Lazy Load)
+                          // if (sectionController?.getPostForHomeResponseModel.value == null &&
+                          //     !sectionController!.isLoading.value) {
+                          //    // Use SchedulerBinding to avoid setState during build if purely strictly necessary,
+                          //    // but GetX observable updates are usually safe.
+                          //    // To be 100% safe, we can wrap in Future.microtask
+                          //    Future.microtask(() =>
+                          //      sectionController!.getPostListForHomeScreen(endpoint: section.apiEndpoint)
+                          //    );
+                          // }
+                        }
+
+                        return Column(
+                          children: [
+                            titleWidget,
+                            CustomViewWidget(
+                              type: viewType,
+                              controller: sectionController ?? appPostController,
+                              useHomeModel: sectionController != null,
+                              onItemTap: () {
+                                // Detail navigation
+                              },
+                              onFavoriteToggle: (index, isFav) {
+                                // Favorite logic
+                              },
+                            ),
+                          ],
+                        );
+                      }
+
+                      // 🔹 Default fallback for unknown types - Try to render generically or simply pass the type
+                      // This allows future view_types to be potentially handled by CustomViewWidget if updated, without changing this file
+                      return CustomViewWidget(
+                         type: viewType,
+                         // Pass common props just in case
+                         title: section.title,
+                         // we can pass more generic props if CustomViewWidget supports them
+                      );
+
+                    }).toList(),
+                  );
+                }),
               ),
             ),
           ),

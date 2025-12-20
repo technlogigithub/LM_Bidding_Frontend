@@ -9,7 +9,7 @@ import '../../../core/app_color.dart';
 import '../../../core/app_textstyle.dart';
 import '../../../models/App_moduls/AppResponseModel.dart';
 import '../../../widget/custom_tapbar.dart';
-import '../../../widget/post_view_widget.dart';
+import '../../../widget/custom_view_widget.dart';
 import 'Post_Details_screen.dart';
 
 class MyPostScreen extends StatelessWidget {
@@ -18,7 +18,7 @@ class MyPostScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MyPostController controller = Get.put(MyPostController());
-    final AppSettingsController appSettingcontroller = Get.put(
+    final AppSettingsController appSettingController = Get.put(
       AppSettingsController(),
     );
 
@@ -82,7 +82,7 @@ class MyPostScreen extends StatelessWidget {
           centerTitle: true,
           iconTheme: IconThemeData(color: AppColors.appTextColor),
           title: Obx(() {
-            var myPostModel = appSettingcontroller.myPostModel.value;
+            var myPostModel = appSettingController.myPostModel.value;
             return Text(
               myPostModel?.label ?? "",
               style: AppTextStyle.title(
@@ -108,52 +108,60 @@ class MyPostScreen extends StatelessWidget {
           height: double.infinity,
           width: double.infinity,
           decoration: BoxDecoration(gradient: AppColors.appPagecolor),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: screenHeight * 0.010),
-                Obx(() {
-                  var myPostModel = appSettingcontroller.myPostModel.value;
-                  final tabLabels = getTabLabels(myPostModel);
+          child: RefreshIndicator(
+            onRefresh: () async {
+              // Refresh all data
+              await controller.getPostList();
+            },
+            color: AppColors.appButtonColor,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: screenHeight * 0.010),
+                  Obx(() {
+                    var myPostModel = appSettingController.myPostModel.value;
+                    final tabLabels = getTabLabels(myPostModel);
 
-                  // Only show TabBar if labels are not null and not empty
-                  if (tabLabels != null && tabLabels.isNotEmpty) {
-                    return CustomTabBar(
-                      // height: 50,
-                      tabs: tabLabels,
-                      // primaryColor: AppColors.appColor,
-                      // borderColor: Colors.grey.shade300,
-                      textStyle: AppTextStyle.description(),
-                      initialIndex: 0,
-                      onTap: (index) {
-                        controller.updateTab(index);
+                    // Only show TabBar if labels are not null and not empty
+                    if (tabLabels != null && tabLabels.isNotEmpty) {
+                      return CustomTabBar(
+                        // height: 50,
+                        tabs: tabLabels,
+                        // primaryColor: AppColors.appColor,
+                        // borderColor: Colors.grey.shade300,
+                        textStyle: AppTextStyle.description(),
+                        initialIndex: 0,
+                        onTap: (index) {
+                          controller.updateTab(index);
+                        },
+                      );
+                    }
+                    // Return empty SizedBox when no labels available
+                    return const SizedBox.shrink();
+                  }),
+                  SizedBox(height: screenHeight * 0.010),
+                  Obx(() {
+                    var myPostModel = appSettingController.myPostModel.value;
+                    final viewType = myPostModel?.viewtype ?? '';
+                    print(" View type is $viewType");
+                    return CustomViewWidget(
+                      type: viewType,
+                      controller: controller.appPostController,
+                      statusValue: controller.selectedStatusValue.value,
+                      onItemTap: () {
+                        const PostDetailsScreen().launch(context);
+                      },
+                      // Optional callbacks for other view types
+                      onFavoriteToggle: (index, isFavorite) {
+                        // Handle favorite toggle if needed
                       },
                     );
-                  }
-                  // Return empty SizedBox when no labels available
-                  return const SizedBox.shrink();
-                }),
-                SizedBox(height: screenHeight * 0.010),
-                Obx(() {
-                  var myPostModel = appSettingcontroller.myPostModel.value;
-                  final viewType = myPostModel?.viewtype ?? '';
-                  print(" View type is $viewType");
-                  return PostViewWidget(
-                    type: viewType,
-                    controller: controller.appPostController,
-                    statusValue: controller.selectedStatusValue.value,
-                    onItemTap: () {
-                      const PostDetailsScreen().launch(context);
-                    },
-                    // Optional callbacks for other view types
-                    onFavoriteToggle: (index, isFavorite) {
-                      // Handle favorite toggle if needed
-                    },
-                  );
-                }),
-              ],
+                  }),
+                ],
+              ),
             ),
           ),
         ),

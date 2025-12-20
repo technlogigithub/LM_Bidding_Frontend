@@ -15,7 +15,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
   final Function(int, bool)? onFavoriteToggle;
   final double? height;
 
-    const CustomHorizontalGridViewList({
+  const CustomHorizontalGridViewList({
     super.key,
     required this.model,
     required this.isLoading,
@@ -27,7 +27,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => isLoading.value
+      () => isLoading.value
           ? _buildShimmerList()
           : _buildFlexibleListView(context),
     );
@@ -35,7 +35,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
 
   Widget _buildFlexibleListView(BuildContext context) {
     final results = model.value?.result;
-    
+
     if (results == null || results.isEmpty) {
       return SizedBox(
         height: height ?? 295.h,
@@ -92,8 +92,8 @@ class CustomHorizontalGridViewList extends StatelessWidget {
         itemCount: 3, // Number of shimmer placeholders
         separatorBuilder: (_, __) => SizedBox(width: 10.w),
         itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: _buildShimmerItemCard(),
         ),
       ),
@@ -131,15 +131,22 @@ class CustomHorizontalGridViewList extends StatelessWidget {
           // Content section shimmer
           Container(
             width: 156.w,
-            constraints: BoxConstraints(
-              minHeight: 100.h,
-            ),
+            constraints: BoxConstraints(minHeight: 100.h),
             decoration: BoxDecoration(
               color: AppColors.appWhite,
               border: Border(
-                left: BorderSide(color: AppColors.kBorderColorTextField, width: 1),
-                right: BorderSide(color: AppColors.kBorderColorTextField, width: 1),
-                bottom: BorderSide(color: AppColors.kBorderColorTextField, width: 1),
+                left: BorderSide(
+                  color: AppColors.kBorderColorTextField,
+                  width: 1,
+                ),
+                right: BorderSide(
+                  color: AppColors.kBorderColorTextField,
+                  width: 1,
+                ),
+                bottom: BorderSide(
+                  color: AppColors.kBorderColorTextField,
+                  width: 1,
+                ),
               ),
               borderRadius: BorderRadius.only(
                 bottomRight: Radius.circular(8.r),
@@ -161,11 +168,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Seller name shimmer
-                  Container(
-                    width: 100.w,
-                    height: 16.sp,
-                    color: Colors.white,
-                  ),
+                  Container(width: 100.w, height: 16.sp, color: Colors.white),
                   SizedBox(height: 6.h),
                   // Rating shimmer
                   Row(
@@ -180,11 +183,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                   ),
                   SizedBox(height: 6.h),
                   // Seller level shimmer
-                  Container(
-                    width: 80.w,
-                    height: 14.sp,
-                    color: Colors.white,
-                  ),
+                  Container(width: 80.w, height: 14.sp, color: Colors.white),
                 ],
               ),
             ),
@@ -209,7 +208,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
     // Extract data from result
     final title = result.info?.title ?? '';
     final ratingReview = result.info?.ratingReview ?? '';
-    final price  = result.info?.price ?? '';
+    final price = result.info?.price ?? '';
     final sellerName = result.details?.s1 ?? result.info?.s1 ?? '';
 
     // Parse rating and review count from ratingReview string (format: "5.0 (520 review)" or similar)
@@ -268,18 +267,18 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                             width: 156.w,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Shimmer.fromColors(
-                              baseColor: AppColors.simmerColor,
-                              highlightColor: AppColors.appWhite,
+                              baseColor: AppColors.appMutedColor,
+                              highlightColor: AppColors.appMutedTextColor,
                               child: Container(
                                 height: 135.h,
                                 width: 156.w,
-                                color: AppColors.simmerColor,
+                                color: AppColors.appMutedColor,
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
                               height: 135.h,
                               width: 156.w,
-                              color: AppColors.simmerColor,
+                              color: AppColors.appMutedColor,
                               child: Icon(
                                 Icons.image_not_supported,
                                 color: Colors.grey[600],
@@ -289,7 +288,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                         : Container(
                             height: 135.h,
                             width: 156.w,
-                            color: AppColors.simmerColor,
+                            color: AppColors.appMutedColor,
                             child: Icon(
                               Icons.image_not_supported,
                               color: Colors.grey[600],
@@ -300,7 +299,10 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                   if (onFavoriteToggle != null)
                     Obx(() {
                       final currentResult = model.value?.result?[index];
-                      final isFavorite = currentResult?.info?.favorite ?? result.info?.favorite ?? false;
+                      final isFavorite =
+                          currentResult?.info?.favorite ??
+                          result.info?.favorite ??
+                          false;
                       return Positioned(
                         top: 5.h,
                         right: 5.w,
@@ -332,8 +334,12 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                             ),
                             child: Center(
                               child: Icon(
-                                isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: isFavorite ? Colors.red : AppColors.appIconColor,
+                                isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: isFavorite
+                                    ? Colors.red
+                                    : AppColors.appIconColor,
                                 size: 16.0,
                               ),
                             ),
@@ -372,7 +378,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title ??"",
+                      title ?? "",
                       style: AppTextStyle.title(
                         color: AppColors.appTitleColor,
                         fontWeight: FontWeight.bold,
@@ -386,7 +392,11 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                     if (ratingReview.isNotEmpty)
                       Row(
                         children: [
-                          Icon(IconlyBold.star, color: Colors.amber, size: 18.sp),
+                          Icon(
+                            IconlyBold.star,
+                            color: Colors.amber,
+                            size: 18.sp,
+                          ),
                           SizedBox(width: 3.w),
                           if (rating > 0)
                             Text(
@@ -413,14 +423,10 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                     if (price.isNotEmpty)
                       Text(
                         "₹$price",
-                        style: AppTextStyle.title(
-
-                        ),
+                        style: AppTextStyle.title(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      )
-
-
+                      ),
 
                     // if (sellerLevel.isNotEmpty) ...[
                     //   SizedBox(height: 6.h),
@@ -450,5 +456,4 @@ class CustomHorizontalGridViewList extends StatelessWidget {
       ),
     );
   }
-
 }

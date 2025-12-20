@@ -1,15 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_string.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../core/app_color.dart';
-
 import '../core/app_textstyle.dart';
 import '../models/Post/Get_Post_List_Model.dart';
 
-class CustomVerticalListviewList extends StatelessWidget {
+class AppRecentlyPostCard extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
   final VoidCallback? onItemTap;
   final VoidCallback? onRemoveTap;
@@ -19,7 +18,7 @@ class CustomVerticalListviewList extends StatelessWidget {
   final RxBool isLoading;
   final bool isFromCartScreen;
 
-  const CustomVerticalListviewList({
+  const AppRecentlyPostCard({
     super.key,
     required this.model,
     this.onItemTap,
@@ -34,7 +33,7 @@ class CustomVerticalListviewList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => isLoading.value
+      () => isLoading.value
           ? _buildShimmerList()
           : _buildPostList(context),
     );
@@ -42,7 +41,7 @@ class CustomVerticalListviewList extends StatelessWidget {
 
   Widget _buildPostList(BuildContext context) {
     final results = model.value?.result;
-
+    
     if (results == null || results.isEmpty) {
       return Center(
         child: Padding(
@@ -83,21 +82,22 @@ class CustomVerticalListviewList extends StatelessWidget {
   // Shimmer effect for the list
   Widget _buildShimmerList() {
     return SizedBox(
-      height: 160 * 3,
+      height: 160,
       child: ListView.separated(
         physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(
+          top: 20,
+          bottom: 20,
+          left: 15.0,
+          right: 15.0,
+        ),
         scrollDirection: Axis.vertical,
         itemCount: 3, // Number of shimmer placeholders
         separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-        itemBuilder: (_, __) => Column(
-          children: [
-            Shimmer.fromColors(
-              baseColor: AppColors.appMutedColor,
-              highlightColor: AppColors.appMutedTextColor,
-              child: _buildShimmerItemCard(),
-            ),
-            SizedBox(height: 10.h,)
-          ],
+        itemBuilder: (_, __) => Shimmer.fromColors(
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
+          child: _buildShimmerItemCard(),
         ),
       ),
     );
@@ -305,14 +305,11 @@ class CustomVerticalListviewList extends StatelessWidget {
     String? imageUrl;
     if (result.media != null && result.media!.isNotEmpty) {
       final firstImage = result.media!.firstWhere(
-            (media) => media.mediaType == 'image',
+        (media) => media.mediaType == 'image',
         orElse: () => result.media!.first,
       );
       imageUrl = firstImage.url;
     }
-
-    // Extract badge from result
-    final badge = result.info?.badge;
 
     return Stack(
       alignment: Alignment.topLeft,
@@ -329,38 +326,38 @@ class CustomVerticalListviewList extends StatelessWidget {
           ),
           child: imageUrl != null
               ? ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(8.0),
-              topLeft: Radius.circular(8.0),
-            ),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.appMutedColor,
-                highlightColor: AppColors.appMutedTextColor,
-                child: Container(
-                  height: isFromCart ? 120.h : 140.h,
-                  width: 120.w,
-                  color: AppColors.appMutedColor,
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: AppColors.appMutedColor,
-                child: Icon(
-                  Icons.image_not_supported,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ),
-          )
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(8.0),
+                    topLeft: Radius.circular(8.0),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: AppColors.appMutedColor,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.appColor,
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: AppColors.appMutedColor,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                )
               : Container(
-            color: AppColors.appMutedColor,
-            child: Icon(
-              Icons.image_not_supported,
-              color: Colors.grey[600],
-            ),
-          ),
+                  color: AppColors.appMutedColor,
+                  child: Icon(
+                    Icons.image_not_supported,
+                    color: Colors.grey[600],
+                  ),
+                ),
         ),
         // Always show favorite icon - filled when true, outline when false
         Obx(() {
@@ -375,10 +372,8 @@ class CustomVerticalListviewList extends StatelessWidget {
               if (result.info != null) {
                 result.info!.favorite = newValue;
               }
-              // Defer refresh to avoid setState during build error
-              Future.microtask(() {
-                model.refresh();
-              });
+              // Refresh the model to trigger UI update
+              model.refresh();
               // Call the callback to handle API call if needed
               onFavoriteToggle(index, newValue);
             },
@@ -410,28 +405,6 @@ class CustomVerticalListviewList extends StatelessWidget {
             ),
           );
         }),
-        // Badge - show only if available
-        if (badge != null && badge.isNotEmpty)
-          Positioned(
-            top: 3,
-            right: 2,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                gradient: AppColors.appPagecolor,
-                borderRadius: BorderRadius.circular(5),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                badge,
-                textAlign: TextAlign.center,
-                style: AppTextStyle.body(),
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -440,12 +413,13 @@ class CustomVerticalListviewList extends StatelessWidget {
     final title = result.info?.title ?? '';
     final ratingReview = result.info?.ratingReview;
     final price = result.info?.price;
+    final badge = result.info?.badge;
 
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+     mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Title
           Flexible(
@@ -497,38 +471,38 @@ class CustomVerticalListviewList extends StatelessWidget {
           ),
           const SizedBox(height: 5.0),
           // Badge - show only if available
-          // if (badge != null && badge.isNotEmpty)
-          //   Row(
-          //     mainAxisAlignment: MainAxisAlignment.start,
-          //     children: [
-          //       Container(
-          //         padding: const EdgeInsets.symmetric(
-          //           horizontal: 14,
-          //           vertical: 6,
-          //         ),
-          //         decoration: BoxDecoration(
-          //           gradient: AppColors.appPagecolor,
-          //           borderRadius: BorderRadius.circular(10),
-          //           boxShadow: [
-          //             BoxShadow(
-          //               color: AppColors.appMutedColor,
-          //               blurRadius: 5,
-          //               spreadRadius: 1,
-          //               offset: Offset(0, 5),
-          //             ),
-          //           ],
-          //         ),
-          //         alignment: Alignment.center,
-          //         child: Text(
-          //           badge,
-          //           textAlign: TextAlign.center,
-          //           style: AppTextStyle.body(),
-          //         ),
-          //       ),
-          //     ],
-          //   ),
+          if (badge != null && badge.isNotEmpty)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.appPagecolor,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.appMutedColor,
+                        blurRadius: 5,
+                        spreadRadius: 1,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    badge,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyle.body(),
+                  ),
+                ),
+              ],
+            ),
 
-          // // Seller info
+    // // Seller info
           // if (sellerName.isNotEmpty)
           //   Row(
           //     children: [
@@ -568,8 +542,8 @@ class CustomVerticalListviewList extends StatelessWidget {
       ),
     );
   }
-}
 
+}
 class CartActionButtons extends StatelessWidget {
   final VoidCallback? onRemoveTap;
   final VoidCallback? onSaveForLaterTap;
@@ -645,3 +619,4 @@ class CartActionButtons extends StatelessWidget {
     );
   }
 }
+

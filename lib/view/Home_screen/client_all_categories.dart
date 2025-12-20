@@ -245,29 +245,51 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/home/home_controller.dart';
 import '../../core/app_color.dart';
-import '../../core/app_string.dart';
 import '../../core/app_textstyle.dart';
-import '../../models/category_model/category_model.dart';
-import '../../widget/category_horizontal_icon_widget.dart';
+import '../../widget/custom_view_widget.dart';
 
-class ClientAllCategories extends StatelessWidget {
+class ClientAllCategories extends StatefulWidget {
   const ClientAllCategories({super.key});
 
   @override
+  State<ClientAllCategories> createState() => _ClientAllCategoriesState();
+}
+
+class _ClientAllCategoriesState extends State<ClientAllCategories> {
+  late final ClientHomeController homeController;
+  late final AppSettingsController appSettingcontroller;
+
+  @override
+  void initState() {
+    super.initState();
+    homeController = Get.find<ClientHomeController>();
+    appSettingcontroller = Get.find<AppSettingsController>();
+  }
+
+  Future<void> _loadData() async {
+    // Refresh categories data
+    await homeController.fetchCategory();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Get categoryList from home controller
-    final ClientHomeController homeController =
-        Get.find<ClientHomeController>();
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    // Access categoryPage through appSettings model
+    final categoryPage =
+        appSettingcontroller.appSettings.value?.result?.categoryPage;
+    var appbarTitle = categoryPage?.title ?? '';
+    var viewtype = categoryPage?.viewType ?? '';
 
     return Scaffold(
       // backgroundColor: AppColors.appWhite,
       appBar: AppBar(
         title: Text(
-          AppStrings.allCategories,
+          appbarTitle,
           style: AppTextStyle.title(color: AppColors.appTextColor),
         ),
         centerTitle: true,
@@ -276,14 +298,14 @@ class ClientAllCategories extends StatelessWidget {
         backgroundColor: Colors.transparent,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                spreadRadius: 2,
-                blurRadius: 6,
-                offset: Offset(0, 3),
-              ),
-            ],
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: Colors.black.withValues(alpha: 0.2),
+            //     spreadRadius: 2,
+            //     blurRadius: 6,
+            //     offset: Offset(0, 3),
+            //   ),
+            // ],
             gradient: AppColors.appbarColor,
           ),
         ),
@@ -337,34 +359,28 @@ class ClientAllCategories extends StatelessWidget {
         height: screenHeight,
         width: screenWidth,
         decoration: BoxDecoration(gradient: AppColors.appPagecolor),
-        padding: const EdgeInsets.only(top: 15.0),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Obx(() {
-              // Convert CategoryResult to Category format
-              final categories = homeController.categoryList.map((
-                categoryResult,
-              ) {
-                return Category(
-                  ukey: categoryResult.ukey ?? '',
-                  parentUkey: null,
-                  name: categoryResult.name ?? '',
-                  title: categoryResult.title ?? '',
-                  categoryDetail: categoryResult.categoryDetail ?? '',
-                  image: categoryResult.image ?? '',
-                  hasSubcategories: categoryResult.hasSubcategories ?? false,
-                );
-              }).toList();
-
-              return Column(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // Refresh categories data - shimmer will show automatically via isLoading
+            await _loadData();
+          },
+          color: AppColors.appButtonColor,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 15.0, left: 10, right: 10),
+              child: Column(
                 children: [
-                  CategoryListWidget(categories: categories),
+                  // Use CustomViewWidget with viewType from categoryPage or default to "category_vertical_list_widget"
+                  CustomViewWidget(
+                    type: viewtype.isNotEmpty
+                        ? viewtype
+                        : 'category_vertical_list_widget',
+                  ),
                   const SizedBox(height: 15),
                 ],
-              );
-            }),
+              ),
+            ),
           ),
         ),
       ),

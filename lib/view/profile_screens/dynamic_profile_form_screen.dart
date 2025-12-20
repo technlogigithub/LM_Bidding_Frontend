@@ -522,7 +522,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                     ),
                     child:  Icon(
                       FeatherIcons.edit,
-                      color: AppColors.appColor,
+                      color: AppColors.appButtonColor,
                       size: 18,
                     ),
                   ),
@@ -672,8 +672,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
         children: [
           // Page Description Shimmer
           Shimmer.fromColors(
-            baseColor: AppColors.simmerColor,
-            highlightColor: AppColors.appWhite,
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
             child: Container(
               height: 20,
               width: double.infinity,
@@ -686,8 +686,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           const SizedBox(height: 20),
           // Progress Bar Shimmer
           Shimmer.fromColors(
-            baseColor: AppColors.simmerColor,
-            highlightColor: AppColors.appWhite,
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
             child: Container(
               height: 8,
               width: double.infinity,
@@ -700,8 +700,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           const SizedBox(height: 20),
           // Step Title Shimmer
           Shimmer.fromColors(
-            baseColor: AppColors.simmerColor,
-            highlightColor: AppColors.appWhite,
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
             child: Container(
               height: 24,
               width: 200,
@@ -720,8 +720,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
               children: [
                 // Label Shimmer
                 Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     height: 16,
                     width: 120,
@@ -734,8 +734,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 const SizedBox(height: 8),
                 // Input Field Shimmer
                 Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     height: 50,
                     width: double.infinity,
@@ -751,8 +751,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           const SizedBox(height: 30),
           // Button Shimmer
           Shimmer.fromColors(
-            baseColor: AppColors.simmerColor,
-            highlightColor: AppColors.appWhite,
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
             child: Container(
               height: 50,
               width: double.infinity,
@@ -1229,8 +1229,8 @@ class _AddressDialogState extends State<AddressDialog> {
                   // Dynamic Form Fields
                   if (_isGettingLocation) ...[
                     Shimmer.fromColors(
-                      baseColor: AppColors.simmerColor,
-                      highlightColor: AppColors.appWhite,
+                      baseColor: AppColors.appMutedColor,
+                      highlightColor: AppColors.appMutedTextColor,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
