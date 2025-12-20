@@ -479,8 +479,8 @@ class ProfileScreen extends StatelessWidget {
       child: Row(
         children: [
           Shimmer.fromColors(
-            baseColor: AppColors.simmerColor,
-            highlightColor: AppColors.appWhite,
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
             child: Container(
               height: 50,
               width: 50,
@@ -494,8 +494,8 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     height: 16,
                     width: 150,
@@ -507,8 +507,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 8),
                 Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     height: 14,
                     width: 100,

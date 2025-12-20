@@ -128,6 +128,8 @@ class AppSettingsController extends GetxController {
   Rx<HomePage?> homePage = Rx<HomePage?>(null);
   Rx<HeaderMenuSection?> homePageheader = Rx<HeaderMenuSection?>(null);
   Rx<MyPostModel?> myPostModel = Rx<MyPostModel?>(null);
+  Rx<SearchPage?> searchPage = Rx<SearchPage?>(null);
+  Rx<CategoryPage?> categoryPage = Rx<CategoryPage?>(null);
 
   // Languages
   RxList<Language> availableLanguages = <Language>[].obs;
@@ -176,8 +178,8 @@ class AppSettingsController extends GetxController {
         /// Save MobileApp
         androidVersion.value = result?.mobileApp?.androidVersion ?? "";
         iosVersion.value = result?.mobileApp?.iosVersion ?? "";
-        playstoreUrl.value = result?.mobileApp?.playstoreUrl ?? "";
-        appstoreUrl.value = result?.mobileApp?.appstoreUrl ?? "";
+        // playstoreUrl.value = result?.mobileApp?.playstoreUrl ?? "";
+        // appstoreUrl.value = result?.mobileApp?.appstoreUrl ?? "";
 
         /// Store themes
         _lightTheme = result?.lightTheme?.toJson() ?? {};
@@ -259,6 +261,8 @@ class AppSettingsController extends GetxController {
         myProfile.value = result?.appMenu?.myProfile;
         support.value = result?.appMenu?.support;
         myPostModel.value = result?.appMenu?.myPost;
+        searchPage.value = result?.searchPage;
+        categoryPage.value = result?.categoryPage;
 
 
         // NEW

@@ -161,8 +161,8 @@ class ReviewFormContainer extends StatelessWidget {
 
   Widget _buildShimmer(double height, double width) {
     return Shimmer.fromColors(
-      baseColor: AppColors.simmerColor,
-      highlightColor: AppColors.appWhite,
+      baseColor: AppColors.appMutedColor,
+      highlightColor: AppColors.appMutedTextColor,
       child: Container(
         padding: const EdgeInsets.only(left: 15.0, right: 15.0),
         width: width,

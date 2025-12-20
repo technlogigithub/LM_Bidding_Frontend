@@ -48,7 +48,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
       return SizedBox(
         height: 180,
         child: ListView.separated(
-          physics: const BouncingScrollPhysics(),
+          // physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.only(
               top: 20, bottom: 20, left: 15.0, right: 15.0),
           scrollDirection: Axis.horizontal,
@@ -68,14 +68,14 @@ class CustomHorizontalListViewList extends StatelessWidget {
     return SizedBox(
       height: 160,
       child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
+        // physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.only(top: 20, bottom: 20, left: 15.0, right: 15.0),
         scrollDirection: Axis.horizontal,
         itemCount: 3, // Number of shimmer placeholders
         separatorBuilder: (_, __) => const SizedBox(width: 10.0),
         itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: _buildShimmerItemCard(),
         ),
       ),
@@ -245,16 +245,16 @@ class CustomHorizontalListViewList extends StatelessWidget {
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Shimmer.fromColors(
-                      baseColor: AppColors.simmerColor,
-                      highlightColor: AppColors.appWhite,
+                      baseColor: AppColors.appMutedColor,
+                      highlightColor: AppColors.appMutedTextColor,
                       child: Container(
                         height: 135.h,
                         width: 120.w,
-                        color: AppColors.simmerColor,
+                        color: AppColors.appMutedColor,
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      color: AppColors.simmerColor,
+                      color: AppColors.appMutedColor,
                       child: Icon(
                         Icons.image_not_supported,
                         color: Colors.grey[600],
@@ -263,7 +263,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
                   ),
                 )
               : Container(
-                  color: AppColors.simmerColor,
+                  color: AppColors.appMutedColor,
                   child: Icon(
                     Icons.image_not_supported,
                     color: Colors.grey[600],

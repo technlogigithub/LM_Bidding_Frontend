@@ -539,8 +539,8 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
                   }
                   // Show shimmer while loading
                   return Shimmer.fromColors(
-                    baseColor: AppColors.simmerColor,
-                    highlightColor: AppColors.appWhite,
+                    baseColor: AppColors.appMutedColor,
+                    highlightColor: AppColors.appMutedTextColor,
                     child: Container(
                       color: Colors.white,
                     ),

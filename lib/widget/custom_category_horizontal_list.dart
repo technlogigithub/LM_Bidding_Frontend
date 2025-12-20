@@ -41,13 +41,13 @@ class CustomCategoryHorizontalList extends StatelessWidget {
       height: height.h,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        // physics: const BouncingScrollPhysics(),
         shrinkWrap: true,
         padding: padding,
         itemCount: shimmerItemCount,
         itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: Padding(
             padding: itemPadding,
             child: Column(
@@ -86,7 +86,7 @@ class CustomCategoryHorizontalList extends StatelessWidget {
         height: height.h,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
+          // physics: const BouncingScrollPhysics(),
           shrinkWrap: true,
           padding: padding,
           itemCount: categories.length,

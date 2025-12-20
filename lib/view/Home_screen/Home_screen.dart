@@ -42,8 +42,9 @@ class ClientHomeScreen extends StatelessWidget {
     );
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
+    final search = homePage?.design?.searchBar?.title;
     final AppPostController appPostController = Get.find<AppPostController>();
-    appPostController.getPostList();
+    // appPostController.getPostList();
 
     final profilecontroller = Get.put(ProfileController());
 
@@ -86,7 +87,7 @@ class ClientHomeScreen extends StatelessWidget {
               size: 18,
             ),
             title: Text(
-              ' Search...',
+              search ?? '',
               style: AppTextStyle.description(color: AppColors.appTextColor),
             ),
             onTap: () {
@@ -367,266 +368,237 @@ class ClientHomeScreen extends StatelessWidget {
               );
             }),
           ),
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(70.0),
-            child: buildSearchBar(),
-          ),
+          bottom: homePage?.design?.searchBar?.isActive == true
+              ? PreferredSize(
+                  preferredSize: Size.fromHeight(70.0),
+                  child: buildSearchBar(),
+                )
+              : null,
         ),
 
         body: Container(
           height: screenHeight,
           width: screenWidth,
           decoration: BoxDecoration(gradient: AppColors.appPagecolor),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            // padding: const EdgeInsets.only(top: 15.0),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                gradient: AppColors.appPagecolor,
-                // borderRadius: const BorderRadius.only(topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Obx(() {
-                    final banners = controller.bannerList;
-                    final videoAndImageBanners =
-                        controller.bannerVideoAndImageList;
+          child: RefreshIndicator(
+            color: AppColors.appButtonColor,
+            onRefresh: () async {
+              // Refresh all initial data
+              await controller.initializeData();
+              // await appPostController.getPostList();
+              await profilecontroller.fetchProfileDetails();
+            },
+            child: SingleChildScrollView(
+              // physics: const BouncingScrollPhysics(),
+              // padding: const EdgeInsets.only(top: 15.0),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  gradient: AppColors.appPagecolor,
+                  // borderRadius: const BorderRadius.only(topLeft: Radius.circular(30.0), topRight: Radius.circular(30.0)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Obx(() {
+                      final banners = controller.bannerList;
+                      final videoAndImageBanners =
+                          controller.bannerVideoAndImageList;
 
-                    final mediaItems = buildMediaItemsFromVideoList(
-                      videoAndImageBanners,
-                    );
+                      final mediaItems = buildMediaItemsFromVideoList(
+                        videoAndImageBanners,
+                      );
 
-                    return Column(
-                      children: [
-                        /// IMAGE ONLY BANNER
-                        CustomBanner(
-                          banners: banners
-                              .map(
-                                (banner) => {
-                                  'image': banner.filePath ?? '',
-                                  'redirectUrl': banner.actionUrl ?? '',
-                                },
-                              )
-                              .toList(),
-                          isLoading: controller.isLoading,
-                          width: screenWidth,
-                        ),
-                        SizedBox(height: 10.h),
+                      final customBannerActive =
+                          homePage
+                              ?.design
+                              ?.customSections?['custom_banner']
+                              ?.isActive ==
+                          true;
+                      final customBannerWithVideoActive =
+                          homePage
+                              ?.design
+                              ?.customSections?['custom_banner_with_video']
+                              ?.isActive ==
+                          true;
 
-                        /// IMAGE + VIDEO BANNER (from bannerVideoAndImageList)
-                        CustomBannerWithVideo(
-                          mediaItems: mediaItems,
-                          isLoading: controller.isLoading,
-                        ),
-                      ],
-                    );
-                  }),
+                      // Check if data exists
+                      final hasBannerData = banners.isNotEmpty;
+                      final hasVideoBannerData =
+                          videoAndImageBanners.isNotEmpty &&
+                          mediaItems.isNotEmpty;
 
-                  const SizedBox(height: 25.0),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppStrings.categories,
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () =>
-                              const ClientAllCategories().launch(context),
-                          // onTap: () => controller.handleRestrictedFeature(() {
-                          //   Get.toNamed('/categories'); // Replace with actual categories route
-                          // }),
-                          child: Text(
-                            AppStrings.viewAll,
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
+                      return Column(
+                        children: [
+                          /// IMAGE ONLY BANNER
+                          if (customBannerActive && hasBannerData) ...[
+                            CustomBanner(
+                              banners: banners
+                                  .map(
+                                    (banner) => {
+                                      'image': banner.filePath ?? '',
+                                      'redirectUrl': banner.actionUrl ?? '',
+                                    },
+                                  )
+                                  .toList(),
+                              isLoading: controller.isLoading,
+                              width: screenWidth,
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
+                            SizedBox(height: 10.h),
+                          ],
 
-                  Obx(
-                    () => CustomCategoryHorizontalList(
-                      categories: controller.categoryList
-                          .map(
-                            (category) => {
-                              'image': category.image ?? '',
-                              'name': category.title ?? '',
-                            },
-                          )
-                          .toList(),
-                      isLoading: controller.isLoading,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          AppStrings.upcomingPost,
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                          ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () {
-                            // const PopularServices().launch(context);
-                          },
-                          child: Text(
-                            AppStrings.viewAll,
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
+                          /// IMAGE + VIDEO BANNER (from bannerVideoAndImageList)
+                          if (customBannerWithVideoActive && hasVideoBannerData)
+                            CustomBannerWithVideo(
+                              mediaItems: mediaItems,
+                              isLoading: controller.isLoading,
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CustomHorizontalListViewList(
-                    model: appPostController.getPostListResponseModel,
-                    onFavoriteToggle: (index, newValue) {
-                      // Update favorite in the model
-                      final result = appPostController
-                          .getPostListResponseModel
-                          .value
-                          ?.result;
-                      if (result != null && index < result.length) {
-                        if (result[index].info != null) {
-                          result[index].info!.favorite = newValue;
-                          appPostController.getPostListResponseModel.refresh();
-                        }
-                      }
-                    },
-                    isLoading: appPostController.isLoading,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Top Poster',
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                          ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => controller.handleRestrictedFeature(() {
-                            // const TopSeller().launch(context);
-                          }),
-                          child: Text(
-                            'View All',
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CustomHorizontalGridViewList(
-                    model: appPostController.getPostListResponseModel,
-                    isLoading: appPostController.isLoading,
-                    onItemTap: () => controller.handleRestrictedFeature(() {
-                      // Navigation logic
+                        ],
+                      );
                     }),
-                    onFavoriteToggle: (index, newValue) {
-                      // Update favorite in the model
-                      final result = appPostController
-                          .getPostListResponseModel
-                          .value
-                          ?.result;
-                      if (result != null && index < result.length) {
-                        if (result[index].info != null) {
-                          result[index].info!.favorite = newValue;
-                          appPostController.getPostListResponseModel.refresh();
-                        }
+
+                    Obx(() {
+                      final isCategoryActive =
+                          homePage
+                              ?.design
+                              ?.customSections?['custom_category_horizontal_list']
+                              ?.isActive ==
+                          true;
+                      final hasCategoryData =
+                          controller.categoryList.isNotEmpty;
+
+                      if (isCategoryActive && hasCategoryData) {
+                        return Column(
+                          children: [
+                            const SizedBox(height: 25.0),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 15.0,
+                                right: 15.0,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    AppStrings.categories,
+                                    style: AppTextStyle.title(
+                                      color: AppColors.appTitleColor,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => const ClientAllCategories()
+                                        .launch(context),
+                                    // onTap: () => controller.handleRestrictedFeature(() {
+                                    //   Get.toNamed('/categories'); // Replace with actual categories route
+                                    // }),
+                                    child: Text(
+                                      AppStrings.viewAll,
+                                      style: AppTextStyle.description(
+                                        color: AppColors.appLinkColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            CustomCategoryHorizontalList(
+                              categories: controller.categoryList
+                                  .map(
+                                    (category) => {
+                                      'image': category.image ?? '',
+                                      'name': category.title ?? '',
+                                    },
+                                  )
+                                  .toList(),
+                              isLoading: controller.isLoading,
+                            ),
+                          ],
+                        );
                       }
-                    },
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Recent Viewed',
-                          style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                          ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => controller.handleRestrictedFeature(() {
-                            const RecentlyView().launch(context);
-                          }),
-                          child: Text(
-                            'View All',
-                            style: AppTextStyle.description(
-                              color: AppColors.appLinkColor,
+                      return const SizedBox.shrink();
+                    }),
+
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 15.0,
+                        right: 15.0,
+                        top: 10,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            AppStrings.upcomingPost,
+                            style: AppTextStyle.title(
+                              color: AppColors.appTitleColor,
                             ),
                           ),
-                        ),
-                      ],
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () {
+                              // const PopularServices().launch(context);
+                            },
+                            child: Text(
+                              AppStrings.viewAll,
+                              style: AppTextStyle.description(
+                                color: AppColors.appLinkColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  CustomHorizontalListViewList(
-                    model: appPostController.getPostListResponseModel,
-                    onFavoriteToggle: (index, newValue) {
-                      // Update favorite in the model
-                      final result = appPostController
-                          .getPostListResponseModel
-                          .value
-                          ?.result;
-                      if (result != null && index < result.length) {
-                        if (result[index].info != null) {
-                          result[index].info!.favorite = newValue;
-                          appPostController.getPostListResponseModel.refresh();
+                    CustomHorizontalListViewList(
+                      model: appPostController.getPostListResponseModel,
+                      onFavoriteToggle: (index, newValue) {
+                        // Update favorite in the model
+                        final result = appPostController
+                            .getPostListResponseModel
+                            .value
+                            ?.result;
+                        if (result != null && index < result.length) {
+                          if (result[index].info != null) {
+                            result[index].info!.favorite = newValue;
+                            appPostController.getPostListResponseModel
+                                .refresh();
+                          }
                         }
-                      }
-                    },
-                    isLoading: appPostController.isLoading,
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  CustomTabBar(
-                    // height: 50,
-                    tabs: controller.serviceList,
-                    // primaryColor: AppColors.appColor,
-                    // borderColor: Colors.grey.shade300,
-                    textStyle: AppTextStyle.description(),
-                    onTap: (index) {
-                      // do something when tapped
-                      print("Selected tab index: $index");
-                    },
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
+                      },
+                      isLoading: appPostController.isLoading,
                     ),
-                    child: CustomVerticalGridviewList(
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Top Poster',
+                            style: AppTextStyle.title(
+                              color: AppColors.appTitleColor,
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => controller.handleRestrictedFeature(() {
+                              // const TopSeller().launch(context);
+                            }),
+                            child: Text(
+                              'View All',
+                              style: AppTextStyle.description(
+                                color: AppColors.appLinkColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    CustomHorizontalGridViewList(
                       model: appPostController.getPostListResponseModel,
                       isLoading: appPostController.isLoading,
-                      onItemTap: () {
+                      onItemTap: () => controller.handleRestrictedFeature(() {
                         // Navigation logic
-                      },
+                      }),
                       onFavoriteToggle: (index, newValue) {
                         // Update favorite in the model
                         final result = appPostController
@@ -642,15 +614,32 @@ class ClientHomeScreen extends StatelessWidget {
                         }
                       },
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Recent Viewed',
+                            style: AppTextStyle.title(
+                              color: AppColors.appTitleColor,
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => controller.handleRestrictedFeature(() {
+                              const RecentlyView().launch(context);
+                            }),
+                            child: Text(
+                              'View All',
+                              style: AppTextStyle.description(
+                                color: AppColors.appLinkColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: CustomVerticalListviewList(
+                    CustomHorizontalListViewList(
                       model: appPostController.getPostListResponseModel,
                       onFavoriteToggle: (index, newValue) {
                         // Update favorite in the model
@@ -668,36 +657,110 @@ class ClientHomeScreen extends StatelessWidget {
                       },
                       isLoading: appPostController.isLoading,
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
+                    if (homePage
+                                ?.design
+                                ?.customSections?['custom_tapbar']
+                                ?.isActive ==
+                            true &&
+                        controller.serviceList.isNotEmpty) ...[
+                      SizedBox(height: screenHeight * 0.03),
+                      CustomTabBar(
+                        // height: 50,
+                        tabs: controller.serviceList,
+                        // primaryColor: AppColors.appColor,
+                        // borderColor: Colors.grey.shade300,
+                        textStyle: AppTextStyle.description(),
+                        onTap: (index) {
+                          // do something when tapped
+                          print("Selected tab index: $index");
+                        },
+                      ),
+                      SizedBox(height: screenHeight * 0.03),
+                    ],
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 15.0,
+                        right: 15.0,
+                        top: 10,
+                      ),
+                      child: CustomVerticalGridviewList(
+                        model: appPostController.getPostListResponseModel,
+                        isLoading: appPostController.isLoading,
+                        onItemTap: () {
+                          // Navigation logic
+                        },
+                        onFavoriteToggle: (index, newValue) {
+                          // Update favorite in the model
+                          final result = appPostController
+                              .getPostListResponseModel
+                              .value
+                              ?.result;
+                          if (result != null && index < result.length) {
+                            if (result[index].info != null) {
+                              result[index].info!.favorite = newValue;
+                              appPostController.getPostListResponseModel
+                                  .refresh();
+                            }
+                          }
+                        },
+                      ),
                     ),
-                    child: CustomButton(
-                      onTap: () {
-                        controller.initiatePayment();
-                      },
-                      text: 'Pay 1000/- Rs. Now',
+                    SizedBox(height: screenHeight * 0.03),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 15.0,
+                        right: 15.0,
+                        top: 10,
+                      ),
+                      child: CustomVerticalListviewList(
+                        model: appPostController.getPostListResponseModel,
+                        onFavoriteToggle: (index, newValue) {
+                          // Update favorite in the model
+                          final result = appPostController
+                              .getPostListResponseModel
+                              .value
+                              ?.result;
+                          if (result != null && index < result.length) {
+                            if (result[index].info != null) {
+                              result[index].info!.favorite = newValue;
+                              appPostController.getPostListResponseModel
+                                  .refresh();
+                            }
+                          }
+                        },
+                        isLoading: appPostController.isLoading,
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15.0,
-                      right: 15.0,
-                      top: 10,
+                    SizedBox(height: screenHeight * 0.03),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 15.0,
+                        right: 15.0,
+                        top: 10,
+                      ),
+                      child: CustomButton(
+                        onTap: () {
+                          controller.initiatePayment();
+                        },
+                        text: 'Pay 1000/- Rs. Now',
+                      ),
                     ),
-                    child: CustomButton(
-                      onTap: () {
-                        Get.to(CartScreen());
-                      },
-                      text: 'Go To Cart Screen',
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 15.0,
+                        right: 15.0,
+                        top: 10,
+                      ),
+                      child: CustomButton(
+                        onTap: () {
+                          Get.to(CartScreen());
+                        },
+                        text: 'Go To Cart Screen',
+                      ),
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+                    SizedBox(height: screenHeight * 0.03),
+                  ],
+                ),
               ),
             ),
           ),

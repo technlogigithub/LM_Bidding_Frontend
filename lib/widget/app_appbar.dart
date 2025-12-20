@@ -49,8 +49,8 @@ class CustomHeader extends StatelessWidget {
                 imageUrl: images,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: 50,
                     height: 50,

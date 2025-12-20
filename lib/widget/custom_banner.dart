@@ -21,8 +21,8 @@ class CustomBanner extends StatelessWidget {
     required this.isLoading,
     this.height = 140.0,
     required this.width,
-    this.padding = const EdgeInsets.only(left: 15.0),
-    this.margin = const EdgeInsets.only(right: 10.0),
+    this.padding = const EdgeInsets.only(left: 0,),
+    this.margin = const EdgeInsets.only(right: 2),
     this.borderRadius = 8.0,
     this.fallbackImage,
   });
@@ -38,8 +38,8 @@ class CustomBanner extends StatelessWidget {
         padding: padding,
         itemCount: 3, // Default shimmer item count
         itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: Container(
             height: height.h,
             width: width.w, // Responsive width
@@ -67,7 +67,7 @@ class CustomBanner extends StatelessWidget {
           height: height.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
+            // physics: const BouncingScrollPhysics(),
             shrinkWrap: true,
             padding: padding,
             itemCount: banners.length,

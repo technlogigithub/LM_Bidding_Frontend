@@ -83,22 +83,21 @@ class CustomVerticalListviewList extends StatelessWidget {
   // Shimmer effect for the list
   Widget _buildShimmerList() {
     return SizedBox(
-      height: 160,
+      height: 160 * 3,
       child: ListView.separated(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(
-          top: 20,
-          bottom: 20,
-          left: 15.0,
-          right: 15.0,
-        ),
         scrollDirection: Axis.vertical,
         itemCount: 3, // Number of shimmer placeholders
         separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-        itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
-          child: _buildShimmerItemCard(),
+        itemBuilder: (_, __) => Column(
+          children: [
+            Shimmer.fromColors(
+              baseColor: AppColors.appMutedColor,
+              highlightColor: AppColors.appMutedTextColor,
+              child: _buildShimmerItemCard(),
+            ),
+            SizedBox(height: 10.h,)
+          ],
         ),
       ),
     );
@@ -338,16 +337,16 @@ class CustomVerticalListviewList extends StatelessWidget {
               imageUrl: imageUrl,
               fit: BoxFit.cover,
               placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.simmerColor,
-                highlightColor: AppColors.appWhite,
+                baseColor: AppColors.appMutedColor,
+                highlightColor: AppColors.appMutedTextColor,
                 child: Container(
                   height: isFromCart ? 120.h : 140.h,
                   width: 120.w,
-                  color: AppColors.simmerColor,
+                  color: AppColors.appMutedColor,
                 ),
               ),
               errorWidget: (context, url, error) => Container(
-                color: AppColors.simmerColor,
+                color: AppColors.appMutedColor,
                 child: Icon(
                   Icons.image_not_supported,
                   color: Colors.grey[600],
@@ -356,7 +355,7 @@ class CustomVerticalListviewList extends StatelessWidget {
             ),
           )
               : Container(
-            color: AppColors.simmerColor,
+            color: AppColors.appMutedColor,
             child: Icon(
               Icons.image_not_supported,
               color: Colors.grey[600],

@@ -15,7 +15,8 @@ class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
 
   @override
-  State<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
+  State<LanguageSelectionScreen> createState() =>
+      _LanguageSelectionScreenState();
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
@@ -29,7 +30,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ScreenUtil.init(context, designSize: const Size(375, 812), minTextAdapt: true);
+    ScreenUtil.init(
+      context,
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+    );
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
@@ -37,7 +42,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: true,
-        iconTheme:  IconThemeData(color: AppColors.appTextColor),
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: AppColors.appbarColor,
@@ -56,10 +61,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           style: AppTextStyle.title(
             color: AppColors.appTextColor,
             fontWeight: FontWeight.bold,
-
           ),
         ),
-
       ),
 
       bottomNavigationBar: Obx(() {
@@ -67,10 +70,8 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
             ? controller.languageSubmitButtonLabel.value
             : "";
         return Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor,
-          ),
-          padding: EdgeInsets.only(bottom: 24.w,left: 24.w,right: 24.w),
+          decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+          padding: EdgeInsets.only(bottom: 24.w, left: 24.w, right: 24.w),
           child: CustomButton(
             onTap: selectedLanguageKey != null ? _onContinuePressed : null,
             text: buttonText,
@@ -81,16 +82,15 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
         child: Container(
           height: screenHeight,
           width: screenWidth,
-          decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor,
-          ),
+          decoration: BoxDecoration(gradient: AppColors.appPagecolor),
           child: Padding(
             padding: EdgeInsets.all(24.w),
             child: Obx(() {
               final title = controller.languagePageTitle.value.isNotEmpty
                   ? controller.languagePageTitle.value
                   : "";
-              final description = controller.languagePageDescription.value.isNotEmpty
+              final description =
+                  controller.languagePageDescription.value.isNotEmpty
                   ? controller.languagePageDescription.value
                   : "";
               final languageOptions = controller.getLanguageOptions();
@@ -99,59 +99,60 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: longList ?  MainAxisAlignment.start : MainAxisAlignment.center,
+                mainAxisAlignment: longList
+                    ? MainAxisAlignment.start
+                    : MainAxisAlignment.center,
                 children: [
                   Obx(() {
-                final imageUrl = controller.languagePageImage.value;
+                    final imageUrl = controller.languagePageImage.value;
 
-                return imageUrl.isEmpty
-                    ? Shimmer.fromColors(
-                  baseColor: Colors.grey.shade300,
-                  highlightColor: Colors.grey.shade100,
-                  child: Container(
-                    height: 90.sp,
-                    width: 90.sp,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                  ),
-                )
-                    : Image.network(
-                  imageUrl,
-                  height: 90.sp,
-                  width: 90.sp,
-                  fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
+                    return imageUrl.isEmpty
+                        ? Shimmer.fromColors(
+                            baseColor: AppColors.appMutedColor,
+                            highlightColor: AppColors.appMutedTextColor,
+                            child: Container(
+                              height: 90.sp,
+                              width: 90.sp,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10.r),
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            imageUrl,
+                            height: 90.sp,
+                            width: 90.sp,
+                            fit: BoxFit.contain,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
 
-                    // SHIMMER WHILE IMAGE LOADS
-                    return Shimmer.fromColors(
-                      baseColor: AppColors.simmerColor,
-                      highlightColor: AppColors.simmerColor,
-                      child: Container(
-                        height: 90.sp,
-                        width: 90.sp,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.language,
-                      size: 90.sp,
-                      color: AppColors.appIconColor,
-                    );
-                  },
-                );
-              }),
+                              // SHIMMER WHILE IMAGE LOADS
+                              return Shimmer.fromColors(
+                                baseColor: AppColors.appMutedColor,
+                                highlightColor: AppColors.appMutedTextColor,
+                                child: Container(
+                                  height: 90.sp,
+                                  width: 90.sp,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10.r),
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.language,
+                                size: 90.sp,
+                                color: AppColors.appIconColor,
+                              );
+                            },
+                          );
+                  }),
 
-
-              SizedBox(height: 8.h),
+                  SizedBox(height: 8.h),
                   Text(
                     title,
                     style: AppTextStyle.title(
@@ -166,7 +167,6 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                     description,
                     style: AppTextStyle.description(
                       color: AppColors.appDescriptionColor,
-
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -192,7 +192,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                             padding: EdgeInsets.all(10.w),
                             margin: EdgeInsets.symmetric(vertical: 5.h),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.appColor : AppColors.appMutedColor,
+                              color: isSelected
+                                  ? AppColors.appColor
+                                  : AppColors.appMutedColor,
                               borderRadius: BorderRadius.circular(10.r),
                               // border: isSelected
                               //     ? null
@@ -205,10 +207,12 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                               option['name']!,
                               style: AppTextStyle.title(
                                 color: isSelected
-                                      ? AppColors.appTextColor
+                                    ? AppColors.appTextColor
                                     : AppColors.appMutedTextColor,
 
-                                fontWeight:isSelected? FontWeight.bold: FontWeight.w400
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w400,
                               ),
                             ),
                           ),

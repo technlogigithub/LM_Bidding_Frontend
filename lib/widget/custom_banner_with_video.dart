@@ -78,8 +78,8 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
   // ************ SHIMMER WIDGET ************
   Widget _buildShimmer() {
     return Shimmer.fromColors(
-      baseColor: AppColors.simmerColor,
-      highlightColor: AppColors.appWhite,
+      baseColor: AppColors.appMutedColor,
+      highlightColor: AppColors.appMutedTextColor,
       child: Container(
         height: widget.height.h,
         width: widget.width.w,

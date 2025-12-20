@@ -14,7 +14,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget _buildNotificationIcon(dynamic notification) {
     // Try to get icon/image from notification
     String? iconUrl = notification['icon'] ?? notification['image'];
-    
+
     // If no icon, create a default gradient circle
     if (iconUrl == null || iconUrl.isEmpty) {
       return Container(
@@ -48,14 +48,14 @@ class NotificationsScreen extends StatelessWidget {
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
                 return Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color:AppColors.simmerColor,
+                      color: AppColors.appMutedColor,
                     ),
                   ),
                 );
@@ -91,13 +91,16 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Initialize controller
-    final NotificationsController controller = Get.put(NotificationsController());
-    final AppSettingsController appController = Get.find<AppSettingsController>();
+    final NotificationsController controller = Get.put(
+      NotificationsController(),
+    );
+    final AppSettingsController appController =
+        Get.find<AppSettingsController>();
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
-    final appbartitle = headerConfig?.headerMenu?[0].label;
+    final appbartitle = headerConfig?.headerMenu?[0].title;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -131,13 +134,26 @@ class NotificationsScreen extends StatelessWidget {
             Expanded(
               child: Container(
                 width: screenWidth,
-                decoration: BoxDecoration(
-                  gradient: AppColors.appPagecolor,
-                ),
-                child: Obx(() => controller.isLoading.value
-                    ? _buildShimmerLoading()
-                    : controller.notifications.isEmpty
-                        ? Center(
+                decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+                child: RefreshIndicator(
+                  onRefresh: () async {
+                    // Refresh all data - shimmer will show automatically via isLoading
+                    await controller.fetchNotifications();
+                  },
+                  color: AppColors.appButtonColor,
+                  child: Obx(() {
+                    // Show shimmer during loading (initial load or refresh)
+                    if (controller.isLoading.value) {
+                      return _buildShimmerLoading();
+                    }
+
+                    // Show empty state when no notifications
+                    if (controller.notifications.isEmpty) {
+                      return SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          child: Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -155,77 +171,82 @@ class NotificationsScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: controller.fetchNotifications,
-                            color: AppColors.appColor,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(15.0),
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: controller.notifications.length,
-                              itemBuilder: (context, index) {
-                                final notification = controller.notifications[index];
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 15.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      NotificationDetailScreen(
-                                        notification: notification,
-                                      ).launch(context);
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(12.0),
-                                      decoration: BoxDecoration(
-                                        gradient: AppColors.appPagecolor,
-                                        borderRadius: BorderRadius.circular(12.0),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.appMutedColor,
-                                            blurRadius: 5,
-                                            spreadRadius: 1,
-                                            offset: Offset(0, 10),
+                          ),
+                        ),
+                      );
+                    }
+
+                    // Show notifications list
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(15.0),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: controller.notifications.length,
+                      itemBuilder: (context, index) {
+                        final notification = controller.notifications[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 15.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              NotificationDetailScreen(
+                                notification: notification,
+                              ).launch(context);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(12.0),
+                              decoration: BoxDecoration(
+                                gradient: AppColors.appPagecolor,
+                                borderRadius: BorderRadius.circular(12.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.appMutedColor,
+                                    blurRadius: 5,
+                                    spreadRadius: 1,
+                                    offset: Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildNotificationIcon(notification),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          notification['title'] ??
+                                              'Notification Title',
+                                          style: AppTextStyle.description(
+                                            color: AppColors.appTitleColor,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          _buildNotificationIcon(notification),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  notification['title'] ?? 'Notification Title',
-                                                  style: AppTextStyle.description(
-                                                    color: AppColors.appTitleColor,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  notification['description'] ?? 
-                                                  'Notification description will be shown...',
-                                                  style: AppTextStyle.body(
-                                                    color: AppColors.appMutedTextColor,
-                                                  ),
-                                                  maxLines: 2,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          notification['description'] ??
+                                              'Notification description will be shown...',
+                                          style: AppTextStyle.body(
+                                            color: AppColors.appMutedTextColor,
                                           ),
-                                        ],
-                                      ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                );
-                              },
+                                ],
+                              ),
                             ),
-                          )),
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
               ),
             ),
           ],
@@ -237,14 +258,14 @@ class NotificationsScreen extends StatelessWidget {
   Widget _buildShimmerLoading() {
     return ListView.builder(
       padding: const EdgeInsets.all(15.0),
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: 5,
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 15.0),
           child: Shimmer.fromColors(
-            baseColor: AppColors.simmerColor,
-            highlightColor: AppColors.appWhite,
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
             child: Container(
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
@@ -309,4 +330,3 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 }
-

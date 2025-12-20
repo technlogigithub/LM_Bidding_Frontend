@@ -164,12 +164,27 @@ class MyPostController extends GetxController {
 
   // Use AppPostController to make API call
   Future<void> getPostList() async {
+    // Get myPostModel to extract endpoint and page_name
+    final app = Get.find<AppSettingsController>();
+    final myPostModel = app.myPostModel.value;
+    
+    // Get endpoint from myPostModel
+    final endpoint = myPostModel?.apiEndpoint;
+    
+    // Get page_name from myPostModel
+    final pageName = myPostModel?.pageName;
+    
+    // Update page_name in AppPostController if available
+    if (pageName != null && pageName.isNotEmpty) {
+      appPostController.updatePageName(pageName);
+    }
+    
     // Ensure status is updated in AppPostController
     if (selectedStatusValue.value.isNotEmpty) {
       appPostController.updateStatus(selectedStatusValue.value);
     }
     
-    // Call API using AppPostController
-    await appPostController.getPostList();
+    // Call API using AppPostController with dynamic endpoint
+    await appPostController.getPostList(endpoint: endpoint);
   }
 }
