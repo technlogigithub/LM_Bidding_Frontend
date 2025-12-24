@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_constant.dart';
 import 'package:libdding/view/auth/login_screen.dart';
@@ -44,6 +46,17 @@ class ClientHomeController extends GetxController {
   var recentViewedList = <ServiceItem>[].obs;
   late final AppPostController appPostController;
 
+
+
+  var categoryLoading = false.obs;
+  var bannerLoading = false.obs;
+  var bannerVideoLoading = false.obs;
+
+  // Track if initial fetch has been attempted to prevent loops on empty data
+  var isCategoryFetched = false.obs;
+  var isBannerFetched = false.obs;
+  var isVideoBannerFetched = false.obs;
+
   // Razorpay service
   final RazorpayService razorpayService = RazorpayService();
 
@@ -55,67 +68,6 @@ class ClientHomeController extends GetxController {
     }
   }
 
-  // Static media data
-  final List<Map<String, dynamic>> staticMediaItems = [
-    {
-      'url':
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      'type': 'video',
-      'redirectUrl': null,
-    },
-    {
-      'url':
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      'type': 'video',
-      'redirectUrl': null,
-    },
-    {
-      'url':
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-      'type': 'video',
-      'redirectUrl': null,
-    },
-    {
-      'url':
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
-      'type': 'video',
-      'redirectUrl': null,
-    },
-    {
-      'url':
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-      'type': 'video',
-      'redirectUrl': null,
-    },
-    {
-      'url': 'https://picsum.photos/800/600?random=1',
-      'type': 'image',
-      'redirectUrl': 'https://example.com/redirect1',
-    },
-    {
-      'url': 'https://picsum.photos/800/600?random=2',
-      'type': 'image',
-      'redirectUrl': 'https://example.com/redirect2',
-    },
-    {
-      'url': 'https://picsum.photos/800/600?random=3',
-      'type': 'image',
-      'redirectUrl': 'https://example.com/redirect3',
-    },
-    {
-      'url': 'https://picsum.photos/800/600?random=4',
-      'type': 'image',
-      'redirectUrl': 'https://example.com/redirect4',
-    },
-  ];
-
-  final List<String> serviceList = [
-    'All',
-    'Logo Design',
-    'Brand Style Guide',
-    'Fonts & Typography',
-  ];
-
   @override
   void onInit() {
     super.onInit();
@@ -125,77 +77,6 @@ class ClientHomeController extends GetxController {
     }
     appPostController = Get.find<AppPostController>();
     razorpayService.initRazorpay();
-    print(" hello");
-    services.assignAll([
-      ServiceItem(
-        imagePath: 'assets/images/shot1.png',
-        title: 'Mobile UI/UX Design or App Design',
-        rating: 5.0,
-        reviewCount: 520,
-        price: 30,
-        profileImagePath: 'assets/images/profilepic2.png',
-        sellerName: 'William Liam',
-        sellerLevel: 'Seller Level - 1',
-        isFavorite: true,
-      ),
-      ServiceItem(
-        imagePath: 'assets/images/shot1.png',
-        title: 'Mobile UI/UX Design or App Design',
-        rating: 5.0,
-        reviewCount: 520,
-        price: 30,
-        profileImagePath: 'assets/images/profilepic2.png',
-        sellerName: 'William Liam',
-        sellerLevel: 'Seller Level - 1',
-        isFavorite: true,
-      ),
-      ServiceItem(
-        imagePath: 'assets/images/shot1.png',
-        title: 'Website Design and Development',
-        rating: 4.8,
-        reviewCount: 320,
-        price: 45,
-        profileImagePath: 'assets/images/profilepic2.png',
-        sellerName: 'Sarah Smith',
-        sellerLevel: 'Seller Level - 2',
-        isFavorite: true,
-      ),
-      ServiceItem(
-        imagePath: 'assets/images/shot1.png',
-        title: 'Website Design and Development',
-        rating: 4.8,
-        reviewCount: 320,
-        price: 45,
-        profileImagePath: 'assets/images/profilepic2.png',
-        sellerName: 'Sarah Smith',
-        sellerLevel: 'Seller Level - 2',
-        isFavorite: true,
-      ),
-    ]);
-    recentViewedList.assignAll([
-      ServiceItem(
-        imagePath: 'assets/images/shot5.png',
-        title: 'modern unique business logo design',
-        rating: 5.0,
-        reviewCount: 520,
-        price: 30,
-        profileImagePath: 'assets/images/profilepic2.png',
-        sellerName: 'William Liam',
-        sellerLevel: 'Seller Level - 1',
-        isFavorite: true,
-      ),
-      ServiceItem(
-        imagePath: 'assets/images/shot5.png',
-        title: 'Website Design and Development',
-        rating: 4.8,
-        reviewCount: 320,
-        price: 45,
-        profileImagePath: 'assets/images/profilepic2.png',
-        sellerName: 'Sarah Smith',
-        sellerLevel: 'Seller Level - 2',
-        isFavorite: true,
-      ),
-    ]);
     // initializeData();
     _loadSavedLocation();
     checkLoginStatus();
@@ -294,9 +175,9 @@ class ClientHomeController extends GetxController {
     print("Initializing home data...");
     // isLoading.value = true;
 
-    fetchCategory();
-    fetchBanner();
-    fetchBannerForVideo();
+    // fetchCategory();
+    // fetchBanner();
+    // fetchBannerForVideo();
     // appPostController.getPostList();
 
     // isLoading.value = false; // Stop loading
@@ -307,96 +188,39 @@ class ClientHomeController extends GetxController {
     isLoggedIn.value = prefs.getBool('isLoggedIn') ?? false;
   }
 
-  Future<void> fetchCategory() async {
+  Future<void> fetchCategory(String endpoint) async {
+    if (categoryLoading.value || isCategoryFetched.value) return; // Prevent duplicate or repeat calls
+    categoryLoading.value = true;
+    isCategoryFetched.value = true; // Mark as fetched immediately to stop loop
+
     try {
-      isLoading.value = true; // Set loading to true
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
-      // Get the existing AppSettingsController instance (not creating a new one!)
-      final appcontroller = Get.find<AppSettingsController>();
-      final homePage = appcontroller.homePage.value;
-
-      // Debug: Print homePage and design info
-      // print('🔍 Debug - homePage: ${homePage != null ? "exists" : "null"}');
-      // print('🔍 Debug - design: ${homePage?.design != null ? "exists" : "null"}');
-      // print('🔍 Debug - customSections: ${homePage?.design?.customSections != null ? "exists" : "null"}');
-      // if (homePage?.design?.customSections != null) {
-      //   print('🔍 Debug - customSections keys: ${homePage?.design?.customSections?.keys.toList()}');
-      // }
-      //
-      final customSection =
-          homePage?.design?.customSections?["custom_category_horizontal_list"]
-              as CustomSection?;
-      final endpoint = customSection?.apiEndpoint;
-
-      print(" category end point $endpoint");
-
-      // Use fallback endpoint if not found in homePage config
-      final finalEndpoint = endpoint ?? "";
-
-      // if (finalEndpoint.isEmpty) {
-      //   print('❌ Category endpoint is empty');
-      //   print('❌ CustomSection: ${customSection != null ? "exists" : "null"}');
-      //   if (customSection != null) {
-      //     print('❌ CustomSection.apiEndpoint: ${customSection.apiEndpoint}');
-      //   }
-      //   Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Category endpoint not found');
-      //   return;
-      // }
-
-      if (endpoint == null) {
-        print('⚠️ Using fallback category endpoint: $finalEndpoint');
-      }
-
-      print('Home side Token : $token');
+      print("➡️ Category endpoint: $endpoint");
 
       final headers = token != null
           ? {'Authorization': 'Bearer $token', 'Accept': 'application/json'}
           : null;
-      //
-      // print('============================');
-      // print('📤 API REQUEST => POST /category');
-      // print('Headers: $headers');
-      // print('Body: {}');
-      // print('============================');
 
-      final res = await ApiService.postRequest(
-        finalEndpoint,
-        {},
-        headers: headers,
-      );
+      // Changed to GET as per error message "The POST method is not supported for route api/category"
+      final res = await ApiService.getRequest(endpoint, headers: headers);
 
-      // print('============================');
-      // print('📥 API RESPONSE => /category');
-      // print(res);
-      // print('============================');
+      print('📥 Category API Response: $res');
 
       final categoryModel = CategoryModel.fromJson(res);
       categoryList.assignAll(categoryModel.result ?? []);
 
-      // Ensure asset images are correctly assigned (modify based on your API response)
-      categoryList.forEach((category) {
-        if (category.image != null && category.image!.isNotEmpty) {
-          category.image = category.image; // REMOVE ASSET MAPPING
-        }
-      });
-
-      print('✅ Parsed CategoryModel:');
-      print('Total Categories: ${categoryModel.result?.length ?? 0}');
-      print('----------------------------');
+      print('✅ Total Categories: ${categoryList.length}');
     } catch (e, stack) {
       print('❌ Error fetching categories: $e');
       print(stack);
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: 'Failed to load categories: $e',
-      );
     } finally {
-      isLoading.value = false; // Set loading to false
+      categoryLoading.value = false;
     }
   }
+
+
 
   Future<void> fetchSubcategories(String parentUkey) async {
     try {
@@ -447,118 +271,65 @@ class ClientHomeController extends GetxController {
     }
   }
 
-  Future<void> fetchBanner() async {
+  Future<void> fetchBanner(String endpoint) async {
+    if (bannerLoading.value || isBannerFetched.value) return;
+    bannerLoading.value = true;
+    isBannerFetched.value = true; // Mark as fetched immediately
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      print('Home side Token : $token');
-      final appcontroller = Get.find<AppSettingsController>();
-      final homePage = appcontroller.homePage.value;
-
-      final customSection =
-          homePage?.design?.customSections?["custom_banner"] as CustomSection?;
-      final endpoint = customSection?.apiEndpoint;
 
       print(" banner end point $endpoint");
-
-      // Use fallback endpoint if not found in homePage config
-      final finalEndpoint = endpoint ?? "";
 
       final headers = token != null
           ? {'Authorization': 'Bearer $token', 'Accept': 'application/json'}
           : null;
 
-      // Log request details
-      // print('============================');
-      // print('📤 Sending GET Request: banner');
-      // print('Headers: $headers');
-      // print('============================');
-
-      final res = await ApiService.getRequest(
-        "banner/home_banner",
-        headers: headers,
-      );
-
-      // Log raw API response
-      // print('============================');
-      // print('📥 Response from banner API:');
-      // print(res);
-      // print('============================');
+      final res = await ApiService.getRequest(endpoint, headers: headers);
 
       final bannerModel = BannerModel.fromJson(res);
       bannerList.assignAll(bannerModel.result ?? []);
 
-      // Print parsed banners
-      print('Parsed Banners:');
-      for (var b in bannerList) {
-        print(b.toJson());
-      }
+      print('✅ Total Banners: ${bannerList.length}');
+      isBannerFetched.value = true;
     } catch (e) {
       print('❌ Error fetching banners: $e');
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: 'Failed to load banners: $e',
-      );
+    } finally {
+      bannerLoading.value = false;
     }
   }
 
-  Future<void> fetchBannerForVideo() async {
+
+  Future<void> fetchBannerForVideo(String endpoint) async {
+    if (bannerVideoLoading.value || isVideoBannerFetched.value) return;
+    bannerVideoLoading.value = true;
+    isVideoBannerFetched.value = true; // Mark as fetched immediately
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      print('Home side Token : $token');
-      final appcontroller = Get.find<AppSettingsController>();
-      final homePage = appcontroller.homePage.value;
-
-      final customSection =
-          homePage?.design?.customSections?["custom_banner_with_video"]
-              as CustomSection?;
-      final endpoint = customSection?.apiEndpoint;
 
       print(" custom_banner_with_video end point $endpoint");
-
-      // Use fallback endpoint if not found in homePage config
-      final finalEndpoint = endpoint ?? "";
 
       final headers = token != null
           ? {'Authorization': 'Bearer $token', 'Accept': 'application/json'}
           : null;
 
-      // Log request details
-      // print('============================');
-      // print('📤 Sending GET Request: banner');
-      // print('Headers: $headers');
-      // print('============================');
+      final res = await ApiService.getRequest(endpoint, headers: headers);
 
-      final res = await ApiService.getRequest(
-        "banner/home_video_banner",
-        headers: headers,
-      );
+      final model = BannerForVideoModel.fromJson(res);
+      bannerVideoAndImageList.assignAll(model.result ?? []);
 
-      // Log raw API response
-      // print('============================');
-      // print('📥 Response from banner API:');
-      // print(res);
-      // print('============================');
-
-      final bannervideoandimageModel = BannerForVideoModel.fromJson(res);
-      bannerVideoAndImageList.assignAll(bannervideoandimageModel.result ?? []);
-
-      // Print parsed banners
-      print('Parsed Banners with Video:');
-      for (var b in bannerVideoAndImageList) {
-        print(b.toJson());
-      }
+      print('✅ Total Video Banners: ${bannerVideoAndImageList.length}');
+      isVideoBannerFetched.value = true;
     } catch (e) {
       print('❌ Error fetching banners: $e');
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: 'Failed to load banners: $e',
-      );
+    } finally {
+      bannerVideoLoading.value = false;
     }
   }
+
 
   Future<void> livePost() async {
     try {
@@ -617,51 +388,4 @@ class ClientHomeController extends GetxController {
       Rx<GetPostListResponseModel?>(null);
 }
 
-class Service {
-  final String title;
-  final String image;
-  final double rating;
-  final int reviews;
-  final int price;
-  bool isFavorite;
 
-  Service({
-    required this.title,
-    required this.image,
-    required this.rating,
-    required this.reviews,
-    required this.price,
-    this.isFavorite = false,
-  });
-}
-
-List<Service> services = [
-  Service(
-    title: 'Mobile UI UX design or app design',
-    image: 'images/shot1.png',
-    rating: 5.0,
-    reviews: 520,
-    price: 30,
-  ),
-  Service(
-    title: 'Web Design & Development',
-    image: 'images/shot2.png',
-    rating: 4.8,
-    reviews: 310,
-    price: 50,
-  ),
-  Service(
-    title: 'Logo Design Premium',
-    image: 'images/shot1.png',
-    rating: 4.9,
-    reviews: 410,
-    price: 25,
-  ),
-  Service(
-    title: 'Fonts & Typography Pack',
-    image: 'images/shot2.png',
-    rating: 4.7,
-    reviews: 200,
-    price: 15,
-  ),
-];

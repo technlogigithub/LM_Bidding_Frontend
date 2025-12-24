@@ -406,6 +406,61 @@ class ClientHomeScreen extends StatelessWidget {
                     return Column(
                     children: bodySections.map((section) {
                       final viewType = section.viewType ?? '';
+                      final String? rawEndpoint = section.apiEndpoint;
+
+// 🔹 Lazy Loading Logic
+                      if (viewType == 'category_horizontal_icon_widget' ||
+                          viewType == 'custom_category_horizontal_list') {
+
+                        if (rawEndpoint != null &&
+                            rawEndpoint.isNotEmpty &&
+                            !controller.isCategoryFetched.value &&
+                            !controller.categoryLoading.value) {
+
+                          Future.microtask(() => controller.fetchCategory(rawEndpoint));
+                        }
+
+
+                      } else if (viewType == 'custom_banner') {
+
+                        if (rawEndpoint != null &&
+                            rawEndpoint.isNotEmpty &&
+                            !controller.isBannerFetched.value &&
+                            !controller.bannerLoading.value) {
+
+                          Future.microtask(() => controller.fetchBanner(rawEndpoint));
+                        }
+
+
+                      } else if (viewType == 'custom_banner_with_video') {
+
+                        if (rawEndpoint != null &&
+                            rawEndpoint.isNotEmpty &&
+                            !controller.isVideoBannerFetched.value &&
+                            !controller.bannerVideoLoading.value) {
+
+                          Future.microtask(() => controller.fetchBannerForVideo(rawEndpoint));
+                        }
+
+
+                      } else {
+
+                        if (rawEndpoint != null && rawEndpoint.isNotEmpty) {
+
+                          final sectionController = Get.put(
+                            AppPostController(),
+                            tag: rawEndpoint,
+                          );
+
+                          if (sectionController.getPostForHomeResponseModel.value == null &&
+                              !sectionController.isLoading.value) {
+
+                            Future.microtask(() => sectionController.getPostListForHomeScreen(
+                              endpoint: rawEndpoint,
+                            ));
+                          }
+                        }
+                      }
 
                       // 🔹 Search Bar
                       if (viewType == 'search_bar') {
@@ -417,15 +472,59 @@ class ClientHomeScreen extends StatelessWidget {
 
                       // 🔹 Categories
                       if (viewType == 'category_horizontal_icon_widget' || viewType == 'custom_category_horizontal_list') {
-                        return CustomViewWidget(
-                          type: 'category_horizontal_icon_widget',
-                          categories: controller.categoryList
-                              .map((category) => {
-                                'image': category.image ?? '',
-                                'name': category.title ?? '',
-                              })
-                              .toList(),
-                          categoryLoading: controller.isLoading,
+                        Widget titleWidget = const SizedBox.shrink();
+                        if (section.label != null && section.label!.isNotEmpty) {
+                          titleWidget = Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
+                            child: Row(
+                              children: [
+                                Text(
+                                  section.label!,
+                                  style: AppTextStyle.title(
+                                    color: AppColors.appTitleColor,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (section.viewAllNextPage != null && section.viewAllNextPage!.isNotEmpty) {
+                                        if (section.viewAllNextPage == "search_page") {
+                                          Get.to(() => SearchScreen());
+                                        } else if(section.viewAllNextPage == "select_category") {
+                                          Get.to(() => ClientAllCategories());
+                                        } else {
+                                          print("Navigate to: ${section.viewAllNextPage}");
+                                        }
+                                      }
+                                    },
+                                    child: Text(
+                                      section.viewAllLabel!,
+                                      style: AppTextStyle.description(
+                                        color: AppColors.appLinkColor,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            titleWidget,
+                            CustomViewWidget(
+                              type: 'category_horizontal_icon_widget',
+                              categories: controller.categoryList
+                                  .map((category) => {
+                                    'image': category.image ?? '',
+                                    'name': category.title ?? '',
+                                  })
+                                  .toList(),
+                              categoryLoading: controller.categoryLoading,
+                            ),
+                          ],
                         );
                       }
 
@@ -440,7 +539,7 @@ class ClientHomeScreen extends StatelessWidget {
                                 'redirectUrl': banner.actionUrl ?? '',
                               })
                               .toList(),
-                          bannerLoading: controller.isLoading,
+                          bannerLoading: controller.bannerLoading,
                         );
                       }
 
@@ -451,7 +550,7 @@ class ClientHomeScreen extends StatelessWidget {
                           bannerItems: buildMediaItemsFromVideoList(
                             controller.bannerVideoAndImageList,
                           ),
-                          bannerLoading: controller.isLoading,
+                          bannerLoading: controller.bannerVideoLoading,
                         );
                       }
 
@@ -517,13 +616,25 @@ class ClientHomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (section.apiEndpoint != null)
+                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
                                   GestureDetector(
                                     onTap: () {
-                                      // Navigate to full list?
+                                      if (section.viewAllNextPage != null && section.viewAllNextPage!.isNotEmpty) {
+                                          // Handle dynamic navigation based on page name
+                                          // Example: "search_page", "select_category", etc.
+                                          if (section.viewAllNextPage == "search_page") {
+                                              Get.to(() => SearchScreen());
+                                          } else if(section.viewAllNextPage == "select_category") {
+                                             Get.to(() => ClientAllCategories());
+                                          }
+                                          // Add more routes as needed or use a generic route handler
+                                          else {
+                                            print("Navigate to: ${section.viewAllNextPage}");
+                                          }
+                                      }
                                     },
                                     child: Text(
-                                      AppStrings.viewAll,
+                                      section.viewAllLabel!,
                                       style: AppTextStyle.description(
                                         color: AppColors.appLinkColor,
                                       ),
@@ -541,16 +652,7 @@ class ClientHomeScreen extends StatelessWidget {
                           final tag = section.apiEndpoint!;
                           sectionController = Get.put(AppPostController(), tag: tag);
 
-                          // specific API call for this section (Lazy Load)
-                          // if (sectionController?.getPostForHomeResponseModel.value == null &&
-                          //     !sectionController!.isLoading.value) {
-                          //    // Use SchedulerBinding to avoid setState during build if purely strictly necessary,
-                          //    // but GetX observable updates are usually safe.
-                          //    // To be 100% safe, we can wrap in Future.microtask
-                          //    Future.microtask(() =>
-                          //      sectionController!.getPostListForHomeScreen(endpoint: section.apiEndpoint)
-                          //    );
-                          // }
+
                         }
 
                         return Column(

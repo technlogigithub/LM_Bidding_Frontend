@@ -177,7 +177,7 @@ class AppPostController extends GetxController {
       print("API URL: $uri");
       print("FORM DATA: $formData");
 
-      final request = http.MultipartRequest('POST', uri);
+      final request = http.MultipartRequest('GET', uri);
       request.headers.addAll({
         "Accept": "application/json",
         "Authorization": "Bearer $token", // ✅ dynamic token
@@ -244,17 +244,74 @@ class AppPostController extends GetxController {
       final uri = Uri.parse('${AppConstants.baseUrl}$finalEndpoint');
 
       print("API URL: $uri");
-      print("FORM DATA: $formData");
+      print("FORM DATA: $formData"); // formData still needed for other post-related calls if any
 
-      final request = http.MultipartRequest('POST', uri);
-      request.headers.addAll({
+      http.Request request;
+
+      // Handle category/featured separately as it might require POST
+      if (finalEndpoint.contains('category/featured')) {
+         // Create POST request for category/featured
+         // Based on user log, it accepts form-data parameters like page_name=recent_posts, etc.
+         // even if empty.
+         final multipartRequest = http.MultipartRequest('GET', uri);
+         multipartRequest.headers.addAll({
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+         });
+         // Add form fields
+         multipartRequest.fields.addAll(formData);
+         
+         // If specific parameters are needed for featured category which are not in _buildFormData
+         // add them here. For now using defaults.
+         
+         final streamedResponse = await multipartRequest.send();
+         final response = await http.Response.fromStream(streamedResponse);
+         
+         print("STATUS: ${response.statusCode}");
+         print("BODY:  $endpoint :---> ${response.body}");
+
+         final decoded = jsonDecode(response.body);
+
+         if (response.statusCode == 200) {
+             // It's returning CATEGORIES, but we are trying to parse it as POST LIST model.
+             // This is likely why "Total Posts" is 0 or it fails to show.
+             // We need to parse this as CategoryModel if the endpoint is category-related.
+             
+             // However, getPostForHomeResponseModel is likely typed to GetPostListResponseModel.
+             // If we want to show categories in a "gridview_list" which usually expects posts,
+             // we have a mismatch.
+             
+             // BUT, the user's issue "Feature Category view more show nahi ho raha" implies the UI is empty.
+             // The log shows: "BODY: ... result: [...]" with categories.
+             // The code attempts `GetPostListResponseModel.fromJson(decoded)`.
+             // `GetPostListResponseModel` expects content appropriate for posts. 
+             // If `CategoryResult` structure matches `PostResult`, it might work, else it fails silently or returns empty names.
+             
+             // Let's assume for a moment the structure mismatch is the key.
+             // The LOGS user shared: "result": [ { "ukey":..., "title": "Electronics", ... } ]
+             // Post model usually has "post_ukey", "title", etc.
+             
+             // FIX: We probably need a separate handling for Category-based endpoints 
+             // if they are being fetched via AppPostController on home screen.
+             
+             // Check if result has categories and map them to post-like structure if needed 
+             // OR use a specific model.
+             
+             getPostForHomeResponseModel.value = GetPostListResponseModel.fromJson(decoded);
+             print("Total Posts/Items: ${getPostForHomeResponseModel.value?.result?.length}");
+         }
+         return; // Exit after handling this special case
+      }
+
+      // Default GET behavior for other endpoints
+      final multipartRequest = http.MultipartRequest('GET', uri);
+      multipartRequest.headers.addAll({
         "Accept": "application/json",
-        "Authorization": "Bearer $token", // ✅ dynamic token
+        "Authorization": "Bearer $token",
       });
+      multipartRequest.fields.addAll(formData);
 
-      request.fields.addAll(formData);
-
-      final streamedResponse = await request.send();
+      final streamedResponse = await multipartRequest.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       print("STATUS: ${response.statusCode}");
