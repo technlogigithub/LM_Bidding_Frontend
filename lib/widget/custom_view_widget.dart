@@ -7,6 +7,7 @@ import '../models/category_model/category_model.dart';
 import 'custom_banner.dart';
 import 'custom_banner_with_video.dart';
 import 'custom_category_horizontal_list.dart';
+import 'custom_searchbar.dart';
 import 'my_post_list_custom.dart';
 import 'custom_vertical_listview_list.dart';
 import 'custom_vertical_gridview_list.dart';
@@ -18,10 +19,33 @@ import '../core/app_textstyle.dart';
 import '../core/app_color.dart';
 import '../view/Home_screen/search_screen.dart';
 import 'custom_tapbar.dart';
+
 /// Dynamic Post View Widget
 /// This widget displays different post list views based on the provided type.
 /// It uses AppPostController for data prefilling.
 class CustomViewWidget extends StatelessWidget {
+  const CustomViewWidget({
+    super.key,
+    required this.type,
+    this.controller,
+    this.onItemTap,
+    this.onFavoriteToggle,
+    this.bannerItems,
+    this.bannerLoading,
+    this.categories,
+    this.categoryLoading,
+    this.childAspectRatio,
+    this.height,
+    this.statusValue,
+    this.isFromCartScreen = false,
+    this.title,
+    this.tabOptions,
+    this.onTabChanged,
+    this.useHomeModel = false,
+    this.bgColor,
+    this.bgImg,
+  });
+
   final String type;
 
   final AppPostController? controller;
@@ -43,7 +67,6 @@ class CustomViewWidget extends StatelessWidget {
   final double? height;
 
   // My post
-  // My post
   final String? statusValue;
   final bool isFromCartScreen;
 
@@ -57,150 +80,201 @@ class CustomViewWidget extends StatelessWidget {
   // Model config
   final bool useHomeModel;
 
-  const CustomViewWidget({
-    super.key,
-    required this.type,
-    this.controller,
-    this.onItemTap,
-    this.onFavoriteToggle,
-    this.bannerItems,
-    this.bannerLoading,
-    this.categories,
-    this.categoryLoading,
-    this.childAspectRatio,
-    this.height,
-    this.statusValue,
-    this.isFromCartScreen = false,
-    this.title,
-    this.tabOptions,
-    this.onTabChanged,
-    this.useHomeModel = false,
-  });
+  // Background config
+  final String? bgColor;
+  final String? bgImg;
 
   @override
   Widget build(BuildContext context) {
-    final AppPostController postController =
-        controller ?? Get.find<AppPostController>();
+    debugPrint("🟡 Widget type: ${type}");
 
-    final model = useHomeModel
-        ? postController.getPostForHomeResponseModel
-        : postController.getPostListResponseModel;
-    final isLoading = postController.isLoading;
+    // Define which widget types need a controller
+    const postWidgetTypes = {
+      'custom_vertical_gridview_list',
+      'custom_horizontal_gridview_list',
+      'custom_vertical_listview_list',
+      'custom_horizontal_listview_list',
+      'my_post_list_custom',
+    };
+
+    // Only get controller for widgets that need it
+    AppPostController? postController;
+    late Rx<GetPostListResponseModel?> model;
+    late RxBool isLoading;
+
+
+    if (postWidgetTypes.contains(type)) {
+      try {
+        postController = controller ?? Get.find<AppPostController>();
+        model = useHomeModel
+            ? postController.getPostForHomeResponseModel
+            : postController.getPostListResponseModel;
+        isLoading = postController.isLoading;
+
+        debugPrint(
+          "📊 Model has data: ${model.value?.result?.length ?? 'null'}",
+        );
+        debugPrint("🔄 Is loading: ${isLoading.value}");
+        debugPrint("🏷️ Use home model: ${useHomeModel}");
+      } catch (e) {
+        debugPrint("❌ CustomViewWidget: controller is null for type: ${type}");
+        return const SizedBox.shrink();
+      }
+    }
 
     switch (type) {
-
-    /// 🔹 SEARCH BAR
       case "search_bar":
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.appDescriptionColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: ListTile(
-              horizontalTitleGap: 0,
-              visualDensity: const VisualDensity(vertical: -2),
-              leading: Icon(
-                FeatherIcons.search,
-                color: AppColors.appBodyTextColor,
-                size: 18,
-              ),
-              title: Text(
-                title ?? 'Search keyword...',
-                style: AppTextStyle.description(color: AppColors.appBodyTextColor),
-              ),
-              onTap: () {
-                Get.to(() => SearchScreen());
-              },
-            ),
-          ),
+        debugPrint("🔍 Search bar title: $title");
+        print(" case in $bgImg");
+        print(" case in $bgColor");
+        return SearchBarWidget(
+          title: title,
+          bgColor: bgColor,
+          bgImg: bgImg,
         );
 
-    /// 🔹 IMAGE BANNER
       case "custom_banner":
-        if ((bannerLoading?.value == false) && (bannerItems == null || bannerItems!.isEmpty)) {
-          return const SizedBox.shrink();
-        }
+        debugPrint("🖼 Banner Items: ${bannerItems?.length}");
+        debugPrint("🖼 Banner Data: ${bannerItems}");
         return CustomBanner(
           banners: bannerItems ?? [],
           isLoading: bannerLoading ?? false.obs,
           width: MediaQuery.of(context).size.width,
         );
 
-    /// 🔹 IMAGE + VIDEO BANNER
       case "custom_banner_with_video":
-        if ((bannerLoading?.value == false) && (bannerItems == null || bannerItems!.isEmpty)) {
-          return const SizedBox.shrink();
-        }
+        debugPrint("🎬 Banner With Video Data: ${bannerItems}");
         return CustomBannerWithVideo(
           mediaItems: bannerItems ?? [],
           isLoading: bannerLoading ?? false.obs,
         );
 
-    /// 🔹 CATEGORY HORIZONTAL LIST
       case "custom_category_horizontal_list":
       case "category_horizontal_icon_widget":
-        if ((categoryLoading?.value == false) && (categories == null || categories!.isEmpty)) {
-          return const SizedBox.shrink();
-        }
+        print(" Category image $bgImg");
+        print(" Category image $bgColor");
+        debugPrint("📂 Categories count: ${categories?.length}");
+        debugPrint("📂 Categories Data: ${categories}");
         return CustomCategoryHorizontalList(
           categories: categories ?? [],
           isLoading: categoryLoading ?? false.obs,
+          bgColor: bgColor,
+          bgImg: bgImg,
         );
 
-    /// 🔹 HORIZONTAL LIST
       case "custom_horizontal_listview_list":
-        return CustomHorizontalListViewList(
-          model: model,
-          isLoading: isLoading,
-          onItemTap: onItemTap,
-          onFavoriteToggle: onFavoriteToggle!,
-        );
+        if (model == null || isLoading == null) {
+          debugPrint("❌ Controller not available for horizontal list");
+          return const SizedBox.shrink();
+        }
+        debugPrint("➡ Horizontal List Model: ${model.value?.result?.length}");
+        debugPrint("➡ Model Data: ${model.value}");
+        return Obx(() {
+          // If loading, show widget (it handles shimmer). If NOT loading and empty, hide.
+          if (!isLoading!.value && (model!.value?.result == null ||
+              model!.value!.result!.isEmpty)) {
+            return const SizedBox.shrink();
+          }
+          return CustomHorizontalListViewList(
+            model: model,
+            isLoading: isLoading,
+            onItemTap: onItemTap,
+            onFavoriteToggle: onFavoriteToggle!,
+            bgColor: bgColor,
+            bgImg: bgImg,
+          );
+        });
 
-    /// 🔹 HORIZONTAL GRID
       case "custom_horizontal_gridview_list":
-        return CustomHorizontalGridViewList(
-          model: model,
-          isLoading: isLoading,
-          height: height,
-          onItemTap: onItemTap,
-          onFavoriteToggle: onFavoriteToggle,
-        );
+        if (model == null || isLoading == null) {
+          // debugPrint("❌ Controller not available for horizontal grid");
+          return const SizedBox.shrink();
+        }
+        // debugPrint("🟦 Horizontal Grid Data: ${model.value}");
+        return Obx(() {
+          // If loading, show widget (it handles shimmer). If NOT loading and empty, hide.
+          if (!isLoading!.value && (model!.value?.result == null ||
+              model!.value!.result!.isEmpty)) {
+            return const SizedBox.shrink();
+          }
+          return CustomHorizontalGridViewList(
+            model: model,
+            isLoading: isLoading,
+            height: height,
+            onItemTap: onItemTap,
+            onFavoriteToggle: onFavoriteToggle,
+            bgColor: bgColor,
+            bgImg: bgImg,
+          );
+        });
 
-    /// 🔹 VERTICAL GRID
       case "custom_vertical_gridview_list":
-        return CustomVerticalGridviewList(
-          model: model,
-          isLoading: isLoading,
-          childAspectRatio: childAspectRatio,
-          onItemTap: onItemTap,
-          onFavoriteToggle: onFavoriteToggle,
-        );
+        if (model == null || isLoading == null) {
+          // debugPrint("❌ Controller not available for vertical grid");
+          return const SizedBox.shrink();
+        }
+        // debugPrint("🟥 Vertical Grid Data: ${model.value}");
+        return Obx(() {
+          // If loading, show widget (it handles shimmer). If NOT loading and empty, hide.
+          if (!isLoading!.value && (model!.value?.result == null ||
+              model!.value!.result!.isEmpty)) {
+            return const SizedBox.shrink();
+          }
+          return CustomVerticalGridviewList(
+            model: model,
+            isLoading: isLoading,
+            childAspectRatio: childAspectRatio,
+            onItemTap: onItemTap,
+            onFavoriteToggle: onFavoriteToggle,
+            bgColor: bgColor,
+            bgImg: bgImg,
+          );
+        });
 
-    /// 🔹 VERTICAL LIST
       case "custom_vertical_listview_list":
-        return Padding(
-          padding: const EdgeInsets.all(10),
-          child: CustomVerticalListviewList(
+        if (model == null || isLoading == null) {
+          debugPrint("❌ Controller not available for vertical list");
+          return const SizedBox.shrink();
+        }
+        // debugPrint("📃 Vertical List Data: ${model.value}");
+        return Obx(() {
+          // If loading, show widget (it handles shimmer). If NOT loading and empty, hide.
+          if (!isLoading!.value && (model!.value?.result == null ||
+              model!.value!.result!.isEmpty)) {
+            return const SizedBox.shrink();
+          }
+          return CustomVerticalListviewList(
             model: model,
             isLoading: isLoading,
             isFromCartScreen: isFromCartScreen,
             onItemTap: onItemTap,
             onFavoriteToggle: onFavoriteToggle!,
-          ),
-        );
+            bgColor: bgColor,
+            bgImg: bgImg,
+          );
+        });
 
-    /// 🔹 MY POSTS
       case "my_post_list_custom":
-        return MypostListCustomWidget(
-          model: model,
-          isLoading: isLoading,
-          statusValue: statusValue ?? '',
-          onItemTap: onItemTap,
-        );
+        if (model == null || isLoading == null) {
+          debugPrint("❌ Controller not available for my post list");
+          return const SizedBox.shrink();
+        }
+        // debugPrint("👤 My Post List Data: ${model.value}");
+        // debugPrint("👤 Status Value: ${statusValue}");
+        return Obx(() {
+          // If loading, show widget (it handles shimmer). If NOT loading and empty, hide.
+          if (!isLoading!.value && (model!.value?.result == null ||
+              model!.value!.result!.isEmpty)) {
+            return const SizedBox.shrink();
+          }
+          return MypostListCustomWidget(
+            model: model,
+            isLoading: isLoading,
+            statusValue: statusValue ?? '',
+            onItemTap: onItemTap,
+          );
+        });
 
-      /// 🔹 CUSTOM TABBAR
       case "custom_tapbar":
         if (tabOptions != null && tabOptions!.isNotEmpty) {
           return Padding(
@@ -208,7 +282,7 @@ class CustomViewWidget extends StatelessWidget {
             child: CustomTabBar(
               tabs: tabOptions!,
               textStyle: AppTextStyle.description(),
-              initialIndex: 0,
+              // initialIndex: 0,
               onTap: (index) {
                 if (onTabChanged != null) {
                   onTabChanged!(index);
@@ -219,12 +293,17 @@ class CustomViewWidget extends StatelessWidget {
         }
         return const SizedBox.shrink();
 
-    /// 🔹 CATEGORY VERTICAL LIST
       case "category_vertical_list_widget":
         final homeController = Get.find<ClientHomeController>();
 
         return Obx(() {
-          if (homeController.isLoading.value) {
+          // Check if data is loading and list is empty -> Hide (no shimmer on empty)
+          if (homeController.categoryLoading.value &&
+              homeController.categoryList.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          
+          if (homeController.categoryLoading.value) {
             return CategoryVerticalListWidget.buildShimmerList();
           }
 
@@ -248,13 +327,13 @@ class CustomViewWidget extends StatelessWidget {
         });
 
       default:
+        debugPrint("❌ Unknown widget type: ${type}");
         return Center(
           child: Text(
-            'Unknown widget type: $type',
-            style: const TextStyle(color: Colors.red),
+            'Unknown widget type: ${type}',
+            style: TextStyle(color: Colors.red),
           ),
         );
     }
   }
 }
-

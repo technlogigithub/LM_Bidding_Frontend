@@ -7,12 +7,15 @@ import '../core/app_color.dart';
 import '../core/app_textstyle.dart';
 import '../models/Post/Get_Post_List_Model.dart';
 import 'custom_detail_screen.dart';
+import '../core/app_images.dart';
 
 class CustomHorizontalListViewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
   final VoidCallback? onItemTap;
   final Function(int, bool) onFavoriteToggle;
   final RxBool isLoading;
+  final String? bgColor;
+  final String? bgImg;
 
   const CustomHorizontalListViewList({
     super.key,
@@ -20,6 +23,8 @@ class CustomHorizontalListViewList extends StatelessWidget {
     this.onItemTap,
     required this.onFavoriteToggle,
     required this.isLoading,
+    this.bgColor,
+    this.bgImg,
   });
 
   @override
@@ -189,7 +194,17 @@ class CustomHorizontalListViewList extends StatelessWidget {
         width: 330.w,
         height: 150.h,
         decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
+          image: (bgImg != null && bgImg!.isNotEmpty)
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(bgImg!),
+                  fit: BoxFit.cover,
+                )
+              : null,
+          gradient: (bgImg == null || bgImg!.isEmpty)
+              ? (bgColor != null && bgColor!.isNotEmpty
+                  ? parseLinearGradient(bgColor)
+                  : AppColors.appPagecolor)
+              : null,
           boxShadow: [
             BoxShadow(
               color: AppColors.appMutedColor,
@@ -221,7 +236,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
       );
       imageUrl = firstImage.url;
     }
-    final badge = result.info?.badge;
+    final badge = result.info?['badge'];
     return Stack(
       alignment: Alignment.topLeft,
       children: [
@@ -253,31 +268,29 @@ class CustomHorizontalListViewList extends StatelessWidget {
                         color: AppColors.appMutedColor,
                       ),
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: AppColors.appMutedColor,
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey[600],
-                      ),
+                    errorWidget: (context, url, error) => Image.asset(
+                      AppImage.placeholder,
+                      height: 135.h,
+                      width: 120.w,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 )
-              : Container(
-                  color: AppColors.appMutedColor,
-                  child: Icon(
-                    Icons.image_not_supported,
-                    color: Colors.grey[600],
-                  ),
+              : Image.asset(
+                  AppImage.placeholder,
+                  height: 135.h,
+                  width: 120.w,
+                  fit: BoxFit.cover,
                 ),
         ),
         Obx(() {
           final currentResult = model.value?.result?[index];
-          final isFavorite = currentResult?.info?.favorite ?? result.info?.favorite ?? false;
+          final isFavorite = currentResult?.info?['favorite'] ?? result.info?['favorite'] ?? false;
           return GestureDetector(
             onTap: () {
               final newValue = !isFavorite;
               if (result.info != null) {
-                result.info!.favorite = newValue;
+                result.info!['favorite'] = newValue;
               }
               Future.microtask(() {
                 model.refresh();
@@ -339,11 +352,9 @@ class CustomHorizontalListViewList extends StatelessWidget {
   }
 
   Widget _buildContentSection(Result result) {
-    final title = result.info?.title ?? '';
-    final ratingReview = result.info?.ratingReview ?? '';
-    final price = result.info?.price ?? '';
-    final sellerName = result.details?.s1 ?? result.info?.s1 ?? '';
-    final sellerLevel = result.details?.s2 ?? result.info?.s2 ?? '';
+    final title = result.info?['title'] ?? '';
+    final ratingReview = result.info?['ratingReview'] ?? '';
+    final price = result.info?['price'] ?? '';
 
     // Parse rating and review count from ratingReview string
     double rating = 0.0;

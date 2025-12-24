@@ -63,7 +63,7 @@ class _FavoritescreenState extends State<Favoritescreen> {
                   appPostController.getPostListResponseModel.value?.result;
               if (result != null && index < result.length) {
                 if (result[index].info != null) {
-                  result[index].info!.favorite = newValue;
+                  result[index].info!['favorite'] = newValue;
                   appPostController.getPostListResponseModel.refresh();
                 }
               }

@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import '../core/app_textstyle.dart';
 import '../models/Post/Get_Post_List_Model.dart';
 import '../core/app_color.dart';
+import '../core/app_images.dart';
 
 class CustomVerticalGridviewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
@@ -14,6 +14,8 @@ class CustomVerticalGridviewList extends StatelessWidget {
   final VoidCallback? onItemTap;
   final double? childAspectRatio;
   final double? height;
+  final String? bgColor;
+  final String? bgImg;
 
   const CustomVerticalGridviewList({
     super.key,
@@ -23,6 +25,8 @@ class CustomVerticalGridviewList extends StatelessWidget {
     this.onItemTap,
     this.childAspectRatio,
     this.height,
+    this.bgColor,
+    this.bgImg,
   });
 
   @override
@@ -50,15 +54,15 @@ class CustomVerticalGridviewList extends StatelessWidget {
 
       // Calculate default aspect ratio if not provided
       // Default: 0.65 (allows for image 100 + content ~54 = ~154 height for ~100 width)
-      final aspectRatio = childAspectRatio ?? 0.64;
+      final aspectRatio = childAspectRatio ?? 0.84;
 
       Widget gridView = GridView.builder(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
+          mainAxisSpacing: 15,
+          crossAxisSpacing:10,
           childAspectRatio: aspectRatio,
         ),
         itemCount: results.length,
@@ -160,10 +164,10 @@ class CustomVerticalGridviewList extends StatelessWidget {
     }
 
     // Extract data from result
-    final title = result.info?.title ?? '';
-    final ratingReview = result.info?.ratingReview ?? '';
-    final price = result.info?.price ?? '';
-    final badge = result.info?.badge;
+    final title = result.info?['title'] ?? '';
+    final ratingReview = result.info?['ratingReview'] ?? '';
+    final price = result.info?['price'] ?? '';
+    final badge = result.info?['badge'];
 
     // Parse rating from ratingReview string
     double rating = 0.0;
@@ -188,7 +192,17 @@ class CustomVerticalGridviewList extends StatelessWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
+          image: (bgImg != null && bgImg!.isNotEmpty)
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(bgImg!),
+                  fit: BoxFit.cover,
+                )
+              : null,
+          gradient: (bgImg == null || bgImg!.isEmpty)
+              ? (bgColor != null && bgColor!.isNotEmpty
+                  ? parseLinearGradient(bgColor)
+                  : AppColors.appPagecolor)
+              : null,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -226,25 +240,19 @@ class CustomVerticalGridviewList extends StatelessWidget {
                               color: AppColors.appMutedColor,
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            height: 130,
-                            width: double.infinity,
-                            color: AppColors.appMutedColor,
-                            child: Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        )
-                      : Container(
-                          height: 130,
-                          width: double.infinity,
-                          color: AppColors.appMutedColor,
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey[600],
-                          ),
-                        ),
+                              errorWidget: (context, url, error) => Image.asset(
+                                AppImage.placeholder,
+                                height: 130,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ), /* Error Widget */
+                            )
+                          : Image.asset(
+                              AppImage.placeholder,
+                              height: 130,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ), /* Null URL Widget */
                 ),
 
                 // Favorite icon
@@ -254,12 +262,12 @@ class CustomVerticalGridviewList extends StatelessWidget {
                     right: 8,
                     child: Obx(() {
                       final currentResult = model.value?.result?[index];
-                      final isFavorite = currentResult?.info?.favorite ?? result.info?.favorite ?? false;
+                      final isFavorite = currentResult?.info?['favorite'] ?? result.info?['favorite'] ?? false;
                       return GestureDetector(
                         onTap: () {
                           final newValue = !isFavorite;
                           if (result.info != null) {
-                            result.info!.favorite = newValue;
+                            result.info!['favorite'] = newValue;
                           }
                           Future.microtask(() {
                             model.refresh();

@@ -8,6 +8,7 @@ import '../core/app_color.dart';
 
 import '../core/app_textstyle.dart';
 import '../models/Post/Get_Post_List_Model.dart';
+import '../core/app_images.dart';
 
 class CustomVerticalListviewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
@@ -18,6 +19,8 @@ class CustomVerticalListviewList extends StatelessWidget {
   final Function(int, bool) onFavoriteToggle;
   final RxBool isLoading;
   final bool isFromCartScreen;
+  final String? bgColor;
+  final String? bgImg;
 
   const CustomVerticalListviewList({
     super.key,
@@ -29,6 +32,8 @@ class CustomVerticalListviewList extends StatelessWidget {
     required this.onFavoriteToggle,
     required this.isLoading,
     this.isFromCartScreen = false,
+    this.bgColor,
+    this.bgImg,
   });
 
   @override
@@ -191,7 +196,17 @@ class CustomVerticalListviewList extends StatelessWidget {
         width: 330.w,
         height: isFromCartScreen ? 185.h : 140.h,
         decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
+          image: (bgImg != null && bgImg!.isNotEmpty)
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(bgImg!),
+                  fit: BoxFit.cover,
+                )
+              : null,
+          gradient: (bgImg == null || bgImg!.isEmpty)
+              ? (bgColor != null && bgColor!.isNotEmpty
+                  ? parseLinearGradient(bgColor)
+                  : AppColors.appPagecolor)
+              : null,
           boxShadow: [
             BoxShadow(
               color: AppColors.appMutedColor,
@@ -312,7 +327,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     }
 
     // Extract badge from result
-    final badge = result.info?.badge;
+    final badge = result.info?['badge'];
 
     return Stack(
       alignment: Alignment.topLeft,
@@ -345,35 +360,33 @@ class CustomVerticalListviewList extends StatelessWidget {
                   color: AppColors.appMutedColor,
                 ),
               ),
-              errorWidget: (context, url, error) => Container(
-                color: AppColors.appMutedColor,
-                child: Icon(
-                  Icons.image_not_supported,
-                  color: Colors.grey[600],
-                ),
+              errorWidget: (context, url, error) => Image.asset(
+                AppImage.placeholder,
+                height: isFromCart ? 120.h : 140.h,
+                width: 120.w,
+                fit: BoxFit.cover,
               ),
             ),
           )
-              : Container(
-            color: AppColors.appMutedColor,
-            child: Icon(
-              Icons.image_not_supported,
-              color: Colors.grey[600],
-            ),
+              : Image.asset(
+            AppImage.placeholder,
+            height: isFromCart ? 120.h : 140.h,
+            width: 120.w,
+            fit: BoxFit.cover,
           ),
         ),
         // Always show favorite icon - filled when true, outline when false
         Obx(() {
           // Watch the model to get reactive updates
           final currentResult = model.value?.result?[index];
-          final isFavorite = currentResult?.info?.favorite ?? result.info?.favorite ?? false;
+          final isFavorite = currentResult?.info?['favorite'] ?? result.info?['favorite'] ?? false;
           return GestureDetector(
             onTap: () {
               // Toggle favorite state
               final newValue = !isFavorite;
               // Update the model immediately for better UX
               if (result.info != null) {
-                result.info!.favorite = newValue;
+                result.info!['favorite'] = newValue;
               }
               // Defer refresh to avoid setState during build error
               Future.microtask(() {
@@ -437,9 +450,9 @@ class CustomVerticalListviewList extends StatelessWidget {
   }
 
   Widget _buildContentSection(Result result) {
-    final title = result.info?.title ?? '';
-    final ratingReview = result.info?.ratingReview;
-    final price = result.info?.price;
+    final title = result.info?['title'] ?? '';
+    final ratingReview = result.info?['ratingReview'];
+    final price = result.info?['price'];
 
     return Padding(
       padding: const EdgeInsets.all(5.0),

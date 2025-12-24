@@ -16,6 +16,7 @@ import '../../controller/post/app_post_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../models/home/banner_response_model.dart';
+import '../search_filter_post/seach_filter_screen.dart';
 import 'search_screen.dart';
 import '../../widget/custom_banner.dart';
 import '../../widget/custom_category_horizontal_list.dart';
@@ -24,8 +25,6 @@ import '../../widget/custom_horizontal_listview_list.dart';
 import '../../widget/custom_tapbar.dart';
 import '../../widget/custom_vertical_gridview_list.dart';
 import '../../widget/custom_banner_with_video.dart';
-import '../cart_screen/cart_screen.dart';
-import '../notifications/notifications_screen.dart';
 import '../cart_screen/cart_screen.dart';
 import '../notifications/notifications_screen.dart';
 import 'client_all_categories.dart';
@@ -392,9 +391,7 @@ class ClientHomeScreen extends StatelessWidget {
             child: SingleChildScrollView(
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  gradient: AppColors.appPagecolor,
-                ),
+                decoration: BoxDecoration(gradient: AppColors.appPagecolor),
                 child: Obx(() {
                   final homePage = appController.homePage.value;
                   final bodySections = homePage?.design?.body;
@@ -403,56 +400,196 @@ class ClientHomeScreen extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
 
-                    return Column(
+                  return Column(
                     children: bodySections.map((section) {
                       final viewType = section.viewType ?? '';
+                      final String? rawEndpoint = section.apiEndpoint;
+
+                      // 🔹 Lazy Loading Logic
+                      if (viewType == 'category_horizontal_icon_widget' ||
+                          viewType == 'custom_category_horizontal_list' ||
+                          viewType == 'category_vertical_list_widget') {
+                        if (rawEndpoint != null &&
+                            rawEndpoint.isNotEmpty &&
+                            !controller.isCategoryFetched.value &&
+                            !controller.categoryLoading.value) {
+                          Future.microtask(
+                            () => controller.fetchCategory(rawEndpoint),
+                          );
+                        }
+                      } else if (viewType == 'custom_banner') {
+                        if (rawEndpoint != null &&
+                            rawEndpoint.isNotEmpty &&
+                            !controller.isBannerFetched.value &&
+                            !controller.bannerLoading.value) {
+                          Future.microtask(
+                            () => controller.fetchBanner(rawEndpoint),
+                          );
+                        }
+                      } else if (viewType == 'custom_banner_with_video') {
+                        if (rawEndpoint != null &&
+                            rawEndpoint.isNotEmpty &&
+                            !controller.isVideoBannerFetched.value &&
+                            !controller.bannerVideoLoading.value) {
+                          Future.microtask(
+                            () => controller.fetchBannerForVideo(rawEndpoint),
+                          );
+                        }
+                      } else {
+                        if (rawEndpoint != null && rawEndpoint.isNotEmpty) {
+                          final sectionController = Get.put(
+                            AppPostController(),
+                            tag: rawEndpoint,
+                          );
+
+                          if (sectionController
+                                      .getPostForHomeResponseModel
+                                      .value ==
+                                  null &&
+                              !sectionController.isLoading.value) {
+                            // Fetch data immediately for this section
+                            print(
+                              "🔄 Fetching data for endpoint: $rawEndpoint",
+                            );
+                            sectionController
+                                .getPostListForHomeScreen(endpoint: rawEndpoint)
+                                .then((_) {
+                                  print(
+                                    "✅ Data fetched for $rawEndpoint, result length: ${sectionController.getPostForHomeResponseModel.value?.result?.length}",
+                                  );
+                                  // Force UI update after data is fetched
+                                  sectionController.update();
+                                });
+                          }
+                        }
+                      }
 
                       // 🔹 Search Bar
                       if (viewType == 'search_bar') {
                         return CustomViewWidget(
                           type: 'search_bar',
                           title: section.title,
+                          bgColor: section.bgColor,
+                          bgImg: section.bgImg,
                         );
                       }
 
                       // 🔹 Categories
-                      if (viewType == 'category_horizontal_icon_widget' || viewType == 'custom_category_horizontal_list') {
-                        return CustomViewWidget(
-                          type: 'category_horizontal_icon_widget',
-                          categories: controller.categoryList
-                              .map((category) => {
-                                'image': category.image ?? '',
-                                'name': category.title ?? '',
-                              })
-                              .toList(),
-                          categoryLoading: controller.isLoading,
+                      if (viewType == 'category_horizontal_icon_widget' ||
+                          viewType == 'custom_category_horizontal_list') {
+                        Widget titleWidget = const SizedBox.shrink();
+                        if (section.label != null &&
+                            section.label!.isNotEmpty) {
+                          titleWidget = Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15.0,
+                              vertical: 10,
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  section.label!,
+                                  style: AppTextStyle.title(
+                                    color: AppColors.appTitleColor,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
+                                  GestureDetector(
+                                    onTap: () {
+                                      final nextPage = section.viewAllNextPage;
+
+                                      if (nextPage != null && nextPage.isNotEmpty) {
+                                        if (nextPage == "search_page") {
+                                          Get.to(() => SeachFilterScreen());
+                                        }
+                                        else if (nextPage == "select_category") {
+                                          Get.to(() => ClientAllCategories());
+                                        }
+                                        else {
+                                          debugPrint("⚠️ Unknown next page: $nextPage");
+                                        }
+                                      }
+                                    },
+                                    child: Text(
+                                      section.viewAllLabel!,
+                                      style: AppTextStyle.description(
+                                        color: AppColors.appLinkColor,
+                                      ),
+                                    ),
+                                  ),
+
+                              ],
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            titleWidget,
+                            CustomViewWidget(
+                              type: 'category_horizontal_icon_widget',
+                              categories: controller.categoryList
+                                  .map(
+                                    (category) => {
+                                      'image': category.image ?? '',
+                                      'name': category.title ?? '',
+                                    },
+                                  )
+                                  .toList(),
+                              categoryLoading: controller.categoryLoading,
+                              bgColor: section.bgColor,
+                              bgImg: section.bgImg,
+                            ),
+                          ],
                         );
                       }
 
                       // 🔹 Banners
                       if (viewType == 'custom_banner') {
                         // Image only banner
-                        return CustomViewWidget(
-                          type: 'custom_banner',
-                          bannerItems: controller.bannerList
-                              .map((banner) => {
-                                'image': banner.filePath ?? '',
-                                'redirectUrl': banner.actionUrl ?? '',
-                              })
-                              .toList(),
-                          bannerLoading: controller.isLoading,
-                        );
+                        return Obx(() {
+                          if (controller.bannerLoading.value &&
+                              controller.bannerList.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          if (controller.bannerList.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return CustomViewWidget(
+                            type: 'custom_banner',
+                            bannerItems: controller.bannerList
+                                .map(
+                                  (banner) => {
+                                    'image': banner.filePath ?? '',
+                                    'redirectUrl': banner.actionUrl ?? '',
+                                  },
+                                )
+                                .toList(),
+                            bannerLoading: controller.bannerLoading,
+                          );
+                        });
                       }
 
                       if (viewType == 'custom_banner_with_video') {
                         // Video/Image banner
-                        return CustomViewWidget(
-                          type: 'custom_banner_with_video',
-                          bannerItems: buildMediaItemsFromVideoList(
-                            controller.bannerVideoAndImageList,
-                          ),
-                          bannerLoading: controller.isLoading,
-                        );
+                        return Obx(() {
+                          if (controller.bannerVideoLoading.value &&
+                              controller.bannerVideoAndImageList.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          if (controller.bannerVideoAndImageList.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return CustomViewWidget(
+                            type: 'custom_banner_with_video',
+                            bannerItems: buildMediaItemsFromVideoList(
+                              controller.bannerVideoAndImageList,
+                            ),
+                            bannerLoading: controller.bannerVideoLoading,
+                          );
+                        });
                       }
 
                       // 🔹 Custom TabBar (Fast Move)
@@ -467,9 +604,13 @@ class ClientHomeScreen extends StatelessWidget {
                               final opts = select['options'] as List;
                               if (opts.isNotEmpty) {
                                 if (opts.first is Map) {
-                                  options = opts.map<String>((e) => e['label'].toString()).toList();
+                                  options = opts
+                                      .map<String>((e) => e['label'].toString())
+                                      .toList();
                                 } else {
-                                  options = opts.map<String>((e) => e.toString()).toList();
+                                  options = opts
+                                      .map<String>((e) => e.toString())
+                                      .toList();
                                 }
                               }
                             }
@@ -478,36 +619,49 @@ class ClientHomeScreen extends StatelessWidget {
 
                         if (options.isNotEmpty) {
                           return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (section.label != null && section.label!.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
-                                    child: Text(
-                                      section.label!,
-                                      style: AppTextStyle.title(color: AppColors.appTitleColor),
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (section.label != null &&
+                                  section.label!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0,
+                                    vertical: 8,
+                                  ),
+                                  child: Text(
+                                    section.label!,
+                                    style: AppTextStyle.title(
+                                      color: AppColors.appTitleColor,
                                     ),
                                   ),
-                                CustomViewWidget(
-                                  type: 'custom_tapbar',
-                                  tabOptions: options,
-                                  onTabChanged: (index) {
-                                    print("Tab selected: $index");
-                                  },
                                 ),
-                              ]
+                              CustomViewWidget(
+                                type: 'custom_tapbar',
+                                tabOptions: options,
+                                onTabChanged: (index) {
+                                  print("Tab selected: $index");
+                                },
+                              ),
+                            ],
                           );
                         }
                         return const SizedBox.shrink();
                       }
 
-
                       // 🔹 Pre-defined Post Lists (Lists, Grids)
-                      if (viewType.contains('listview_list') || viewType.contains('gridview_list')) {
+
+                      if (viewType == 'custom_vertical_listview_list' ||
+                          viewType == 'custom_horizontal_listview_list' ||
+                          viewType == 'custom_vertical_gridview_list' ||
+                          viewType == 'custom_horizontal_gridview_list') {
                         Widget titleWidget = const SizedBox.shrink();
-                        if (section.label != null && section.label!.isNotEmpty) {
+                        if (section.label != null &&
+                            section.label!.isNotEmpty) {
                           titleWidget = Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 15.0,
+                              vertical: 10,
+                            ),
                             child: Row(
                               children: [
                                 Text(
@@ -517,13 +671,25 @@ class ClientHomeScreen extends StatelessWidget {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (section.apiEndpoint != null)
+                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
                                   GestureDetector(
                                     onTap: () {
-                                      // Navigate to full list?
+                                      final nextPage = section.viewAllNextPage;
+
+                                      if (nextPage != null && nextPage.isNotEmpty) {
+                                        if (nextPage == "search_page") {
+                                          Get.to(() => SeachFilterScreen());
+                                        }
+                                        else if (nextPage == "select_category") {
+                                          Get.to(() => ClientAllCategories());
+                                        }
+                                        else {
+                                          debugPrint("⚠️ Unknown next page: $nextPage");
+                                        }
+                                      }
                                     },
                                     child: Text(
-                                      AppStrings.viewAll,
+                                      section.viewAllLabel!,
                                       style: AppTextStyle.description(
                                         color: AppColors.appLinkColor,
                                       ),
@@ -536,50 +702,69 @@ class ClientHomeScreen extends StatelessWidget {
 
                         // 🔹 Create unique controller for this section if it has an endpoint
                         AppPostController? sectionController;
-                        if (section.apiEndpoint != null && section.apiEndpoint!.isNotEmpty) {
+                        if (section.apiEndpoint != null &&
+                            section.apiEndpoint!.isNotEmpty) {
                           // Use apiEndpoint as tag to ensure uniqueness per content source
                           final tag = section.apiEndpoint!;
-                          sectionController = Get.put(AppPostController(), tag: tag);
-
-                          // specific API call for this section (Lazy Load)
-                          // if (sectionController?.getPostForHomeResponseModel.value == null &&
-                          //     !sectionController!.isLoading.value) {
-                          //    // Use SchedulerBinding to avoid setState during build if purely strictly necessary,
-                          //    // but GetX observable updates are usually safe.
-                          //    // To be 100% safe, we can wrap in Future.microtask
-                          //    Future.microtask(() =>
-                          //      sectionController!.getPostListForHomeScreen(endpoint: section.apiEndpoint)
-                          //    );
-                          // }
+                          if (!Get.isRegistered<AppPostController>(tag: tag)) {
+                            sectionController = Get.put(
+                              AppPostController(),
+                              tag: tag,
+                            );
+                          } else {
+                            sectionController = Get.find<AppPostController>(
+                              tag: tag,
+                            );
+                          }
                         }
 
-                        return Column(
-                          children: [
-                            titleWidget,
-                            CustomViewWidget(
-                              type: viewType,
-                              controller: sectionController ?? appPostController,
-                              useHomeModel: sectionController != null,
-                              onItemTap: () {
-                                // Detail navigation
-                              },
-                              onFavoriteToggle: (index, isFav) {
-                                // Favorite logic
-                              },
-                            ),
-                          ],
-                        );
+                        return Obx(() {
+                          // Watch for data changes in the section controller
+                          final controllerToWatch =
+                              sectionController ?? appPostController;
+                          
+                          // Access the data to make Obx reactive
+                          final isLoading = controllerToWatch.isLoading.value;
+                          final model = sectionController != null
+                              ? controllerToWatch.getPostForHomeResponseModel.value
+                              : controllerToWatch.getPostListResponseModel.value;
+
+                          // 🛑 User Request: If loading, show UI (shimmer). If NOT loading and empty, hide UI.
+                          if (!isLoading && (model?.result == null || (model?.result?.isEmpty ?? true))) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Column(
+                            children: [
+                              titleWidget,
+                              CustomViewWidget(
+                                type: viewType,
+                                controller: controllerToWatch,
+                                useHomeModel: sectionController != null,
+                                onItemTap: () {
+                                  // Detail navigation
+                                },
+                                onFavoriteToggle: (index, isFav) {
+                                  // Favorite logic
+                                },
+                                bgColor: section.bgColor,
+                                bgImg: section.bgImg,
+                              ),
+                            ],
+                          );
+                        });
                       }
 
                       // 🔹 Default fallback for unknown types - Try to render generically or simply pass the type
                       // This allows future view_types to be potentially handled by CustomViewWidget if updated, without changing this file
                       return CustomViewWidget(
-                         type: viewType,
-                         // Pass common props just in case
-                         title: section.title,
-                         // we can pass more generic props if CustomViewWidget supports them
+                        type: viewType,
+                        // Pass common props just in case
+                        title: section.title,
+                        // we can pass more generic props if CustomViewWidget supports them
+                        bgColor: section.bgColor,
+                        bgImg: section.bgImg,
                       );
-
                     }).toList(),
                   );
                 }),

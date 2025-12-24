@@ -171,32 +171,34 @@ class MypostListCustomWidget extends StatelessWidget {
   // Real Order Card - works directly with Result
   Widget _buildOrderCard(BuildContext context, Result result) {
     // Calculate countdown duration
-    final countdownDuration = _calculateCountdownDuration(result.info?.countdownDt);
-    
+    final countdownDuration = _calculateCountdownDuration(
+      result.info?['countdownDt'],
+    );
+
     // Get order ID - use title or s2 as fallback
-    final orderId = result.info?.title ?? '';
-    
+    final orderId = result.info?['title'] ?? '';
+
     // Get seller name
-    final sellerName = result.info?.s1 ??  '';
-    
+    final sellerName = result.info?['1'] ?? '';
+
     // Get order date
-    final orderDate = result.info?.s2 ?? '';
-    
+    final orderDate = result.info?['2'] ?? '';
+
     return GestureDetector(
       onTap: onItemTap ?? () => const PostDetailsScreen().launch(context),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-    gradient: AppColors.appPagecolor,
+          gradient: AppColors.appPagecolor,
           borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-                      BoxShadow(
-                        color: AppColors.appMutedColor,
-                        blurRadius: 5,
-                        spreadRadius: 1,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.appMutedColor,
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: Offset(0, 5),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

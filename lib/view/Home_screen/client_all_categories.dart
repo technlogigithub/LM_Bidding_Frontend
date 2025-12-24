@@ -269,10 +269,10 @@ class _ClientAllCategoriesState extends State<ClientAllCategories> {
     appSettingcontroller = Get.find<AppSettingsController>();
   }
 
-  Future<void> _loadData() async {
-    // Refresh categories data
-    await homeController.fetchCategory();
-  }
+  // Future<void> _loadData() async {
+  //   // Refresh categories data
+  //   await homeController.fetchCategory();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -362,7 +362,7 @@ class _ClientAllCategoriesState extends State<ClientAllCategories> {
         child: RefreshIndicator(
           onRefresh: () async {
             // Refresh categories data - shimmer will show automatically via isLoading
-            await _loadData();
+            // await _loadData();
           },
           color: AppColors.appButtonColor,
           child: SingleChildScrollView(

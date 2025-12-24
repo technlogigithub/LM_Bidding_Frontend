@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../core/app_color.dart';
 import '../../models/Post/Get_Post_List_Model.dart';
 import '../core/app_textstyle.dart';
+import '../core/app_images.dart';
 
 class CustomHorizontalGridViewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
@@ -14,6 +15,8 @@ class CustomHorizontalGridViewList extends StatelessWidget {
   final VoidCallback? onItemTap;
   final Function(int, bool)? onFavoriteToggle;
   final double? height;
+  final String? bgColor;
+  final String? bgImg;
 
   const CustomHorizontalGridViewList({
     super.key,
@@ -22,6 +25,8 @@ class CustomHorizontalGridViewList extends StatelessWidget {
     this.onItemTap,
     this.onFavoriteToggle,
     this.height,
+    this.bgColor,
+    this.bgImg,
   });
 
   @override
@@ -206,10 +211,9 @@ class CustomHorizontalGridViewList extends StatelessWidget {
     }
 
     // Extract data from result
-    final title = result.info?.title ?? '';
-    final ratingReview = result.info?.ratingReview ?? '';
-    final price = result.info?.price ?? '';
-    final sellerName = result.details?.s1 ?? result.info?.s1 ?? '';
+    final title = result.info?['title'] ?? '';
+    final ratingReview = result.info?['ratingReview'] ?? '';
+    final price = result.info?['price'] ?? '';
 
     // Parse rating and review count from ratingReview string (format: "5.0 (520 review)" or similar)
     double rating = 0.0;
@@ -229,7 +233,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
         reviewText = ratingReview.replaceFirst(RegExp(r'^\d+\.?\d*\s*'), '');
       }
     }
-    final badge = result.info?.badge;
+    final badge = result.info?['badge'];
 
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
@@ -238,7 +242,17 @@ class CustomHorizontalGridViewList extends StatelessWidget {
         child: Container(
           width: 156.w,
           decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor,
+            image: (bgImg != null && bgImg!.isNotEmpty)
+                ? DecorationImage(
+                    image: CachedNetworkImageProvider(bgImg!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+            gradient: (bgImg == null || bgImg!.isEmpty)
+                ? (bgColor != null && bgColor!.isNotEmpty
+                    ? parseLinearGradient(bgColor)
+                    : AppColors.appPagecolor)
+                : null,
             boxShadow: [
               BoxShadow(
                 color: AppColors.appMutedColor,
@@ -275,24 +289,18 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                                 color: AppColors.appMutedColor,
                               ),
                             ),
-                            errorWidget: (context, url, error) => Container(
+                            errorWidget: (context, url, error) => Image.asset(
+                              AppImage.placeholder,
                               height: 135.h,
                               width: 156.w,
-                              color: AppColors.appMutedColor,
-                              child: Icon(
-                                Icons.image_not_supported,
-                                color: Colors.grey[600],
-                              ),
+                              fit: BoxFit.cover,
                             ),
                           )
-                        : Container(
+                        : Image.asset(
+                            AppImage.placeholder,
                             height: 135.h,
                             width: 156.w,
-                            color: AppColors.appMutedColor,
-                            child: Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey[600],
-                            ),
+                            fit: BoxFit.cover,
                           ),
                   ),
                   // Favorite icon
@@ -300,8 +308,8 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                     Obx(() {
                       final currentResult = model.value?.result?[index];
                       final isFavorite =
-                          currentResult?.info?.favorite ??
-                          result.info?.favorite ??
+                          currentResult?.info?['favorite'] ??
+                          result.info?['favorite'] ??
                           false;
                       return Positioned(
                         top: 5.h,
@@ -310,7 +318,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
                           onTap: () {
                             final newValue = !isFavorite;
                             if (result.info != null) {
-                              result.info!.favorite = newValue;
+                              result.info!['favorite'] = newValue;
                             }
                             Future.microtask(() {
                               model.refresh();

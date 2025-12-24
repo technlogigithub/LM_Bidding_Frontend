@@ -2111,6 +2111,9 @@ class CustomSection {
   String? viewType;
   String? pageName;
   String? pageImage;
+  String? nextPageName;
+  String? viewAllLabel;
+  String? viewAllNextPage;
   String? title;
   String? description;
   List<CustomOption>? options;
@@ -2127,6 +2130,9 @@ class CustomSection {
     this.viewType,
     this.pageName,
     this.pageImage,
+    this.nextPageName,
+    this.viewAllLabel,
+    this.viewAllNextPage,
     this.title,
     this.description,
     this.options,
@@ -2164,6 +2170,9 @@ class CustomSection {
       viewType: json['view_type'],
       pageName: json['page_name'],
       pageImage: json['page_image'],
+      nextPageName: json['next_page_name'],
+      viewAllLabel: json['view_all_label'],
+      viewAllNextPage: json['view_all_next_page'],
       title: json['title'],
       description: json['description'],
       options: optionsList,
@@ -2183,6 +2192,9 @@ class CustomSection {
       if (viewType != null) 'view_type': viewType,
       if (pageName != null) 'page_name': pageName,
       if (pageImage != null) 'page_image': pageImage,
+      if (nextPageName != null) 'next_page_name': nextPageName,
+      if (viewAllLabel != null) 'view_all_label': viewAllLabel,
+      if (viewAllNextPage != null) 'view_all_next_page': viewAllNextPage,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
     };
@@ -2234,6 +2246,9 @@ class HeaderMenu {
   bool? isActive;
   String? pageName;
   String? pageImage;
+  String? nextPageName;
+  String? viewAllLabel;
+  String? viewAllNextPage;
   String? title;
   dynamic design; // Can be List or Map
 
@@ -2248,6 +2263,9 @@ class HeaderMenu {
     this.isActive,
     this.pageName,
     this.pageImage,
+    this.nextPageName,
+    this.viewAllLabel,
+    this.viewAllNextPage,
     this.title,
     this.design,
   });
@@ -2264,6 +2282,9 @@ class HeaderMenu {
       isActive: json['is_active'],
       pageName: json['page_name'],
       pageImage: json['page_image'],
+      nextPageName: json['next_page_name'],
+      viewAllLabel: json['view_all_label'],
+      viewAllNextPage: json['view_all_next_page'],
       title: json['title'],
       design: json['design'],
     );
@@ -2280,6 +2301,9 @@ class HeaderMenu {
     if (isActive != null) 'is_active': isActive,
     if (pageName != null) 'page_name': pageName,
     if (pageImage != null) 'page_image': pageImage,
+    if (nextPageName != null) 'next_page_name': nextPageName,
+    if (viewAllLabel != null) 'view_all_label': viewAllLabel,
+    if (viewAllNextPage != null) 'view_all_next_page': viewAllNextPage,
     if (title != null) 'title': title,
     if (design != null) 'design': design,
   };

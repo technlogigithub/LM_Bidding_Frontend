@@ -36,7 +36,7 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
   var recentViewedList = <ServiceItem>[].obs;
 
   void toggleFavorite(int index, bool newValue) {
-      services[index].isFavorite = newValue;
+      // services[index].isFavorite = newValue;
   }
 
   void _scrollListener() {

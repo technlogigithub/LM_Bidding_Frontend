@@ -321,18 +321,13 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
                     // 1. Category has been expanded at least once (_hasBeenExpanded)
                     // 2. API call is complete (not loading)
                     // 3. Subcategories list is empty
+                    // ❌ REMOVED: "No subcategories available" text logic
+                    // if (_hasBeenExpanded && !isLoading && subcategories.isEmpty) { ... }
+                    
                     if (_hasBeenExpanded &&
                         !isLoading &&
                         subcategories.isEmpty) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          'No subcategories available',
-                          style: AppTextStyle.description(
-                            color: AppColors.appDescriptionColor,
-                          ),
-                        ),
-                      );
+                      return const SizedBox.shrink();
                     }
 
                     // Default: return empty widget
@@ -604,23 +599,11 @@ class _SubcategoryItemWidgetState extends State<SubcategoryItemWidget> {
               // 1. Subcategory has been expanded at least once (_hasBeenExpanded)
               // 2. API call is complete (not loading)
               // 3. Nested subcategories list is empty
+              // ❌ REMOVED: "No subcategories available" text logic
               if (_hasBeenExpanded &&
                   !isLoading &&
                   nestedSubcategories.isEmpty) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: 20.0 + (widget.level * 20.0),
-                    right: 16.0,
-                    top: 8.0,
-                    bottom: 8.0,
-                  ),
-                  child: Text(
-                    'No subcategories available',
-                    style: AppTextStyle.description(
-                      color: AppColors.appDescriptionColor,
-                    ),
-                  ),
-                );
+                return const SizedBox.shrink();
               }
 
               // Default: return empty widget

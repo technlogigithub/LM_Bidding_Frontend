@@ -19,6 +19,8 @@ class CustomCategoryHorizontalList extends StatelessWidget {
   final Color? backgroundColor;
   final String? fallbackImage;
   final int shimmerItemCount;
+  final String? bgColor;
+  final String? bgImg;
 
   const CustomCategoryHorizontalList({
     super.key,
@@ -34,6 +36,8 @@ class CustomCategoryHorizontalList extends StatelessWidget {
     this.backgroundColor,
     this.fallbackImage,
     this.shimmerItemCount = 4,
+    this.bgColor,
+    this.bgImg,
   });
 
   Widget _buildCategoryShimmer() {
@@ -96,113 +100,144 @@ class CustomCategoryHorizontalList extends StatelessWidget {
             final categoryImage = category['image'] ?? '';
 
 
+            print(" BG color for category $bgColor");
+            print(" BG image for category $bgImg");
+
+
 
             return Padding(
               padding: itemPadding,
-              child: Column(
-                children: [
-                  // CircleAvatar(
-                  //   radius: avatarRadius.r,
-                  //   backgroundColor: backgroundColor ?? AppColors.appColor,
-                  //   child: ClipOval(
-                  //     child: categoryImage.isNotEmpty
-                  //         ? (categoryImage.startsWith('http')
-                  //         ? Image.network(
-                  //       categoryImage,
-                  //       fit: BoxFit.cover,
-                  //       width: imageSize.r,
-                  //       height: imageSize.r,
-                  //       loadingBuilder: (context, child, loadingProgress) {
-                  //         if (loadingProgress == null) return child;
-                  //         return Image.asset(
-                  //           fallbackImage ?? AppImage.placeholder,
-                  //           fit: BoxFit.cover,
-                  //           width: imageSize.r,
-                  //           height: imageSize.r,
-                  //         );
-                  //       },
-                  //       errorBuilder: (context, error, stackTrace) {
-                  //         return Image.asset(
-                  //           fallbackImage ?? AppImage.placeholder,
-                  //           fit: BoxFit.cover,
-                  //           width: imageSize.r,
-                  //           height: imageSize.r,
-                  //         );
-                  //       },
-                  //     )
-                  //         : Image.asset(
-                  //       categoryImage,
-                  //       fit: BoxFit.cover,
-                  //       width: imageSize.r,
-                  //       height: imageSize.r,
-                  //       errorBuilder: (context, error, stackTrace) {
-                  //         return Image.asset(
-                  //           fallbackImage ?? AppImage.placeholder,
-                  //           fit: BoxFit.cover,
-                  //           width: imageSize.r,
-                  //           height: imageSize.r,
-                  //         );
-                  //       },
-                  //     ))
-                  //         : Image.asset(
-                  //       fallbackImage ?? AppImage.placeholder,
-                  //       fit: BoxFit.cover,
-                  //       width: imageSize.r,
-                  //       height: imageSize.r,
-                  //     ),
-                  //   ),
-                  // ),
-                Container(
-                width: 80.w,
-                height: 80.h,
+              child: Container(
                 decoration: BoxDecoration(
+                  image: (bgImg != null && bgImg!.isNotEmpty)
+                      ? DecorationImage(
+                    image: NetworkImage(bgImg!),
+                    fit: BoxFit.cover,
+                  )
+                      : null,
+                  gradient: (bgImg == null || bgImg!.isEmpty)
+                      ? (bgColor != null && bgColor!.isNotEmpty
+                      ? parseLinearGradient(bgColor)
+                      : null)
+                      : null,
                   // shape: BoxShape.circle,
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: categoryImage.isNotEmpty
-                    ? (categoryImage.startsWith('http')
-                    ? Image.network(
-                  categoryImage,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Image.asset(
-                      fallbackImage ?? AppImage.placeholder,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      fallbackImage ?? AppImage.placeholder,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                )
-                    : Image.asset(
-                  categoryImage,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      fallbackImage ?? AppImage.placeholder,
-                      fit: BoxFit.cover,
-                    );
-                  },
-                ))
-                    : Image.asset(
-                  fallbackImage ?? AppImage.placeholder,
-                  fit: BoxFit.cover,
-                ),
-              ),
-
-              SizedBox(height: 10.h,),
-                  Text(
-                    categoryName,
-                    style: textStyle ??
-                        AppTextStyle.body(
-                          color: AppColors.appBodyTextColor,
-                        ),
+                child: Column(
+                  children: [
+                    // CircleAvatar(
+                    //   radius: avatarRadius.r,
+                    //   backgroundColor: backgroundColor ?? AppColors.appColor,
+                    //   child: ClipOval(
+                    //     child: categoryImage.isNotEmpty
+                    //         ? (categoryImage.startsWith('http')
+                    //         ? Image.network(
+                    //       categoryImage,
+                    //       fit: BoxFit.cover,
+                    //       width: imageSize.r,
+                    //       height: imageSize.r,
+                    //       loadingBuilder: (context, child, loadingProgress) {
+                    //         if (loadingProgress == null) return child;
+                    //         return Image.asset(
+                    //           fallbackImage ?? AppImage.placeholder,
+                    //           fit: BoxFit.cover,
+                    //           width: imageSize.r,
+                    //           height: imageSize.r,
+                    //         );
+                    //       },
+                    //       errorBuilder: (context, error, stackTrace) {
+                    //         return Image.asset(
+                    //           fallbackImage ?? AppImage.placeholder,
+                    //           fit: BoxFit.cover,
+                    //           width: imageSize.r,
+                    //           height: imageSize.r,
+                    //         );
+                    //       },
+                    //     )
+                    //         : Image.asset(
+                    //       categoryImage,
+                    //       fit: BoxFit.cover,
+                    //       width: imageSize.r,
+                    //       height: imageSize.r,
+                    //       errorBuilder: (context, error, stackTrace) {
+                    //         return Image.asset(
+                    //           fallbackImage ?? AppImage.placeholder,
+                    //           fit: BoxFit.cover,
+                    //           width: imageSize.r,
+                    //           height: imageSize.r,
+                    //         );
+                    //       },
+                    //     ))
+                    //         : Image.asset(
+                    //       fallbackImage ?? AppImage.placeholder,
+                    //       fit: BoxFit.cover,
+                    //       width: imageSize.r,
+                    //       height: imageSize.r,
+                    //     ),
+                    //   ),
+                    // ),
+                  Container(
+                  width: 80.w,
+                  height: 80.h,
+                    decoration: BoxDecoration(
+                      // image: (bgImg != null && bgImg!.isNotEmpty)
+                      //     ? DecorationImage(
+                      //   image: NetworkImage(bgImg!),
+                      //   fit: BoxFit.cover,
+                      // )
+                      //     : null,
+                      // gradient: (bgImg == null || bgImg!.isEmpty)
+                      //     ? (bgColor != null && bgColor!.isNotEmpty
+                      //     ? parseLinearGradient(bgColor)
+                      //     : null)
+                      //     : null,
+                      // shape: BoxShape.circle,
+                    ),
+                  clipBehavior: Clip.antiAlias,
+                  child: categoryImage.isNotEmpty
+                      ? (categoryImage.startsWith('http')
+                      ? Image.network(
+                    categoryImage,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Image.asset(
+                        fallbackImage ?? AppImage.placeholder,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        fallbackImage ?? AppImage.placeholder,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  )
+                      : Image.asset(
+                    categoryImage,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        fallbackImage ?? AppImage.placeholder,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ))
+                      : Image.asset(
+                    fallbackImage ?? AppImage.placeholder,
+                    fit: BoxFit.cover,
                   ),
-                ],
+                ),
+
+                SizedBox(height: 10.h,),
+                    Text(
+                      categoryName,
+                      style: textStyle ??
+                          AppTextStyle.body(
+                            color: AppColors.appBodyTextColor,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             );
           },

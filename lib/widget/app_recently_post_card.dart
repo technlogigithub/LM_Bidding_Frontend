@@ -363,14 +363,14 @@ class AppRecentlyPostCard extends StatelessWidget {
         Obx(() {
           // Watch the model to get reactive updates
           final currentResult = model.value?.result?[index];
-          final isFavorite = currentResult?.info?.favorite ?? result.info?.favorite ?? false;
+          final isFavorite = currentResult?.info?['favorite'] ?? result.info?['favorite'] ?? false;
           return GestureDetector(
             onTap: () {
               // Toggle favorite state
               final newValue = !isFavorite;
               // Update the model immediately for better UX
               if (result.info != null) {
-                result.info!.favorite = newValue;
+                result.info!['favorite'] = newValue;
               }
               // Refresh the model to trigger UI update
               model.refresh();
@@ -410,10 +410,10 @@ class AppRecentlyPostCard extends StatelessWidget {
   }
 
   Widget _buildContentSection(Result result) {
-    final title = result.info?.title ?? '';
-    final ratingReview = result.info?.ratingReview;
-    final price = result.info?.price;
-    final badge = result.info?.badge;
+    final title = result.info?['title'] ?? '';
+    final ratingReview = result.info?['ratingReview'];
+    final price = result.info?['price'];
+    final badge = result.info?['badge'];
 
     return Padding(
       padding: const EdgeInsets.all(5.0),
