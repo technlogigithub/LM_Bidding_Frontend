@@ -5,9 +5,14 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/app_color.dart';
+import '../core/app_imagetype_helper.dart';
+import '../view/search_filter_post/seach_filter_screen.dart';
+import 'custom_auto_image_handle.dart';
 import '../../models/Post/Get_Post_List_Model.dart';
-import '../core/app_textstyle.dart';
-import '../core/app_images.dart';
+import '../../core/app_textstyle.dart';
+import '../../core/app_images.dart';
+import '../../view/Home_screen/search_screen.dart';
+import '../../view/Home_screen/client_all_categories.dart';
 
 class CustomHorizontalGridViewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
@@ -17,6 +22,9 @@ class CustomHorizontalGridViewList extends StatelessWidget {
   final double? height;
   final String? bgColor;
   final String? bgImg;
+  final String? label;
+  final String? viewAllLabel;
+  final String? viewAllNextPage;
 
   const CustomHorizontalGridViewList({
     super.key,
@@ -27,6 +35,9 @@ class CustomHorizontalGridViewList extends StatelessWidget {
     this.height,
     this.bgColor,
     this.bgImg,
+    this.label,
+    this.viewAllLabel,
+    this.viewAllNextPage,
   });
 
   @override
@@ -35,6 +46,46 @@ class CustomHorizontalGridViewList extends StatelessWidget {
       () => isLoading.value
           ? _buildShimmerList()
           : _buildFlexibleListView(context),
+    );
+  }
+
+  Widget _buildHeader() {
+    if (label == null || label!.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
+      child: Row(
+        children: [
+          Text(
+            label!,
+            style: AppTextStyle.title(
+              color: AppColors.appTitleColor,
+            ),
+          ),
+          const Spacer(),
+          if (viewAllLabel != null && viewAllLabel!.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                final nextPage = viewAllNextPage;
+                if (nextPage != null && nextPage.isNotEmpty) {
+                  if (nextPage == "search_page") {
+                    Get.to(() => SeachFilterScreen());
+                  } else if (nextPage == "select_category") {
+                    Get.to(() => ClientAllCategories());
+                  } else {
+                    debugPrint("⚠️ Unknown next page: $nextPage");
+                  }
+                }
+              },
+              child: Text(
+                viewAllLabel!,
+                style: AppTextStyle.description(
+                  color: AppColors.appLinkColor,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -58,22 +109,54 @@ class CustomHorizontalGridViewList extends StatelessWidget {
     // Calculate default height: image (135.h) + content min (100.h) + padding (40.h) + extra space (20.h)
     final defaultHeight = 135.h + 104.h + 40.h + 20.h;
     final listViewHeight = height ?? defaultHeight;
+    final bool hasValidImage = ImageTypeHelper.isImage(bgImg);
 
-    return SizedBox(
-      height: listViewHeight,
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.only(
-          top: 20.h,
-          bottom: 20.h,
-          left: 15.w,
-          right: 15.w,
-        ),
-        scrollDirection: Axis.horizontal,
-        itemCount: results.length,
-        separatorBuilder: (_, __) => SizedBox(width: 10.w),
-        itemBuilder: (_, i) => _buildItemCard(context, results[i], i),
+    Widget contentList = ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.only(
+        top: 20.h,
+        bottom: 20.h,
+        left: 15.w,
+        right: 15.w,
       ),
+      scrollDirection: Axis.horizontal,
+      itemCount: results.length,
+      separatorBuilder: (_, __) => SizedBox(width: 10.w),
+      itemBuilder: (_, i) => _buildItemCard(context, results[i], i),
+    );
+
+    Widget contentWithHeader = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(),
+        SizedBox(
+          height: listViewHeight,
+          child: contentList,
+        ),
+      ],
+    );
+
+    if (hasValidImage) {
+      return Stack(
+        children: [
+          Positioned.fill(
+              child: AutoNetworkImage(
+            imageUrl: bgImg,
+            // fit: BoxFit.cover,
+          ))       ,
+          contentWithHeader,
+        ],
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: (bgColor != null && bgColor!.isNotEmpty)
+            ? parseLinearGradient(bgColor)
+            : AppColors.appPagecolor,
+      ),
+      child: contentWithHeader,
     );
   }
 
@@ -235,231 +318,218 @@ class CustomHorizontalGridViewList extends StatelessWidget {
     }
     final badge = result.info?['badge'];
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
-      child: GestureDetector(
-        onTap: onItemTap,
-        child: Container(
-          width: 156.w,
-          decoration: BoxDecoration(
-            image: (bgImg != null && bgImg!.isNotEmpty)
-                ? DecorationImage(
-                    image: CachedNetworkImageProvider(bgImg!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-            gradient: (bgImg == null || bgImg!.isEmpty)
-                ? (bgColor != null && bgColor!.isNotEmpty
-                    ? parseLinearGradient(bgColor)
-                    : AppColors.appPagecolor)
-                : null,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.appMutedColor,
-                blurRadius: 5,
-                spreadRadius: 1,
-                offset: Offset(0, 10),
-              ),
-            ],
-            borderRadius: BorderRadius.circular(8.r),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // --- IMAGE ---
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(8.r),
-                      topRight: Radius.circular(8.r),
-                    ),
-                    child: imageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            height: 135.h,
-                            width: 156.w,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Shimmer.fromColors(
-                              baseColor: AppColors.appMutedColor,
-                              highlightColor: AppColors.appMutedTextColor,
-                              child: Container(
-                                height: 135.h,
-                                width: 156.w,
-                                color: AppColors.appMutedColor,
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Image.asset(
-                              AppImage.placeholder,
+    return GestureDetector(
+      onTap: onItemTap,
+      child: Container(
+        width: 156.w,
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.appMutedColor,
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: Offset(0, 10),
+            ),
+          ],
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // --- IMAGE ---
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(8.r),
+                    topRight: Radius.circular(8.r),
+                  ),
+                  child: imageUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          height: 135.h,
+                          width: 156.w,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: AppColors.appMutedColor,
+                            highlightColor: AppColors.appMutedTextColor,
+                            child: Container(
                               height: 135.h,
                               width: 156.w,
-                              fit: BoxFit.cover,
+                              color: AppColors.appMutedColor,
                             ),
-                          )
-                        : Image.asset(
+                          ),
+                          errorWidget: (context, url, error) => Image.asset(
                             AppImage.placeholder,
                             height: 135.h,
                             width: 156.w,
                             fit: BoxFit.cover,
                           ),
-                  ),
-                  // Favorite icon
-                  if (onFavoriteToggle != null)
-                    Obx(() {
-                      final currentResult = model.value?.result?[index];
-                      final isFavorite =
-                          currentResult?.info?['favorite'] ??
-                          result.info?['favorite'] ??
-                          false;
-                      return Positioned(
-                        top: 5.h,
-                        right: 5.w,
-                        child: GestureDetector(
-                          onTap: () {
-                            final newValue = !isFavorite;
-                            if (result.info != null) {
-                              result.info!['favorite'] = newValue;
-                            }
-                            Future.microtask(() {
-                              model.refresh();
-                            });
-                            onFavoriteToggle!(index, newValue);
-                          },
-                          child: Container(
-                            height: 25,
-                            width: 25,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 10.0,
-                                  spreadRadius: 1.0,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Icon(
-                                isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: isFavorite
-                                    ? Colors.red
-                                    : AppColors.appIconColor,
-                                size: 16.0,
+                        )
+                      : Image.asset(
+                          AppImage.placeholder,
+                          height: 135.h,
+                          width: 156.w,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+                // Favorite icon
+                if (onFavoriteToggle != null)
+                  Obx(() {
+                    final currentResult = model.value?.result?[index];
+                    final isFavorite =
+                        currentResult?.info?['favorite'] ??
+                        result.info?['favorite'] ??
+                        false;
+                    return Positioned(
+                      top: 5.h,
+                      right: 5.w,
+                      child: GestureDetector(
+                        onTap: () {
+                          final newValue = !isFavorite;
+                          if (result.info != null) {
+                            result.info!['favorite'] = newValue;
+                          }
+                          Future.microtask(() {
+                            model.refresh();
+                          });
+                          onFavoriteToggle!(index, newValue);
+                        },
+                        child: Container(
+                          height: 25,
+                          width: 25,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10.0,
+                                spreadRadius: 1.0,
+                                offset: Offset(0, 2),
                               ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite
+                                  ? Colors.red
+                                  : AppColors.appIconColor,
+                              size: 16.0,
                             ),
                           ),
                         ),
-                      );
-                    }),
-                  if (badge != null && badge.isNotEmpty)
-                    Positioned(
-                      top: 3,
-                      left: 2,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.appPagecolor,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          badge,
-                          textAlign: TextAlign.center,
-                          style: AppTextStyle.body(),
-                        ),
+                      ),
+                    );
+                  }),
+                if (badge != null && badge.isNotEmpty)
+                  Positioned(
+                    top: 3,
+                    left: 2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.appPagecolor,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        badge,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyle.body(),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
+            ),
 
-              // --- DETAILS ---
-              Padding(
-                padding: EdgeInsets.all(6.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            // --- DETAILS ---
+            Padding(
+              padding: EdgeInsets.all(6.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title ?? "",
+                    style: AppTextStyle.title(
+                      color: AppColors.appTitleColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  SizedBox(height: 6.h),
+
+                  if (ratingReview.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(
+                          IconlyBold.star,
+                          color: Colors.amber,
+                          size: 18.sp,
+                        ),
+                        SizedBox(width: 3.w),
+                        if (rating > 0)
+                          Text(
+                            rating.toStringAsFixed(1),
+                            style: AppTextStyle.body(
+                              color: AppColors.appTitleColor,
+                            ),
+                          ),
+                        if (reviewText.isNotEmpty) ...[
+                          SizedBox(width: 3.w),
+                          Flexible(
+                            child: Text(
+                              '($reviewText)',
+                              style: AppTextStyle.body(
+                                color: AppColors.appDescriptionColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  if (price.isNotEmpty)
                     Text(
-                      title ?? "",
-                      style: AppTextStyle.title(
-                        color: AppColors.appTitleColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      "₹$price",
+                      style: AppTextStyle.title(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    SizedBox(height: 6.h),
-
-                    if (ratingReview.isNotEmpty)
-                      Row(
-                        children: [
-                          Icon(
-                            IconlyBold.star,
-                            color: Colors.amber,
-                            size: 18.sp,
-                          ),
-                          SizedBox(width: 3.w),
-                          if (rating > 0)
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: AppTextStyle.body(
-                                color: AppColors.appTitleColor,
-                              ),
-                            ),
-                          if (reviewText.isNotEmpty) ...[
-                            SizedBox(width: 3.w),
-                            Flexible(
-                              child: Text(
-                                '($reviewText)',
-                                style: AppTextStyle.body(
-                                  color: AppColors.appDescriptionColor,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    if (price.isNotEmpty)
-                      Text(
-                        "₹$price",
-                        style: AppTextStyle.title(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                    // if (sellerLevel.isNotEmpty) ...[
-                    //   SizedBox(height: 6.h),
-                    //   RichText(
-                    //     text: TextSpan(
-                    //       text: "Seller Level - ",
-                    //       style: AppTextStyle.body(
-                    //         color: AppColors.appTitleColor,
-                    //       ),
-                    //       children: [
-                    //         TextSpan(
-                    //           text: sellerLevel,
-                    //           style: AppTextStyle.body(
-                    //             color: AppColors.appDescriptionColor,
-                    //           ),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ],
-                  ],
-                ),
+                  // if (sellerLevel.isNotEmpty) ...[
+                  //   SizedBox(height: 6.h),
+                  //   RichText(
+                  //     text: TextSpan(
+                  //       text: "Seller Level - ",
+                  //       style: AppTextStyle.body(
+                  //         color: AppColors.appTitleColor,
+                  //       ),
+                  //       children: [
+                  //         TextSpan(
+                  //           text: sellerLevel,
+                  //           style: AppTextStyle.body(
+                  //             color: AppColors.appDescriptionColor,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ],
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

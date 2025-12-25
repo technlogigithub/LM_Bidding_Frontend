@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../core/app_color.dart';
+import '../core/app_imagetype_helper.dart';
+import '../view/search_filter_post/seach_filter_screen.dart';
+import 'custom_auto_image_handle.dart';
+
+import '../../core/app_textstyle.dart';
+import '../../view/Home_screen/search_screen.dart';
+import '../../view/Home_screen/client_all_categories.dart';
+import 'package:get/get.dart';
 
 class CustomTabBar extends StatefulWidget implements PreferredSizeWidget {
   final List<String> tabs;
   final Function(int)? onTap;
   final TextStyle textStyle;
   final int? initialIndex;
+  final String? bgColor;
+  final String? bgImg;
+  final String? label;
+  final String? viewAllLabel;
+  final String? viewAllNextPage;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -16,6 +30,11 @@ class CustomTabBar extends StatefulWidget implements PreferredSizeWidget {
     this.onTap,
     required this.textStyle,
     this.initialIndex,
+    this.bgColor,
+    this.bgImg,
+    this.label,
+    this.viewAllLabel,
+    this.viewAllNextPage,
   });
 
   @override
@@ -56,13 +75,56 @@ class _CustomTabBarState extends State<CustomTabBar> {
     }
   }
 
+  Widget _buildHeader() {
+    if (widget.label == null || widget.label!.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
+      child: Row(
+        children: [
+          Text(
+            widget.label!,
+            style: AppTextStyle.title(
+              color: AppColors.appTitleColor,
+            ),
+          ),
+          const Spacer(),
+          // if (widget.viewAllLabel != null && widget.viewAllLabel!.isNotEmpty)
+          //   GestureDetector(
+          //     onTap: () {
+          //       final nextPage = widget.viewAllNextPage;
+          //       if (nextPage != null && nextPage.isNotEmpty) {
+          //         if (nextPage == "search_page") {
+          //           Get.to(() => SeachFilterScreen());
+          //         } else if (nextPage == "select_category") {
+          //           Get.to(() => ClientAllCategories());
+          //         } else {
+          //           debugPrint("⚠️ Unknown next page: $nextPage");
+          //         }
+          //       }
+          //     },
+          //     child: Text(
+          //       widget.viewAllLabel!,
+          //       style: AppTextStyle.description(
+          //         color: AppColors.appLinkColor,
+          //       ),
+          //     ),
+          //   ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final bool hasValidImage = ImageTypeHelper.isImage(widget.bgImg);
+
+    Widget tabList = Container(
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 15),
         child: Row(
           children: List.generate(widget.tabs.length, (index) {
             final isSelected = selectedIndex == index;
@@ -76,26 +138,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
                 duration: const Duration(milliseconds: 300),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 margin: const EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.appButtonColor
-                      : AppColors.appMutedColor,
-                  gradient: isSelected
-                      ? LinearGradient(
-                    colors: [
-                      AppColors.appButtonColor,
-                      AppColors.appButtonColor.withOpacity(0.7),
-                    ],
-                  )
-                      : null,
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.appButtonColor
-                        : AppColors.appMutedColor,
-                    width: 1,
-                  ),
-                ),
+                decoration: _getDecoration(isSelected),
                 child: Text(
                   widget.tabs[index],
                   style: widget.textStyle.copyWith(
@@ -111,6 +154,109 @@ class _CustomTabBarState extends State<CustomTabBar> {
         ),
       ),
     );
+
+    Widget contentWithHeader = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(),
+        tabList,
+      ],
+    );
+
+    if (hasValidImage) {
+      return Stack(
+        children: [
+          AutoNetworkImage(imageUrl: widget.bgImg),
+          Positioned.fill(child: contentWithHeader),
+        ],
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: (widget.bgColor != null && widget.bgColor!.isNotEmpty)
+            ? parseLinearGradient(widget.bgColor)
+            : AppColors.appPagecolor,
+      ),
+      child: contentWithHeader,
+    );
+  }
+
+
+  BoxDecoration _getDecoration(bool isSelected) {
+    if (!isSelected) {
+      return BoxDecoration(
+        color: AppColors.appMutedColor,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: AppColors.appMutedColor,
+          width: 1,
+        ),
+      );
+    }
+
+    // 1. Priority: Checked bgImg
+    if (widget.bgImg != null && widget.bgImg!.isNotEmpty) {
+      return BoxDecoration(
+        image: DecorationImage(
+          image: CachedNetworkImageProvider(widget.bgImg!),
+          fit: BoxFit.cover,
+        ),
+        borderRadius: BorderRadius.circular(30),
+        // Optional: keep border if needed, or remove.
+        // Keeping it consistent with other states:
+        border: Border.all(
+          color: AppColors.appButtonColor, // Or transparent
+          width: 1,
+        ),
+      );
+    }
+
+    // 2. Priority: bgColor
+    if (widget.bgColor != null && widget.bgColor!.isNotEmpty) {
+      Color? dynamicColor;
+      try {
+        dynamicColor = _getColorFromHex(widget.bgColor!);
+      } catch (e) {
+        debugPrint("Error parsing color: $e");
+      }
+
+      if (dynamicColor != null) {
+        return BoxDecoration(
+          color: dynamicColor,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: dynamicColor,
+            width: 1,
+          ),
+        );
+      }
+    }
+
+    // 3. Fallback: Existing Gradient/Color
+    return BoxDecoration(
+      color: AppColors.appButtonColor,
+      gradient: LinearGradient(
+        colors: [
+          AppColors.appButtonColor,
+          AppColors.appButtonColor.withOpacity(0.7),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(30),
+      border: Border.all(
+        color: AppColors.appButtonColor,
+        width: 1,
+      ),
+    );
+  }
+
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll("#", "");
+    if (hexColor.length == 6) {
+      hexColor = "FF" + hexColor;
+    }
+    return Color(int.parse("0x$hexColor"));
   }
 }
 

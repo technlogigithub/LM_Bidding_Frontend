@@ -9,6 +9,11 @@ import '../core/app_color.dart';
 import '../core/app_textstyle.dart';
 import '../models/Post/Get_Post_List_Model.dart';
 import '../core/app_images.dart';
+import '../core/app_imagetype_helper.dart';
+import '../../view/Home_screen/search_screen.dart';
+import '../../view/Home_screen/client_all_categories.dart';
+import '../view/search_filter_post/seach_filter_screen.dart';
+import 'custom_auto_image_handle.dart';
 
 class CustomVerticalListviewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
@@ -21,6 +26,9 @@ class CustomVerticalListviewList extends StatelessWidget {
   final bool isFromCartScreen;
   final String? bgColor;
   final String? bgImg;
+  final String? label;
+  final String? viewAllLabel;
+  final String? viewAllNextPage;
 
   const CustomVerticalListviewList({
     super.key,
@@ -34,6 +42,9 @@ class CustomVerticalListviewList extends StatelessWidget {
     this.isFromCartScreen = false,
     this.bgColor,
     this.bgImg,
+    this.label,
+    this.viewAllLabel,
+    this.viewAllNextPage,
   });
 
   @override
@@ -42,6 +53,46 @@ class CustomVerticalListviewList extends StatelessWidget {
           () => isLoading.value
           ? _buildShimmerList()
           : _buildPostList(context),
+    );
+  }
+
+  Widget _buildHeader() {
+    if (label == null || label!.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
+      child: Row(
+        children: [
+          Text(
+            label!,
+            style: AppTextStyle.title(
+              color: AppColors.appTitleColor,
+            ),
+          ),
+          const Spacer(),
+          if (viewAllLabel != null && viewAllLabel!.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                final nextPage = viewAllNextPage;
+                if (nextPage != null && nextPage.isNotEmpty) {
+                  if (nextPage == "search_page") {
+                    Get.to(() => SeachFilterScreen());
+                  } else if (nextPage == "select_category") {
+                    Get.to(() => ClientAllCategories());
+                  } else {
+                    debugPrint("⚠️ Unknown next page: $nextPage");
+                  }
+                }
+              },
+              child: Text(
+                viewAllLabel!,
+                style: AppTextStyle.description(
+                  color: AppColors.appLinkColor,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -62,26 +113,52 @@ class CustomVerticalListviewList extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      height: results.length * (isFromCartScreen ? 200.h : 182.h),
-      child: ListView.separated(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(
-          bottom: 20,
-          left: 0.0,
-          right: 0.0,
-        ),
-        scrollDirection: Axis.vertical,
-        itemCount: results.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-        itemBuilder: (_, index) {
-          final result = results[index];
-          return Padding(
-            padding: EdgeInsetsGeometry.only(top: 10),
-            child: _buildItemCard(context, result, index),
-          );
-        },
+    Widget contentList = ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: const EdgeInsets.only(
+        bottom: 20,
+        left: 15.0,
+        right: 15.0,
       ),
+      scrollDirection: Axis.vertical,
+      itemCount: results.length,
+      separatorBuilder: (_, __) => const SizedBox(width: 10.0),
+      itemBuilder: (_, index) {
+        final result = results[index];
+        return Padding(
+          padding: EdgeInsetsGeometry.only(top: 10),
+          child: _buildItemCard(context, result, index),
+        );
+      },
+    );
+
+    Widget contentWithHeader = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(),
+        contentList,
+      ],
+    );
+
+    return Stack(
+      children: [
+        if (ImageTypeHelper.isImage(bgImg))
+          Positioned.fill(
+            child: AutoNetworkImage(imageUrl: bgImg),
+          ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: !ImageTypeHelper.isImage(bgImg)
+                ? (bgColor != null && bgColor!.isNotEmpty
+                    ? parseLinearGradient(bgColor)
+                    : AppColors.appPagecolor)
+                : null,
+          ),
+          child: contentWithHeader,
+        ),
+      ],
     );
   }
 
@@ -193,20 +270,10 @@ class CustomVerticalListviewList extends StatelessWidget {
     return GestureDetector(
       onTap: onItemTap ?? () {},
       child: Container(
-        width: 330.w,
+        width: double.infinity,
         height: isFromCartScreen ? 185.h : 140.h,
         decoration: BoxDecoration(
-          image: (bgImg != null && bgImg!.isNotEmpty)
-              ? DecorationImage(
-                  image: CachedNetworkImageProvider(bgImg!),
-                  fit: BoxFit.cover,
-                )
-              : null,
-          gradient: (bgImg == null || bgImg!.isEmpty)
-              ? (bgColor != null && bgColor!.isNotEmpty
-                  ? parseLinearGradient(bgColor)
-                  : AppColors.appPagecolor)
-              : null,
+          gradient: AppColors.appPagecolor,
           boxShadow: [
             BoxShadow(
               color: AppColors.appMutedColor,
@@ -608,7 +675,7 @@ class CartActionButtons extends StatelessWidget {
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.only(bottom: 10),
+        // margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.r),
           border: Border.all(color: borderColor),

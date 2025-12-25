@@ -141,7 +141,7 @@ class ClientHomeScreen extends StatelessWidget {
           backgroundColor: parseColor(headerConfig?.bgColor),
           elevation: 0,
           automaticallyImplyLeading: false,
-          toolbarHeight: screenHeight * 0.072,
+          toolbarHeight: screenHeight * 0.085,
           flexibleSpace: Container(
             decoration: BoxDecoration(gradient: AppColors.appbarColor),
             padding: EdgeInsets.only(
@@ -193,189 +193,194 @@ class ClientHomeScreen extends StatelessWidget {
                       ?.dp ??
                   "";
               print(headerConfig?.userInfo);
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // PROFILE IMAGE with shimmer
-                  GestureDetector(
-                    onTap: () => controller.handleRestrictedFeature(() {}),
-                    child: headerConfig?.userInfo == true
-                        ? ClipOval(
-                            child: Image.network(
-                              dpUrl,
-                              height: 44,
-                              width: 44,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return shimmerCircle(
-                                      44,
-                                    ); // shimmer until loaded
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  AppImage.profile,
-                                  height: 44,
-                                  width: 44,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            ),
-                          )
-                        : SizedBox.shrink(),
-                  ),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // PROFILE IMAGE with shimmer
+                    GestureDetector(
+                      onTap: () => controller.handleRestrictedFeature(() {}),
+                      child: headerConfig?.userInfo == true
+                          ? ClipOval(
+                              child: Image.network(
+                                dpUrl,
+                                height: 44,
+                                width: 44,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return shimmerCircle(
+                                        44,
+                                      ); // shimmer until loaded
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    AppImage.profile,
+                                    height: 44,
+                                    width: 44,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              ),
+                            )
+                          : SizedBox.shrink(),
+                    ),
 
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                  // USER NAME + LOCATION
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        headerConfig?.userInfo == true
-                            ? Text(
-                                profilecontroller
-                                        .profileDetailsResponeModel
-                                        .value
-                                        ?.result
-                                        ?.basicInfo
-                                        ?.name ??
-                                    "User",
-                                style: AppTextStyle.title(
-                                  color: AppColors.appTextColor,
-                                ),
-                                // style: AppTextStyle.kTextStyle.copyWith(
-                                //   color: AppColors.appTextColor,
-                                //   fontWeight: FontWeight.bold,
-                                //   fontSize: 16,
-                                // ),
-                              )
-                            : SizedBox.shrink(),
+                    // USER NAME + LOCATION
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          headerConfig?.userInfo == true
+                              ? Text(
+                                  profilecontroller
+                                          .profileDetailsResponeModel
+                                          .value
+                                          ?.result
+                                          ?.basicInfo
+                                          ?.name ??
+                                      "User",
+                                  style: AppTextStyle.title(
+                                    color: AppColors.appTextColor,
+                                  ),
+                                  // style: AppTextStyle.kTextStyle.copyWith(
+                                  //   color: AppColors.appTextColor,
+                                  //   fontWeight: FontWeight.bold,
+                                  //   fontSize: 16,
+                                  // ),
+                                )
+                              : SizedBox.shrink(),
 
-                        GestureDetector(
-                          onTap: () => controller.changeLocation(),
-                          child: headerConfig?.currentLocation == true
-                              ? Row(
-                                  children: [
-                                    Icon(
-                                      Icons.place_outlined,
-                                      color: AppColors.appTextColor,
-                                    ),
-                                    Obx(
-                                      () => SizedBox(
-                                        width: screenWidth * 0.45,
-                                        child: Marquee(
-                                          child: Text(
-                                            controller
-                                                    .currentLocation
-                                                    .value
-                                                    .isEmpty
-                                                ? 'Fetching location...'
-                                                : controller
+                          GestureDetector(
+                            onTap: () => controller.changeLocation(),
+                            child: headerConfig?.currentLocation == true
+                                ? Row(
+                                    children: [
+                                      Icon(
+                                        Icons.place_outlined,
+                                        color: AppColors.appTextColor,
+                                      ),
+                                      Obx(
+                                        () => SizedBox(
+                                          width: screenWidth * 0.45,
+                                          child: Marquee(
+                                            child: Text(
+                                              controller
                                                       .currentLocation
-                                                      .value,
-                                            style: AppTextStyle.description(
-                                              color: AppColors.appTextColor,
+                                                      .value
+                                                      .isEmpty
+                                                  ? 'Fetching location...'
+                                                  : controller
+                                                        .currentLocation
+                                                        .value,
+                                              style: AppTextStyle.description(
+                                                color: AppColors.appTextColor,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                )
-                              : SizedBox.shrink(),
+                                    ],
+                                  )
+                                : SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // RIGHT SIDE ICONS WITH SHIMMER
+                    Row(
+                      children: [
+                        // 🔔 ICON 1
+                        GestureDetector(
+                          onTap: () {
+                            const NotificationsScreen().launch(context);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.appColor.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: Image.network(
+                                headerConfig?.headerMenu?[0].icon ?? "",
+                                height: 25,
+                                width: 25,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return shimmerCircle(25);
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    IconlyLight.notification,
+                                    color: AppColors.appTextColor,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 6),
+
+                        // ℹ️ ICON 2
+                        GestureDetector(
+                          onTap: () {
+                            const RecentlyView().launch(context);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.appColor.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: Image.network(
+                                headerConfig?.headerMenu?[1].icon ?? "",
+                                height: 25,
+                                width: 25,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return shimmerCircle(25);
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    IconlyLight.infoSquare,
+                                    color: AppColors.appTextColor,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-
-                  // RIGHT SIDE ICONS WITH SHIMMER
-                  Row(
-                    children: [
-                      // 🔔 ICON 1
-                      GestureDetector(
-                        onTap: () {
-                          const NotificationsScreen().launch(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.appColor.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: Image.network(
-                              headerConfig?.headerMenu?[0].icon ?? "",
-                              height: 25,
-                              width: 25,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return shimmerCircle(25);
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  IconlyLight.notification,
-                                  color: AppColors.appTextColor,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 6),
-
-                      // ℹ️ ICON 2
-                      GestureDetector(
-                        onTap: () {
-                          const RecentlyView().launch(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.appColor.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: Image.network(
-                              headerConfig?.headerMenu?[1].icon ?? "",
-                              height: 25,
-                              width: 25,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return shimmerCircle(25);
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  IconlyLight.infoSquare,
-                                  color: AppColors.appTextColor,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               );
             }),
           ),
-          bottom: homePage?.design?.searchBar?.isActive == true
-              ? PreferredSize(
-                  preferredSize: Size.fromHeight(70.0),
-                  child: buildSearchBar(),
-                )
-              : null,
+
+          // bottom:Size.fromHeight(70.0)
+            // bottom: homePage?.design?.searchBar?.isActive == true
+          //     ? PreferredSize(
+          //         preferredSize: Size.fromHeight(70.0),
+          //         child: buildSearchBar(),
+          //       )
+          //     : null,
         ),
 
         body: Container(
@@ -477,72 +482,22 @@ class ClientHomeScreen extends StatelessWidget {
                       // 🔹 Categories
                       if (viewType == 'category_horizontal_icon_widget' ||
                           viewType == 'custom_category_horizontal_list') {
-                        Widget titleWidget = const SizedBox.shrink();
-                        if (section.label != null &&
-                            section.label!.isNotEmpty) {
-                          titleWidget = Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 15.0,
-                              vertical: 10,
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  section.label!,
-                                  style: AppTextStyle.title(
-                                    color: AppColors.appTitleColor,
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: () {
-                                      final nextPage = section.viewAllNextPage;
-
-                                      if (nextPage != null && nextPage.isNotEmpty) {
-                                        if (nextPage == "search_page") {
-                                          Get.to(() => SeachFilterScreen());
-                                        }
-                                        else if (nextPage == "select_category") {
-                                          Get.to(() => ClientAllCategories());
-                                        }
-                                        else {
-                                          debugPrint("⚠️ Unknown next page: $nextPage");
-                                        }
-                                      }
-                                    },
-                                    child: Text(
-                                      section.viewAllLabel!,
-                                      style: AppTextStyle.description(
-                                        color: AppColors.appLinkColor,
-                                      ),
-                                    ),
-                                  ),
-
-                              ],
-                            ),
-                          );
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            titleWidget,
-                            CustomViewWidget(
-                              type: 'category_horizontal_icon_widget',
-                              categories: controller.categoryList
-                                  .map(
-                                    (category) => {
-                                      'image': category.image ?? '',
-                                      'name': category.title ?? '',
-                                    },
-                                  )
-                                  .toList(),
-                              categoryLoading: controller.categoryLoading,
-                              bgColor: section.bgColor,
-                              bgImg: section.bgImg,
-                            ),
-                          ],
+                        return CustomViewWidget(
+                          type: 'category_horizontal_icon_widget',
+                          categories: controller.categoryList
+                              .map(
+                                (category) => {
+                                  'image': category.image ?? '',
+                                  'name': category.title ?? '',
+                                },
+                              )
+                              .toList(),
+                          categoryLoading: controller.categoryLoading,
+                          bgColor: section.bgColor,
+                          bgImg: section.bgImg,
+                          label: section.label,
+                          viewAllLabel: section.viewAllLabel,
+                          viewAllNextPage: section.viewAllNextPage,
                         );
                       }
 
@@ -618,31 +573,17 @@ class ClientHomeScreen extends StatelessWidget {
                         }
 
                         if (options.isNotEmpty) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (section.label != null &&
-                                  section.label!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15.0,
-                                    vertical: 8,
-                                  ),
-                                  child: Text(
-                                    section.label!,
-                                    style: AppTextStyle.title(
-                                      color: AppColors.appTitleColor,
-                                    ),
-                                  ),
-                                ),
-                              CustomViewWidget(
-                                type: 'custom_tapbar',
-                                tabOptions: options,
-                                onTabChanged: (index) {
-                                  print("Tab selected: $index");
-                                },
-                              ),
-                            ],
+                          return CustomViewWidget(
+                            type: 'custom_tapbar',
+                            tabOptions: options,
+                            onTabChanged: (index) {
+                              print("Tab selected: $index");
+                            },
+                            bgColor: section.bgColor,
+                            bgImg: section.bgImg,
+                            label: section.label,
+                            viewAllLabel: section.viewAllLabel,
+                            viewAllNextPage: section.viewAllNextPage,
                           );
                         }
                         return const SizedBox.shrink();
@@ -654,52 +595,7 @@ class ClientHomeScreen extends StatelessWidget {
                           viewType == 'custom_horizontal_listview_list' ||
                           viewType == 'custom_vertical_gridview_list' ||
                           viewType == 'custom_horizontal_gridview_list') {
-                        Widget titleWidget = const SizedBox.shrink();
-                        if (section.label != null &&
-                            section.label!.isNotEmpty) {
-                          titleWidget = Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 15.0,
-                              vertical: 10,
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  section.label!,
-                                  style: AppTextStyle.title(
-                                    color: AppColors.appTitleColor,
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: () {
-                                      final nextPage = section.viewAllNextPage;
-
-                                      if (nextPage != null && nextPage.isNotEmpty) {
-                                        if (nextPage == "search_page") {
-                                          Get.to(() => SeachFilterScreen());
-                                        }
-                                        else if (nextPage == "select_category") {
-                                          Get.to(() => ClientAllCategories());
-                                        }
-                                        else {
-                                          debugPrint("⚠️ Unknown next page: $nextPage");
-                                        }
-                                      }
-                                    },
-                                    child: Text(
-                                      section.viewAllLabel!,
-                                      style: AppTextStyle.description(
-                                        color: AppColors.appLinkColor,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          );
-                        }
-
+                        
                         // 🔹 Create unique controller for this section if it has an endpoint
                         AppPostController? sectionController;
                         if (section.apiEndpoint != null &&
@@ -734,10 +630,7 @@ class ClientHomeScreen extends StatelessWidget {
                             return const SizedBox.shrink();
                           }
 
-                          return Column(
-                            children: [
-                              titleWidget,
-                              CustomViewWidget(
+                          return CustomViewWidget(
                                 type: viewType,
                                 controller: controllerToWatch,
                                 useHomeModel: sectionController != null,
@@ -749,9 +642,10 @@ class ClientHomeScreen extends StatelessWidget {
                                 },
                                 bgColor: section.bgColor,
                                 bgImg: section.bgImg,
-                              ),
-                            ],
-                          );
+                                label: section.label,
+                                viewAllLabel: section.viewAllLabel,
+                                viewAllNextPage: section.viewAllNextPage,
+                              );
                         });
                       }
 
@@ -764,6 +658,9 @@ class ClientHomeScreen extends StatelessWidget {
                         // we can pass more generic props if CustomViewWidget supports them
                         bgColor: section.bgColor,
                         bgImg: section.bgImg,
+                        label: section.label,
+                        viewAllLabel: section.viewAllLabel,
+                        viewAllNextPage: section.viewAllNextPage,
                       );
                     }).toList(),
                   );

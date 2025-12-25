@@ -7,6 +7,8 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shimmer/shimmer.dart';
 import '../core/app_color.dart';
+import '../core/app_imagetype_helper.dart';
+import 'custom_auto_image_handle.dart';
 
 class CustomBannerWithVideo extends StatefulWidget {
   final List<Map<String, dynamic>> mediaItems;
@@ -17,6 +19,8 @@ class CustomBannerWithVideo extends StatefulWidget {
   final EdgeInsets margin;
   final double borderRadius;
   final String fallbackImage;
+  final String? bgColor;
+  final String? bgImg;
 
   const CustomBannerWithVideo({
     super.key,
@@ -27,7 +31,10 @@ class CustomBannerWithVideo extends StatefulWidget {
     this.padding = const EdgeInsets.all(0),
     this.margin = const EdgeInsets.all(0),
     this.borderRadius = 0.0,
+
     this.fallbackImage = 'assets/images/placeholder.png',
+    this.bgColor,
+    this.bgImg,
   });
 
   @override
@@ -200,7 +207,9 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
   }
 
   Widget _buildBannerContent() {
-    return Container(
+    final bool hasValidImage = ImageTypeHelper.isImage(widget.bgImg);
+
+    Widget content = Container(
       height: widget.height.h,
       width: widget.width.w,
       padding: widget.padding,
@@ -245,6 +254,29 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
           ),
         ],
       ),
+    );
+
+    if (hasValidImage) {
+      return Stack(
+        children: [
+          AutoNetworkImage(imageUrl: widget.bgImg),
+          Positioned.fill(
+             child: Align(
+               alignment: Alignment.center,
+               child: content,
+             ),
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: (widget.bgColor != null && widget.bgColor!.isNotEmpty)
+            ? parseLinearGradient(widget.bgColor)
+            : AppColors.appPagecolor,
+      ),
+      child: content,
     );
   }
 }
