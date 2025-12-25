@@ -4,18 +4,30 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 import '../core/app_color.dart';
+import '../core/app_imagetype_helper.dart';
+import '../view/search_filter_post/search_filter_screen.dart';
+import 'custom_auto_image_handle.dart';
 import '../core/app_textstyle.dart';
-import '../models/Post/Get_Post_List_Model.dart';
-import 'custom_detail_screen.dart';
+import '../../core/app_textstyle.dart';
+import '../../models/Post/Get_Post_List_Model.dart';
+import 'post_detail_screen.dart';
 import '../core/app_images.dart';
+import '../../view/Home_screen/search_history_screen.dart';
+import '../../view/Home_screen/select_categories_screen.dart';
+import 'custom_navigator.dart';
 
 class CustomHorizontalListViewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
-  final VoidCallback? onItemTap;
+  final Function(String)? onItemTap;
   final Function(int, bool) onFavoriteToggle;
   final RxBool isLoading;
   final String? bgColor;
   final String? bgImg;
+  final String? label;
+  final String? viewAllLabel;
+  final String? viewAllNextPage;
+  final String? nextPageName; // Added
+  final String? nextPageViewType; // Added
 
   const CustomHorizontalListViewList({
     super.key,
@@ -25,7 +37,46 @@ class CustomHorizontalListViewList extends StatelessWidget {
     required this.isLoading,
     this.bgColor,
     this.bgImg,
+    this.label,
+    this.viewAllLabel,
+    this.viewAllNextPage,
+    this.nextPageName,
+    this.nextPageViewType,
   });
+
+  Widget _buildHeader() {
+    if (label == null || label!.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
+      child: Row(
+        children: [
+          Text(
+            label!,
+            style: AppTextStyle.title(
+              color: AppColors.appTitleColor,
+            ),
+          ),
+          const Spacer(),
+          if (viewAllLabel != null && viewAllLabel!.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                CustomNavigator.navigate(
+                    viewAllNextPage?.isNotEmpty == true
+                        ? viewAllNextPage
+                        : nextPageName);
+              },
+              child: Text(
+                viewAllLabel!,
+                style: AppTextStyle.description(
+                  color: AppColors.appLinkColor,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +86,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
       }
 
       final results = model.value?.result;
-      
+
       if (results == null || results.isEmpty) {
         return SizedBox(
           height: 180,
@@ -50,20 +101,57 @@ class CustomHorizontalListViewList extends StatelessWidget {
         );
       }
 
-      return SizedBox(
-        height: 180,
-        child: ListView.separated(
-          // physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.only(
-              top: 20, bottom: 20, left: 15.0, right: 15.0),
-          scrollDirection: Axis.horizontal,
-          itemCount: results.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-          itemBuilder: (_, index) {
-            final result = results[index];
-            return _buildItemCard(context, result, index);
-          },
+      final bool hasValidImage = ImageTypeHelper.isImage(bgImg);
+
+      Widget contentList = ListView.separated(
+        padding: const EdgeInsets.only(
+            top: 20, bottom: 20, left: 15.0, right: 15.0),
+        scrollDirection: Axis.horizontal,
+        itemCount: results.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 10.0),
+        itemBuilder: (_, index) {
+          final result = results[index];
+          return _buildItemCard(context, result, index);
+        },
+      );
+
+      Widget contentWithHeader = Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          SizedBox(
+            height: 160.h,
+            child: contentList,
+          ),
+        ],
+      );
+
+      // If we have an image, we want the Stack to size itself to the content (Column), 
+      // and the Image to fill that size.
+      // So we do NOT wrap Stack in SizedBox. We rely on contentWithHeader to dictate height.
+      
+      if (hasValidImage) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: AutoNetworkImage(
+                imageUrl: bgImg,
+                // fit: BoxFit.cover,
+              ),
+            ),
+            contentWithHeader,
+          ],
+        );
+      }
+
+      return Container(
+        decoration: BoxDecoration(
+          gradient: (bgColor != null && bgColor!.isNotEmpty)
+              ? parseLinearGradient(bgColor)
+              : AppColors.appPagecolor,
         ),
+        child: contentWithHeader,
       );
     });
   }
@@ -186,25 +274,20 @@ class CustomHorizontalListViewList extends StatelessWidget {
 
   Widget _buildItemCard(BuildContext context, Result result, int index) {
     return GestureDetector(
-      onTap: onItemTap ?? () =>
-          Get.to(() => CustomDetailScreen(title: '',
-            rating: 4.5, reviewCount: 20, favoriteCount: 50, sellerName: '', sellerLevel: '',
-            profileImagePath: '', description: '', status: '', mediaUrls: [], htmlContent: '',pricingPlans: [], recentViewedList: [], reviews: [],)),
+      onTap: () {
+        if (onItemTap != null) {
+          onItemTap!(result.hidden?.ukey ?? '');
+        } else {
+             Get.to(() => PostDetailScreen(
+               ukey: result.hidden?.ukey,
+             ));
+        }
+      },
       child: Container(
         width: 330.w,
         height: 150.h,
         decoration: BoxDecoration(
-          image: (bgImg != null && bgImg!.isNotEmpty)
-              ? DecorationImage(
-                  image: CachedNetworkImageProvider(bgImg!),
-                  fit: BoxFit.cover,
-                )
-              : null,
-          gradient: (bgImg == null || bgImg!.isEmpty)
-              ? (bgColor != null && bgColor!.isNotEmpty
-                  ? parseLinearGradient(bgColor)
-                  : AppColors.appPagecolor)
-              : null,
+          gradient: AppColors.appPagecolor,
           boxShadow: [
             BoxShadow(
               color: AppColors.appMutedColor,
@@ -231,7 +314,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
     String? imageUrl;
     if (result.media != null && result.media!.isNotEmpty) {
       final firstImage = result.media!.firstWhere(
-        (media) => media.mediaType == 'image',
+            (media) => media.mediaType == 'image',
         orElse: () => result.media!.first,
       );
       imageUrl = firstImage.url;
@@ -252,36 +335,36 @@ class CustomHorizontalListViewList extends StatelessWidget {
           ),
           child: imageUrl != null
               ? ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(8.0),
-                    topLeft: Radius.circular(8.0),
-                  ),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Shimmer.fromColors(
-                      baseColor: AppColors.appMutedColor,
-                      highlightColor: AppColors.appMutedTextColor,
-                      child: Container(
-                        height: 135.h,
-                        width: 120.w,
-                        color: AppColors.appMutedColor,
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Image.asset(
-                      AppImage.placeholder,
-                      height: 135.h,
-                      width: 120.w,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                )
-              : Image.asset(
-                  AppImage.placeholder,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(8.0),
+              topLeft: Radius.circular(8.0),
+            ),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: AppColors.appMutedColor,
+                highlightColor: AppColors.appMutedTextColor,
+                child: Container(
                   height: 135.h,
                   width: 120.w,
-                  fit: BoxFit.cover,
+                  color: AppColors.appMutedColor,
                 ),
+              ),
+              errorWidget: (context, url, error) => Image.asset(
+                AppImage.placeholder,
+                height: 135.h,
+                width: 120.w,
+                fit: BoxFit.cover,
+              ),
+            ),
+          )
+              : Image.asset(
+            AppImage.placeholder,
+            height: 135.h,
+            width: 120.w,
+            fit: BoxFit.cover,
+          ),
         ),
         Obx(() {
           final currentResult = model.value?.result?[index];

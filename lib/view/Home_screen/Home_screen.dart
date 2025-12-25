@@ -7,7 +7,7 @@ import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_images.dart';
 import 'package:libdding/core/app_string.dart';
 import 'package:libdding/core/app_textstyle.dart';
-import 'package:libdding/view/Home_screen/recently_view.dart';
+import 'package:libdding/view/Home_screen/recently_post_screen.dart';
 import 'package:libdding/widget/custom_vertical_listview_list.dart';
 import 'package:libdding/widget/form_widgets/app_button.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -16,8 +16,8 @@ import '../../controller/post/app_post_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../models/home/banner_response_model.dart';
-import '../search_filter_post/seach_filter_screen.dart';
-import 'search_screen.dart';
+import '../search_filter_post/search_filter_screen.dart';
+import 'search_history_screen.dart';
 import '../../widget/custom_banner.dart';
 import '../../widget/custom_category_horizontal_list.dart';
 import '../../widget/custom_horizontal_gridview_list.dart';
@@ -27,11 +27,12 @@ import '../../widget/custom_vertical_gridview_list.dart';
 import '../../widget/custom_banner_with_video.dart';
 import '../cart_screen/cart_screen.dart';
 import '../notifications/notifications_screen.dart';
-import 'client_all_categories.dart';
+import 'select_categories_screen.dart';
 import '../../widget/custom_view_widget.dart';
+import '../../widget/custom_navigator.dart';
 
-class ClientHomeScreen extends StatelessWidget {
-  ClientHomeScreen({super.key});
+class HomeScreen extends StatelessWidget {
+  HomeScreen({super.key});
 
   final ClientHomeController controller = Get.put(ClientHomeController());
   final AppSettingsController appcontroller = Get.put(AppSettingsController());
@@ -93,7 +94,7 @@ class ClientHomeScreen extends StatelessWidget {
               style: AppTextStyle.description(color: AppColors.appTextColor),
             ),
             onTap: () {
-              Get.to(() => SearchScreen());
+              Get.to(() => SearchHistoryScreen());
             },
           ),
         ),
@@ -141,7 +142,7 @@ class ClientHomeScreen extends StatelessWidget {
           backgroundColor: parseColor(headerConfig?.bgColor),
           elevation: 0,
           automaticallyImplyLeading: false,
-          toolbarHeight: screenHeight * 0.072,
+          toolbarHeight: screenHeight * 0.085,
           flexibleSpace: Container(
             decoration: BoxDecoration(gradient: AppColors.appbarColor),
             padding: EdgeInsets.only(
@@ -193,189 +194,198 @@ class ClientHomeScreen extends StatelessWidget {
                       ?.dp ??
                   "";
               print(headerConfig?.userInfo);
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // PROFILE IMAGE with shimmer
-                  GestureDetector(
-                    onTap: () => controller.handleRestrictedFeature(() {}),
-                    child: headerConfig?.userInfo == true
-                        ? ClipOval(
-                            child: Image.network(
-                              dpUrl,
-                              height: 44,
-                              width: 44,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return shimmerCircle(
-                                      44,
-                                    ); // shimmer until loaded
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  AppImage.profile,
-                                  height: 44,
-                                  width: 44,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            ),
-                          )
-                        : SizedBox.shrink(),
-                  ),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // PROFILE IMAGE with shimmer
+                    GestureDetector(
+                      onTap: () => controller.handleRestrictedFeature(() {}),
+                      child: headerConfig?.userInfo == true
+                          ? ClipOval(
+                              child: Image.network(
+                                dpUrl,
+                                height: 44,
+                                width: 44,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return shimmerCircle(
+                                        44,
+                                      ); // shimmer until loaded
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    AppImage.profile,
+                                    height: 44,
+                                    width: 44,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
+                              ),
+                            )
+                          : SizedBox.shrink(),
+                    ),
 
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
 
-                  // USER NAME + LOCATION
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        headerConfig?.userInfo == true
-                            ? Text(
-                                profilecontroller
-                                        .profileDetailsResponeModel
-                                        .value
-                                        ?.result
-                                        ?.basicInfo
-                                        ?.name ??
-                                    "User",
-                                style: AppTextStyle.title(
-                                  color: AppColors.appTextColor,
-                                ),
-                                // style: AppTextStyle.kTextStyle.copyWith(
-                                //   color: AppColors.appTextColor,
-                                //   fontWeight: FontWeight.bold,
-                                //   fontSize: 16,
-                                // ),
-                              )
-                            : SizedBox.shrink(),
+                    // USER NAME + LOCATION
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          headerConfig?.userInfo == true
+                              ? Text(
+                                  profilecontroller
+                                          .profileDetailsResponeModel
+                                          .value
+                                          ?.result
+                                          ?.basicInfo
+                                          ?.name ??
+                                      "User",
+                                  style: AppTextStyle.title(
+                                    color: AppColors.appTextColor,
+                                  ),
+                                  // style: AppTextStyle.kTextStyle.copyWith(
+                                  //   color: AppColors.appTextColor,
+                                  //   fontWeight: FontWeight.bold,
+                                  //   fontSize: 16,
+                                  // ),
+                                )
+                              : SizedBox.shrink(),
 
-                        GestureDetector(
-                          onTap: () => controller.changeLocation(),
-                          child: headerConfig?.currentLocation == true
-                              ? Row(
-                                  children: [
-                                    Icon(
-                                      Icons.place_outlined,
-                                      color: AppColors.appTextColor,
-                                    ),
-                                    Obx(
-                                      () => SizedBox(
-                                        width: screenWidth * 0.45,
-                                        child: Marquee(
-                                          child: Text(
-                                            controller
-                                                    .currentLocation
-                                                    .value
-                                                    .isEmpty
-                                                ? 'Fetching location...'
-                                                : controller
+                          GestureDetector(
+                            onTap: () => controller.changeLocation(),
+                            child: headerConfig?.currentLocation == true
+                                ? Row(
+                                    children: [
+                                      Icon(
+                                        Icons.place_outlined,
+                                        color: AppColors.appTextColor,
+                                      ),
+                                      Obx(
+                                        () => SizedBox(
+                                          width: screenWidth * 0.45,
+                                          child: Marquee(
+                                            child: Text(
+                                              controller
                                                       .currentLocation
-                                                      .value,
-                                            style: AppTextStyle.description(
-                                              color: AppColors.appTextColor,
+                                                      .value
+                                                      .isEmpty
+                                                  ? 'Fetching location...'
+                                                  : controller
+                                                        .currentLocation
+                                                        .value,
+                                              style: AppTextStyle.description(
+                                                color: AppColors.appTextColor,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                )
-                              : SizedBox.shrink(),
+                                    ],
+                                  )
+                                : SizedBox.shrink(),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // RIGHT SIDE ICONS WITH SHIMMER
+                    Row(
+                      children: [
+                        // 🔔 ICON 1
+                        GestureDetector(
+                          onTap: () {
+                            CustomNavigator.navigate(
+                              headerConfig?.headerMenu?[0].nextPageName,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.appColor.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: Image.network(
+                                headerConfig?.headerMenu?[0].icon ?? "",
+                                height: 25,
+                                width: 25,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return shimmerCircle(25);
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    IconlyLight.notification,
+                                    color: AppColors.appTextColor,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 6),
+
+                        // ℹ️ ICON 2
+                        GestureDetector(
+                          onTap: () {
+                            CustomNavigator.navigate(
+                              headerConfig?.headerMenu?[1].nextPageName,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.appColor.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: Image.network(
+                                headerConfig?.headerMenu?[1].icon ?? "",
+                                height: 25,
+                                width: 25,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return shimmerCircle(25);
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    IconlyLight.infoSquare,
+                                    color: AppColors.appTextColor,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-
-                  // RIGHT SIDE ICONS WITH SHIMMER
-                  Row(
-                    children: [
-                      // 🔔 ICON 1
-                      GestureDetector(
-                        onTap: () {
-                          const NotificationsScreen().launch(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.appColor.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: Image.network(
-                              headerConfig?.headerMenu?[0].icon ?? "",
-                              height: 25,
-                              width: 25,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return shimmerCircle(25);
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  IconlyLight.notification,
-                                  color: AppColors.appTextColor,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 6),
-
-                      // ℹ️ ICON 2
-                      GestureDetector(
-                        onTap: () {
-                          const RecentlyView().launch(context);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.appColor.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: Image.network(
-                              headerConfig?.headerMenu?[1].icon ?? "",
-                              height: 25,
-                              width: 25,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return shimmerCircle(25);
-                                  },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  IconlyLight.infoSquare,
-                                  color: AppColors.appTextColor,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               );
             }),
           ),
-          bottom: homePage?.design?.searchBar?.isActive == true
-              ? PreferredSize(
-                  preferredSize: Size.fromHeight(70.0),
-                  child: buildSearchBar(),
-                )
-              : null,
+
+          // bottom:Size.fromHeight(70.0)
+            // bottom: homePage?.design?.searchBar?.isActive == true
+          //     ? PreferredSize(
+          //         preferredSize: Size.fromHeight(70.0),
+          //         child: buildSearchBar(),
+          //       )
+          //     : null,
         ),
 
         body: Container(
@@ -471,78 +481,31 @@ class ClientHomeScreen extends StatelessWidget {
                           title: section.title,
                           bgColor: section.bgColor,
                           bgImg: section.bgImg,
+                          nextPageName: section.nextPageName,
                         );
                       }
 
                       // 🔹 Categories
                       if (viewType == 'category_horizontal_icon_widget' ||
                           viewType == 'custom_category_horizontal_list') {
-                        Widget titleWidget = const SizedBox.shrink();
-                        if (section.label != null &&
-                            section.label!.isNotEmpty) {
-                          titleWidget = Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 15.0,
-                              vertical: 10,
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  section.label!,
-                                  style: AppTextStyle.title(
-                                    color: AppColors.appTitleColor,
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: () {
-                                      final nextPage = section.viewAllNextPage;
-
-                                      if (nextPage != null && nextPage.isNotEmpty) {
-                                        if (nextPage == "search_page") {
-                                          Get.to(() => SeachFilterScreen());
-                                        }
-                                        else if (nextPage == "select_category") {
-                                          Get.to(() => ClientAllCategories());
-                                        }
-                                        else {
-                                          debugPrint("⚠️ Unknown next page: $nextPage");
-                                        }
-                                      }
-                                    },
-                                    child: Text(
-                                      section.viewAllLabel!,
-                                      style: AppTextStyle.description(
-                                        color: AppColors.appLinkColor,
-                                      ),
-                                    ),
-                                  ),
-
-                              ],
-                            ),
-                          );
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            titleWidget,
-                            CustomViewWidget(
-                              type: 'category_horizontal_icon_widget',
-                              categories: controller.categoryList
-                                  .map(
-                                    (category) => {
-                                      'image': category.image ?? '',
-                                      'name': category.title ?? '',
-                                    },
-                                  )
-                                  .toList(),
-                              categoryLoading: controller.categoryLoading,
-                              bgColor: section.bgColor,
-                              bgImg: section.bgImg,
-                            ),
-                          ],
+                        return CustomViewWidget(
+                          type: 'category_horizontal_icon_widget',
+                          categories: controller.categoryList
+                              .map(
+                                (category) => {
+                                  'image': category.image ?? '',
+                                  'name': category.title ?? '',
+                                },
+                              )
+                              .toList(),
+                          categoryLoading: controller.categoryLoading,
+                          bgColor: section.bgColor,
+                          bgImg: section.bgImg,
+                          label: section.label,
+                          viewAllLabel: section.viewAllLabel,
+                          viewAllNextPage: section.viewAllNextPage,
+                          nextPageName: section.nextPageName, // Added
+                          nextPageViewType: section.nextPageViewType, // Added
                         );
                       }
 
@@ -618,31 +581,19 @@ class ClientHomeScreen extends StatelessWidget {
                         }
 
                         if (options.isNotEmpty) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (section.label != null &&
-                                  section.label!.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 15.0,
-                                    vertical: 8,
-                                  ),
-                                  child: Text(
-                                    section.label!,
-                                    style: AppTextStyle.title(
-                                      color: AppColors.appTitleColor,
-                                    ),
-                                  ),
-                                ),
-                              CustomViewWidget(
-                                type: 'custom_tapbar',
-                                tabOptions: options,
-                                onTabChanged: (index) {
-                                  print("Tab selected: $index");
-                                },
-                              ),
-                            ],
+                          return CustomViewWidget(
+                            type: 'custom_tapbar',
+                            tabOptions: options,
+                            onTabChanged: (index) {
+                              print("Tab selected: $index");
+                            },
+                            bgColor: section.bgColor,
+                            bgImg: section.bgImg,
+                            label: section.label,
+                            viewAllLabel: section.viewAllLabel,
+                            viewAllNextPage: section.viewAllNextPage,
+                            nextPageName: section.nextPageName, // Added
+                            nextPageViewType: section.nextPageViewType, // Added
                           );
                         }
                         return const SizedBox.shrink();
@@ -654,52 +605,7 @@ class ClientHomeScreen extends StatelessWidget {
                           viewType == 'custom_horizontal_listview_list' ||
                           viewType == 'custom_vertical_gridview_list' ||
                           viewType == 'custom_horizontal_gridview_list') {
-                        Widget titleWidget = const SizedBox.shrink();
-                        if (section.label != null &&
-                            section.label!.isNotEmpty) {
-                          titleWidget = Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 15.0,
-                              vertical: 10,
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  section.label!,
-                                  style: AppTextStyle.title(
-                                    color: AppColors.appTitleColor,
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (section.viewAllLabel != null && section.viewAllLabel!.isNotEmpty)
-                                  GestureDetector(
-                                    onTap: () {
-                                      final nextPage = section.viewAllNextPage;
-
-                                      if (nextPage != null && nextPage.isNotEmpty) {
-                                        if (nextPage == "search_page") {
-                                          Get.to(() => SeachFilterScreen());
-                                        }
-                                        else if (nextPage == "select_category") {
-                                          Get.to(() => ClientAllCategories());
-                                        }
-                                        else {
-                                          debugPrint("⚠️ Unknown next page: $nextPage");
-                                        }
-                                      }
-                                    },
-                                    child: Text(
-                                      section.viewAllLabel!,
-                                      style: AppTextStyle.description(
-                                        color: AppColors.appLinkColor,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          );
-                        }
-
+                        
                         // 🔹 Create unique controller for this section if it has an endpoint
                         AppPostController? sectionController;
                         if (section.apiEndpoint != null &&
@@ -734,24 +640,22 @@ class ClientHomeScreen extends StatelessWidget {
                             return const SizedBox.shrink();
                           }
 
-                          return Column(
-                            children: [
-                              titleWidget,
-                              CustomViewWidget(
+                          return CustomViewWidget(
                                 type: viewType,
                                 controller: controllerToWatch,
                                 useHomeModel: sectionController != null,
-                                onItemTap: () {
-                                  // Detail navigation
-                                },
+                                // onItemTap handled by CustomViewWidget default or passed if needed in future
                                 onFavoriteToggle: (index, isFav) {
                                   // Favorite logic
                                 },
                                 bgColor: section.bgColor,
                                 bgImg: section.bgImg,
-                              ),
-                            ],
-                          );
+                                label: section.label,
+                                viewAllLabel: section.viewAllLabel,
+                                viewAllNextPage: section.viewAllNextPage,
+                                nextPageName: section.nextPageName, // Added
+                                nextPageViewType: section.nextPageViewType, // Added
+                              );
                         });
                       }
 
@@ -764,6 +668,11 @@ class ClientHomeScreen extends StatelessWidget {
                         // we can pass more generic props if CustomViewWidget supports them
                         bgColor: section.bgColor,
                         bgImg: section.bgImg,
+                        label: section.label,
+                        viewAllLabel: section.viewAllLabel,
+                        viewAllNextPage: section.viewAllNextPage,
+                        nextPageName: section.nextPageName, // Added
+                        nextPageViewType: section.nextPageViewType, // Added
                       );
                     }).toList(),
                   );

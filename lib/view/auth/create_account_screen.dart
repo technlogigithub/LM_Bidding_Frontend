@@ -24,16 +24,16 @@ import '../../widget/form_widgets/custom_dropdown.dart';
 import '../../widget/form_widgets/custom_date_time.dart';
 import '../../widget/form_widgets/location_picker.dart';
 import '../../controller/home/home_controller.dart';
-import 'login_with_mobile_no_screen.dart';
+import 'login_with_mobile_number_screen.dart';
 
-class SignUpScreen extends StatefulWidget {
-  SignUpScreen({super.key});
+class CreateAccountScreen extends StatefulWidget {
+  CreateAccountScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<CreateAccountScreen> createState() => _CreateAccountScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final controller = Get.put(AuthController());
   static final controllerApp = Get.put(AppSettingsController());
 

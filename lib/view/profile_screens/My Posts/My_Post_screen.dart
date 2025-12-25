@@ -5,11 +5,13 @@ import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../../controller/post/My_Post_controller.dart';
+import '../../../controller/post/get_post_details_controller.dart';
 import '../../../core/app_color.dart';
 import '../../../core/app_textstyle.dart';
 import '../../../models/App_moduls/AppResponseModel.dart';
 import '../../../widget/custom_tapbar.dart';
 import '../../../widget/custom_view_widget.dart';
+import '../../../widget/custom_navigator.dart';
 import 'Post_Details_screen.dart';
 
 class MyPostScreen extends StatelessWidget {
@@ -21,6 +23,7 @@ class MyPostScreen extends StatelessWidget {
     final AppSettingsController appSettingController = Get.put(
       AppSettingsController(),
     );
+    Get.put(GetPostDetailsController());
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
@@ -151,8 +154,9 @@ class MyPostScreen extends StatelessWidget {
                       type: viewType,
                       controller: controller.appPostController,
                       statusValue: controller.selectedStatusValue.value,
-                      onItemTap: () {
-                        const PostDetailsScreen().launch(context);
+                      onItemTap: (String ukey) {
+                        Get.find<GetPostDetailsController>().getPostDetails(ukey);
+                        CustomNavigator.navigate("post_detail_screen");
                       },
                       // Optional callbacks for other view types
                       onFavoriteToggle: (index, isFavorite) {

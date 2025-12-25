@@ -177,7 +177,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                   SizedBox(height: screenHeight*0.02),
                   Center(
                     child: GestureDetector(
-                      onTap: () => Utils.gotoNextPage(() => SignUpScreen(),),
+                      onTap: () => Utils.gotoNextPage(() => CreateAccountScreen(),),
                       child: RichText(
                         text: TextSpan(
                           text:AppStrings.donthaveanaccount,

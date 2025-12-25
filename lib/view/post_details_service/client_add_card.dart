@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:libdding/core/app_color.dart';
-import 'package:libdding/view/client%20service%20details/requirements.dart';
+import 'package:libdding/view/post_details_service/requirements.dart';
+
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../core/app_constant.dart';

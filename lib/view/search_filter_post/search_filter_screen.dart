@@ -8,17 +8,20 @@ import '../../controller/seach/search_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
+import '../../widget/custom_navigator.dart';
 import '../../widget/custom_tapbar.dart';
 import '../../widget/custom_view_widget.dart';
+import '../../controller/post/get_post_details_controller.dart';
 
-class SeachFilterScreen extends StatefulWidget {
-  const SeachFilterScreen({super.key});
+class SearchFilterScreen extends StatefulWidget {
+  final dynamic initialFilter; // Can be String or other types depending on passed arguments
+  const SearchFilterScreen({super.key, this.initialFilter});
 
   @override
-  State<SeachFilterScreen> createState() => _SeachFilterScreenState();
+  State<SearchFilterScreen> createState() => _SearchFilterScreenState();
 }
 
-class _SeachFilterScreenState extends State<SeachFilterScreen> {
+class _SearchFilterScreenState extends State<SearchFilterScreen> {
   late final SearchAndFilterController controller;
   late final AppSettingsController appSettingcontroller;
 
@@ -27,6 +30,7 @@ class _SeachFilterScreenState extends State<SeachFilterScreen> {
     super.initState();
     controller = Get.put(SearchAndFilterController());
     appSettingcontroller = Get.put(AppSettingsController());
+    Get.put(GetPostDetailsController());
   }
 
 
@@ -174,15 +178,44 @@ class _SeachFilterScreenState extends State<SeachFilterScreen> {
                       // Get tab labels from search_page-design-custom_tapbar-design-inputs-select-options
                       final tabLabels = getTabLabelsFromSearchPage(searchPage);
 
+                      // Determine initial index based on widget.initialFilter OR Get.arguments
+                      // Priority: widget argument > Get.arguments
+                      dynamic filterValue = widget.initialFilter ?? Get.arguments;
+                      
+                      int initialIndex = 0;
+                      if (tabLabels != null &&
+                          tabLabels.isNotEmpty &&
+                          filterValue != null &&
+                          filterValue is String) {
+                        final foundIndex = tabLabels.indexOf(filterValue);
+                        if (foundIndex != -1) {
+                          initialIndex = foundIndex;
+                          // Update controller if needed
+                           WidgetsBinding.instance.addPostFrameCallback((_) {
+                              // Ensure we only update if it's different to avoid loops or unnecessary calls
+                              if(controller.selectedTabIndex.value != initialIndex){
+                                  controller.updateTab(initialIndex);
+                              }
+                           });
+                        } else {
+                           // If not found in labels directly, try asking controller to find by value/label match internally
+                           // This is more robust as tabLabels here are just strings, but controller has full objects
+                           WidgetsBinding.instance.addPostFrameCallback((_) {
+                               controller.updateTabByValue(filterValue);
+                           });
+                        }
+                      }
+
                       // Only show TabBar if labels are not null and not empty
                       if (tabLabels != null && tabLabels.isNotEmpty) {
+                        print(" initialIndex $initialIndex");
                         return CustomTabBar(
                           // height: 50,
                           tabs: tabLabels,
                           // primaryColor: AppColors.appColor,
                           // borderColor: Colors.grey.shade300,
                           textStyle: AppTextStyle.description(),
-                          initialIndex: 0,
+                          initialIndex: initialIndex,
                           onTap: (index) {
                             controller.updateTab(index);
                           },
@@ -200,8 +233,10 @@ class _SeachFilterScreenState extends State<SeachFilterScreen> {
                         type: viewtype,
                         controller: controller.appPostController,
                         statusValue: controller.selectedStatusValue.value,
-                        onItemTap: () {
-                          // const PostDetailsScreen().launch(context);
+                        onItemTap: (String ukey) {
+                          print(" Tapped item with ukey: $ukey");
+                          Get.find<GetPostDetailsController>().getPostDetails(ukey);
+                          CustomNavigator.navigate("post_detail_screen");
                         },
                         // Optional callbacks for other view types
                         onFavoriteToggle: (index, isFavorite) {

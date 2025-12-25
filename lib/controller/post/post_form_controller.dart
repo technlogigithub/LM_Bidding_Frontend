@@ -6,8 +6,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../core/utils.dart';
 import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
-import '../../view/Home_screen/Home_screen.dart';
-import '../../view/profile_screens/Setting_screen.dart';
+import '../../view/Home_screen/home_screen.dart';
+import '../../view/profile_screens/my_profile_screen.dart';
+import '../../view/profile_screens/setting_screen.dart';
 import '../app_main/App_main_controller.dart';
 import '../../controller/home/home_controller.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
@@ -1240,7 +1241,7 @@ class PostFormController extends GetxController {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SettingScreen()),
+          MaterialPageRoute(builder: (context) => MyProfileScreen()),
         );
 
         Utils.showSnackbar(

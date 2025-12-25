@@ -140,6 +140,29 @@ class SearchAndFilterController extends GetxController {
     getPostList();
   }
 
+  /// 🔹 Update tab by value string (e.g. from navigation arguments)
+  void updateTabByValue(String value) {
+    if (value.isEmpty) return;
+    
+    final options = _getOptions();
+    if (options == null || options.isEmpty) return;
+
+    // Try to find index by label or value
+    int index = -1;
+    
+    // Check by value first
+    index = options.indexWhere((opt) => opt.value == value);
+    
+    // If not found, check by label
+    if (index == -1) {
+       index = options.indexWhere((opt) => opt.label == value);
+    }
+
+    if (index != -1) {
+      updateTab(index);
+    }
+  }
+
 
 
   /// 🔹 API call

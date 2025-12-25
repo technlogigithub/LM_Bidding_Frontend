@@ -8,8 +8,8 @@ import '../../controller/app_main/App_main_controller.dart';
 import '../../core/app_images.dart';
 import '../../core/app_textstyle.dart';
 
-class HelpSupport extends StatelessWidget {
-  const HelpSupport({super.key});
+class HelpSupportScreen extends StatelessWidget {
+  const HelpSupportScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

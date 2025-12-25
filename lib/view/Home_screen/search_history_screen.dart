@@ -12,16 +12,18 @@ import '../../core/app_textstyle.dart';
 import '../../widget/custom_vertical_listview_list.dart';
 import '../../widget/my_post_list_custom.dart';
 import '../../widget/form_widgets/app_button.dart';
+import '../../widget/custom_navigator.dart'; // Added
 import '../profile_screens/My Posts/Post_Details_screen.dart';
 
-class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+class SearchHistoryScreen extends StatefulWidget {
+  final String? nextPageName;
+  const SearchHistoryScreen({super.key, this.nextPageName});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  State<SearchHistoryScreen> createState() => _SearchHistoryScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchHistoryScreenState extends State<SearchHistoryScreen> {
   late final SearchForPostsController controller;
   final FocusNode _focusNode = FocusNode();
   List<String> searchHistory = [];
@@ -273,7 +275,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   _performSearch(controller.searchController.text);
                   _focusNode.unfocus(); // Keyboard + suggestions hide karo (better UX)
                   controller.onSearchTap();
-
+                  CustomNavigator.navigate(widget.nextPageName ?? "search_filter_screen"); // Use CustomNavigator
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

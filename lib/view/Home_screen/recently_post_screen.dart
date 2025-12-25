@@ -6,16 +6,18 @@ import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/post/app_post_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
+import '../../widget/custom_navigator.dart';
 import '../../widget/custom_view_widget.dart';
+import '../../controller/post/get_post_details_controller.dart';
 
-class RecentlyView extends StatefulWidget {
-  const RecentlyView({super.key});
+class RecentlyPost extends StatefulWidget {
+  const RecentlyPost({super.key});
 
   @override
-  State<RecentlyView> createState() => _RecentlyViewState();
+  State<RecentlyPost> createState() => _RecentlyPostState();
 }
 
-class _RecentlyViewState extends State<RecentlyView> {
+class _RecentlyPostState extends State<RecentlyPost> {
   late final AppPostController appPostController;
   late final AppSettingsController appController;
   String? _endpoint;
@@ -27,6 +29,7 @@ class _RecentlyViewState extends State<RecentlyView> {
     // Initialize AppPostController and load data
     appPostController = Get.put(AppPostController());
     appController = Get.find<AppSettingsController>();
+    Get.put(GetPostDetailsController());
 
     // Defer API call until after the first frame is built to avoid setState during build error
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -45,8 +48,16 @@ class _RecentlyViewState extends State<RecentlyView> {
     _pageName = null;
 
     if (headerMenu != null && headerMenu.length > 1) {
-      _endpoint = headerMenu[1].apiEndpoint;
-      _pageName = headerMenu[1].pageName;
+      final item = headerMenu[1];
+      _endpoint = item.nextPageApiEndpoint;
+      if (_endpoint == null || _endpoint!.isEmpty) {
+        _endpoint = item.apiEndpoint;
+      }
+      
+      _pageName = item.nextPageName;
+      if (_pageName == null || _pageName!.isEmpty) {
+        _pageName = item.pageName;
+      }
     }
 
     // Update page_name in AppPostController if available
@@ -109,13 +120,22 @@ class _RecentlyViewState extends State<RecentlyView> {
               child: Obx(() {
                 final homePage = appController.homePage.value;
                 final headerConfig = homePage?.design?.headerMenu;
-                final viewType = headerConfig?.headerMenu?[1].viewType ?? '';
+                final headerItem = headerConfig?.headerMenu?[1];
+                
+                String viewType = headerItem?.viewType ?? '';
+                if (viewType.isEmpty) {
+                  viewType = headerItem?.nextPageViewType ?? '';
+                }
 
                 print("View type from headerMenu[1] is: $viewType");
 
                 return CustomViewWidget(
                   type: viewType,
                   controller: appPostController,
+                  onItemTap: (String ukey) {
+                    Get.find<GetPostDetailsController>().getPostDetails(ukey);
+                    CustomNavigator.navigate("post_detail_screen");
+                  },
                   onFavoriteToggle: (index, newValue) {
                     // Update favorite in the model
                     final result = appPostController

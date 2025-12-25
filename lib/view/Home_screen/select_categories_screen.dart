@@ -251,14 +251,14 @@ import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/custom_view_widget.dart';
 
-class ClientAllCategories extends StatefulWidget {
-  const ClientAllCategories({super.key});
+class SelectCategoriesScreen extends StatefulWidget {
+  const SelectCategoriesScreen({super.key});
 
   @override
-  State<ClientAllCategories> createState() => _ClientAllCategoriesState();
+  State<SelectCategoriesScreen> createState() => _SelectCategoriesScreenState();
 }
 
-class _ClientAllCategoriesState extends State<ClientAllCategories> {
+class _SelectCategoriesScreenState extends State<SelectCategoriesScreen> {
   late final ClientHomeController homeController;
   late final AppSettingsController appSettingcontroller;
 

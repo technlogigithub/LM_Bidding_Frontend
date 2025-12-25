@@ -13,7 +13,7 @@ import '../../controller/auth/auth_controller.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/form_widgets/app_textfield.dart';
 import 'create_account_screen.dart';
-import 'login_with_mobile_no_screen.dart';
+import 'login_with_mobile_number_screen.dart';
 
 
 // Fixed LoginScreen with persistent controllers
@@ -210,7 +210,7 @@ class LoginScreen extends StatelessWidget {
                 SizedBox(height: screenHeight * 0.02),
                 Center(
                   child: GestureDetector(
-                    onTap: () => Utils.gotoNextPage(() => SignUpScreen()),
+                    onTap: () => Utils.gotoNextPage(() => CreateAccountScreen()),
                     child: RichText(
                       text: TextSpan(
                         text: AppStrings.donthaveanaccount,

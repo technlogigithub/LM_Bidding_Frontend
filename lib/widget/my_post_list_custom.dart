@@ -10,12 +10,16 @@ import '../core/app_textstyle.dart';
 import '../models/Post/Get_Post_List_Model.dart';
 import '../view/profile_screens/My Posts/Post_Details_screen.dart';
 import '../widget/custom_banner_with_video.dart';
+import 'custom_auto_image_handle.dart';
+import '../core/app_imagetype_helper.dart';
 
 class MypostListCustomWidget extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
   final String statusValue;
-  final VoidCallback? onItemTap;
+  final Function(String)? onItemTap;
   final RxBool isLoading;
+  final String? bgColor;
+  final String? bgImg;
 
   const MypostListCustomWidget({
     super.key,
@@ -23,6 +27,8 @@ class MypostListCustomWidget extends StatelessWidget {
     required this.statusValue,
     this.onItemTap,
     required this.isLoading,
+    this.bgColor,
+    this.bgImg,
   });
 
   // Calculate countdown duration from countdown_dt
@@ -85,18 +91,35 @@ class MypostListCustomWidget extends StatelessWidget {
         );
       }
 
-      return ListView.builder(
-        padding: EdgeInsets.zero,
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: results.length,
-        itemBuilder: (_, index) {
-          final result = results[index];
-          return Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: _buildOrderCard(context, result),
-          );
-        },
+      return Stack(
+        children: [
+          if (ImageTypeHelper.isImage(bgImg))
+            Positioned.fill(
+              child: AutoNetworkImage(imageUrl: bgImg),
+            ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: !ImageTypeHelper.isImage(bgImg)
+                  ? (bgColor != null && bgColor!.isNotEmpty
+                      ? parseLinearGradient(bgColor)
+                      : AppColors.appPagecolor)
+                  : null,
+            ),
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: results.length,
+              itemBuilder: (_, index) {
+                final result = results[index];
+                return Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: _buildOrderCard(context, result),
+                );
+              },
+            ),
+          ),
+        ],
       );
     });
   }
@@ -185,7 +208,13 @@ class MypostListCustomWidget extends StatelessWidget {
     final orderDate = result.info?['2'] ?? '';
 
     return GestureDetector(
-      onTap: onItemTap ?? () => const PostDetailsScreen().launch(context),
+      onTap: () {
+        if (onItemTap != null) {
+          onItemTap!(result.hidden?.ukey ?? '');
+        } else {
+           const PostDetailsScreen().launch(context);
+        }
+      },
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

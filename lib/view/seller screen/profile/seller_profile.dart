@@ -5,13 +5,13 @@ import 'package:libdding/view/seller%20screen/profile/seller_profile_details.dar
 import 'package:nb_utils/nb_utils.dart';
 import '../../../core/app_constant.dart';
 import '../add payment method/seller_add_payment_method.dart';
-import '../buyer request/seller_buyer_request.dart';
+import '../buyer request/buyer_request.dart';
 import '../favourite/seller_favourite_list.dart';
-import '../report/seller_report.dart';
+import '../report/seller_report_screen.dart';
 import '../setting/seller_invite.dart';
 import '../setting/seller_setting.dart';
 import '../transaction/seller_transaction.dart';
-import '../withdraw_money/seller_withdraw_history.dart';
+import '../withdraw_money/withdraw_history.dart';
 import '../withdraw_money/seller_withdraw_money.dart';
 
 class SellerProfile extends StatefulWidget {
@@ -110,7 +110,7 @@ class _SellerProfileState extends State<SellerProfile> {
                   ),
                 ),
                 ListTile(
-                  onTap: () => const SellerBuyerReq().launch(context),
+                  onTap: () => const BuyerRequestScreen().launch(context),
                   visualDensity: const VisualDensity(vertical: -3),
                   horizontalTitleGap: 10,
                   contentPadding: const EdgeInsets.only(bottom: 20),
@@ -210,7 +210,7 @@ class _SellerProfileState extends State<SellerProfile> {
                         onTap: () => const SellerWithdrawMoney().launch(context),
                       ),
                       ListTile(
-                        onTap: () => const SellerWithDrawHistory().launch(context),
+                        onTap: () => const WithDrawHistory().launch(context),
                         visualDensity: const VisualDensity(vertical: -3),
                         horizontalTitleGap: 10,
                         contentPadding: const EdgeInsets.only(left: 60),
@@ -286,7 +286,7 @@ class _SellerProfileState extends State<SellerProfile> {
                   ),
                 ),
                 ListTile(
-                  onTap: () => const SellerReport().launch(context),
+                  onTap: () => const SellerReportScreen().launch(context),
                   visualDensity: const VisualDensity(vertical: -3),
                   horizontalTitleGap: 10,
                   contentPadding: const EdgeInsets.only(bottom: 15),

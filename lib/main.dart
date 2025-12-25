@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_config.dart';
-import 'package:libdding/view/splash_screen/Splash_screen.dart';
+import 'package:libdding/view/splash_screen/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp>
+class _MyAppState extends State<MyApp> {
   late AppSettingsController appController;
 
   @override

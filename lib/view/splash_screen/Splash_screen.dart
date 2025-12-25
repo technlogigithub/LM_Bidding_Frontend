@@ -12,8 +12,8 @@ import '../../core/app_color.dart';
 import '../../core/app_config.dart';
 import '../../widget/app_image_handle.dart';
 import '../Bottom_navigation_screen/Botom_navigation_screen.dart';
-import '../force_update/ForceUpdateScreen.dart';
-import '../language_selection/LanguageSelectionScreen.dart';
+import '../force_update/force_update_screen.dart';
+import '../language_selection/language_selection_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

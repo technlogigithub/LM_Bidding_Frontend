@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
 import '../../models/Post/Get_Post_List_Model.dart';
-import '../../view/search_filter_post/seach_filter_screen.dart';
+import '../../view/search_filter_post/search_filter_screen.dart';
 import '../app_main/App_main_controller.dart';
 import '../post/app_post_controller.dart';
 
@@ -37,7 +37,7 @@ class SearchForPostsController  extends GetxController  {
     appPostController.updateSearch(query);
 
     // ✅ sirf navigation
-    Get.to(() => SeachFilterScreen());
+    // Get.to(() => SearchFilterScreen());
   }
 
 // void onSearchTap() {

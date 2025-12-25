@@ -7,6 +7,7 @@ import '../models/category_model/category_model.dart';
 import 'custom_banner.dart';
 import 'custom_banner_with_video.dart';
 import 'custom_category_horizontal_list.dart';
+import 'custom_navigator.dart';
 import 'custom_searchbar.dart';
 import 'my_post_list_custom.dart';
 import 'custom_vertical_listview_list.dart';
@@ -17,7 +18,7 @@ import 'category_vertical_list_widget.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../core/app_textstyle.dart';
 import '../core/app_color.dart';
-import '../view/Home_screen/search_screen.dart';
+import '../view/Home_screen/search_history_screen.dart';
 import 'custom_tapbar.dart';
 
 /// Dynamic Post View Widget
@@ -44,6 +45,11 @@ class CustomViewWidget extends StatelessWidget {
     this.useHomeModel = false,
     this.bgColor,
     this.bgImg,
+    this.label,
+    this.viewAllLabel,
+    this.viewAllNextPage,
+    this.nextPageName,
+    this.nextPageViewType,
   });
 
   final String type;
@@ -51,7 +57,7 @@ class CustomViewWidget extends StatelessWidget {
   final AppPostController? controller;
 
   // Common callbacks
-  final VoidCallback? onItemTap;
+  final Function(String)? onItemTap;
   final Function(int, bool)? onFavoriteToggle;
 
   // Banner
@@ -83,6 +89,13 @@ class CustomViewWidget extends StatelessWidget {
   // Background config
   final String? bgColor;
   final String? bgImg;
+
+  // Header/Label config
+  final String? label;
+  final String? viewAllLabel;
+  final String? viewAllNextPage;
+  final String? nextPageName;
+  final String? nextPageViewType;
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +144,7 @@ class CustomViewWidget extends StatelessWidget {
           title: title,
           bgColor: bgColor,
           bgImg: bgImg,
+          nextPageName: nextPageName,
         );
 
       case "custom_banner":
@@ -140,6 +154,8 @@ class CustomViewWidget extends StatelessWidget {
           banners: bannerItems ?? [],
           isLoading: bannerLoading ?? false.obs,
           width: MediaQuery.of(context).size.width,
+          bgColor: bgColor,
+          bgImg: bgImg,
         );
 
       case "custom_banner_with_video":
@@ -147,10 +163,15 @@ class CustomViewWidget extends StatelessWidget {
         return CustomBannerWithVideo(
           mediaItems: bannerItems ?? [],
           isLoading: bannerLoading ?? false.obs,
+          bgColor: bgColor,
+          bgImg: bgImg,
         );
 
       case "custom_category_horizontal_list":
       case "category_horizontal_icon_widget":
+        if (categories == null || categories!.isEmpty) {
+          return const SizedBox.shrink();
+        }
         print(" Category image $bgImg");
         print(" Category image $bgColor");
         debugPrint("📂 Categories count: ${categories?.length}");
@@ -160,6 +181,11 @@ class CustomViewWidget extends StatelessWidget {
           isLoading: categoryLoading ?? false.obs,
           bgColor: bgColor,
           bgImg: bgImg,
+          label: label,
+          viewAllLabel: viewAllLabel,
+          viewAllNextPage: viewAllNextPage,
+          nextPageName: nextPageName,
+          nextPageViewType: nextPageViewType,
         );
 
       case "custom_horizontal_listview_list":
@@ -178,10 +204,20 @@ class CustomViewWidget extends StatelessWidget {
           return CustomHorizontalListViewList(
             model: model,
             isLoading: isLoading,
-            onItemTap: onItemTap,
+            onItemTap: onItemTap ??
+                (String id) {
+                  if (nextPageName?.isNotEmpty == true) {
+                    CustomNavigator.navigate(nextPageName, arguments: id);
+                  }
+                },
             onFavoriteToggle: onFavoriteToggle!,
             bgColor: bgColor,
             bgImg: bgImg,
+            label: label,
+            viewAllLabel: viewAllLabel,
+            viewAllNextPage: viewAllNextPage,
+            nextPageName: nextPageName,
+            nextPageViewType: nextPageViewType,
           );
         });
 
@@ -201,10 +237,20 @@ class CustomViewWidget extends StatelessWidget {
             model: model,
             isLoading: isLoading,
             height: height,
-            onItemTap: onItemTap,
+            onItemTap: onItemTap ??
+                (String id) {
+                  if (nextPageName?.isNotEmpty == true) {
+                    CustomNavigator.navigate(nextPageName, arguments: id);
+                  }
+                },
             onFavoriteToggle: onFavoriteToggle,
             bgColor: bgColor,
             bgImg: bgImg,
+            label: label,
+            viewAllLabel: viewAllLabel,
+            viewAllNextPage: viewAllNextPage,
+            nextPageName: nextPageName,
+            nextPageViewType: nextPageViewType,
           );
         });
 
@@ -216,18 +262,32 @@ class CustomViewWidget extends StatelessWidget {
         // debugPrint("🟥 Vertical Grid Data: ${model.value}");
         return Obx(() {
           // If loading, show widget (it handles shimmer). If NOT loading and empty, hide.
-          if (!isLoading!.value && (model!.value?.result == null ||
-              model!.value!.result!.isEmpty)) {
+          // 🛑 User Request: "jo data nahi hai to show nahi karvana" (If no data, don't show).
+          // "continue simmer chal raha hai" (Shimmer is running continuously).
+          // "data ho tabhi hi simmer show karvana hai" (Only show shimmer if there is data).
+          // So, if result is empty, we wrap in shrink, effectively disabling initial shimmer if no data.
+          if (model!.value?.result == null ||
+              model!.value!.result!.isEmpty) {
             return const SizedBox.shrink();
           }
           return CustomVerticalGridviewList(
             model: model,
             isLoading: isLoading,
             childAspectRatio: childAspectRatio,
-            onItemTap: onItemTap,
+            onItemTap: onItemTap ??
+                (String id) {
+                  if (nextPageName?.isNotEmpty == true) {
+                    CustomNavigator.navigate(nextPageName, arguments: id);
+                  }
+                },
             onFavoriteToggle: onFavoriteToggle,
             bgColor: bgColor,
             bgImg: bgImg,
+            label: label,
+            viewAllLabel: viewAllLabel,
+            viewAllNextPage: viewAllNextPage,
+            nextPageName: nextPageName,
+            nextPageViewType: nextPageViewType,
           );
         });
 
@@ -247,10 +307,20 @@ class CustomViewWidget extends StatelessWidget {
             model: model,
             isLoading: isLoading,
             isFromCartScreen: isFromCartScreen,
-            onItemTap: onItemTap,
+            onItemTap: onItemTap ??
+                (String id) {
+                  if (nextPageName?.isNotEmpty == true) {
+                    CustomNavigator.navigate(nextPageName, arguments: id);
+                  }
+                },
             onFavoriteToggle: onFavoriteToggle!,
             bgColor: bgColor,
             bgImg: bgImg,
+            label: label,
+            viewAllLabel: viewAllLabel,
+            viewAllNextPage: viewAllNextPage,
+            nextPageName: nextPageName,
+            nextPageViewType: nextPageViewType,
           );
         });
 
@@ -271,24 +341,35 @@ class CustomViewWidget extends StatelessWidget {
             model: model,
             isLoading: isLoading,
             statusValue: statusValue ?? '',
-            onItemTap: onItemTap,
+            onItemTap: onItemTap ??
+                (String id) {
+                  if (nextPageName?.isNotEmpty == true) {
+                    CustomNavigator.navigate(nextPageName, arguments: id);
+                  }
+                },
+            bgColor: bgColor,
+            bgImg: bgImg,
           );
         });
 
       case "custom_tapbar":
         if (tabOptions != null && tabOptions!.isNotEmpty) {
-          return Padding(
-            padding: const EdgeInsets.all(10),
-            child: CustomTabBar(
-              tabs: tabOptions!,
-              textStyle: AppTextStyle.description(),
-              // initialIndex: 0,
-              onTap: (index) {
-                if (onTabChanged != null) {
-                  onTabChanged!(index);
-                }
-              },
-            ),
+          return CustomTabBar(
+            tabs: tabOptions!,
+            textStyle: AppTextStyle.description(),
+            bgColor: bgColor,
+            bgImg: bgImg,
+            // initialIndex: 0,
+            onTap: (index) {
+              if (onTabChanged != null) {
+                onTabChanged!(index);
+              }
+            },
+            label: label,
+            viewAllLabel: viewAllLabel,
+            viewAllNextPage: viewAllNextPage,
+            nextPageName: nextPageName,
+            nextPageViewType: nextPageViewType,
           );
         }
         return const SizedBox.shrink();
@@ -323,7 +404,16 @@ class CustomViewWidget extends StatelessWidget {
             );
           }).toList();
 
-          return CategoryVerticalListWidget(categories: categories);
+          return CategoryVerticalListWidget(
+            categories: categories,
+            bgColor: bgColor,
+            bgImg: bgImg,
+            label: label,
+            viewAllLabel: viewAllLabel,
+            viewAllNextPage: viewAllNextPage,
+            nextPageName: nextPageName,
+            nextPageViewType: nextPageViewType,
+          );
         });
 
       default:

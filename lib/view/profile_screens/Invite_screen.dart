@@ -12,10 +12,10 @@ import '../../core/app_images.dart';
 import '../../core/app_textstyle.dart';
 import '../../core/utils.dart';
 
-class Invitescreen extends StatelessWidget {
+class InviteScreen extends StatelessWidget {
   final String referralCode;  // <-- Your referral code from previous screen
 
-  Invitescreen({super.key, required this.referralCode});
+  InviteScreen({super.key, required this.referralCode});
 
   @override
   Widget build(BuildContext context) {

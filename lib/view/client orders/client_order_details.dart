@@ -101,7 +101,7 @@ class _ClientOrderDetailsState extends State<ClientOrderDetails> {
                       'Message',
                       style:AppTextStyle.body(color: AppColors.appBodyTextColor),
                     ).onTap(
-                          () => const ChatScreen().launch(context),
+                          () => const ChatListScreen().launch(context),
                     ),
                   ],
                 ),

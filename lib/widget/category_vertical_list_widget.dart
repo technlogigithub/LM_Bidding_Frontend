@@ -12,12 +12,34 @@ import '../core/app_color.dart';
 import '../core/app_images.dart';
 import '../models/category_model/category_model.dart';
 import '../models/home/category_response_model.dart';
-import '../view/search_filter_post/seach_filter_screen.dart';
+import '../view/search_filter_post/search_filter_screen.dart';
+import 'custom_auto_image_handle.dart';
+import '../core/app_imagetype_helper.dart';
+
+import '../view/Home_screen/select_categories_screen.dart';
+import 'custom_navigator.dart';
 
 class CategoryVerticalListWidget extends StatelessWidget {
   final List<Category> categories;
+  final String? bgColor;
+  final String? bgImg;
+  final String? label;
+  final String? viewAllLabel;
+  final String? viewAllNextPage;
+  final String? nextPageName; // Added
+  final String? nextPageViewType; // Added
 
-  const CategoryVerticalListWidget({super.key, required this.categories});
+  const CategoryVerticalListWidget({
+    super.key, 
+    required this.categories,
+    this.bgColor,
+    this.bgImg,
+    this.label,
+    this.viewAllLabel,
+    this.viewAllNextPage,
+    this.nextPageName,
+    this.nextPageViewType,
+  });
 
   // Static method to build shimmer list for loading state
   static Widget buildShimmerList() {
@@ -90,16 +112,74 @@ class CategoryVerticalListWidget extends StatelessWidget {
     );
   }
 
+  Widget _buildHeader() {
+    if (label == null || label!.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
+      child: Row(
+        children: [
+          Text(
+            label!,
+            style: AppTextStyle.title(
+              color: AppColors.appTitleColor,
+            ),
+          ),
+          const Spacer(),
+          if (viewAllLabel != null && viewAllLabel!.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                CustomNavigator.navigate(
+                    viewAllNextPage?.isNotEmpty == true
+                        ? viewAllNextPage
+                        : nextPageName);
+              },
+              child: Text(
+                viewAllLabel!,
+                style: AppTextStyle.description(
+                  color: AppColors.appLinkColor,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: categories.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        final category = categories[index];
-        return CategoryItemWidget(category: category, isFirst: index == 0);
-      },
+    return Stack(
+      children: [
+        if (ImageTypeHelper.isImage(bgImg))
+          Positioned.fill(
+            child: AutoNetworkImage(imageUrl: bgImg),
+          ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: !ImageTypeHelper.isImage(bgImg)
+                ? (bgColor != null && bgColor!.isNotEmpty
+                    ? parseLinearGradient(bgColor)
+                    : AppColors.appPagecolor)
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               _buildHeader(),
+               ListView.builder(
+                itemCount: categories.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return CategoryItemWidget(category: category, isFirst: index == 0);
+                },
+              ),
+             ]
+          ),
+        ),
+      ],
     );
   }
 }
@@ -175,7 +255,7 @@ class _CategoryItemWidgetState extends State<CategoryItemWidget> {
       }
 
       // ✅ Sirf navigation
-      Get.to(() => SeachFilterScreen());
+      Get.to(() => SearchFilterScreen());
     }
   }
 
@@ -492,7 +572,7 @@ class _SubcategoryItemWidgetState extends State<SubcategoryItemWidget> {
       }
 
       // ✅ sirf navigation
-      Get.to(() => SeachFilterScreen());
+      Get.to(() => SearchFilterScreen());
     }
   }
 

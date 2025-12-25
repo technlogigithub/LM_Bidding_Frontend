@@ -9,14 +9,14 @@ import 'chat_inbox.dart';
 import 'model/chat_model.dart';
 import 'provider/data_provider.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+class ChatListScreen extends StatefulWidget {
+  const ChatListScreen({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<ChatListScreen> createState() => _ChatListScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatListScreenState extends State<ChatListScreen> {
   RxList<ChatModel> list_data = maanGetChatList().obs;
 
   @override

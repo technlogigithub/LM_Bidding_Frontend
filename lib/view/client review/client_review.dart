@@ -253,7 +253,7 @@ class _SellerHomeState extends State<SellerHome> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     SellerHomeScreen(),
-    ChatScreen(),
+    ChatListScreen(),
     CreateService(),
     SellerOrderList(),
     SellerProfile(),

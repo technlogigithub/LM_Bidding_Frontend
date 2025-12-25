@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:libdding/controller/app_main/App_main_controller.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_textstyle.dart';
-import 'package:libdding/view/Onboard_screen/Onboard_screen.dart';
+import 'package:libdding/view/Onboard_screen/onboard_screen.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../widget/form_widgets/app_button.dart';

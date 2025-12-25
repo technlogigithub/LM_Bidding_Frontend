@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
 import '../../controller/bottom/bottom_bar_controller.dart';
 import '../../core/app_textstyle.dart';
-import '../Home_screen/Home_screen.dart';
+import '../Home_screen/home_screen.dart';
 import '../Participate_screens/participate_screen.dart';
-import '../Post_new_screen/Post_new_screen.dart';
+import '../Post_new_screen/post_new_screen.dart';
 import '../profile_screens/profile_screen.dart';
 import '../seller screen/seller messgae/chat_list.dart';
 
@@ -15,8 +15,8 @@ class BottomNavigationScreen extends StatelessWidget {
    const BottomNavigationScreen({super.key});
 
    static final List<Widget> _widgetOptions = <Widget>[
-     ClientHomeScreen(),
-     const ChatScreen(),
+     HomeScreen(),
+     const ChatListScreen(),
      const PostNewScreen(),
      const ParticipateScreen(),
      ProfileScreen(),

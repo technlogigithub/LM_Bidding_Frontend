@@ -10,14 +10,14 @@ import '../../../widget/form_widgets/app_button.dart';
 import '../seller popUp/seller_popup.dart';
 import 'buyer_request_details.dart';
 
-class SellerBuyerReq extends StatefulWidget {
-  const SellerBuyerReq({super.key});
+class BuyerRequestScreen extends StatefulWidget {
+  const BuyerRequestScreen({super.key});
 
   @override
-  State<SellerBuyerReq> createState() => _SellerBuyerReqState();
+  State<BuyerRequestScreen> createState() => _BuyerRequestScreenState();
 }
 
-class _SellerBuyerReqState extends State<SellerBuyerReq> {
+class _BuyerRequestScreenState extends State<BuyerRequestScreen> {
 
   //__________send_Offer_PopUp________________________________________________
   void sendOfferPopUp() {

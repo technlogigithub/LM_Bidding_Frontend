@@ -6,14 +6,14 @@ import '../../../core/app_constant.dart';
 import '../../../core/app_textstyle.dart';
 import '../seller popUp/seller_popup.dart';
 
-class SellerWithDrawHistory extends StatefulWidget {
-  const SellerWithDrawHistory({super.key});
+class WithDrawHistory extends StatefulWidget {
+  const WithDrawHistory({super.key});
 
   @override
-  State<SellerWithDrawHistory> createState() => _SellerWithDrawHistoryState();
+  State<WithDrawHistory> createState() => _WithDrawHistoryState();
 }
 
-class _SellerWithDrawHistoryState extends State<SellerWithDrawHistory> {
+class _WithDrawHistoryState extends State<WithDrawHistory> {
   //__________withdraw_amount_popup________________________________________________
   void withdrawHistoryPopUp() {
     showDialog(

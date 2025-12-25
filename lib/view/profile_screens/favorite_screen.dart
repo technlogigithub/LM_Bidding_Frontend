@@ -7,14 +7,14 @@ import '../../controller/post/app_post_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/custom_vertical_listview_list.dart';
-class Favoritescreen extends StatefulWidget {
-  const Favoritescreen({super.key});
+class FavoriteScreen extends StatefulWidget {
+  const FavoriteScreen({super.key});
 
   @override
-  State<Favoritescreen> createState() => _FavoritescreenState();
+  State<FavoriteScreen> createState() => _FavoriteScreenState();
 }
 
-class _FavoritescreenState extends State<Favoritescreen> {
+class _FavoriteScreenState extends State<FavoriteScreen> {
   final ClientHomeController controller = Get.put(ClientHomeController());
   final AppPostController appPostController = Get.find<AppPostController>();
   @override

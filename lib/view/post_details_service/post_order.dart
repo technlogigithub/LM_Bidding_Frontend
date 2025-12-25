@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:libdding/core/app_color.dart';
+import 'package:libdding/core/app_images.dart';
 import 'package:libdding/core/app_string.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../core/api_config.dart';
 import '../../core/app_constant.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/button_global.dart';
+import '../../widget/custom_view_widget.dart';
 import 'client_add_card.dart';
 
-class ClientOrder extends StatefulWidget {
-  const ClientOrder({super.key});
+class PostOrderScreen extends StatefulWidget {
+  const PostOrderScreen({super.key});
 
   @override
-  State<ClientOrder> createState() => _ClientOrderState();
+  State<PostOrderScreen> createState() => _PostOrderScreenState();
 }
 
-class _ClientOrderState extends State<ClientOrder> {
+class _PostOrderScreenState extends State<PostOrderScreen> {
   List<String> paymentMethod = [
     'Credit or Debit Card',
     'Paypal',
@@ -36,44 +40,73 @@ class _ClientOrderState extends State<ClientOrder> {
   @override
   void initState() {
     super.initState();
-    fetchOrders();
+    // fetchOrders();
   }
-  Future<void> fetchOrders() async {
-    try {
-      final res = await  ApiService.getRequest("ordersApi");
-      setState(() {
-        notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-      toast("Error: $e");
-    }
-  
-  }
+  // Future<void> fetchOrders() async {
+  //   try {
+  //     final res = await  ApiService.getRequest("ordersApi");
+  //     setState(() {
+  //       notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
+  //       isLoading = false;
+  //     });
+  //   } catch (e) {
+  //     setState(() => isLoading = false);
+  //     toast("Error: $e");
+  //   }
+  //
+  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.appWhite,
+
+
       appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: AppColors.appWhite,
-        centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.neutralColor),
-        title: Text(
-          'Order',
-          style: AppTextStyle.kTextStyle.copyWith(
-            color: AppColors.appTextColor,
-            fontWeight: FontWeight.bold,
+        elevation: 0,
+        automaticallyImplyLeading: true,
+        iconTheme:  IconThemeData(color: AppColors.appTextColor,),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appbarColor,
+            // borderRadius: const BorderRadius.only(
+            //   bottomLeft: Radius.circular(50.0),
+            //   bottomRight: Radius.circular(50.0),
+            // ),
           ),
         ),
+        toolbarHeight: 80,
+        centerTitle: true,
+        title: Obx(() {
+          return Text(
+            'Order',
+            // controller.referral.value?.label ?? '',
+            style:  AppTextStyle.title(
+              color: AppColors.appTextColor,
+              fontWeight: FontWeight.bold,
+
+            ),
+          );
+        }),
       ),
+      // appBar: AppBar(
+      //
+      //   elevation: 0.0,
+      //   backgroundColor: AppColors.appWhite,
+      //   centerTitle: true,
+      //   iconTheme: IconThemeData(color: AppColors.neutralColor),
+      //   title: Text(
+      //     'Order',
+      //     style: AppTextStyle.kTextStyle.copyWith(
+      //       color: AppColors.appTextColor,
+      //       fontWeight: FontWeight.bold,
+      //     ),
+      //   ),
+      // ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(color: AppColors.appWhite),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: ButtonGlobalWithoutIcon(
           buttontext: 'Continue',
           buttonDecoration: kButtonDecoration.copyWith(
-            color: AppColors.appColor,
+            color: AppColors.appButtonColor,
             borderRadius: BorderRadius.circular(30.0),
           ),
           onPressed: () {
@@ -81,41 +114,36 @@ class _ClientOrderState extends State<ClientOrder> {
               const AddNewCard().launch(context);
             });
           },
-          buttonTextColor: AppColors.appWhite,
+          buttonTextColor: AppColors.appButtonTextColor,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 15.0),
-        child: Container(
-          padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-          width: context.width(),
-          decoration: BoxDecoration(
-            color: AppColors.appWhite,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30.0),
-              topRight: Radius.circular(30.0),
-            ),
-          ),
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor
+        ),
+        child: SingleChildScrollView(
+          // physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 15.0),
+
                 Container(
-                  height: 120,
+                  height: 120.h,
                   decoration: BoxDecoration(
-                    color: AppColors.appWhite,
+                    gradient: AppColors.appPagecolor,
                     borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: AppColors.kBorderColorTextField),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.appWhite,
-                        blurRadius: 5.0,
-                        spreadRadius: 2.0,
-                        offset: const Offset(0, 5),
+                        color: AppColors.appMutedColor,
+                        blurRadius: 5,
+                        spreadRadius: 1,
+                        offset: Offset(0, 10),
                       ),
                     ],
+
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -126,14 +154,14 @@ class _ClientOrderState extends State<ClientOrder> {
                           Container(
                             height: 120,
                             width: 120,
-                            decoration: const BoxDecoration(
-                              borderRadius: BorderRadius.only(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.only(
                                 bottomLeft: Radius.circular(8.0),
                                 topLeft: Radius.circular(8.0),
                               ),
                               image: DecorationImage(
                                   image: AssetImage(
-                                    'images/shot1.png',
+                                    '${AppImage.shot}',
                                   ),
                                   fit: BoxFit.cover),
                             ),

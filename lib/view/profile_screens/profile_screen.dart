@@ -4,7 +4,7 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:libdding/view/auth/login_screen.dart';
-import 'package:libdding/view/transaction/transaction.dart';
+import 'package:libdding/view/transaction/transaction_screen.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../controller/app_main/App_main_controller.dart';
@@ -12,16 +12,16 @@ import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_string.dart';
 import '../../widget/app_appbar.dart';
-import '../seller screen/buyer request/seller_buyer_request.dart';
-import '../seller screen/report/seller_report.dart';
-import '../seller screen/withdraw_money/seller_withdraw_history.dart';
+import '../seller screen/buyer request/buyer_request.dart';
+import '../seller screen/report/seller_report_screen.dart';
+import '../seller screen/withdraw_money/withdraw_history.dart';
 import 'Dashboard_screen.dart';
-import 'Deposit_history_screen.dart';
-import 'Invitescreen.dart';
-import 'My Posts/My_Post_screen.dart';
-import 'Setting_screen.dart';
-import 'favoriteScreen.dart';
-import 'help_support.dart';
+import 'deposit_history_screen.dart';
+import 'Invite_screen.dart';
+import 'My Posts/my_post_screen.dart';
+import 'setting_screen.dart';
+import 'favorite_screen.dart';
+import 'help_support_screen.dart';
 import 'my_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -92,7 +92,7 @@ class ProfileScreen extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const SetupClientProfileView()));
+                                    builder: (context) => const MyProfileScreen()));
                           }
                         },
                         visualDensity: const VisualDensity(vertical: -3),
@@ -142,7 +142,7 @@ class ProfileScreen extends StatelessWidget {
 
                       /// ---------------- BUYER REQUEST ----------------
                       ListTile(
-                        onTap: () => Get.to(SellerBuyerReq()),
+                        onTap: () => Get.to(BuyerRequestScreen()),
                         visualDensity: const VisualDensity(vertical: -3),
                         horizontalTitleGap: 10,
                         contentPadding: const EdgeInsets.only(bottom: 20),
@@ -212,7 +212,7 @@ class ProfileScreen extends StatelessWidget {
                               trailing: Icon(FeatherIcons.chevronRight, color: text),
                             ),
                             ListTile(
-                              onTap: () => Get.to(SellerWithDrawHistory()),
+                              onTap: () => Get.to(WithDrawHistory()),
                               contentPadding: const EdgeInsets.only(left: 60),
                               title: Obx(() => Text(AppStrings.withdrawalHistory, style: AppTextStyle.description(color: text))),
                               trailing: Icon(FeatherIcons.chevronRight, color: text),
@@ -239,7 +239,7 @@ class ProfileScreen extends StatelessWidget {
 
                       /// ---------------- FAVORITE ----------------
                       ListTile(
-                        onTap: () => Get.to(Favoritescreen()),
+                        onTap: () => Get.to(FavoriteScreen()),
                         visualDensity: const VisualDensity(vertical: -3),
                         horizontalTitleGap: 10,
                         contentPadding: const EdgeInsets.only(bottom: 15),
@@ -255,7 +255,7 @@ class ProfileScreen extends StatelessWidget {
 
                       /// ---------------- SELLER REPORT ----------------
                       ListTile(
-                        onTap: () => Get.to(SellerReport()),
+                        onTap: () => Get.to(SellerReportScreen()),
                         visualDensity: const VisualDensity(vertical: -3),
                         contentPadding: const EdgeInsets.only(bottom: 15),
                         horizontalTitleGap: 10,
@@ -335,7 +335,7 @@ class ProfileScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => Invitescreen(
+                                  builder: (context) => InviteScreen(
                                     referralCode: controller
                                         .profileDetailsResponeModel
                                         .value
@@ -385,7 +385,7 @@ class ProfileScreen extends StatelessWidget {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const HelpSupport()));
+                                      builder: (context) => const HelpSupportScreen()));
                             }
                           },
                           visualDensity: const VisualDensity(vertical: -3),

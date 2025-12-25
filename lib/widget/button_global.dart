@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:libdding/core/app_color.dart';
+import 'package:libdding/core/app_textstyle.dart';
 class ButtonGlobalWithoutIcon extends StatelessWidget {
   final String buttontext;
   final Decoration buttonDecoration;
@@ -24,7 +26,7 @@ class ButtonGlobalWithoutIcon extends StatelessWidget {
           children: [
             Text(
               buttontext,
-              style: GoogleFonts.jost(fontSize: 20.0, color: buttonTextColor),
+              style: AppTextStyle.description(color: AppColors.appButtonTextColor)
             ),
           ],
         ),

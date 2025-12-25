@@ -10,14 +10,14 @@ import '../../../widget/form_widgets/app_button.dart';
 import '../../../widget/form_widgets/app_textfield.dart';
 import '../../../widget/form_widgets/custom_textarea.dart';
 
-class SellerReport extends StatefulWidget {
-  const SellerReport({super.key});
+class SellerReportScreen extends StatefulWidget {
+  const SellerReportScreen({super.key});
 
   @override
-  State<SellerReport> createState() => _SellerReportState();
+  State<SellerReportScreen> createState() => _SellerReportScreenState();
 }
 
-class _SellerReportState extends State<SellerReport> {
+class _SellerReportScreenState extends State<SellerReportScreen> {
   DropdownButton<String> getReportType() {
     List<DropdownMenuItem<String>> dropDownItems = [];
     for (String des in reportTitle) {

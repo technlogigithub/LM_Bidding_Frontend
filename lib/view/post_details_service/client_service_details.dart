@@ -15,9 +15,9 @@ import '../../models/static models/service_items_model.dart';
 import '../../widget/button_global.dart';
 import '../../widget/custom_horizontal_listview_list.dart';
 import '../../widget/review.dart';
-import '../Home_screen/recently_view.dart';
+import '../Home_screen/recently_post_screen.dart';
 import 'bidding_sheet.dart';
-import 'client_order.dart';
+import 'post_order.dart';
 
 class ClientServiceDetails extends StatefulWidget {
   const ClientServiceDetails({super.key});
@@ -124,7 +124,7 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
         buttonText = 'Participate';
         buttonColor = AppColors.neutralColor;
         onPressed = () {
-          const ClientOrder().launch(context);
+          const PostOrderScreen().launch(context);
         };
         break;
 
@@ -974,7 +974,7 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
                                     ),
                                     const Spacer(),
                                     GestureDetector(
-                                      onTap: () => const RecentlyView().launch(context),
+                                      onTap: () => const RecentlyPost().launch(context),
                                       child: Text(
                                         'View All',
                                         style: kTextStyle.copyWith(color: AppColors.textgrey),

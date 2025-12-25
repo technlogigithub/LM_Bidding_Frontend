@@ -2112,6 +2112,8 @@ class CustomSection {
   String? pageName;
   String? pageImage;
   String? nextPageName;
+  String? nextPageApiEndpoint;
+  String? nextPageViewType;
   String? viewAllLabel;
   String? viewAllNextPage;
   String? title;
@@ -2131,6 +2133,8 @@ class CustomSection {
     this.pageName,
     this.pageImage,
     this.nextPageName,
+    this.nextPageApiEndpoint,
+    this.nextPageViewType,
     this.viewAllLabel,
     this.viewAllNextPage,
     this.title,
@@ -2171,6 +2175,8 @@ class CustomSection {
       pageName: json['page_name'],
       pageImage: json['page_image'],
       nextPageName: json['next_page_name'],
+      nextPageApiEndpoint: json['next_page_api_endpoint'],
+      nextPageViewType: json['next_page_view_type'],
       viewAllLabel: json['view_all_label'],
       viewAllNextPage: json['view_all_next_page'],
       title: json['title'],
@@ -2193,6 +2199,9 @@ class CustomSection {
       if (pageName != null) 'page_name': pageName,
       if (pageImage != null) 'page_image': pageImage,
       if (nextPageName != null) 'next_page_name': nextPageName,
+      if (nextPageApiEndpoint != null)
+        'next_page_api_endpoint': nextPageApiEndpoint,
+      if (nextPageViewType != null) 'next_page_view_type': nextPageViewType,
       if (viewAllLabel != null) 'view_all_label': viewAllLabel,
       if (viewAllNextPage != null) 'view_all_next_page': viewAllNextPage,
       if (title != null) 'title': title,
@@ -2247,6 +2256,8 @@ class HeaderMenu {
   String? pageName;
   String? pageImage;
   String? nextPageName;
+  String? nextPageApiEndpoint;
+  String? nextPageViewType;
   String? viewAllLabel;
   String? viewAllNextPage;
   String? title;
@@ -2264,6 +2275,8 @@ class HeaderMenu {
     this.pageName,
     this.pageImage,
     this.nextPageName,
+    this.nextPageApiEndpoint,
+    this.nextPageViewType,
     this.viewAllLabel,
     this.viewAllNextPage,
     this.title,
@@ -2283,6 +2296,8 @@ class HeaderMenu {
       pageName: json['page_name'],
       pageImage: json['page_image'],
       nextPageName: json['next_page_name'],
+      nextPageApiEndpoint: json['next_page_api_endpoint'],
+      nextPageViewType: json['next_page_view_type'],
       viewAllLabel: json['view_all_label'],
       viewAllNextPage: json['view_all_next_page'],
       title: json['title'],
@@ -2302,6 +2317,9 @@ class HeaderMenu {
     if (pageName != null) 'page_name': pageName,
     if (pageImage != null) 'page_image': pageImage,
     if (nextPageName != null) 'next_page_name': nextPageName,
+    if (nextPageApiEndpoint != null)
+      'next_page_api_endpoint': nextPageApiEndpoint,
+    if (nextPageViewType != null) 'next_page_view_type': nextPageViewType,
     if (viewAllLabel != null) 'view_all_label': viewAllLabel,
     if (viewAllNextPage != null) 'view_all_next_page': viewAllNextPage,
     if (title != null) 'title': title,

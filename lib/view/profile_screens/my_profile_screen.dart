@@ -11,8 +11,8 @@ import '../../controller/profile/edit_profile_controller.dart';
 import 'dynamic_profile_form_screen.dart';
 
 
-class SetupClientProfileView extends StatelessWidget {
-  const SetupClientProfileView({super.key});
+class MyProfileScreen extends StatelessWidget {
+  const MyProfileScreen({super.key});
 
   // Helper function to check if URL is an image file
   bool _isImageFile(String? url) {
