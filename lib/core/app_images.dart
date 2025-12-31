@@ -13,4 +13,8 @@ class AppImage{
   static String profilepic = "${assetsFolderPath}profilepic2.png";
   static String profile = "${assetsFolderPath}profile3.png";
   static String userIcon = "${assetsFolderPath}usericon.png";
+  static String creditcard = "${assetsFolderPath}creditcard.png";
+  static String paypal2 = "${assetsFolderPath}paypal2.png";
+  static String bkash2 = "${assetsFolderPath}bkash2.png";
+  static String success = "${assetsFolderPath}success.png";
 }

@@ -87,6 +87,11 @@ class MenuButton {
   bool? loginRequired;
   String? apiEndpoint;
   String? viewType;
+  String? title;
+  String? description;
+  String? pageImage;
+  String? nextPageName;
+  String? nextPageApiEndpoint;
 
   MenuButton.fromJson(Map<String, dynamic> json) {
     icon = json['icon'];
@@ -95,6 +100,11 @@ class MenuButton {
     loginRequired = json['login_required'];
     apiEndpoint = json['api_endpoint'];
     viewType = json['view_type'];
+    title = json['title'];
+    description = json['description'];
+    pageImage = json['page_image'];
+    nextPageName = json['next_page_name'];
+    nextPageApiEndpoint = json['next_page_api_endpoint'];
   }
 }
 
