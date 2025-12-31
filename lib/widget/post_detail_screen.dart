@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../core/app_color.dart';
 import '../../core/app_string.dart';
 import '../../core/api_config.dart';
@@ -17,10 +18,17 @@ import '../view/post_details_service/bidding_sheet.dart';
 import '../view/post_details_service/post_order.dart';
 import 'custom_view_widget.dart';
 import 'custom_banner_with_video.dart';
-import '../view/Home_screen/recently_post_screen.dart';
+import 'custom_alert_dialog.dart';
+import '../../widget/custom_navigator.dart';
+
 import '../../controller/post/get_post_details_controller.dart';
 import '../../models/Post/Get_Post_details_Model.dart';
 import '../../controller/post/app_post_controller.dart';
+import '../../controller/post/post_form_controller.dart';
+import '../view/Home_screen/home_screen.dart';
+import '../controller/home/home_controller.dart';
+import '../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
+import '../controller/bottom/bottom_bar_controller.dart';
 
 
 
@@ -43,7 +51,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
 
   ScrollController? _scrollController;
   bool lastStatus = false;
-  double height = 200;
+  double height = 290;
   bool isFavorite = false;
   List<dynamic> notifications = [];
   bool isLoading = true;
@@ -112,6 +120,46 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
     recentViewedList[index].isFavorite.value = newValue;
   }
 
+  void _showCustomDialog(BuildContext context, dynamic menu) {
+    showDialog(
+      context: context, 
+      builder: (context) {
+        return CustomAlertDialog(
+          title: menu.title ?? menu.label ?? 'Alert',
+          description: menu.description ?? 'Are you sure?',
+          backgroundImage: menu.pageImage,
+          onConfirm: () async {
+            finish(context); // Close dialog
+             if (menu.apiEndpoint != null && menu.apiEndpoint!.isNotEmpty) {
+               bool success = await getPostDetailsController.executeApiAction(menu.apiEndpoint!);
+               if (success) {
+                  // Refresh Home Data
+                  if (Get.isRegistered<ClientHomeController>()) {
+                    await ClientHomeController.to.refreshData();
+                  } else {
+                     // In case it's not registered (unlikely if we came from home, but safe check)
+                     final homeController = Get.put(ClientHomeController());
+                     await homeController.refreshData();
+                  }
+
+                  // Reset Bottom Navigation to Home (Index 0)
+                  if (Get.isRegistered<BottomBarController>()) {
+                    Get.find<BottomBarController>().onItemTapped(0);
+                  } else {
+                    Get.put(BottomBarController()).onItemTapped(0);
+                  }
+
+                  Get.offAll(() => const BottomNavigationScreen());
+               }
+            } else {
+               toast("Action Confirmed: ${menu.label}");
+            }
+          },
+        );
+      }
+    );
+  }
+
 
 
 
@@ -133,11 +181,96 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
 
 
           if (getPostDetailsController.isLoading.value) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: SingleChildScrollView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Banner Placeholder
+                      Container(
+                        height: 290,
+                        width: double.infinity,
+                        color: Colors.white,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title Placeholder
+                            Container(width: double.infinity, height: 24, color: Colors.white),
+                            const SizedBox(height: 10),
+                            Container(width: 200.0, height: 24, color: Colors.white),
+                            const SizedBox(height: 20),
+                            
+                            // Rating/Price Row
+                            Row(
+                              children: [
+                                Container(width: 20, height: 20, color: Colors.white),
+                                const SizedBox(width: 5),
+                                Container(width: 50, height: 16, color: Colors.white),
+                                const Spacer(),
+                                Container(width: 80, height: 24, color: Colors.white),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Profile Row
+                            Row(
+                              children: [
+                                Container(
+                                  width: 44, height: 44,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(width: 120, height: 16, color: Colors.white),
+                                    const SizedBox(height: 5),
+                                    Container(width: 80, height: 12, color: Colors.white),
+                                  ],
+                                )
+                              ],
+                            ),
+                            const Divider(height: 30),
+                            
+                            // Description / HTML
+                            Container(width: 100, height: 20, color: Colors.white),
+                            const SizedBox(height: 10),
+                            Container(width: double.infinity, height: 14, color: Colors.white),
+                            const SizedBox(height: 5),
+                            Container(width: double.infinity, height: 14, color: Colors.white),
+                            const SizedBox(height: 5),
+                            Container(width: 250.0, height: 14, color: Colors.white),
+                            const SizedBox(height: 30),
+
+                            // Tabs / Pricing
+                            Container(
+                              height: 350.h,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
             );
           }
-
+          print(" model $model,result $result ");
           if (model == null || result == null) {
              return const Scaffold(
               body: Center(child: Text("No details found")),
@@ -269,89 +402,163 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                 actions: const [],
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.parallax,
-                  background: SafeArea(
-                    child: Stack(
-                      children: [
-                        CustomViewWidget(
-                          type: media?.viewType ?? 'custom_banner_with_video',
-                          bannerItems: dynamicMediaItems,
-                          height: 290,
-                          bannerLoading: false.obs,
-                        ),
-                        // Action Buttons & Menu Button positions
-                        Positioned(
-                          top: 10,
-                          right: 15,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              // Menu Button (3-dots)
-                              if (menuButtons != null && menuButtons.isNotEmpty)
-                                 PopupMenuButton<String>(
-                                  padding: EdgeInsets.zero,
-                                  offset: const Offset(0, 45),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  itemBuilder: (BuildContext context) => menuButtons.map((menu) {
-                                     return PopupMenuItem<String>(
-                                       value: menu.label,
-                                       child: Row(
-                                        children: [
-                                          _getIconForMenu(menu.icon), 
-                                          const SizedBox(width: 10.0),
-                                          Text(
-                                            menu.label ?? '',
-                                            style:AppTextStyle.body(color: AppColors.appBodyTextColor),
-                                          ),
-                                        ],
-                                      ),
-                                     );
-                                  }).toList(),
-                                  onSelected: (value) {
-                                     toast("Selected: $value"); 
-                                  },
-                                  child: Container(
-                                      padding: const EdgeInsets.all(5.0),
-                                       decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: AppColors.appMutedColor,
-                                      ),
-                                      child: Icon(
-                                        Icons.more_vert_rounded,
-                                        color: AppColors.appIconColor,
-                                      ),
+                  background: Stack(
+                    children: [
+                      CustomViewWidget(
+                        type: media?.viewType ?? '',
+                        bannerItems: dynamicMediaItems,
+                        height: 290,
+                        bannerLoading: false.obs,
+                      ),
+                      // Action Buttons & Menu Button positions
+                      Positioned(
+                        top: MediaQuery.of(context).padding.top + 10,
+                        right: 15,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            // Menu Button (3-dots)
+                            if (menuButtons != null && menuButtons.isNotEmpty)
+                               PopupMenuButton<String>(
+                                padding: EdgeInsets.zero,
+                                offset: const Offset(0, 45),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                itemBuilder: (BuildContext context) => menuButtons.map((menu) {
+                                   return PopupMenuItem<String>(
+                                     value: menu.label,
+                                     child: Row(
+                                      children: [
+                                        _getIconForMenu(menu.icon),
+                                        const SizedBox(width: 10.0),
+                                        Text(
+                                          menu.label ?? '',
+                                          style:AppTextStyle.body(color: AppColors.appBodyTextColor),
+                                        ),
+                                      ],
                                     ),
-                                ),
-                              
-                              const SizedBox(height: 10),
+                                   );
+                                }).toList(),
+                                onSelected: (value) {
+                                   final selectedMenu = menuButtons.firstWhere((element) => element.label == value);
 
-                              // Action Buttons (Bells/etc)
-                              if (result?.actionButton != null)
-                                ...result!.actionButton!.map((btn) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 10.0),
-                                  child: GestureDetector(
-                                    onTap: () => toast(btn.label),
-                                    child: Container(
-                                       padding: const EdgeInsets.all(8.0),
-                                       decoration: BoxDecoration(
-                                         shape: BoxShape.circle,
-                                         color: AppColors.appMutedColor,
-                                       ),
-                                       child: _getIconForMenu(btn.icon),
-                                     ),
+                                   // Check if dialog fields are empty
+                                   bool isDialogFieldsEmpty = (selectedMenu.title == null || selectedMenu.title!.isEmpty) &&
+                                                              (selectedMenu.description == null || selectedMenu.description!.isEmpty) &&
+                                                              (selectedMenu.pageImage == null || selectedMenu.pageImage!.isEmpty);
+
+                                   if (isDialogFieldsEmpty) {
+                                     // Navigate if we have navigation data
+                                     if (selectedMenu.nextPageName != null && selectedMenu.nextPageName!.isNotEmpty) {
+                                        CustomNavigator.navigate(selectedMenu.nextPageName);
+                                     } else {
+                                        // Values are empty but no navigation data?
+                                        // Fallback or do nothing (or show toast)
+                                        // User said: "jab next_page_name... null ya epmty hoge tabhi CustomAlertDialog user karna hai"
+                                        // This implies if NO Navigation -> Force Dialog (even if empty? or maybe existing data?)
+                                        // But we just checked if dialog fields IS empty.
+                                        // Let's assume if NO navigation, we show dialog with whatever label we have.
+                                        _showCustomDialog(context, selectedMenu);
+                                     }
+                                   } else {
+                                      // Dialog fields exist -> Show Dialog
+                                      _showCustomDialog(context, selectedMenu);
+                                   }
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(5.0),
+                                     decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.appMutedColor,
+                                    ),
+                                    child: Icon(
+                                      Icons.more_vert_rounded,
+                                      color: AppColors.appIconColor,
+                                    ),
                                   ),
-                                )).toList(),
-                            ],
-                          ),
+                              ),
+
+                            const SizedBox(height: 10),
+
+                            // Action Buttons (Bells/etc)
+                            if (result?.actionButton != null)
+                              ...result!.actionButton!.map((btn) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10.0),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    bool hasApi = btn.apiEndpoint != null && btn.apiEndpoint!.isNotEmpty;
+                                    bool hasNextPage = btn.nextPageName != null && btn.nextPageName!.isNotEmpty;
+                                    bool hasNextApi = btn.nextPageApiEndpoint != null && btn.nextPageApiEndpoint!.isNotEmpty;
+                                    bool hasNextView = btn.nextPageViewType != null && btn.nextPageViewType!.isNotEmpty;
+
+                                    bool hasConfirmData = (btn.pageImage != null && btn.pageImage!.isNotEmpty) &&
+                                        (btn.title != null && btn.title!.isNotEmpty) &&
+                                        (btn.description != null && btn.description!.isNotEmpty);
+
+                                    // RULE 1: Favorite → direct api
+                                    if (hasApi &&
+                                        !hasNextPage &&
+                                        !hasNextApi &&
+                                        !hasNextView &&
+                                        !hasConfirmData) {
+                                      print("Rule 1 → Direct API");
+                                      await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
+                                      return;
+                                    }
+
+                                    // RULE 2: Edit → call next api → navigate
+                                    if (!hasApi &&
+                                        hasNextPage &&
+                                        hasNextApi &&
+                                        !hasConfirmData) {
+                                      print("Rule 2 → Next API + Navigate");
+                                      await Get.put(PostFormController()).getPostForm(
+                                          endpoint: btn.nextPageApiEndpoint,
+                                          isEditMode: true);
+                                      CustomNavigator.navigate(btn.nextPageName);
+                                      return;
+                                    }
+
+                                    // RULE 3: Confirm → show dialog
+                                    if (!hasNextPage &&
+                                        !hasNextApi &&
+                                        !hasNextView &&
+                                        hasConfirmData) {
+                                      print("Rule 3 → Confirm dialog");
+                                      _showCustomDialog(context, btn);
+                                      return;
+                                    }
+
+                                    print("No matching rule");
+                                  },
+
+
+                                  child: Container(
+                                     padding: const EdgeInsets.all(8.0),
+                                     decoration: BoxDecoration(
+                                       shape: BoxShape.circle,
+                                       color: AppColors.appMutedColor,
+                                     ),
+                                     child: _getIconForMenu(btn.icon),
+                                   ),
+                                ),
+                              )).toList(),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ];
           },
-          body: CustomScrollView(
-            // physics: const BouncingScrollPhysics(),
+          body: RefreshIndicator(
+            color: AppColors.appButtonColor,
+
+            onRefresh: () async {
+              await getPostDetailsController.getPostDetails(widget.ukey ?? '');
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverList(
                 delegate: SliverChildBuilderDelegate(
@@ -392,6 +599,32 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                         
                                         Text("${info?.ratingReview ?? 0}",  style: AppTextStyle.description(
                                             color: AppColors.appTitleColor)),
+                                        const SizedBox(width: 8.0),
+                                        if(info?.badge !=null)
+                                        Container(
+                                          height: 20.h,
+
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(5.0),
+                                            gradient: AppColors.appPagecolor,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.appMutedColor,
+                                                blurRadius: 3,
+                                                spreadRadius: 1,
+                                                offset: Offset(0, 4),
+                                              ),
+                                            ],
+
+                                          ),
+                                          child: Center(
+                                            child:
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 10,right: 10),
+                                              child: Text(" ${info?.badge ?? ''}",style: AppTextStyle.body(),),
+                                            ),
+                                          ),
+                                        ),
                                         // RichText(
                                         //   text: TextSpan(
                                         //     text: '${info?.dynamicValues['avg_rating'] ?? 0.0} ',
@@ -437,7 +670,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                               color: AppColors.appBodyTextColor),
                                           children: [
                                             TextSpan(
-                                              text: '(${postOwner?.viewLabel ?? 'View Profile'})',
+                                              text: '(${postOwner?.viewLabel ?? ''})',
                                               style: AppTextStyle.body(
                                                   color: AppColors.appLinkColor),
                                             ),
@@ -487,16 +720,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                     //
                                     //   const SizedBox(height: 20.0),
                                     // ],
-                                    const SizedBox(height: 15.0),
-                                    Text(
-                                      'Price',
-                                      maxLines: 1,
-                                      style: AppTextStyle.title(
-                                          color: AppColors.appTitleColor),
-                                    ),
-                                    const SizedBox(height: 10.0),
+                                     SizedBox(height: 15.0),
+
                                     if (detailsTabs != null && detailsTabs.isNotEmpty)
                                     Container(
+                                      height:270.h,
                                       decoration: BoxDecoration(
                                         gradient: AppColors.appPagecolor,
                                         boxShadow: [
@@ -509,56 +737,56 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                         ],
                                         borderRadius: BorderRadius.circular(8.0),
                                       ),
-                                      child: Column(
-                                        children: [
-                                          // NOTE: TabBar needs a TabController with correct length. 
-                                          // Since data is dynamic, we need to ensure the existing tabController is updated or create a new one.
-                                          // For simplicity in this step, I'll rebuild the DefaultTabController or just handle it 
-                                          // This part requires careful handling if TabController was initialized in initState.
-                                          // A better approach for dynamic tabs is DefaultTabController.
-                                          DefaultTabController(
-                                            length: detailsTabs.length,
-                                            child: Column(
-                                              children: [
-                                                 TabBar(
-                                                  unselectedLabelColor: AppColors.appDescriptionColor,
-                                                  indicatorSize: TabBarIndicatorSize.tab,
-                                                  indicator: BoxDecoration(
-                                                    borderRadius: const BorderRadius.only(
-                                                      topRight: Radius.circular(8.0),
-                                                      topLeft: Radius.circular(8.0),
-                                                    ),
-                                                    color: AppColors.appColor,
-                                                  ),
-                                                  labelColor: AppColors.appWhite,
-                                                  tabs: detailsTabs.map((tab) {
-                                                    return Tab(text: tab.label ?? 'Plan');
-                                                  }).toList(),
+                                      child: DefaultTabController(
+                                        length: detailsTabs.length,
+                                        child: Column(
+                                          children: [
+                                             TabBar(
+                                              isScrollable: true,
+                                              tabAlignment: TabAlignment.start,
+                                              unselectedLabelColor: AppColors.appDescriptionColor,
+                                              indicatorSize: TabBarIndicatorSize.tab,
+                                              indicator: BoxDecoration(
+                                                borderRadius: const BorderRadius.only(
+                                                  topRight: Radius.circular(8.0),
+                                                  topLeft: Radius.circular(8.0),
                                                 ),
-                                                 Divider(
-                                                  height: 0,
-                                                  thickness: 1.0,
-                                                  color: AppColors.appMutedColor,
-                                                ),
-                                                  Builder(
-                                                    builder: (context) {
-                                                      final tabController = DefaultTabController.of(context);
-                                                      return AnimatedBuilder(
-                                                        animation: tabController,
-                                                        builder: (context, child) {
-                                                          final int currentIndex = tabController.index;
-                                                          final tab = detailsTabs[currentIndex];
-                                                          return Padding(
-                                                            padding: const EdgeInsets.all(10.0),
+                                                color: AppColors.appColor,
+                                              ),
+                                              labelColor: AppColors.appWhite,
+                                              tabs: detailsTabs.map((tab) {
+                                                return Tab(text: tab.label ?? 'Plan');
+                                              }).toList(),
+                                            ),
+                                             Divider(
+                                              height: 0,
+                                              thickness: 1.0,
+                                              color: AppColors.appMutedColor,
+                                            ),
+                                              Expanded(
+                                                child: Builder(
+                                                  builder: (context) {
+                                                    final tabController = DefaultTabController.of(context);
+                                                    return AnimatedBuilder(
+                                                      animation: tabController,
+                                                      builder: (context, child) {
+                                                        final int currentIndex = tabController.index;
+                                                        final tab = detailsTabs[currentIndex];
+                                                        return Padding(
+                                                          padding: const EdgeInsets.all(10.0),
+                                                          child: SingleChildScrollView(
                                                             child: Column(
                                                               crossAxisAlignment: CrossAxisAlignment.stretch,
                                                               children: [
                                                                 ...tab.values.entries
                                                                     .where((e) => !['price', 'label', 'icon'].contains(e.key))
                                                                     .map((e) {
-                                                                      return ListTile(
-                                                                        contentPadding: EdgeInsets.zero,
-                                                                        leading: Container(
+                                                                  return Container(
+                                                                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                                                    child: Row(
+                                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                                      children: [
+                                                                        Container(
                                                                           height: 20,
                                                                           width: 20,
                                                                           decoration: BoxDecoration(
@@ -566,58 +794,71 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                                                             color: AppColors.appMutedColor,
                                                                             image: (tab.icon != null && tab.icon!.startsWith('http'))
                                                                                 ? DecorationImage(
-                                                                                    image: NetworkImage(tab.icon!),
-                                                                                    fit: BoxFit.cover,
-                                                                                  )
+                                                                              image: NetworkImage(tab.icon!),
+                                                                              fit: BoxFit.cover,
+                                                                            )
                                                                                 : null,
                                                                           ),
                                                                           child: (tab.icon == null || !tab.icon!.startsWith('http'))
-                                                                              ? Icon(Icons.notifications_active_outlined, color: AppColors.appIconColor, size: 20)
+                                                                              ? Icon(
+                                                                            Icons.notifications_active_outlined,
+                                                                            color: AppColors.appIconColor,
+                                                                            size: 16,
+                                                                          )
                                                                               : null,
                                                                         ),
-                                                                        title: Text(
-                                                                          e.value.toString(),
-                                                                          style: AppTextStyle.description(color: AppColors.appTitleColor),
+                                                                         SizedBox(width: 5.w),
+                                                                        Expanded(
+                                                                          child: Text(
+                                                                            e.value.toString(),
+                                                                            style: AppTextStyle.description(
+                                                                              color: AppColors.appTitleColor,
+                                                                            ),
+                                                                            maxLines: 1,
+                                                                            overflow: TextOverflow.ellipsis,
+                                                                          ),
                                                                         ),
-                                                                      );
-                                                                    }).toList(),
-                                                                const SizedBox(height: 10.0),
-                                                                Builder(
-                                                                  builder: (context) {
-                                                                     // Logic to determine if button is highlighted or primary
-                                                                     // Assuming false locally or usage of a controller value if needed.
-                                                                     // User code had 'isHighlighted' undefined. Using default style for now.
-                                                                     bool isHighlighted = false;
-                                                                     return ButtonGlobalWithoutIcon(
-                                                                        buttontext: 'Select Offer',
-                                                                        buttonDecoration: kButtonDecoration.copyWith(
-                                                                          color: isHighlighted
-                                                                              ? AppColors.appButtonTextColor
-                                                                              : AppColors.appButtonColor,
-                                                                          border: isHighlighted
-                                                                              ? null
-                                                                              : Border.all(color: AppColors.appColor),
-                                                                          borderRadius: BorderRadius.circular(30.0),
-                                                                        ),
-                                                                        onPressed: () {},
-                                                                        buttonTextColor: isHighlighted
-                                                                            ? AppColors.appButtonColor
-                                                                            : AppColors.appButtonTextColor,
-                                                                      );
-                                                                  }
-                                                                ),
+                                                                      ],
+                                                                    ),
+                                                                  );
+
+                                                                }).toList(),
+                                                                // const SizedBox(height: 10.0),
+                                                                // Builder(
+                                                                //   builder: (context) {
+                                                                //      // Logic to determine if button is highlighted or primary
+                                                                //      // Assuming false locally or usage of a controller value if needed.
+                                                                //      // User code had 'isHighlighted' undefined. Using default style for now.
+                                                                //      bool isHighlighted = false;
+                                                                //      return ButtonGlobalWithoutIcon(
+                                                                //         buttontext: 'Select Offer',
+                                                                //         buttonDecoration: kButtonDecoration.copyWith(
+                                                                //           color: isHighlighted
+                                                                //               ? AppColors.appButtonTextColor
+                                                                //               : AppColors.appButtonColor,
+                                                                //           border: isHighlighted
+                                                                //               ? null
+                                                                //               : Border.all(color: AppColors.appColor),
+                                                                //           borderRadius: BorderRadius.circular(30.0),
+                                                                //         ),
+                                                                //         onPressed: () {},
+                                                                //         buttonTextColor: isHighlighted
+                                                                //             ? AppColors.appButtonColor
+                                                                //             : AppColors.appButtonTextColor,
+                                                                //       );
+                                                                //   }
+                                                                // ),
                                                               ],
                                                             ),
-                                                          );
-                                                        },
-                                                      );
-                                                    }
-                                                  ),
-
-                                              ],
-                                            ),
-                                          ),
-                                        ],
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+                                                  }
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
                                     ) 
                                     else
@@ -663,8 +904,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                                   sectionController.getPostForHomeResponseModel.value == null && 
                                                   !sectionController.isLoading.value) {
                                                    print("🔄 Fetching data for endpoint: $rawEndpoint");
-                                                   sectionController.getPostListForHomeScreen(endpoint: rawEndpoint).then((_) {
-                                                      sectionController!.update();
+                                                   Future.microtask(() {
+                                                     // Only fetch if still needed (double check inside microtask)
+                                                     if (sectionController!.getPostForHomeResponseModel.value == null && !sectionController.isLoading.value) {
+                                                       sectionController.getPostListForHomeScreen(endpoint: rawEndpoint).then((_) {
+                                                         sectionController!.update();
+                                                       });
+                                                     }
                                                    });
                                               }
 
@@ -704,7 +950,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                                        : Get.put(AppPostController(), tag: tag);
 
                                                    if (bannerController.getPostForHomeResponseModel.value == null && !bannerController.isLoading.value) {
-                                                      bannerController.getPostListForHomeScreen(endpoint: rawEndpoint);
+                                                      Future.microtask(() {
+                                                        if (bannerController.getPostForHomeResponseModel.value == null && !bannerController.isLoading.value) {
+                                                            bannerController.getPostListForHomeScreen(endpoint: rawEndpoint);
+                                                        }
+                                                      });
                                                    }
 
                                                    return Obx(() {
@@ -796,6 +1046,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                 ),
               ),
             ],
+          ),
           ),
         ),
       );

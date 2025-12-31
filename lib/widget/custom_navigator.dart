@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:libdding/widget/post_detail_screen.dart';
 import '../controller/post/get_post_details_controller.dart';
 import '../models/static models/service_items_model.dart';
+import '../view/Post_new_screen/post_new_screen.dart';
 import '../view/profile_screens/My Posts/Post_Details_screen.dart';
 
 import '../view/Onboard_screen/onboard_screen.dart';
@@ -101,6 +102,11 @@ class CustomNavigator {
       case "search_history_screen":
         Get.to(() => const SearchHistoryScreen());
         break;
+
+      case "post_new_screen":
+        Get.to(() => const PostNewScreen());
+        break;
+
 
       case "post_detail_screen":
         String? ukey;

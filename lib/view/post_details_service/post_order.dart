@@ -11,7 +11,7 @@ import '../../core/app_constant.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/button_global.dart';
 import '../../widget/custom_view_widget.dart';
-import 'client_add_card.dart';
+import 'post_order_add_card.dart';
 
 class PostOrderScreen extends StatefulWidget {
   const PostOrderScreen({super.key});
@@ -30,9 +30,10 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
   String selectedPaymentMethod = 'Credit or Debit Card';
   bool isFavorite = false;
   List<String> imageList = [
-    'images/creditcard.png',
-    'images/paypal2.png',
-    'images/bkash2.png',
+    '${AppImage.creditcard}',
+    '${AppImage.paypal2}',
+    '${AppImage.bkash2}',
+
   ];
  List<dynamic> notifications = [];
   bool isLoading = true;
@@ -111,7 +112,7 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
           ),
           onPressed: () {
             setState(() {
-              const AddNewCard().launch(context);
+              const AddNewCardScreen().launch(context);
             });
           },
           buttonTextColor: AppColors.appButtonTextColor,
@@ -282,55 +283,18 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
                 const SizedBox(height: 15.0),
                 Text(
                   'Order Details',
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.textgrey,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyle.title()
                 ),
                 const SizedBox(height: 15.0),
-                Row(
-                  children: [
-                    Text(
-                      'Delivery days',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '2 days',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                  ],
-                ),
+                customrow('Delivery days','2 days'),
                 const SizedBox(height: 15.0),
-                Row(
-                  children: [
-                    Text(
-                      'Revisions',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Unlimited',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                  ],
-                ),
+                customrow('Revisions','Unlimited'),
                 const SizedBox(height: 15.0),
                 Row(
                   children: [
                     Text(
                       '3 Page/Screen',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
+                      style: AppTextStyle.description()
                     ),
                     const Spacer(),
                     Icon(
@@ -344,9 +308,7 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
                   children: [
                     Text(
                       'Responsive design',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
+                      style: AppTextStyle.description(),
                     ),
                     const Spacer(),
                     Icon(
@@ -360,9 +322,7 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
                   children: [
                     Text(
                       'Source file',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
+                      style: AppTextStyle.description(),
                     ),
                     const Spacer(),
                     Icon(
@@ -374,10 +334,7 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
                 const SizedBox(height: 20.0),
                 Text(
                   'Payment Method',
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.subTitleColor,
-                      fontWeight: FontWeight.bold
-                  ),
+                  style: AppTextStyle.title(),
                 ),
                 const SizedBox(height: 20.0),
                 ListView.builder(
@@ -392,8 +349,8 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
                         padding: const EdgeInsets.all(5.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30.0),
-                          color: AppColors.appWhite,
-                          border: Border.all(color: AppColors.kBorderColorTextField),
+                          gradient: AppColors.appPagecolor,
+                          border: Border.all(color: AppColors.appMutedColor),
                         ),
                         child: ListTile(
                           visualDensity: const VisualDensity(vertical: -2),
@@ -415,13 +372,11 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
                           ),
                           title: Text(
                             paymentMethod[i],
-                            style: AppTextStyle.kTextStyle.copyWith(
-                              color: AppColors.appTextColor,
-                            ),
+                            style: AppTextStyle.description(color: AppColors.appBodyTextColor),
                           ),
                           trailing: Icon(
                             selectedPaymentMethod == paymentMethod[i] ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                            color: selectedPaymentMethod == paymentMethod[i] ? AppColors.appColor : AppColors.subTitleColor,
+                            color: selectedPaymentMethod == paymentMethod[i] ? AppColors.appButtonColor : AppColors.appMutedColor,
                           ),
                         ),
                       ),
@@ -431,90 +386,39 @@ class _PostOrderScreenState extends State<PostOrderScreen> {
                 const SizedBox(height: 20.0),
                 Text(
                   'Order Summary',
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    color: AppColors.appTextColor,
-                      fontWeight: FontWeight.bold
-                  ),
+                  style: AppTextStyle.title(),
                 ),
                 const SizedBox(height: 20.0),
-                Row(
-                  children: [
-                    Text(
-                      'Subtotal',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${AppStrings.currencySign}${30}',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                  ],
-                ),
+                customrow("Subtotal", "${AppStrings.currencySign}${30}"),
                 const SizedBox(height: 10.0),
-                Row(
-                  children: [
-                    Text(
-                      'Service Fee',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${AppStrings.currencySign}${5.50}',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                  ],
-                ),
+                customrow("Service Fee", "${AppStrings.currencySign}${5.50}"),
                 const SizedBox(height: 10.0),
-                Row(
-                  children: [
-                    Text(
-                      'Total',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.appTextColor,
-                          fontWeight: FontWeight.bold, fontSize: 18.0
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${AppStrings.currencySign}${35.50}',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                          color: AppColors.appTextColor,
-                          fontWeight: FontWeight.bold, fontSize: 18.0
-                      ),
-                    ),
-                  ],
-                ),
+                customrow("Total", "${AppStrings.currencySign}${35.50}"),
                 const SizedBox(height: 10.0),
-                Row(
-                  children: [
-                    Text(
-                      'Delivery Date',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Thursday, 14 July 2023',
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.subTitleColor,
-                      ),
-                    ),
-                  ],
-                ),
+                customrow("Delivery Date", "Thursday, 14 July 2023"),
                 const SizedBox(height: 10.0),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+  Widget customrow( String title, String value){
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: AppTextStyle.description(),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: AppTextStyle.description(color: AppColors.appBodyTextColor),
+          ),
+        ],
       ),
     );
   }

@@ -22,6 +22,42 @@ import '../post/app_post_controller.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 
 class ClientHomeController extends GetxController {
+
+  Future<void> refreshData() async {
+    isCategoryFetched.value = false;
+    isBannerFetched.value = false;
+    isVideoBannerFetched.value = false;
+    categoryList.clear();
+    bannerList.clear();
+    bannerVideoAndImageList.clear();
+    
+    // Clear all tagged AppPostControllers to force re-fetch
+    if (Get.context != null) {
+      final appSettingsController = Get.find<AppSettingsController>();
+      final homePage = appSettingsController.homePage.value;
+      final bodySections = homePage?.design?.body;
+      
+      if (bodySections != null) {
+        for (var section in bodySections) {
+           if (section.apiEndpoint != null && section.apiEndpoint!.isNotEmpty) {
+             final tag = section.apiEndpoint!;
+             if (Get.isRegistered<AppPostController>(tag: tag)) {
+               final controller = Get.find<AppPostController>(tag: tag);
+               controller.getPostForHomeResponseModel.value = null; // Clear data
+             }
+           }
+        }
+      }
+    }
+
+    await initializeData();
+    // Trigger update on home screen if needed (usually Obx handles it)
+  }
+
+
+
+
+
   static ClientHomeController get to => Get.find();
 
   // Reactive variables

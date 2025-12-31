@@ -51,12 +51,29 @@ class PostFormController extends GetxController {
   bool _isButtonNavigation =
       false; // Track if navigation is from button (no API call)
 
+  // Session State
+  String? _currentApiEndpoint; // Persist endpoint for refreshes
+  bool _isExplicitEdit = false; // Track if we are in an explicit edit session
+
+  // Reset session state (call this when leaving form flow)
+  void resetSession() {
+    print('🔄 Resetting Post Form Session');
+    _currentApiEndpoint = null;
+    _isExplicitEdit = false;
+    formData.clear();
+    formErrors.clear();
+    multiStepEntries.clear();
+    Postkey.value = '';
+    currentStep.value = 0;
+    _formLoaded = false;
+  }
+
   @override
   void onInit() {
     super.onInit();
     // Initialize PageController
     pageController = PageController(initialPage: 0);
-    // Load form from API - initialization will happen after form loads
+    // Load form - initial load uses defaults unless set prior
     getPostForm();
   }
 
@@ -251,6 +268,15 @@ class PostFormController extends GetxController {
     // Find first step with at least one null value
     int? firstIncompleteStep;
 
+    // Check explicit edit session first
+    if (_isExplicitEdit) {
+      print('✏️ Explicit Edit Session: Starting from Step 1');
+      currentStep.value = 0;
+      return;
+    }
+
+    // Only search for incomplete step if NOT in edit mode
+    // In edit mode, we want to start from the beginning (Step 1)
     for (int stepIndex in availableSteps) {
       List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
         stepIndex,
@@ -284,8 +310,8 @@ class PostFormController extends GetxController {
           hasVisibleField = true;
         }
 
-        // Check if value is null or empty (only for visible fields)
-        if (fieldType != 'hidden') {
+        // Check if value is null or empty (only for visible REQUIRED fields)
+        if (fieldType != 'hidden' && stepInput.required == true) {
           if (value == null ||
               (value is String && value.trim().isEmpty) ||
               (value is List && value.isEmpty)) {
@@ -295,7 +321,7 @@ class PostFormController extends GetxController {
         }
       }
 
-      // If step has visible fields and at least one is null, this is incomplete
+      // If step has visible fields and at least one REQUIRED field is null, this is incomplete
       if (hasVisibleField && hasNullValue) {
         firstIncompleteStep = stepIndex;
         break;
@@ -1236,24 +1262,30 @@ class PostFormController extends GetxController {
         if (postForm != null && postForm.postKey != null) {
           postForm.postKey = '';
         }
-        //
-        // Postkey.value = '';
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MyProfileScreen()),
-        );
+        
+        // Reset session state (preserve _isExplicitEdit for a moment to decide nav)
+        bool wasEdit = _isExplicitEdit;
+        resetSession();
 
         Utils.showSnackbar(
           isSuccess: true,
           title: 'Success',
           message: apiMessage.value.isNotEmpty
-              ? apiMessage
-                    .value // ✅ API MESSAGE
-              : 'Post created successfully',
+              ? apiMessage.value
+              : 'Post saved successfully',
         );
 
-        Get.back();
+        if (wasEdit) {
+           // If editing, just go back to the previous screen (Post Details)
+           Get.back(); // Close PostNewScreen
+           // Ideally, previous screen should refresh. PostDetailScreen has onRefresh logic.
+        } else {
+           // If creating new, navigate to My Profiles
+           Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MyProfileScreen()),
+          );
+        }
       } else {
         // ✅ API Failed Message
         Utils.showSnackbar(
@@ -1329,59 +1361,64 @@ class PostFormController extends GetxController {
   }
 
   // Fetch post form from API
-  Future<void> getPostForm() async {
+  Future<void> getPostForm({String? endpoint, bool? isEditMode}) async {
     try {
       isLoadingForm.value = true; // Use separate loading state for form loading
 
-      final appController = Get.find<AppSettingsController>();
+      // Update Session State
+      if (endpoint != null) {
+        _currentApiEndpoint = endpoint;
+      }
+      if (isEditMode != null) {
+        _isExplicitEdit = isEditMode;
+      }
 
+      final appController = Get.find<AppSettingsController>();
       final postForm = appController.postFormPage.value;
 
       final prefs = await SharedPreferences.getInstance();
+      
+      // ... (Rest of existing variable setup)
       final token = prefs.getString('auth_token');
       final userKey = prefs.getString('ukey');
+      
+      // Use stored key or API key
       if (postForm != null && postForm.postKey != null) {
         Postkey.value = postForm.postKey.toString();
       }
+      
       final appPageKey = postForm?.pageName;
       final languageKey =
           prefs.getString('selected_language_key') ??
           appController.selectedLanguageKey.value;
+          
       print('Post Key: ${Postkey.value}');
-      print('token : $token');
-      print('userKey : $userKey');
-      print('appPageKey : $appPageKey');
-      print('languageKey : $languageKey');
+      // ... (Logging)
 
       if (token == null) {
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'Authentication token not found',
-        );
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Authentication token not found');
         isLoadingForm.value = false;
         return;
       }
 
       if (userKey == null) {
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'User key not found',
-        );
+        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'User key not found');
         isLoadingForm.value = false;
         return;
       }
 
-      // Get language code from preferences if not provided
-      // final langCode =
-      //     languageCode ?? prefs.getString('selected_language_key') ?? 'en';
-
-      // Build API endpoint
-      final endpoint = '${AppConstants.baseUrl}get-post-form';
+      // Build API endpoint using persisted value or default
+      final String apiEndpoint;
+      final String targetEndpoint = _currentApiEndpoint ?? '${AppConstants.baseUrl}get-post-form';
+      
+      if (targetEndpoint.startsWith('http')) {
+         apiEndpoint = targetEndpoint;
+      } else {
+         apiEndpoint = '${AppConstants.baseUrl}$targetEndpoint';
+      }
 
       // Create multipart request
-      final request = http.MultipartRequest('POST', Uri.parse(endpoint));
+      final request = http.MultipartRequest('POST', Uri.parse(apiEndpoint));
 
       // Add headers
       request.headers.addAll({
@@ -1392,11 +1429,15 @@ class PostFormController extends GetxController {
       // Add form fields
       request.fields['language_code'] = languageKey;
       request.fields['user_key'] = userKey;
-      // request.fields['post_key'] = Postkey.value;
       request.fields['app_page_key'] = appPageKey ?? "";
-      // request.fields['app_page_key'] = "post_form";
+      
+      // Important: Add edit_mode flag if explicitly editing
+      // if (_isExplicitEdit) {
+      //   request.fields['explicit_edit'] = 'true'; // If API supports it
+      // }
+      // The API seems to rely on the URL structure (containing the key) for edit mode.
 
-      print('Get Post Form API Request URL: $endpoint');
+      print('Get Post Form API Request URL: $apiEndpoint');
       print('Get Post Form API Request Fields: ${jsonEncode(request.fields)}');
 
       // Send request
@@ -1414,6 +1455,13 @@ class PostFormController extends GetxController {
 
         if (postFormResponse.success == true &&
             postFormResponse.result?.postForm != null) {
+          
+          // Clear previous form data before populating new data
+          formData.clear();
+          formErrors.clear();
+          multiStepEntries.clear();
+          currentStep.value = 0;
+
           // Store in AppSettingsController
           final appController = Get.find<AppSettingsController>();
           appController.postFormFromApi.value =
@@ -1448,6 +1496,7 @@ class PostFormController extends GetxController {
             title: 'Error',
             message: postFormResponse.message ?? 'Failed to load post form',
           );
+
         }
       } else {
         Utils.showSnackbar(
@@ -1463,8 +1512,10 @@ class PostFormController extends GetxController {
         title: 'Error',
         message: 'Failed to load post form: $e',
       );
+
     } finally {
       isLoadingForm.value = false;
     }
   }
+
 }

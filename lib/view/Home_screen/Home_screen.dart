@@ -461,15 +461,17 @@ class HomeScreen extends StatelessWidget {
                             print(
                               "🔄 Fetching data for endpoint: $rawEndpoint",
                             );
-                            sectionController
-                                .getPostListForHomeScreen(endpoint: rawEndpoint)
-                                .then((_) {
-                                  print(
-                                    "✅ Data fetched for $rawEndpoint, result length: ${sectionController.getPostForHomeResponseModel.value?.result?.length}",
-                                  );
-                                  // Force UI update after data is fetched
-                                  sectionController.update();
-                                });
+                            Future.microtask(() {
+                              sectionController
+                                  .getPostListForHomeScreen(endpoint: rawEndpoint)
+                                  .then((_) {
+                                print(
+                                  "✅ Data fetched for $rawEndpoint, result length: ${sectionController.getPostForHomeResponseModel.value?.result?.length}",
+                                );
+                                // Force UI update after data is fetched
+                                sectionController.update();
+                              });
+                            });
                           }
                         }
                       }

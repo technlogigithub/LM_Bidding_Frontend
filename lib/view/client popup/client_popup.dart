@@ -3,6 +3,7 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:libdding/core/app_color.dart';
+import 'package:libdding/core/app_images.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../core/app_textstyle.dart';
@@ -168,25 +169,20 @@ class _UploadCompletePopUpState extends State<UploadCompletePopUp> {
             Container(
               height: 186,
               width: 209,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
-                image: DecorationImage(image: AssetImage('images/success.png'), fit: BoxFit.cover),
+                image: DecorationImage(image: AssetImage("${AppImage.success}"), fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 15.0),
             Text(
               'Congratulations!',
-              style: AppTextStyle.kTextStyle.copyWith(
-                color: AppColors.appTextColor,
-                  fontWeight: FontWeight.bold, fontSize: 18.0
-              ),
+              style: AppTextStyle.title(),
             ),
             const SizedBox(height: 10.0),
             Text(
               'Your profile is successfully completed. You can more changes after it\'s live.',
-              style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.appTextColor,
-              ),
+              style: AppTextStyle.description(color: AppColors.appBodyTextColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10.0),
