@@ -123,7 +123,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 15),
+        // padding: const EdgeInsets.symmetric(horizontal: 15),
         child: Row(
           children: List.generate(widget.tabs.length, (index) {
             final isSelected = selectedIndex == index;
@@ -182,14 +182,24 @@ class _CustomTabBarState extends State<CustomTabBar> {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: (widget.bgColor != null && widget.bgColor!.isNotEmpty)
-            ? parseLinearGradient(widget.bgColor)
-            : AppColors.appPagecolor,
-      ),
-      child: contentWithHeader,
-    );
+      return Container(
+        decoration: BoxDecoration(
+          gradient: _resolveGradient(),
+          color: _resolveGradient() == null ? Colors.transparent : null,
+        ),
+        child: contentWithHeader,
+      );
+  }
+  Gradient? _resolveGradient() {
+    if (widget.bgColor == null || widget.bgColor!.trim().isEmpty) {
+      return null; // means no gradient
+    }
+
+    try {
+      return parseLinearGradient(widget.bgColor!);
+    } catch (e) {
+      return null;
+    }
   }
 
 

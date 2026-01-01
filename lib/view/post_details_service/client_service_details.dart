@@ -17,7 +17,7 @@ import '../../widget/custom_horizontal_listview_list.dart';
 import '../../widget/review.dart';
 import '../Home_screen/recently_post_screen.dart';
 import 'bidding_sheet.dart';
-import 'post_order.dart';
+import 'cart_screen.dart';
 
 class ClientServiceDetails extends StatefulWidget {
   const ClientServiceDetails({super.key});
@@ -124,7 +124,7 @@ class _ClientServiceDetailsState extends State<ClientServiceDetails> with Ticker
         buttonText = 'Participate';
         buttonColor = AppColors.neutralColor;
         onPressed = () {
-          const PostOrderScreen().launch(context);
+          const CartScreen().launch(context);
         };
         break;
 

@@ -893,7 +893,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: AppColors.appMutedColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1159,7 +1159,7 @@ class _AddressDialogState extends State<AddressDialog> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: AppColors.appMutedColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),

@@ -21,6 +21,9 @@ import 'custom_file_picker.dart';
 import 'custom_multiple_file_picker.dart';
 import 'custom_date_time.dart';
 import '../../core/app_color.dart';
+import '../custom_horizontal_bullets.dart';
+import '../custom_input_plus_minus.dart';
+import '../custom_input_increase_decrease.dart';
 
 class DynamicFormBuilder extends StatefulWidget {
   final List<RegisterInput> inputs;
@@ -685,6 +688,19 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           keyboardType: TextInputType.number,
         );
         break;
+
+      case 'custom_input_increase_decrease':
+        fieldWidget = CustomInputIncreaseDecrease(
+          label: label,
+          // label: label + (isRequired ? ' *' : ''),
+          name: fieldName,
+          value: currentValue,
+          validations: input.validations ?? [],
+          onChanged: (value) =>
+              _handleFieldChanged(fieldName, value, isUserInteraction: true),
+          required: isRequired,
+        );
+        break;
       case 'button':
         fieldWidget = CustomButton(
           text: label,
@@ -798,30 +814,20 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
               ),
               const SizedBox(height: 8),
               ...List.generate(optionLabels.length, (index) {
-                final optLabel = optionLabels[index];
-                final optValue =
-                    index < optionValues.length &&
-                        optionValues[index].isNotEmpty
-                    ? optionValues[index]
-                    : optLabel;
-                final isChecked = selected.contains(optValue);
-
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: CustomCheckbox(
-                    value: isChecked,
-                    title: optLabel,
+                    value: selected.contains(optionValues[index]),
+                    title: optionLabels[index],
                     onChanged: (val) {
-                      final next = Set<String>.from(selected);
                       if (val == true) {
-                        next.add(optValue);
+                        selected.add(optionValues[index]);
                       } else {
-                        next.remove(optValue);
+                        selected.remove(optionValues[index]);
                       }
-                      // Store as List<String> in formData
                       _handleFieldChanged(
                         fieldName,
-                        next.toList(),
+                        selected.toList(),
                         isUserInteraction: true,
                       );
                     },
@@ -832,6 +838,33 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           );
         }
         break;
+
+      case 'custom_horizontal_bullets':
+        List<String> bulletItems = [];
+        if (input.optionItems != null && input.optionItems!.isNotEmpty) {
+          bulletItems = input.optionItems!.map((e) => e.label ?? '').toList();
+        } else if (input.options != null && input.options!.isNotEmpty) {
+          bulletItems = input.options!;
+        }
+
+        fieldWidget = CustomHorizontalBullets(
+          items: bulletItems,
+          textStyle: AppTextStyle.description(),
+        );
+        break;
+
+      case 'custom_input_plus_minus':
+        fieldWidget = CustomInputPlusMinus(
+          label: label,
+          name: fieldName,
+          value: currentValue,
+          validations: input.validations ?? [],
+          onChanged: (value) =>
+              _handleFieldChanged(fieldName, value, isUserInteraction: true),
+          required: isRequired,
+        );
+        break;
+
       case 'radio':
         List<String> labels = [];
         List<String> values = [];

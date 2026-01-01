@@ -25,7 +25,6 @@ import '../../widget/custom_horizontal_listview_list.dart';
 import '../../widget/custom_tapbar.dart';
 import '../../widget/custom_vertical_gridview_list.dart';
 import '../../widget/custom_banner_with_video.dart';
-import '../cart_screen/cart_screen.dart';
 import '../notifications/notifications_screen.dart';
 import 'select_categories_screen.dart';
 import '../../widget/custom_view_widget.dart';

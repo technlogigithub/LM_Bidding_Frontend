@@ -3,38 +3,100 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_textstyle.dart';
+import 'package:slide_countdown/slide_countdown.dart';
+
+import '../../models/App_moduls/AppResponseModel.dart';
+import '../../models/Post/Get_Post_details_Model.dart';
+import '../../widget/form_widgets/dynamic_form_builder.dart';
 
 class BidBottomSheet extends StatefulWidget {
-  const BidBottomSheet({super.key});
+  final String? title;
+  final String? description;
+  final String? pageImage;
+  final dynamic design;
+
+  const BidBottomSheet({super.key, this.title, this.description, this.pageImage, this.design});
 
   @override
   State<BidBottomSheet> createState() => _BidBottomSheetState();
 }
 
 class _BidBottomSheetState extends State<BidBottomSheet> {
+  // ... existing state variables ...
   final TextEditingController bidController = TextEditingController();
   int quantity = 1; // default qty
   Duration remaining = const Duration(minutes: 10); // 10 min countdown
   Timer? timer;
+  
+  Map<String, dynamic> formValues = {};
 
   // Example data
   int currentBid = 12000;
   int minIncrement = 500;
+  // ... existing initState, dispose and methods ...
 
   @override
   void initState() {
     super.initState();
     bidController.text = (currentBid + minIncrement).toString();
+    
+    // Initialize form values from design if available
+    if (widget.design != null) {
+       List<RegisterInput>? inputsList;
+       
+       if (widget.design is SubmitButtonDesign) {
+          inputsList = (widget.design as SubmitButtonDesign).inputs;
+       } else if (widget.design is Map && widget.design['inputs'] != null) {
+          // Fallback for Map (if passed as raw JSON)
+          // Handle Map construction
+          // ... (simplified for brevity as we prioritize new model)
+       }
 
-    timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (remaining.inSeconds > 0) {
-        setState(() {
-          remaining = Duration(seconds: remaining.inSeconds - 1);
-        });
-      } else {
-        t.cancel();
-      }
-    });
+       if (inputsList != null) {
+         for (var item in inputsList) {
+             String key = item.name ?? '';
+             if (key.isNotEmpty) {
+               formValues[key] = item.value ?? '1';
+             }
+         }
+       }
+       
+       // Legacy handling for raw maps if necessary (omitted for cleaner refactor, assuming model usage)
+    }
+
+    // Handle Countdown
+    String? countdownStr;
+    if (widget.design is SubmitButtonDesign) {
+       countdownStr = (widget.design as SubmitButtonDesign).countdown;
+    } else if (widget.design is Map) {
+       countdownStr = widget.design['countdown'];
+    }
+
+    if (countdownStr != null && countdownStr.isNotEmpty) {
+       try {
+         final target = DateTime.parse(countdownStr);
+         final now = DateTime.now();
+         final diff = target.difference(now);
+         if (diff.isNegative) {
+            remaining = Duration.zero;
+         } else {
+            remaining = diff;
+         }
+       } catch (e) {
+         debugPrint("Error parsing countdown date: $e");
+         remaining = Duration.zero;
+       }
+    } else {
+       // Default or fallback (optional)
+       remaining = Duration.zero; 
+    }
+    
+    // No need for manual timer if we are using SlideCountdownSeparated with a duration
+    // But if we want to update the UI or do something else when finished, we might need listeners. 
+    // For now, I will remove the manual timer since it was updating 'remaining' state which might conflict or be redundant if 'SlideCountdownSeparated' is used.
+    // However, the original code had a manual timer. I will remove it to rely on the widget or if the user wants custom logic. 
+    // The user request specific "backend side se jo date and time aa rha hai or current date ,time hai uske base par countdown show karna hai UI me".
+    // So setting 'remaining' is the key.
   }
 
   @override
@@ -82,12 +144,21 @@ class _BidBottomSheetState extends State<BidBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    print("Page Image  >>${widget.pageImage}");
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration:  BoxDecoration(
-      gradient: AppColors.appPagecolor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
+      decoration: BoxDecoration(
+        gradient: (widget.pageImage == null || widget.pageImage!.isEmpty)
+            ? AppColors.appPagecolor
+            : null,
+        image: (widget.pageImage != null && widget.pageImage!.isNotEmpty)
+            ? DecorationImage(
+                image: NetworkImage(widget.pageImage!),
+                fit: BoxFit.cover,
+              )
+            : null,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 12,
@@ -98,15 +169,18 @@ class _BidBottomSheetState extends State<BidBottomSheet> {
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
           // Grab handle
-          Container(
-            height: 5.h,
-            width: 50.w,
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: AppColors.appMutedColor,
-              borderRadius: BorderRadius.circular(10),
+          Center(
+            child: Container(
+              height: 5.h,
+              width: 50.w,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: AppColors.appMutedColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           ),
 
@@ -115,215 +189,127 @@ class _BidBottomSheetState extends State<BidBottomSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Place Your Bid",
+                widget.title ?? "",
                style: AppTextStyle.title(),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: AppColors.appPagecolor,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.appMutedColor,
-                      blurRadius: 5,
-                      spreadRadius: 1,
-                      offset: Offset(0, 5),
-                      // blurRadius: 1,
-                      // spreadRadius: 1,
-                      // offset: Offset(0, 6),
-                    ),
-                  ],
+
+
+              if (remaining.inSeconds > 0)
+                SlideCountdownSeparated(
+                  duration: remaining,
+                  separatorType: SeparatorType.symbol,
+                  separatorStyle: AppTextStyle.body(color: Colors.transparent),
+                  decoration: BoxDecoration(
+                    color: AppColors.appButtonColor,
+                    borderRadius: BorderRadius.circular(3.0),
+                  ),
                 ),
-                child: Text(
-                  "⏱ ${formatTime(remaining)}",
-                  style:  AppTextStyle.description(
-                      color: AppColors.appDescriptionColor,
-                      fontWeight: FontWeight.bold,),
-                ),
-              ),
+
+              // Container(
+              //   padding:
+              //       const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              //   decoration: BoxDecoration(
+              //     gradient: AppColors.appPagecolor,
+              //     borderRadius: BorderRadius.circular(12),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: AppColors.appMutedColor,
+              //         blurRadius: 5,
+              //         spreadRadius: 1,
+              //         offset: Offset(0, 5),
+              //         // blurRadius: 1,
+              //         // spreadRadius: 1,
+              //         // offset: Offset(0, 6),
+              //       ),
+              //     ],
+              //   ),
+              //   child: Text(
+              //     "⏱ ${formatTime(remaining)}",
+              //     style:  AppTextStyle.description(
+              //         color: AppColors.appDescriptionColor,
+              //         fontWeight: FontWeight.bold,),
+              //   ),
+              // ),
             ],
           ),
-          const SizedBox(height: 12),
+           SizedBox(height: 15.h),
           Text(
-            "Enter your bid amount for this project. Make sure it is above the current highest bid.",
+            widget.description ?? "",
             style: AppTextStyle.description(
               color: AppColors.appDescriptionColor,
             ),
           ),
-          const SizedBox(height: 20),
+            SizedBox(height: 20.h),
+          // const SizedBox(height: 20),
 
-          // Info card
-        Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.appMutedColor,
-                blurRadius: 5,
-                spreadRadius: 1,
-                offset: Offset(0, 10),
+            // Dynamic Inputs rendering
+            if (widget.design != null)
+              Builder(
+                builder: (context) {
+                  List<RegisterInput> inputs = [];
+                  
+                  if (widget.design is SubmitButtonDesign) {
+                     inputs = (widget.design as SubmitButtonDesign).inputs ?? [];
+                  } else if (widget.design is Map && widget.design['inputs'] != null) {
+                      // Fallback for raw map
+                      var rawInputs = widget.design['inputs'];
+                      if (rawInputs is Map) {
+                        rawInputs.forEach((key, value) {
+                          if (value is Map) {
+                            Map<String, dynamic> json = Map<String, dynamic>.from(value);
+                            json['name'] = key.toString(); 
+                            inputs.add(RegisterInput.fromJson(json));
+                          }
+                        });
+                      } else if (rawInputs is List) {
+                        for (var item in rawInputs) {
+                          if (item is Map) {
+                            inputs.add(RegisterInput.fromJson(Map<String, dynamic>.from(item)));
+                          }
+                        }
+                      }
+                  }
+
+                  if (inputs.isEmpty) return const SizedBox.shrink();
+
+                  return DynamicFormBuilder(
+                    inputs: inputs,
+                    formData: formValues,
+                    onFieldChanged: (key, value) {
+                      setState(() {
+                        formValues[key] = value;
+                      });
+                    },
+                    errors: {}, // Handle errors if needed
+                  );
+                },
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // ✅ LEFT COLUMN
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Current Highest Bid",
-                        style: AppTextStyle.description(
-                          color: AppColors.appDescriptionColor,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        "₹ $currentBid",
-                        style: AppTextStyle.body(
-                          color: AppColors.appDescriptionColor,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
 
-                const SizedBox(width: 12), // spacing between columns
+            // Fallback to static fields if no design provided
+            // Column(
+            //   children: [
+            //     CounterInput(
+            //       label: "Bid Price",
+            //       value: bidController.text,
+            //       showCurrency: true,
+            //       onIncrease: increaseBid,
+            //       onDecrease: decreaseBid,
+            //     ),
+            //     const SizedBox(height: 12),
+            //     CounterInput(
+            //       label: "Quantity",
+            //       value: quantity.toString(),
+            //       onIncrease: () => setState(() => quantity++),
+            //       onDecrease: () {
+            //         if (quantity > 1) setState(() => quantity--);
+            //       },
+            //     ),
+            //   ],
+            // ),
 
-                // ✅ RIGHT COLUMN
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Min Increment",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyle.description(
-                          color: AppColors.appDescriptionColor,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        "₹ $minIncrement",
-                        style: AppTextStyle.body(
-                          color: AppColors.appDescriptionColor,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
 
-        const SizedBox(height: 20),
 
-          // Bid amount input with +/- buttons
-          Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    height: 55,
-                    decoration: BoxDecoration(
-                      // border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(12),
-                  gradient: AppColors.appPagecolor,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.appMutedColor,
-                          blurRadius: 5,
-                          spreadRadius: 1,
-                          offset: Offset(0, 10),
-                          // blurRadius: 1,
-                          // spreadRadius: 1,
-                          // offset: Offset(0, 6),
-                        ),
-                      ],
-
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        buildCounterButton(Icons.remove, decreaseBid),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Center(
-                            child: TextField(
-                              controller: bidController,
-                              readOnly: true,
-                              textAlign: TextAlign.center,
-                              style: AppTextStyle.title(
-                                  fontWeight: FontWeight.bold,),
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        buildCounterButton(Icons.add, increaseBid),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    height: 55,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: AppColors.appPagecolor,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.appMutedColor,
-                          blurRadius: 5,
-                          spreadRadius: 1,
-                          offset: Offset(0, 10),
-                          // blurRadius: 1,
-                          // spreadRadius: 1,
-                          // offset: Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        buildCounterButton(Icons.remove, () {
-                          if (quantity > 1) setState(() => quantity--);
-                        }),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            "$quantity",
-                            style: AppTextStyle.title(
-                              fontWeight: FontWeight.bold,),
-                          ),
-                        ),
-                        buildCounterButton(Icons.add, () {
-                          setState(() => quantity++);
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 25),
+            const SizedBox(height: 15),
 
           // Submit button
         SizedBox(

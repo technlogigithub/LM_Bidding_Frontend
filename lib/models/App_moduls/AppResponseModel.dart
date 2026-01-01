@@ -1744,6 +1744,7 @@ class InputValidation {
   String? minLengthError;
   String? maxLengthError;
   String? patternErrorMessage;
+  Map<String, dynamic>? meta;
 
   InputValidation({
     this.type,
@@ -1757,6 +1758,7 @@ class InputValidation {
     this.minLengthError,
     this.maxLengthError,
     this.patternErrorMessage,
+    this.meta,
   });
 
   factory InputValidation.fromJson(Map<String, dynamic> json) {
@@ -1809,6 +1811,7 @@ class InputValidation {
       minLengthError: json['min_length_error'],
       maxLengthError: json['max_length_error'],
       patternErrorMessage: json['pattern_error_message'],
+      meta: json['meta'],
     );
   }
 
@@ -1823,6 +1826,7 @@ class InputValidation {
     'min_length_error': minLengthError,
     'max_length_error': maxLengthError,
     'pattern_error_message': patternErrorMessage,
+    'meta': meta,
   };
 }
 
