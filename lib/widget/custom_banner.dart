@@ -43,10 +43,7 @@ class CustomBanner extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: padding,
         itemCount: 3,
-        itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: AppColors.appMutedColor,
-          highlightColor: AppColors.appMutedTextColor,
-          child: Container(
+        itemBuilder: (_, __) => Container(
             height: height.h,
             width: width.w,
             margin: margin,
@@ -54,8 +51,11 @@ class CustomBanner extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(borderRadius.r),
             ),
+            child: ClipRRect(
+               borderRadius: BorderRadius.circular(borderRadius.r),
+               child: Image.asset(AppImage.placeholder, fit: BoxFit.cover),
+            ),
           ),
-        ),
       ),
     );
   }
@@ -95,7 +95,9 @@ class CustomBanner extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       // borderRadius: BorderRadius.circular(borderRadius.r),
-                      child: Image.network(
+                      child: image.isEmpty 
+                      ? Image.asset(AppImage.placeholder, fit: BoxFit.cover)
+                      : Image.network(
                         image,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) {

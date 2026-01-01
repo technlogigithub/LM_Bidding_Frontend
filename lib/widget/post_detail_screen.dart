@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -7,25 +6,20 @@ import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/app_color.dart';
-import '../../core/app_string.dart';
-import '../../core/api_config.dart';
 import '../../core/app_constant.dart';
 import '../../models/static models/service_items_model.dart';
 import '../../widget/button_global.dart';
-import '../../widget/custom_horizontal_listview_list.dart';
 import '../../widget/custom_html_viewer.dart';
 import '../view/post_details_service/bidding_sheet.dart';
-import '../view/post_details_service/post_order.dart';
+import '../view/post_details_service/cart_screen.dart';
+import '../view/post_details_service/post_order_add_card.dart';
 import 'custom_view_widget.dart';
-import 'custom_banner_with_video.dart';
 import 'custom_alert_dialog.dart';
 import '../../widget/custom_navigator.dart';
-
 import '../../controller/post/get_post_details_controller.dart';
 import '../../models/Post/Get_Post_details_Model.dart';
 import '../../controller/post/app_post_controller.dart';
 import '../../controller/post/post_form_controller.dart';
-import '../view/Home_screen/home_screen.dart';
 import '../controller/home/home_controller.dart';
 import '../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
 import '../controller/bottom/bottom_bar_controller.dart';
@@ -125,8 +119,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
       context: context, 
       builder: (context) {
         return CustomAlertDialog(
-          title: menu.title ?? menu.label ?? 'Alert',
-          description: menu.description ?? 'Are you sure?',
+          title: menu.title ?? menu.label ?? '',
+          description: menu.description ?? '',
           backgroundImage: menu.pageImage,
           onConfirm: () async {
             finish(context); // Close dialog
@@ -166,6 +160,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: double.infinity,
+      width: double.infinity,
       decoration: BoxDecoration(
         gradient: AppColors.appPagecolor,
       ),
@@ -270,7 +266,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
               ),
             );
           }
-          print(" model $model,result $result ");
+          print("model $model,result $result ");
           if (model == null || result == null) {
              return const Scaffold(
               body: Center(child: Text("No details found")),
@@ -296,70 +292,137 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
 
         return Scaffold(
           backgroundColor: Colors.transparent,
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-              gradient: AppColors.appPagecolor
-          ),
-          child: Builder(
-            builder: (context) {
-              String buttonText = '';
-              VoidCallback? onPressed;
-              bool useGradient = false;
+        bottomNavigationBar: (result?.submitButton != null && result!.submitButton!.isNotEmpty)
+            ? Container(
+                decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 2.0),
+                child: Builder(
+                  builder: (context) {
+                    final buttons = result!.submitButton!;
+                    List<Widget> rows = [];
+                    
+                    Widget buildBtn(SubmitButton btn) {
+                        String label = btn.label ?? '';
+                        VoidCallback? onPressed;
 
-              switch (status) {
-                case 'before_pay':
-                  buttonText = 'Participate';
-                  useGradient = false;
-                  onPressed = () {
-                    const PostOrderScreen().launch(context);
-                  };
-                  break;
+                        onPressed = () async {
+                           bool hasApi = btn.apiEndpoint != null && btn.apiEndpoint!.isNotEmpty;
+                           bool hasNextPage = btn.nextPageName != null && btn.nextPageName!.isNotEmpty;
+                           bool hasNextApi = btn.nextPageApiEndpoint != null && btn.nextPageApiEndpoint!.isNotEmpty;
+                           bool hasNextView = btn.nextPageViewType != null && btn.nextPageViewType!.isNotEmpty;
 
-                case 'waiting':
-                  buttonText = 'Waiting';
-                  useGradient = true;
-                  onPressed = null;
-                  break;
+                           bool hasConfirmData = (btn.pageImage != null && btn.pageImage!.isNotEmpty) &&
+                               (btn.title != null && btn.title!.isNotEmpty) &&
+                               (btn.description != null && btn.description!.isNotEmpty);
 
-                case 'bidding':
-                  buttonText = 'Bid Now';
-                  useGradient = true;
-                  onPressed = () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (context) => Padding(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom,
-                        ),
-                        child: const BidBottomSheet(),
-                      ),
+                           // RULE 1: Direct API
+                           if (hasApi && !hasNextPage && !hasNextApi && !hasNextView && !hasConfirmData) {
+                             print("Rule 1 → Direct API");
+                             await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
+                             return;
+                           }
+
+                           // RULE 2: Navigate (Edit/Other)
+                           if (!hasApi && hasNextPage && hasNextApi && !hasConfirmData) {
+                             print("Rule 2 → Next API + Navigate");
+                             // await Get.put(PostFormController()).getPostForm(
+                             //     endpoint: btn.nextPageApiEndpoint, isEditMode: true); // Assuming Edit mode is standard for this flow? Or maybe optional.
+                             CustomNavigator.navigate(btn.nextPageName);
+                             return;
+                           }
+
+                           // Rule 2b: Simple Navigate (No API fetch needed) - Implicitly covered if hasNextApi is false but hasNextPage is true.
+                           if (hasNextPage && !hasNextApi && !hasConfirmData) {
+                              CustomNavigator.navigate(btn.nextPageName);
+                              return;
+                           }
+
+
+                           // RULE 3: Confirm Data -> Show BidBottomSheet instead of Dialog
+                           if (!hasNextPage && !hasNextApi && !hasNextView && hasConfirmData) {
+                             print("Rule 3 → BidBottomSheet");
+                             showModalBottomSheet(
+                               context: context,
+                               isScrollControlled: true,
+                               shape: const RoundedRectangleBorder(
+                                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                               ),
+                               builder: (context) => Padding(
+                                 padding: EdgeInsets.only(
+                                   bottom: MediaQuery.of(context).viewInsets.bottom,
+                                 ),
+                                 child: BidBottomSheet(
+                                   title: btn.title,
+                                   description: btn.description,
+                                   pageImage: btn.pageImage,
+                                   design: btn.design,
+                                 ),
+                               ),
+                             );
+                             return;
+                           }
+
+                           // Fallback for unmatched cases (e.g. just label)
+                           print("No matching rule for bottom button: $label");
+                        };
+
+                        return ButtonGlobalWithoutIcon(
+                          buttontext: label,
+                          buttonDecoration: kButtonDecoration.copyWith(
+                            borderRadius: BorderRadius.circular(30.0),
+                            color: AppColors.appButtonColor,
+                          ),
+                          onPressed: onPressed,
+                          buttonTextColor: AppColors.appButtonTextColor,
+                        );
+                    }
+
+                    for (int i = 0; i < buttons.length; i += 2) {
+
+                      bool hasSecond = (i + 1 < buttons.length);
+                      
+                      if (hasSecond) {
+
+                        rows.add(
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildBtn(buttons[i]),
+                              ),
+                              const SizedBox(width: 5),
+                              Expanded(
+                                child: buildBtn(buttons[i + 1]),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        // Single button (last one): Full Width
+                        rows.add(
+                          Row(
+                            children: [
+                              Expanded(
+                                child: buildBtn(buttons[i]),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
+                      // Add spacing between rows if not the last row
+                      if (i + 2 < buttons.length || (hasSecond && i + 2 < buttons.length)) {
+                         rows.add(const SizedBox(height: 3));
+                      }
+                    }
+
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: rows,
                     );
-                  };
-                  break;
-
-                case 'closed':
-                  buttonText = 'Closed';
-                  useGradient = false;
-                  onPressed = null;
-                  break;
-              }
-
-              return ButtonGlobalWithoutIcon(
-                buttontext: buttonText,
-                buttonDecoration: kButtonDecoration.copyWith(
-                  borderRadius: BorderRadius.circular(30.0),
-                  color: AppColors.appButtonColor,
+                  }
                 ),
-                onPressed: onPressed,
-                buttonTextColor: AppColors.appButtonTextColor,
-              );
-            },
-          ),
-        ),
+              )
+            : const SizedBox.shrink(),
 
         body: NestedScrollView(
           physics: const BouncingScrollPhysics(),
@@ -686,7 +749,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                     // HTML Content at the top
                                     if (htmlDetails?.html != null && htmlDetails!.html!.isNotEmpty) ...[
                                       Text(
-                                        htmlDetails.label ?? 'Description',
+                                        htmlDetails.label ?? '',
                                         maxLines: 1,
                                         style: AppTextStyle.title(
                                             color: AppColors.appTitleColor),
@@ -755,7 +818,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                               ),
                                               labelColor: AppColors.appWhite,
                                               tabs: detailsTabs.map((tab) {
-                                                return Tab(text: tab.label ?? 'Plan');
+                                                return Tab(text: tab.label ?? '');
                                               }).toList(),
                                             ),
                                              Divider(
@@ -973,7 +1036,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                                          return {
                                                            'image': mediaItem?.url?.toString() ?? '',
                                                            'redirectUrl': actionUrl.toString(),
-                                                           'type': mediaItem?.mediaType?.toString() ?? 'image' 
+                                                           'type': mediaItem?.mediaType?.toString() ?? ''
                                                          };
                                                        }).toList();
 

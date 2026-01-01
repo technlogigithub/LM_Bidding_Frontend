@@ -50,6 +50,10 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Reset form session when leaving screen
+    if (Get.isRegistered<PostFormController>()) {
+      controller.resetSession();
+    }
     super.dispose();
   }
 

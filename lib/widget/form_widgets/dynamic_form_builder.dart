@@ -21,6 +21,8 @@ import 'custom_file_picker.dart';
 import 'custom_multiple_file_picker.dart';
 import 'custom_date_time.dart';
 import '../../core/app_color.dart';
+import '../custom_horizontal_bullets.dart';
+import '../custom_input_plus_minus.dart';
 
 class DynamicFormBuilder extends StatefulWidget {
   final List<RegisterInput> inputs;
@@ -798,30 +800,20 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
               ),
               const SizedBox(height: 8),
               ...List.generate(optionLabels.length, (index) {
-                final optLabel = optionLabels[index];
-                final optValue =
-                    index < optionValues.length &&
-                        optionValues[index].isNotEmpty
-                    ? optionValues[index]
-                    : optLabel;
-                final isChecked = selected.contains(optValue);
-
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: CustomCheckbox(
-                    value: isChecked,
-                    title: optLabel,
+                    value: selected.contains(optionValues[index]),
+                    title: optionLabels[index],
                     onChanged: (val) {
-                      final next = Set<String>.from(selected);
                       if (val == true) {
-                        next.add(optValue);
+                        selected.add(optionValues[index]);
                       } else {
-                        next.remove(optValue);
+                        selected.remove(optionValues[index]);
                       }
-                      // Store as List<String> in formData
                       _handleFieldChanged(
                         fieldName,
-                        next.toList(),
+                        selected.toList(),
                         isUserInteraction: true,
                       );
                     },
@@ -832,6 +824,95 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
           );
         }
         break;
+
+      case 'custom_horizontal_bullets':
+        List<String> bulletItems = [];
+        if (input.optionItems != null && input.optionItems!.isNotEmpty) {
+          bulletItems = input.optionItems!.map((e) => e.label ?? '').toList();
+        } else if (input.options != null && input.options!.isNotEmpty) {
+          bulletItems = input.options!;
+        }
+
+        fieldWidget = CustomHorizontalBullets(
+          items: bulletItems,
+          textStyle: AppTextStyle.description(),
+        );
+        break;
+
+      case 'custom_input_plus_minus':
+        // logic to parse min/max from validations
+        int? minVal;
+        int? maxVal;
+        if (input.validations != null) {
+          for (var v in input.validations!) {
+            if (v.type == 'min') {
+              if (v.value != null) {
+                minVal = v.value;
+              } else if (v.stringValue != null) {
+                minVal = int.tryParse(v.stringValue!);
+              }
+            }
+            if (v.type == 'max') {
+               if (v.value != null) {
+                maxVal = v.value;
+              } else if (v.stringValue != null) {
+                maxVal = int.tryParse(v.stringValue!);
+              }
+            }
+          }
+        }
+
+        int qty = int.tryParse(currentValue?.toString() ?? '0') ?? 0;
+        // If value is null/empty, maybe initialize from input.value or default to 0/1 depending on logic
+        // But here we rely on currentValue which is from formData
+        if (currentValue == null && input.value != null) {
+           qty = int.tryParse(input.value.toString()) ?? 0;
+        }
+
+        // Parse initial value from input configuration
+        int initialVal = 0;
+        if (input.value != null) {
+           initialVal = int.tryParse(input.value.toString()) ?? 0;
+        }
+
+        fieldWidget = CustomInputPlusMinus(
+          label: label,
+          value: qty.toString(),
+          showCurrency: false, 
+          onIncrease: () {
+            // Check max
+            if (maxVal != null && qty >= maxVal) return;
+            
+            int newQty = qty + 1;
+            _handleFieldChanged(fieldName, newQty, isUserInteraction: true);
+          },
+          onDecrease: () {
+            // Determine effective minimum
+            // The user requested that values should not go below the initial value provided in the dynamic design
+            // So we treat initialVal as a hard floor. 
+            // We also respect minVal from validations if it exists and is higher than initialVal (though usually validations set the constraints).
+            
+            int floorVal = initialVal;
+            if (minVal != null) {
+              // If validations provided a min, use the larger of the two to be safe, or just respect validation?
+              // User said "value (dynamic value) se minus nahi hona chaie".
+              // So if initial is 5, and min validation says 1, we still stop at 5.
+              if (minVal! > floorVal) {
+                 floorVal = minVal!;
+              }
+            } else {
+               // If no min validation, ensure we don't go below 0 at least, or initialVal
+               if (floorVal < 0) floorVal = 0;
+            }
+
+            if (qty <= floorVal) return;
+
+            int newQty = qty - 1;
+            _handleFieldChanged(fieldName, newQty, isUserInteraction: true);
+          },
+        );
+        break;
+
       case 'radio':
         List<String> labels = [];
         List<String> values = [];

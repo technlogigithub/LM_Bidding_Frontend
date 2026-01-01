@@ -8,6 +8,7 @@ import 'package:video_player/video_player.dart';
 import 'package:shimmer/shimmer.dart';
 import '../core/app_color.dart';
 import '../core/app_imagetype_helper.dart';
+import '../core/app_images.dart';
 import 'custom_auto_image_handle.dart';
 
 class CustomBannerWithVideo extends StatefulWidget {
@@ -84,16 +85,13 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
 
   // ************ SHIMMER WIDGET ************
   Widget _buildShimmer() {
-    return Shimmer.fromColors(
-      baseColor: AppColors.appMutedColor,
-      highlightColor: AppColors.appMutedTextColor,
-      child: Container(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(widget.borderRadius.r),
+      child: Image.asset(
+        AppImage.placeholder,
         height: widget.height.h,
         width: widget.width.w,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(widget.borderRadius.r),
-          color: Colors.white,
-        ),
+        fit: BoxFit.cover,
       ),
     );
   }
@@ -125,6 +123,10 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
     }
 
     final controller = videoControllers[videoIndex];
+
+    if (controller.value.hasError) {
+       return Image.asset(AppImage.placeholder, fit: BoxFit.cover, height: widget.height.h, width: widget.width.w);
+    }
 
     if (!controller.value.isInitialized) {
       return _buildShimmer();
@@ -160,6 +162,20 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
 
   // ************ IMAGE WITH SHIMMER ************
   Widget _buildImageContainer(String imageUrl, String? redirectUrl) {
+    if (imageUrl.isEmpty) {
+      return GestureDetector(
+        onTap: () {
+          if (redirectUrl != null && redirectUrl.isNotEmpty) {
+             // handle redirect
+          }
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(widget.borderRadius.r),
+          child: Image.asset(AppImage.placeholder, fit: BoxFit.cover, height: widget.height.h, width: widget.width.w),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         if (redirectUrl != null && redirectUrl.isNotEmpty) {
@@ -179,7 +195,7 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
             return _buildShimmer(); // 🔥 Shimmer while image loads
           },
           errorBuilder: (context, error, stackTrace) {
-            return Image.asset(widget.fallbackImage, fit: BoxFit.cover);
+            return Image.asset(AppImage.placeholder, fit: BoxFit.cover);
           },
         ),
       ),

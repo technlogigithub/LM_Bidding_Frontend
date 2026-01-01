@@ -3,6 +3,7 @@ import 'package:libdding/widget/post_detail_screen.dart';
 import '../controller/post/get_post_details_controller.dart';
 import '../models/static models/service_items_model.dart';
 import '../view/Post_new_screen/post_new_screen.dart';
+import '../view/post_details_service/cart_screen.dart';
 import '../view/profile_screens/My Posts/Post_Details_screen.dart';
 
 import '../view/Onboard_screen/onboard_screen.dart';
@@ -106,6 +107,11 @@ class CustomNavigator {
       case "post_new_screen":
         Get.to(() => const PostNewScreen());
         break;
+
+      case "cart_screen":
+        Get.to(() => const CartScreen());
+        break;
+
 
 
       case "post_detail_screen":

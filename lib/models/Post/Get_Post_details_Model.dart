@@ -1,3 +1,5 @@
+import '../App_moduls/AppResponseModel.dart';
+
 class PostDetailsResponseModel {
   int? responseCode;
   bool? success;
@@ -24,6 +26,7 @@ class Result {
   HtmlDetails? htmlDetails;
   List<DetailsTab>? detailsTab;
   List<Others>? others;
+  List<SubmitButton>? submitButton;
 
   Result.fromJson(Map<String, dynamic> json) {
     hidden = json['hidden'] != null ? Hidden.fromJson(json['hidden']) : null;
@@ -35,6 +38,7 @@ class Result {
     htmlDetails = json['html_details'] != null ? HtmlDetails.fromJson(json['html_details']) : null;
     detailsTab = (json['details_tab'] as List?)?.map((e) => DetailsTab.fromJson(e)).toList();
     others = (json['others'] as List?)?.map((e) => Others.fromJson(e)).toList();
+    submitButton = (json['submit_button'] as List?)?.map((e) => SubmitButton.fromJson(e)).toList();
   }
 }
 
@@ -208,6 +212,7 @@ class Others {
   String? pageImage;
   String? title;
   String? description;
+  dynamic design;
 
   Others.fromJson(Map<String, dynamic> json) {
     bgColor = json['bg_color'];
@@ -225,5 +230,96 @@ class Others {
     pageImage = json['page_image'];
     title = json['title'];
     description = json['description'];
+    design = json['design'];
+  }
+}
+
+// ================= Submit Button =================
+
+class SubmitButton {
+  String? bgColor;
+  String? bgImg;
+  String? label;
+  bool? isActive;
+  bool? loginRequired;
+  String? apiEndpoint;
+  String? viewType;
+  String? viewAllLabel;
+  String? viewAllNextPage;
+  String? nextPageName;
+  String? nextPageApiEndpoint;
+  String? nextPageViewType;
+  String? pageImage;
+  String? title;
+  String? description;
+  SubmitButtonDesign? design;
+
+  SubmitButton({
+    this.bgColor,
+    this.bgImg,
+    this.label,
+    this.isActive,
+    this.loginRequired,
+    this.apiEndpoint,
+    this.viewType,
+    this.viewAllLabel,
+    this.viewAllNextPage,
+    this.nextPageName,
+    this.nextPageApiEndpoint,
+    this.nextPageViewType,
+    this.pageImage,
+    this.title,
+    this.description,
+    this.design,
+  });
+
+  SubmitButton.fromJson(Map<String, dynamic> json) {
+    bgColor = json['bg_color'];
+    bgImg = json['bg_img'];
+    label = json['label'];
+    isActive = json['is_active'];
+    loginRequired = json['login_required'];
+    apiEndpoint = json['api_endpoint'];
+    viewType = json['view_type'];
+    viewAllLabel = json['view_all_label'];
+    viewAllNextPage = json['view_all_next_page'];
+    nextPageName = json['next_page_name'];
+    nextPageApiEndpoint = json['next_page_api_endpoint'];
+    nextPageViewType = json['next_page_view_type'];
+    pageImage = json['page_image'];
+    title = json['title'];
+    description = json['description'];
+    description = json['description'];
+    if (json['design'] != null && json['design'] is Map<String, dynamic>) {
+      design = SubmitButtonDesign.fromJson(json['design']);
+    }
+  }
+}
+
+class SubmitButtonDesign {
+  String? countdown;
+  List<RegisterInput>? inputs;
+
+  SubmitButtonDesign({this.countdown, this.inputs});
+
+  SubmitButtonDesign.fromJson(Map<String, dynamic> json) {
+    countdown = json['countdown'];
+    if (json['inputs'] != null) {
+      inputs = [];
+      if (json['inputs'] is List) {
+        (json['inputs'] as List).forEach((v) {
+          inputs!.add(RegisterInput.fromJson(v));
+        });
+      }
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['countdown'] = countdown;
+    if (inputs != null) {
+      data['inputs'] = inputs!.map((v) => v.toJson()).toList();
+    }
+    return data;
   }
 }
