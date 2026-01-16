@@ -1,20 +1,27 @@
 import 'package:get/get.dart';
 import 'package:libdding/widget/post_detail_screen.dart';
+import '../controller/post/get_post_details_controller.dart';
+import '../models/static models/service_items_model.dart';
 import '../view/Post_new_screen/post_new_screen.dart';
-import '../view/post_details_service/cart_screen.dart';
+import '../view/profile_screens/My Posts/Post_Details_screen.dart';
+
 import '../view/Onboard_screen/onboard_screen.dart';
 import '../view/splash_screen/splash_screen.dart';
 import '../view/language_selection/language_selection_screen.dart';
 import '../view/force_update/force_update_screen.dart';
+
 import '../view/auth/create_account_screen.dart';
 import '../view/auth/login_screen.dart';
 import '../view/auth/otp_varification_screen.dart';
 import '../view/auth/login_with_mobile_number_screen.dart';
+
 import '../view/Home_screen/home_screen.dart';
 import '../view/Home_screen/recently_post_screen.dart';
 import '../view/Home_screen/select_categories_screen.dart';
+
 import '../view/notifications/notifications_screen.dart';
 import '../view/notifications/notification_detail_screen.dart';
+
 import '../view/search_filter_post/search_filter_screen.dart';
 import '../view/Home_screen/search_history_screen.dart';
 
@@ -100,9 +107,6 @@ class CustomNavigator {
         Get.to(() => const PostNewScreen());
         break;
 
-      case "cart_screen":
-        Get.to(() => const CartScreen());
-        break;
 
       case "post_detail_screen":
         String? ukey;
