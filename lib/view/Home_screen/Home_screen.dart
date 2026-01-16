@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
         width: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.grey.shade300,
+          color: AppColors.simmerColor,
         ),
       );
     }
@@ -66,7 +66,7 @@ class HomeScreen extends StatelessWidget {
         height: height,
         width: width,
         decoration: BoxDecoration(
-          color: Colors.grey.shade300,
+          color: AppColors.simmerColor,
           borderRadius: BorderRadius.circular(4),
         ),
       );
