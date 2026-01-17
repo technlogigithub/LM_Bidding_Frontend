@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:libdding/controller/app_main/App_main_controller.dart';
-import 'package:nb_utils/nb_utils.dart';
-
+import 'package:libdding/view/profile_screens/My%20Posts/my_post_details_screen.dart';
 import '../../../controller/post/My_Post_controller.dart';
 import '../../../controller/post/get_post_details_controller.dart';
 import '../../../core/app_color.dart';
@@ -12,7 +10,6 @@ import '../../../models/App_moduls/AppResponseModel.dart';
 import '../../../widget/custom_tapbar.dart';
 import '../../../widget/custom_view_widget.dart';
 import '../../../widget/custom_navigator.dart';
-import 'Post_Details_screen.dart';
 
 class MyPostScreen extends StatelessWidget {
   const MyPostScreen({super.key});
@@ -155,8 +152,9 @@ class MyPostScreen extends StatelessWidget {
                       controller: controller.appPostController,
                       statusValue: controller.selectedStatusValue.value,
                       onItemTap: (String ukey) {
-                        Get.find<GetPostDetailsController>().getPostDetails(ukey);
-                        CustomNavigator.navigate("post_detail_screen");
+                        Get.to(() => const MyPostDetailsScreen());
+                        // Get.find<GetPostDetailsController>().getPostDetails(ukey); Here Not Need to Call API Directly
+                        // CustomNavigator.navigate("post_detail_screen",arguments: ukey,);
                       },
                       // Optional callbacks for other view types
                       onFavoriteToggle: (index, isFavorite) {

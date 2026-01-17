@@ -12,6 +12,7 @@ class GetPostDetailsController extends GetxController {
 
   Future<void> getPostDetails(String postId) async {
     isLoading.value = true;
+    getPostDetailsModel.value = null;
     try {
       print("🚀 getPostDetails called for postId: $postId");
 
