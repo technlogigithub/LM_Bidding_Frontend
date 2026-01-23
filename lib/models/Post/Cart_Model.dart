@@ -149,13 +149,8 @@ class InputFields {
   ButtonInput? checkbox;
 
   InputFields.fromJson(Map<String, dynamic> json) {
-    button =
-    json['button'] != null ? ButtonInput.fromJson(json['button']) : null;
-    checkbox = json['checkbox'] != null
-        ? ButtonInput.fromJson(json['checkbox'])
-        : null;
+       }
   }
-}
 class ButtonInput {
   String? inputType;
   String? label;

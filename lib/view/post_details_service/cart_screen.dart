@@ -45,11 +45,6 @@ class _CartScreenState extends State<CartScreen> {
   final controller = Get.find<GetPostDetailsController>();
   Map<String, dynamic>? tempAddress;
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeAddress();
-  }
 
   void _initializeAddress() {
     final addressData = controller.cartResponseModel.value?.result?.first.address;
@@ -149,216 +144,20 @@ class _CartScreenState extends State<CartScreen> {
           gradient: AppColors.appPagecolor
         ),
         child: SingleChildScrollView(
-          // physics: const BouncingScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Address Section
-                if (tempAddress != null)
-                  _buildAddressCard(tempAddress!, 0),
-                const SizedBox(height: 15.0),
+               final cartResult = controller.cartResponseModel.value?.result?.firstOrNull;
 
-                Obx(() {
-                  final cartResult = controller.cartResponseModel.value?.result?.firstOrNull;
-                  final item = cartResult?.items;
-                  final info = cartResult?.info;
+               return Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                   
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (item != null)
-                        Container(
-                          height: 120.h,
-                          decoration: BoxDecoration(
-                            gradient: AppColors.appPagecolor,
-                            borderRadius: BorderRadius.circular(8.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.appMutedColor,
-                                blurRadius: 5,
-                                spreadRadius: 1,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Stack(
-                                alignment: Alignment.topLeft,
-                                children: [
-                                  Container(
-                                    height: 120,
-                                    width: 120,
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.only(
-                                        bottomLeft: Radius.circular(8.0),
-                                        topLeft: Radius.circular(8.0),
-                                      ),
-                                      image: DecorationImage(
-                                          image: AssetImage(
-                                            '${AppImage.shot}',
-                                          ),
-                                          fit: BoxFit.cover),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        isFavorite = !isFavorite;
-                                      });
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: Container(
-                                        height: 25,
-                                        width: 25,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black12,
-                                              blurRadius: 10.0,
-                                              spreadRadius: 1.0,
-                                              offset: Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                        child: isFavorite
-                                            ? const Center(
-                                                child: Icon(
-                                                  Icons.favorite,
-                                                  color: Colors.red,
-                                                  size: 16.0,
-                                                ),
-                                              )
-                                            : Center(
-                                                child: Icon(
-                                                  Icons.favorite_border,
-                                                  color: AppColors.neutralColor,
-                                                  size: 16.0,
-                                                ),
-                                              ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: SizedBox(
-                                        width: 190,
-                                        child: Text(
-                                          item.title ?? '',
-                                          style: AppTextStyle.title(),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5.0),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                        const Icon(
-                                          IconlyBold.star,
-                                          color: Colors.amber,
-                                          size: 18.0,
-                                        ),
-                                        const SizedBox(width: 2.0),
-                                        Text(
-                                          '5.0',
-                                          style: AppTextStyle.kTextStyle.copyWith(
-                                            color: AppColors.appTitleColor,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 2.0),
-                                        Text(
-                                          '(520)',
-                                          style: AppTextStyle.kTextStyle.copyWith(
-                                            color: AppColors.textgrey,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 5.0),
-                                    if (info?.netPayable != null)
-                                      RichText(
-                                        text: TextSpan(
-                                          text: 'Price: ',
-                                          style: AppTextStyle.description(),
-                                          children: [
-                                            TextSpan(
-                                                text: '${AppStrings.currencySign}${info?.netPayable}',
-                                                style: AppTextStyle.description(
-                                                    color: AppColors.appColor, fontWeight: FontWeight.bold))
-                                          ],
-                                        ),
-                                      )
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      const SizedBox(height: 15.0),
-
-
-                      const SizedBox(height: 20.0),
-                      Text('Payment Method', style: AppTextStyle.title()),
-                      const SizedBox(height: 20.0),
-                      ListView.builder(
-                        itemCount: paymentMethod.length,
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (_, i) {
-                          return CustomPaymentRadioButton(
-                            title: paymentMethod[i],
-                            image: imageList[i],
-                            isSelected: selectedPaymentMethod == paymentMethod[i],
-                            onTap: () {
-                              setState(() {
-                                selectedPaymentMethod = paymentMethod[i];
-                              });
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20.0),
-                      Text('Order Summary', style: AppTextStyle.title()),
-                      const SizedBox(height: 20.0),
-                      if (info?.rawData != null)
-                        ...info!.rawData!.entries.map((entry) {
-                          return Column(
-                            children: [
-                              customrow(entry.key, "${AppStrings.currencySign}${entry.value}"),
-                              const SizedBox(height: 10.0),
-                            ],
-                          );
-                        }).toList()
-                      else ...[
-                        // customrow("Subtotal", "${AppStrings.currencySign}${30}"),
-                        // const SizedBox(height: 10.0),
-                        // customrow("Service Fee", "${AppStrings.currencySign}${5.50}"),
-                        // const SizedBox(height: 10.0),
-                        // customrow("Total", "${AppStrings.currencySign}${35.50}"),
-                        const SizedBox(height: 10.0),
-                      ],
-                      const SizedBox(height: 10.0),
-                    ],
-                  );
-                }),
-              ],
-            ),
+                     return Column(
+                       children: [
+                       ],
+                     );
+               );
+            }),
           ),
         ),
       ),

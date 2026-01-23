@@ -18,6 +18,8 @@ import 'category_vertical_list_widget.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import '../core/app_textstyle.dart';
 import '../core/app_color.dart';
+import '../core/app_images.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import '../view/Home_screen/search_history_screen.dart';
 import 'custom_tapbar.dart';
 
@@ -50,6 +52,8 @@ class CustomViewWidget extends StatelessWidget {
     this.viewAllNextPage,
     this.nextPageName,
     this.nextPageViewType,
+    this.itemData,
+    this.itemDataList,
   });
 
   final String type;
@@ -96,6 +100,8 @@ class CustomViewWidget extends StatelessWidget {
   final String? viewAllNextPage;
   final String? nextPageName;
   final String? nextPageViewType;
+  final Map<String, dynamic>? itemData;
+  final List<dynamic>? itemDataList;
 
   @override
   Widget build(BuildContext context) {
@@ -415,6 +421,182 @@ class CustomViewWidget extends StatelessWidget {
             nextPageViewType: nextPageViewType,
           );
         });
+
+      case "custom_detail_screen":
+         if (itemData == null) return const SizedBox.shrink();
+         
+         final info = itemData!['info'];
+         final actionButtons = itemData!['action_button'] as List?;
+
+         return Column(
+           children: [
+             Container(
+               margin: const EdgeInsets.only(bottom: 15),
+               height: 120, // using fixed height instead of .h for safety if screenutil not init
+               decoration: BoxDecoration(
+                 gradient: AppColors.appPagecolor,
+                 borderRadius: BorderRadius.circular(8.0),
+                 boxShadow: [
+                   BoxShadow(
+                     color: AppColors.appMutedColor,
+                     blurRadius: 5,
+                     spreadRadius: 1,
+                     offset: const Offset(0, 10),
+                   ),
+                 ],
+               ),
+               child: Row(
+                 mainAxisAlignment: MainAxisAlignment.start,
+                 children: [
+                   Stack(
+                     alignment: Alignment.topLeft,
+                     children: [
+                       Container(
+                         height: 120,
+                         width: 120,
+                         decoration: BoxDecoration(
+                           borderRadius: const BorderRadius.only(
+                             bottomLeft: Radius.circular(8.0),
+                             topLeft: Radius.circular(8.0),
+                           ),
+                           image: DecorationImage(
+                               image: AssetImage(
+                                 'assets/images/shot.png', // Fallback or use AppImage if imported. Using literal to be safe or assuming AppImage is available 
+                               ),
+                               fit: BoxFit.cover),
+                         ),
+                       ),
+                       GestureDetector(
+                         onTap: () {
+                           if (onFavoriteToggle != null) {
+                             // Pass dummy index 0 and toggle value
+                             onFavoriteToggle!(0, !(info['favorite'] ?? false));
+                           }
+                         },
+                         child: Padding(
+                           padding: const EdgeInsets.all(5.0),
+                           child: Container(
+                             height: 25,
+                             width: 25,
+                             decoration: const BoxDecoration(
+                               color: Colors.white,
+                               shape: BoxShape.circle,
+                               boxShadow: [
+                                 BoxShadow(
+                                   color: Colors.black12,
+                                   blurRadius: 10.0,
+                                   spreadRadius: 1.0,
+                                   offset: Offset(0, 2),
+                                 ),
+                               ],
+                             ),
+                             child: (info['favorite'] == true)
+                                 ? const Center(
+                                     child: Icon(
+                                       Icons.favorite,
+                                       color: Colors.red,
+                                       size: 16.0,
+                                     ),
+                                   )
+                                 : Center(
+                                     child: Icon(
+                                       Icons.favorite_border,
+                                       color: AppColors.neutralColor,
+                                       size: 16.0,
+                                     ),
+                                   ),
+                           ),
+                         ),
+                       ),
+                     ],
+                   ),
+                   Padding(
+                     padding: const EdgeInsets.all(5.0),
+                     child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       mainAxisSize: MainAxisSize.min,
+                       children: [
+                         Flexible(
+                           child: SizedBox(
+                             width: 190,
+                             child: Text(
+                               info['title']?.toString() ?? '',
+                               style: AppTextStyle.title(),
+                               maxLines: 2,
+                               overflow: TextOverflow.ellipsis,
+                             ),
+                           ),
+                         ),
+                         const SizedBox(height: 5.0),
+                         Row(
+                           mainAxisAlignment: MainAxisAlignment.start,
+                           children: [
+                             const Icon(
+                               IconlyBold.star,
+                               color: Colors.amber,
+                               size: 18.0,
+                             ),
+                             const SizedBox(width: 2.0),
+                             Text(
+                               '5.0', // Static or fetch from info['rating_review'] (parsing needed)
+                               style: AppTextStyle.description().copyWith( // AppTextStyle.kTextStyle replaced assuming description is safe fallback
+                                 color: AppColors.appTitleColor,
+                               ),
+                             ),
+                             const SizedBox(width: 2.0),
+                             Text(
+                               info['rating_review'] != null ? '(${info['rating_review']})' : '(520)',
+                               style: AppTextStyle.description().copyWith(
+                                 color: AppColors.textgrey,
+                               ),
+                             ),
+                           ],
+                         ),
+                         const SizedBox(height: 5.0),
+                         if (info['price'] != null)
+                           RichText(
+                             text: TextSpan(
+                               text: 'Price: ',
+                               style: AppTextStyle.description(),
+                               children: [
+                                 TextSpan(
+                                     text: '\$${info['price']}', // Hardcoded currency sign or pass it
+                                     style: AppTextStyle.description(
+                                         color: AppColors.appColor, fontWeight: FontWeight.bold))
+                               ],
+                             ),
+                           )
+                       ],
+                     ),
+                   ),
+                 ],
+               ),
+             ),
+             
+             // Render Action Buttons (like Custom Tapbar)
+             if (actionButtons != null)
+                ...actionButtons.map((btn) {
+                   if (btn['view_type'] == 'custom_tapbar') {
+                      List<String> tabs = [];
+                      if (btn['design'] != null && 
+                          btn['design']['inputs'] != null && 
+                          btn['design']['inputs']['select'] != null &&
+                          btn['design']['inputs']['select']['options'] != null) {
+                            final opts = btn['design']['inputs']['select']['options'] as List;
+                            tabs = opts.map((e) => e['label'].toString()).toList();
+                      }
+                      
+                      return CustomViewWidget(
+                        type: 'custom_tapbar',
+                        tabOptions: tabs,
+                        label: btn['label'],
+                        // Pass other props if needed
+                      );
+                   }
+                   return const SizedBox.shrink();
+                }).toList(),
+           ],
+         );
 
       default:
         debugPrint("❌ Unknown widget type: ${type}");
