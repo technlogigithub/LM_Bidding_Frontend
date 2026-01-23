@@ -837,11 +837,11 @@ class PostFormController extends GetxController {
       final userKey = prefs.getString('ukey');
 
       if (token == null) {
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'Authentication token not found',
-        );
+        // Utils.showSnackbar(
+        //   isSuccess: false,
+        //   title: 'Error',
+        //   message: 'Authentication token not found',
+        // );
 
         return false;
       }
@@ -1396,7 +1396,7 @@ class PostFormController extends GetxController {
       // ... (Logging)
 
       if (token == null) {
-        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Authentication token not found');
+        // Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Authentication token not found');
         isLoadingForm.value = false;
         return;
       }

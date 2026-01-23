@@ -63,6 +63,8 @@ class OtpController extends GetxController {
   }
 
   Future<void> submitOtp() async {
+    if (isLoading.value) return; // Prevent double submission
+
     String pin = pinController.text.trim();
 
     // Read dynamic verify_otp rules
@@ -145,10 +147,14 @@ class OtpController extends GetxController {
         homecontroller.checkLoginStatus();
         appController.fetchAppContent();
         profilecontroller.fetchProfileDetails();
-        toast("OTP verified successfully");
+        
+        // toast("OTP verified successfully");
+        
+        // Slight delay to ensure toast is visible before navigation
+        await Future.delayed(const Duration(milliseconds: 500));
+        
         Utils.gotoNextPage(() => BottomNavigationScreen());
-        // Navigate to Home
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ClientHome()));
+        
       } else {
         toast(response['message'] ?? "OTP verification failed");
       }

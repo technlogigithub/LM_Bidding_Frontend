@@ -45,6 +45,7 @@ class CustomTextfield extends StatelessWidget {
     this.onSubmitted,
     this.readOnly = false,       // 🔹
     this.onTap,                 // 🔹
+
   });
 
   @override

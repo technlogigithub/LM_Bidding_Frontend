@@ -12,13 +12,30 @@ import '../../core/app_textstyle.dart';
 import '../../widget/app_image_handle.dart';
 import '../../widget/form_widgets/app_button.dart';
 
-class OtpVarificationScreen extends StatelessWidget {
+class OtpVarificationScreen extends StatefulWidget {
   final String mobile;
+  final String? otp;
+
+  const OtpVarificationScreen({super.key, required this.mobile, this.otp});
+
+  @override
+  State<OtpVarificationScreen> createState() => _OtpVarificationScreenState();
+}
+
+class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
   final OtpController controller = Get.put(OtpController());
   static final controllerApp = Get.put(AppSettingsController());
 
-  OtpVarificationScreen({super.key, required this.mobile}) {
-    controller.setMobile(mobile); // store mobile in controller
+  @override
+  void initState() {
+    super.initState();
+    controller.setMobile(widget.mobile);
+    if (widget.otp != null && widget.otp!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.pinController.text = widget.otp!;
+        controller.submitOtp();
+      });
+    }
   }
 
   @override
@@ -27,7 +44,6 @@ class OtpVarificationScreen extends StatelessWidget {
     final height = Get.height;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-
 
     return Scaffold(
       appBar: AppBar(
@@ -55,17 +71,9 @@ class OtpVarificationScreen extends StatelessWidget {
 
           ),
           child: Column(
-
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // GestureDetector(
-              //   onTap: () => Navigator.pop(context),
-              //   child: const Padding(
-              //     padding: EdgeInsets.only(left: 10.0),
-              //     child: Icon(Icons.arrow_back),
-              //   ),
-              // ),
               Center(
                 child: Column(
                   children: [
@@ -77,8 +85,6 @@ class OtpVarificationScreen extends StatelessWidget {
                         fit: BoxFit.contain,
                       ),
                     ),
-                    // SizedBox(height: screenHeight*0.01,),
-                    // Text(controllerApp.appName.toString(),style: TextStyle(color: AppColors.appTextColor,fontWeight: FontWeight.bold,fontSize: screenWidth*0.07),)
                   ],
                 ),
               ),
@@ -114,7 +120,7 @@ class OtpVarificationScreen extends StatelessWidget {
                 }),
                 SizedBox(height: height * 0.005),
                 Text(
-                  mobile,
+                  widget.mobile,
                   style: AppTextStyle.title(
                     color: AppColors.appTitleColor,
                     fontWeight: FontWeight.bold,
@@ -137,6 +143,7 @@ class OtpVarificationScreen extends StatelessWidget {
                   }
                   return Pinput(
                     length: length,
+                    autofillHints: const [AutofillHints.oneTimeCode],
                     controller: controller.pinController,
                     defaultPinTheme: PinTheme(
                       width: width * 0.15,

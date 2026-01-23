@@ -17,7 +17,7 @@ import '../home/home_controller.dart';
 import '../profile/profile_controller.dart';
 
 
-class AuthController extends GetxController {
+class AuthController extends GetxController with WidgetsBindingObserver {
   var mobile = ''.obs;
   var password = ''.obs;
   var hidePassword = true.obs;
@@ -43,12 +43,27 @@ class AuthController extends GetxController {
   Map<String, TextEditingController> fieldControllers = {};
 
 
+  var countryCode = '+91'.obs; // Default country code
+
   @override
   void onInit() {
-    // TODO: implement onInit
-    initMobileNumber();
-    // loadSavedCredentials();
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+    initMobileNumber(); 
+    // loadSavedCredentials();
+  }
+
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.onClose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      fetchSimData();
+    }
   }
   /// ✅ Login API
   Future<void> loginApi(BuildContext context,) async {
@@ -71,6 +86,7 @@ class AuthController extends GetxController {
         body: {
           "mobile_no": mobileController.text.trim(),
           "password": passwordController.text.trim(),
+          "country_code": countryCode.value,
         },
       );
 
@@ -166,10 +182,20 @@ class AuthController extends GetxController {
       if (!permissionGranted) {
         print('Permission Granted 0...');
         await MobileNumber.requestPhonePermission;
-        permissionGranted = await MobileNumber.hasPhonePermission;
-        print('Permission Granted 1...');
       }
+      // Attempt to fetch data immediately (in case permission was already granted or sync)
+      await fetchSimData();
+    } catch (e) {
+      print("Error in initMobileNumber: $e");
+    }
+  }
 
+  /// ✅ Fetch SIM Data (Separated Logic)
+  Future<void> fetchSimData() async {
+    try {
+      if (mobileController.text.isNotEmpty) return; // Don't overwrite if already set
+
+      bool permissionGranted = await MobileNumber.hasPhonePermission;
       if (permissionGranted) {
         print('Permission Granted 2...');
         List<SimCard>? simCards = await MobileNumber.getSimCards;
@@ -198,7 +224,9 @@ class AuthController extends GetxController {
               print("Single SIM Number Loaded: ${availableSimNumbers[0]}");
             } else {
               // Show dialog to select a number
-              showMobileNumberSelectionDialog();
+              if (!(Get.isDialogOpen ?? false)) {
+                 showMobileNumberSelectionDialog();
+              }
             }
           } else {
             print("No valid SIM numbers found.");
@@ -207,11 +235,11 @@ class AuthController extends GetxController {
           print("No SIM cards detected.");
         }
       } else {
-        toast("Phone permission denied.");
+        // print("Phone permission not granted yet.");
       }
     } catch (e) {
       print("Cannot read SIM numbers: $e");
-      toast("Error accessing SIM numbers: $e");
+      // toast("Error accessing SIM numbers: $e");
     }
   }
 
@@ -267,6 +295,7 @@ class AuthController extends GetxController {
           "mobile_no": mobileController.text.trim(),
           "password": passwordController.text.trim(),
           "password_confirmation": confirmPasswordController.text.trim(),
+          "country_code": countryCode.value,
         },
       );
 
@@ -278,7 +307,10 @@ class AuthController extends GetxController {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => OtpVarificationScreen(mobile: mobileController.text.trim()),
+            builder: (context) => OtpVarificationScreen(
+              mobile: mobileController.text.trim(),
+              otp: otp.toString(),
+            ),
           ),
         );
       } else {
@@ -307,7 +339,8 @@ class AuthController extends GetxController {
         endPoint: AppConstants.loginwithotp,
         method: "POST",
         body: {
-          "mobile_no": mobileNo
+          "mobile_no": mobileNo,
+          "country_code": countryCode.value,
 
         },
       );
@@ -323,7 +356,10 @@ class AuthController extends GetxController {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => OtpVarificationScreen(mobile: mobileNo),
+            builder: (context) => OtpVarificationScreen(
+              mobile: mobileNo,
+              otp: otp.toString(),
+            ),
           ),
         );
 

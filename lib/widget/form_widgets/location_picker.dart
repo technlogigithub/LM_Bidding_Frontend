@@ -18,11 +18,13 @@ import 'app_textfield.dart';
 class LocationPickerScreen extends StatefulWidget {
   final double initialLat;
   final double initialLng;
+  final Function(LatLng, String)? onLocationSelected;
 
   const LocationPickerScreen({
     Key? key,
     required this.initialLat,
     required this.initialLng,
+    this.onLocationSelected,
   }) : super(key: key);
 
   @override
@@ -108,8 +110,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           setState(() {
             selectedLocation = newLocation;
             _searchController.text = data['result']['formatted_address'];
+            selectedAddress = data['result']['formatted_address'];
           });
-          await _getAddressFromLatLng(newLocation);
+          
           mapController?.animateCamera(
             CameraUpdate.newCameraPosition(
               CameraPosition(target: newLocation, zoom: 15),
@@ -301,12 +304,19 @@ decoration: BoxDecoration(
             const SizedBox(height: 10),
             CustomButton(
               onTap: (){
-              Get.find<ClientHomeController>().updateLocation(
-                selectedLocation!,
-                selectedAddress ?? '',
-              );
-              Get.back();
-            }, text: AppStrings.select,),
+                if (widget.onLocationSelected != null) {
+                  widget.onLocationSelected!(selectedLocation!, selectedAddress ?? '');
+                  Get.back();
+                  return;
+                }
+                Get.find<ClientHomeController>().updateLocation(
+                  selectedLocation!,
+                  selectedAddress ?? '',
+                );
+                Get.back();
+              }, 
+              text: AppStrings.select,
+            ),
           ],
         ),
       )

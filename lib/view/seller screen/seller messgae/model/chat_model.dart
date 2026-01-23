@@ -14,6 +14,8 @@ class ChatModel {
 class InboxData {
   int? id;
   String? message;
+  String? type;
 
-  InboxData({this.id, this.message});
+  InboxData({this.id, this.message, this.type});
 }
+

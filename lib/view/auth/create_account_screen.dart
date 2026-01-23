@@ -11,10 +11,12 @@ import 'package:flutter/services.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/auth/auth_controller.dart';
 import '../../core/utils.dart';
+import '../../core/input_formatters.dart';
 import '../../widget/app_image_handle.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/app_social_icons.dart';
 import '../../widget/form_widgets/app_textfield.dart';
+import '../../widget/form_widgets/custom_mobile_number_textfield.dart';
 import '../../widget/form_widgets/custom_textarea.dart';
 import '../../widget/form_widgets/custom_toggle.dart';
 import '../../widget/form_widgets/custom_radio_group.dart';
@@ -194,29 +196,39 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               }
                               final isMobile = lname == 'username' || lname.contains('mobile') || lname.contains('phone');
 
-                              widgets.add(CustomTextfield(
-                                label: label,
-                                hintText: hint,
-                                controller: selectedController,
-                                obscureText: type == 'password' ? (_passwordObscure[name] ?? true) : false,
-                                isRequired: field.required ?? false,
-                                keyboardType: isMobile || hasNumeric ? TextInputType.number : TextInputType.text,
-                                maxLength: isMobile ? (exactLen ?? 10) : exactLen,
-                                inputFormatters: (isMobile || hasNumeric)
-                                    ? [FilteringTextInputFormatter.digitsOnly]
-                                    : null,
-                                suffixIcon: type == 'password'
-                                    ? IconButton(
-                                        onPressed: () {
-                                          setState(() => _passwordObscure[name] = !(_passwordObscure[name] ?? true));
-                                        },
-                                        icon: Icon(
-                                          (_passwordObscure[name] ?? true) ? Icons.visibility_off : Icons.visibility,
-                                          color: AppColors.appIconColor,
-                                        ),
-                                      )
-                                    : null,
-                              ));
+                              if (isMobile) {
+                                widgets.add(CustomMobileNumberTextField(
+                                  label: label,
+                                  hintText: hint,
+                                  controller: selectedController,
+                                  isRequired: field.required ?? false,
+                                  onCountryChanged: (code) => controller.countryCode.value = code,
+                                ));
+                              } else {
+                                widgets.add(CustomTextfield(
+                                  label: label,
+                                  hintText: hint,
+                                  controller: selectedController,
+                                  obscureText: type == 'password' ? (_passwordObscure[name] ?? true) : false,
+                                  isRequired: field.required ?? false,
+                                  keyboardType: hasNumeric ? TextInputType.number : TextInputType.text,
+                                  maxLength: exactLen,
+                                  inputFormatters: hasNumeric
+                                      ? [FilteringTextInputFormatter.digitsOnly]
+                                      : null,
+                                  suffixIcon: type == 'password'
+                                      ? IconButton(
+                                          onPressed: () {
+                                            setState(() => _passwordObscure[name] = !(_passwordObscure[name] ?? true));
+                                          },
+                                          icon: Icon(
+                                            (_passwordObscure[name] ?? true) ? Icons.visibility_off : Icons.visibility,
+                                            color: AppColors.appIconColor,
+                                          ),
+                                        )
+                                      : null,
+                                ));
+                              }
                               widgets.add(SizedBox(height: 16.h));
                               break;
                             case 'textarea':

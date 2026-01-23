@@ -11,8 +11,8 @@ class RazorpayService {
   // Static Razorpay Key (Demo purpose - replace with your actual key)
   // For testing, you can use Razorpay's test keys
   static const String _razorpayKey = 'rzp_test_1DP5mmOlF5G5ag'; // Replace with your actual Razorpay key
-  AppSettingsController appController = Get.put(AppSettingsController());
-  AppSettingsController appSettingsController = Get.put(AppSettingsController());
+  AppSettingsController appController = Get.find<AppSettingsController>();
+  AppSettingsController appSettingsController = Get.find<AppSettingsController>();
   void initRazorpay() {
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);

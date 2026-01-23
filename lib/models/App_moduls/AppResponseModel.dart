@@ -47,6 +47,7 @@ class Result {
   SearchPage? searchPage;
   CategoryPage? categoryPage;
   List<Language>? languages;
+  List<Country>? country;
 
   Result({
     this.mobileApp,
@@ -63,6 +64,7 @@ class Result {
     this.searchPage,
     this.categoryPage,
     this.languages,
+    this.country,
   });
 
   Result.fromJson(Map<String, dynamic> json) {
@@ -112,6 +114,12 @@ class Result {
         languages!.add(new Language.fromJson(v));
       });
     }
+    if (json['country'] != null) {
+      country = <Country>[];
+      json['country'].forEach((v) {
+        country!.add(new Country.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -157,6 +165,9 @@ class Result {
     }
     if (this.languages != null) {
       data['languages'] = this.languages!.map((v) => v.toJson()).toList();
+    }
+    if (this.country != null) {
+      data['country'] = this.country!.map((v) => v.toJson()).toList();
     }
     return data;
   }
@@ -579,6 +590,28 @@ class Language {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['code'] = this.code;
+    data['name'] = this.name;
+    return data;
+  }
+}
+
+class Country {
+  String? code;
+  String? flag;
+  String? name;
+
+  Country({this.code, this.flag, this.name});
+
+  Country.fromJson(Map<String, dynamic> json) {
+    code = json['code'];
+    flag = json['flag'];
+    name = json['name'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['code'] = this.code;
+    data['flag'] = this.flag;
     data['name'] = this.name;
     return data;
   }

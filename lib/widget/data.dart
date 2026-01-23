@@ -333,24 +333,25 @@ class Summary2 extends StatelessWidget {
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.0),
-        color: kDarkWhite,
+        color: AppColors.appMutedColor,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           RichText(
-            text: TextSpan(text: title1, style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold), children: [
+            text: TextSpan(text: title1, style:
+            AppTextStyle.title(), children: [
               TextSpan(
                 text: title2,
-                style: kTextStyle.copyWith(color: kLightNeutralColor, fontSize: 12.0),
+                style: AppTextStyle.title(),
               )
             ]),
           ),
           const SizedBox(height: 10.0),
           Text(
             subtitle,
-            style: kTextStyle.copyWith(color: kSubTitleColor),
+            style: AppTextStyle.body(color: AppColors.appDescriptionColor),
           ),
         ],
       ),

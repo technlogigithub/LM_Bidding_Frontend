@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:libdding/widget/form_widgets/reusable_location_picker.dart';
+import 'package:libdding/widget/form_widgets/location_picker.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../controller/home/home_controller.dart';
 import '../../core/app_textstyle.dart';
@@ -1633,10 +1633,10 @@ class _AddressFieldState extends State<_AddressField> {
     }
 
     await Get.to(
-      () => ReusableLocationPickerScreen(
+      () => LocationPickerScreen(
         initialLat: initialLat,
         initialLng: initialLng,
-        onLocationSelected: (latLng, address, landmark) {
+        onLocationSelected: (latLng, address) {
           // Update the controller with selected address
           setState(() {
             _controller.text = address;

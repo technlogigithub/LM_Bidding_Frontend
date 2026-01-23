@@ -5,6 +5,7 @@ import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_string.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:libdding/core/utils.dart';
+import '../../core/input_formatters.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:libdding/widget/app_image_handle.dart';
 import 'package:shimmer/shimmer.dart';
@@ -12,6 +13,7 @@ import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/auth/auth_controller.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/form_widgets/app_textfield.dart';
+import '../../widget/form_widgets/custom_mobile_number_textfield.dart';
 import 'create_account_screen.dart';
 import 'login_with_mobile_number_screen.dart';
 
@@ -121,13 +123,12 @@ class LoginScreen extends StatelessWidget {
                     final hint = field.placeholder ?? '';
                     final type = (field.inputType ?? 'text').toLowerCase();
                     if (type == 'text') {
-                      fields.add(CustomTextfield(
+                      fields.add(CustomMobileNumberTextField(
                         label: label,
                         hintText: hint,
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
                         controller: controller.mobileController,
                         onChanged: (v) => controller.mobile.value = v,
+                        onCountryChanged: (code) => controller.countryCode.value = code,
                       ));
                       fields.add(SizedBox(height: screenHeight * 0.02));
                     } else if (type == 'password') {

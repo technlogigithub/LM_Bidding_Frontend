@@ -76,6 +76,8 @@ class AppSettingsController extends GetxController {
   Rx<UserInfo?> userInfo = Rx<UserInfo?>(null);
   Rx<MenuItem?> myProfile = Rx<MenuItem?>(null);
   Rx<SupportMenuItem?> support = Rx<SupportMenuItem?>(null);
+  Rx<Country?> country = Rx<Country?>(null);
+  RxList<Country> availableCountries = <Country>[].obs;
 
   // NEW
   Rx<SettingsMenuItem?> settings = Rx<SettingsMenuItem?>(null);
@@ -261,6 +263,15 @@ class AppSettingsController extends GetxController {
         userInfo.value = result?.appMenu?.userInfo;
         myProfile.value = result?.appMenu?.myProfile;
         support.value = result?.appMenu?.support;
+
+        /// Countries
+        availableCountries.assignAll(result?.country ?? []);
+        if (availableCountries.isNotEmpty) {
+          country.value = availableCountries.first;
+        } else {
+          country.value = null;
+        }
+
         myPostModel.value = result?.appMenu?.myPost;
         searchPage.value = result?.searchPage;
         categoryPage.value = result?.categoryPage;

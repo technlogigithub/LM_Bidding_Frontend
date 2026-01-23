@@ -67,6 +67,7 @@ class ClientHomeController extends GetxController {
   var showShimmer = true.obs;
 
   var categoryList = <CategoryResult>[].obs;
+  var filteredCategoryList = <CategoryResult>[].obs;
   var bannerList = <BannerResult>[].obs;
   var bannerVideoAndImageList = <BannerVidepResult>[].obs;
   var livePostList = <dynamic>[].obs;
@@ -246,6 +247,7 @@ class ClientHomeController extends GetxController {
 
       final categoryModel = CategoryModel.fromJson(res);
       categoryList.assignAll(categoryModel.result ?? []);
+      filteredCategoryList.assignAll(categoryList);
 
       print('✅ Total Categories: ${categoryList.length}');
     } catch (e, stack) {
@@ -253,6 +255,25 @@ class ClientHomeController extends GetxController {
       print(stack);
     } finally {
       categoryLoading.value = false;
+    }
+  }
+
+  void filterCategories(String query) {
+    if (query.isEmpty) {
+      filteredCategoryList.assignAll(categoryList);
+    } else {
+      final lowercaseQuery = query.toLowerCase();
+      filteredCategoryList.assignAll(
+        categoryList.where((category) {
+          final name = category.name?.toLowerCase() ?? '';
+          final title = category.title?.toLowerCase() ?? '';
+          final detail = category.categoryDetail?.toLowerCase() ?? '';
+          
+          return name.contains(lowercaseQuery) || 
+                 title.contains(lowercaseQuery) ||
+                 detail.contains(lowercaseQuery);
+        }).toList(),
+      );
     }
   }
 
