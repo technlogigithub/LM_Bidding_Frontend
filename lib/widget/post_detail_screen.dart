@@ -88,8 +88,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
   //   // recentViewedList[index].isFavorite.value = newValue;
   // }
 
-  void _showCustomDialog(BuildContext context, dynamic menu) {
-    showDialog(
+  Future<void> _showCustomDialog(BuildContext context, dynamic menu) async {
+    await showDialog(
       context: context, 
       builder: (context) {
         return CustomAlertDialog(
@@ -97,29 +97,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           description: menu.description ?? '',
           backgroundImage: menu.pageImage,
           onConfirm: () async {
-            finish(context); // Close dialog
              if (menu.apiEndpoint != null && menu.apiEndpoint!.isNotEmpty) {
+               // Execute API Action first
                bool success = await getPostDetailsController.executeApiAction(menu.apiEndpoint!);
+               
+               // Close dialog after action
+               finish(context); 
+
                if (success) {
-                  // Refresh Home Data
+                  // Optional: Refresh Home Data if needed in background
                   if (Get.isRegistered<ClientHomeController>()) {
                     await ClientHomeController.to.refreshData();
-                  } else {
-                     // In case it's not registered (unlikely if we came from home, but safe check)
-                     final homeController = Get.put(ClientHomeController());
-                     await homeController.refreshData();
                   }
-
-                  // Reset Bottom Navigation to Home (Index 0)
-                  if (Get.isRegistered<BottomBarController>()) {
-                    Get.find<BottomBarController>().onItemTapped(0);
-                  } else {
-                    Get.put(BottomBarController()).onItemTapped(0);
-                  }
-
-                  Get.offAll(() => const BottomNavigationScreen());
+                  // We stay on the page to let the parent refresh the details
                }
             } else {
+               finish(context);
                toast("Action Confirmed: ${menu.label}");
             }
           },
@@ -293,20 +286,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                            if (hasApi && !hasNextPage && !hasNextApi && !hasNextView && !hasConfirmData) {
                              print("Rule 1 → Direct API");
                              await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
+                             await getPostDetailsController.getPostDetails(widget.ukey ?? '');
                              return;
                            }
 
-                           // RULE 2: Navigate (Edit/Other)
-                           if (!hasApi && hasNextPage && hasNextApi && !hasConfirmData) {
+                           // RULE 2: Navigate +API
+                           if (hasApi && hasNextPage && hasNextApi && !hasConfirmData) {
                              print("Rule 2 → Next API + Navigate");
-                             // await Get.put(PostFormController()).getPostForm(
-                             //     endpoint: btn.nextPageApiEndpoint, isEditMode: true); // Assuming Edit mode is standard for this flow? Or maybe optional.
-                             CustomNavigator.navigate(btn.nextPageName);
+                             await getPostDetailsController.fetchCartDetails(btn.nextPageApiEndpoint.toString(),btn.nextPageName.toString());
+                             //  await getPostDetailsController.participateAndNavigate(
+                             //   participateEndpoint: btn.apiEndpoint!,
+                             //   cartEndpoint: btn.nextPageApiEndpoint!,
+                             //   nextPageName: btn.nextPageName.toString(),
+                             // );
                              return;
                            }
 
                            // Rule 2b: Simple Navigate (No API fetch needed) - Implicitly covered if hasNextApi is false but hasNextPage is true.
                            if (hasNextPage && !hasNextApi && !hasConfirmData) {
+                             print("Rule 2 →  Navigate");
                               CustomNavigator.navigate(btn.nextPageName);
                               return;
                            }
@@ -315,7 +313,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                            // RULE 3: Confirm Data -> Show BidBottomSheet instead of Dialog
                            if (!hasNextPage && !hasNextApi && !hasNextView && hasConfirmData) {
                              print("Rule 3 → BidBottomSheet");
-                             showModalBottomSheet(
+                             var result = await showModalBottomSheet(
                                context: context,
                                isScrollControlled: true,
                                shape: const RoundedRectangleBorder(
@@ -330,9 +328,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                    description: btn.description,
                                    pageImage: btn.pageImage,
                                    design: btn.design,
+                                   apiEndpoint: btn.apiEndpoint,
                                  ),
                                ),
                              );
+                             
+                             if (result == true) {
+                                if (btn.apiEndpoint != null && btn.apiEndpoint!.isNotEmpty) {
+                                  await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
+                                }
+                                await getPostDetailsController.getPostDetails(widget.ukey ?? '');
+                             }
                              return;
                            }
 
@@ -412,14 +418,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                 automaticallyImplyLeading: false,
                 forceElevated: innerBoxIsScrolled,
                 centerTitle: true,
-                title: Text(
+                title: _isShrink ?Text(
                   info?.title ?? '',
                   maxLines: 1,
                   style: AppTextStyle.title(
                     color: AppColors.appTextColor,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
+                ): const SizedBox.shrink(),
                 leading: _isShrink
                     ? GestureDetector(
                   onTap: () => Navigator.pop(context),
@@ -549,29 +555,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                         !hasConfirmData) {
                                       print("Rule 1 → Direct API");
                                       await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
+                                      await getPostDetailsController.getPostDetails(widget.ukey ?? '');
                                       return;
                                     }
 
                                     // RULE 2: Edit → call next api → navigate
-                                    if (!hasApi &&
-                                        hasNextPage &&
-                                        hasNextApi &&
-                                        !hasConfirmData) {
+                                    if (hasApi && hasNextPage && hasNextApi && !hasConfirmData) {
                                       print("Rule 2 → Next API + Navigate");
-                                      await Get.put(PostFormController()).getPostForm(
-                                          endpoint: btn.nextPageApiEndpoint,
-                                          isEditMode: true);
+
                                       CustomNavigator.navigate(btn.nextPageName);
                                       return;
                                     }
-
+                                    // Rule 2b: Simple Navigate (No API fetch needed) - Implicitly covered if hasNextApi is false but hasNextPage is true.
+                                    if (hasNextPage && !hasNextApi && !hasConfirmData) {
+                                      CustomNavigator.navigate(btn.nextPageName);
+                                      return;
+                                    }
                                     // RULE 3: Confirm → show dialog
                                     if (!hasNextPage &&
                                         !hasNextApi &&
                                         !hasNextView &&
                                         hasConfirmData) {
                                       print("Rule 3 → Confirm dialog");
-                                      _showCustomDialog(context, btn);
+                                      await _showCustomDialog(context, btn);
+                                      await getPostDetailsController.getPostDetails(widget.ukey ?? '');
                                       return;
                                     }
 
@@ -1034,7 +1041,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                                    if (bannerController.getPostForHomeResponseModel.value == null && !bannerController.isLoading.value) {
                                                       Future.microtask(() {
                                                         if (bannerController.getPostForHomeResponseModel.value == null && !bannerController.isLoading.value) {
-                                                            bannerController.getPostListForHomeScreen(endpoint: rawEndpoint);
+                                                            // bannerController.getPostListForHomeScreen(endpoint: rawEndpoint);
                                                         }
                                                       });
                                                    }

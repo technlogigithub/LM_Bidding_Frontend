@@ -155,11 +155,11 @@ class AppPostController extends GetxController {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'Authentication token not found',
-        );
+        // Utils.showSnackbar(
+        //   isSuccess: false,
+        //   title: 'Error',
+        //   message: 'Authentication token not found',
+        // );
         return;
       }
 
@@ -224,11 +224,11 @@ class AppPostController extends GetxController {
       final token = prefs.getString('auth_token');
 
       if (token == null || token.isEmpty) {
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'Authentication token not found',
-        );
+        // Utils.showSnackbar(
+        //   isSuccess: false,
+        //   title: 'Error',
+        //   message: 'Authentication token not found',
+        // );
         return;
       }
 

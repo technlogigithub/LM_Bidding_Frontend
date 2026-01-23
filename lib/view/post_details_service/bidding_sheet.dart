@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 
+import '../../controller/post/get_post_details_controller.dart';
+import '../../core/utils.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../../models/Post/Get_Post_details_Model.dart';
+import '../../service/socket_service_interface.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 
 class BidBottomSheet extends StatefulWidget {
@@ -14,8 +18,9 @@ class BidBottomSheet extends StatefulWidget {
   final String? description;
   final String? pageImage;
   final dynamic design;
+  final String? apiEndpoint;
 
-  const BidBottomSheet({super.key, this.title, this.description, this.pageImage, this.design});
+  const BidBottomSheet({super.key, this.title, this.description, this.pageImage, this.design, this.apiEndpoint});
 
   @override
   State<BidBottomSheet> createState() => _BidBottomSheetState();
@@ -272,8 +277,14 @@ class _BidBottomSheetState extends State<BidBottomSheet> {
 
                   if (inputs.isEmpty) return const SizedBox.shrink();
 
+                  // Filter out 'button' type (will be rendered separately)
+                  final filteredInputs = inputs.where((input) {
+                    final type = (input.inputType ?? '').toLowerCase();
+                    return type != 'button';
+                  }).toList();
+
                   return DynamicFormBuilder(
-                    inputs: inputs,
+                    inputs: filteredInputs,
                     formData: formValues,
                     onFieldChanged: (key, value) {
                       setState(() {
@@ -285,77 +296,142 @@ class _BidBottomSheetState extends State<BidBottomSheet> {
                 },
               ),
 
-            // Fallback to static fields if no design provided
-            // Column(
-            //   children: [
-            //     CounterInput(
-            //       label: "Bid Price",
-            //       value: bidController.text,
-            //       showCurrency: true,
-            //       onIncrease: increaseBid,
-            //       onDecrease: decreaseBid,
-            //     ),
-            //     const SizedBox(height: 12),
-            //     CounterInput(
-            //       label: "Quantity",
-            //       value: quantity.toString(),
-            //       onIncrease: () => setState(() => quantity++),
-            //       onDecrease: () {
-            //         if (quantity > 1) setState(() => quantity--);
-            //       },
-            //     ),
-            //   ],
-            // ),
+             const SizedBox(height: 15),
 
+            // Submit button logic
+            Builder(
+              builder: (context) {
+                List<RegisterInput> inputs = [];
+                if (widget.design is SubmitButtonDesign) {
+                   inputs = (widget.design as SubmitButtonDesign).inputs ?? [];
+                } else if (widget.design is Map && widget.design['inputs'] != null) {
+                    var rawInputs = widget.design['inputs'];
+                    if (rawInputs is List) {
+                      for (var item in rawInputs) {
+                        if (item is Map) {
+                          inputs.add(RegisterInput.fromJson(Map<String, dynamic>.from(item)));
+                        }
+                      }
+                    }
+                }
 
+                final buttonInput = inputs.firstWhereOrNull((input) => (input.inputType ?? '').toLowerCase() == 'button');
+                final buttonLabel = buttonInput?.label ?? "";
+                
+                // Debugging
+                print("DEBUG: inputs count: ${inputs.length}");
+                print("DEBUG: buttonInput found: ${buttonInput != null}");
+                if (buttonInput != null) {
+                  print("DEBUG: buttonInput type: ${buttonInput.inputType}, name: ${buttonInput.name}");
+                }
 
-            const SizedBox(height: 15),
+                // Get the specific API endpoint for this button if it exists
+                String? targetEndpoint = widget.apiEndpoint;
+                print("DEBUG: initial targetEndpoint: '$targetEndpoint'");
 
-          // Submit button
-        SizedBox(
-          width: double.infinity,
-          child: GestureDetector(
-            onTap: () {
-              final bidAmount = bidController.text.trim();
-              if (bidAmount.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please enter a bid amount")),
+                if (buttonInput != null && buttonInput.name != null) {
+                  if (widget.design is SubmitButtonDesign) {
+                    final endpoints = (widget.design as SubmitButtonDesign).inputApiEndpoints;
+                    print("DEBUG: inputApiEndpoints: $endpoints");
+                    if (endpoints.containsKey(buttonInput.name)) {
+                      targetEndpoint = endpoints[buttonInput.name];
+                      print("DEBUG: found endpoint in map: '$targetEndpoint'");
+                    }
+                  } else if (widget.design is Map && widget.design['inputs'] is List) {
+                     // Try to find it in raw map if fallback
+                     final rawInputs = widget.design['inputs'] as List;
+                     for (var ri in rawInputs) {
+                        if (ri is Map && (ri['input_type'] ?? '').toString().toLowerCase() == 'button' && ri['api_endpoint'] != null) {
+                           targetEndpoint = ri['api_endpoint'].toString();
+                           print("DEBUG: found endpoint in raw map: '$targetEndpoint'");
+                           break;
+                        }
+                     }
+                  }
+                }
+
+                return SizedBox(
+                  width: double.infinity,
+                  child: GestureDetector(
+                    onTap: () async {
+                      print("DEBUG: Button tapped. Final targetEndpoint: '$targetEndpoint'");
+                      // Validation
+                      final bidAmount = formValues['amount'] ?? formValues['bid_amount'] ?? bidController.text.trim();
+                      
+                      // Prepare final body (excluding buttons and custom_horizontal_bullets as requested)
+                      final Map<String, dynamic> finalBody = {};
+                      
+                      // First, collect values from formValues
+                      formValues.forEach((key, value) {
+                        final input = inputs.firstWhereOrNull((i) => i.name == key);
+                        if (input != null) {
+                          final type = (input.inputType ?? '').toLowerCase();
+                          if (type != 'button' && type != 'custom_horizontal_bullets') {
+                            finalBody[key] = value;
+                          }
+                        } else {
+                          // Not a dynamic field, check if it's one of our static fields like quantity
+                          if (key != 'button' && key != 'custom_horizontal_bullets') {
+                            finalBody[key] = value;
+                          }
+                        }
+                      });
+                      
+                      // Also ensure quantity is included if it was managed locally
+                      if (!finalBody.containsKey('qty') && !finalBody.containsKey('quantity')) {
+                         finalBody['qty'] = quantity;
+                      }
+
+                      if (targetEndpoint != null && targetEndpoint!.isNotEmpty) {
+                        print("DEBUG: Calling submitDynamicForm with endpoint: $targetEndpoint");
+                        final controller = Get.find<GetPostDetailsController>();
+                        // Get.find<SocketService>().sendMessage({
+                        //   'event': 'dynamic_form_submit',
+                        //   'data': finalBody,
+                        // });
+
+                        bool success = await controller.submitDynamicForm(
+                          endpoint: targetEndpoint!,
+                          formData: finalBody,
+                        );
+
+                        if (success) {
+                          Navigator.pop(context, true);
+                        }
+                      } else {
+                        Utils.showSnackbar(isSuccess: false, title: " Alert", message: "No targetEndpoint found, popping with true");
+                        print("DEBUG: No targetEndpoint found, popping with true");
+                        // Fallback logic if no API endpoint
+                        Navigator.pop(context, true);
+                        if (widget.apiEndpoint == null || widget.apiEndpoint!.isEmpty) {
+                           ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  "Your bid of ₹$bidAmount x $quantity has been placed!"),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.appButtonColor,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        buttonLabel,
+                        style: AppTextStyle.title(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.appButtonTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
                 );
-                return;
-              }
-
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      "Your bid of ₹$bidAmount x $quantity has been placed!"),
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                color: AppColors.appButtonColor,
-                borderRadius: BorderRadius.circular(14),
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: Colors.black26,
-                //     blurRadius: 6,
-                //     offset: Offset(0, 3),
-                //   ),
-                // ],
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                "Submit Bid",
-                style: AppTextStyle.title(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.appButtonTextColor,
-                ),
-              ),
+              },
             ),
-          ),
-        )
 
         ],
         ),

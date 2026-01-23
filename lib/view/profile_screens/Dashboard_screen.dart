@@ -60,7 +60,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         value: des,
         child: Text(
           des,
-          style: kTextStyle.copyWith(color: kSubTitleColor),
+          style: AppTextStyle.body()
         ),
       );
       dropDownItems.add(item);
@@ -84,7 +84,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
         value: des,
         child: Text(
           des,
-          style: kTextStyle.copyWith(color: kSubTitleColor),
+          style: AppTextStyle.body(),
         ),
       );
       dropDownItems.add(item);
@@ -293,15 +293,15 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    color: kWhite,
+             gradient: AppColors.appPagecolor,
                     borderRadius: BorderRadius.circular(16.0),
-                    border: Border.all(color: kBorderColorTextField),
-                    boxShadow: const [
+                    boxShadow: [
                       BoxShadow(
-                        color: kDarkWhite,
-                        blurRadius: 5.0,
-                        spreadRadius: 2.0,
-                        offset: Offset(0, 5),
+                        color: AppColors.appMutedColor,
+                        blurRadius: 5,
+                        spreadRadius: 1,
+                        offset: Offset(0, 10),
+
                       ),
                     ],
                   ),
@@ -314,7 +314,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         children: [
                           Text(
                             'Statistics',
-                            style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                            style: AppTextStyle.title()
                           ),
                           const Spacer(),
                           SizedBox(

@@ -235,8 +235,8 @@ class _SearchFilterScreenState extends State<SearchFilterScreen> {
                         statusValue: controller.selectedStatusValue.value,
                         onItemTap: (String ukey) {
                           print(" Tapped item with ukey: $ukey");
-                          Get.find<GetPostDetailsController>().getPostDetails(ukey);
-                          CustomNavigator.navigate("post_detail_screen");
+                          // Get.find<GetPostDetailsController>().getPostDetails(ukey);
+                          CustomNavigator.navigate("post_detail_screen",arguments: ukey);
                         },
                         // Optional callbacks for other view types
                         onFavoriteToggle: (index, isFavorite) {

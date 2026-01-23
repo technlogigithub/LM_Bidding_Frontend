@@ -124,11 +124,11 @@ class CustomViewWidget extends StatelessWidget {
             : postController.getPostListResponseModel;
         isLoading = postController.isLoading;
 
-        debugPrint(
-          "📊 Model has data: ${model.value?.result?.length ?? 'null'}",
-        );
-        debugPrint("🔄 Is loading: ${isLoading.value}");
-        debugPrint("🏷️ Use home model: ${useHomeModel}");
+        // debugPrint(
+        //   "📊 Model has data: ${model.value?.result?.length ?? 'null'}",
+        // );
+        // debugPrint("🔄 Is loading: ${isLoading.value}");
+        // debugPrint("🏷️ Use home model: ${useHomeModel}");
       } catch (e) {
         debugPrint("❌ CustomViewWidget: controller is null for type: ${type}");
         return const SizedBox.shrink();
@@ -137,9 +137,9 @@ class CustomViewWidget extends StatelessWidget {
 
     switch (type) {
       case "search_bar":
-        debugPrint("🔍 Search bar title: $title");
-        print(" case in $bgImg");
-        print(" case in $bgColor");
+        // debugPrint("🔍 Search bar title: $title");
+        // print(" case in $bgImg");
+        // print(" case in $bgColor");
         return SearchBarWidget(
           title: title,
           bgColor: bgColor,
@@ -392,7 +392,7 @@ class CustomViewWidget extends StatelessWidget {
             return const SizedBox.shrink();
           }
 
-          final categories = homeController.categoryList.map((e) {
+          final categories = homeController.filteredCategoryList.map((e) {
             return Category(
               ukey: e.ukey ?? '',
               parentUkey: null,

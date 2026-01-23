@@ -299,6 +299,7 @@ class SubmitButton {
 class SubmitButtonDesign {
   String? countdown;
   List<RegisterInput>? inputs;
+  Map<String, String> inputApiEndpoints = {};
 
   SubmitButtonDesign({this.countdown, this.inputs});
 
@@ -308,7 +309,13 @@ class SubmitButtonDesign {
       inputs = [];
       if (json['inputs'] is List) {
         (json['inputs'] as List).forEach((v) {
-          inputs!.add(RegisterInput.fromJson(v));
+          final input = RegisterInput.fromJson(v);
+          inputs!.add(input);
+          if (v['api_endpoint'] != null && input.name != null) {
+            final endpoint = v['api_endpoint'].toString();
+            inputApiEndpoints[input.name!] = endpoint;
+            print("DEBUG: Extracted endpoint for ${input.name}: $endpoint");
+          }
         });
       }
     }

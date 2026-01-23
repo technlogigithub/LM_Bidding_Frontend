@@ -133,8 +133,8 @@ class _RecentlyPostState extends State<RecentlyPost> {
                   type: viewType,
                   controller: appPostController,
                   onItemTap: (String ukey) {
-                    Get.find<GetPostDetailsController>().getPostDetails(ukey);
-                    CustomNavigator.navigate("post_detail_screen");
+                    // Get.find<GetPostDetailsController>().getPostDetails(ukey);
+                    CustomNavigator.navigate("post_detail_screen",arguments: ukey,);
                   },
                   onFavoriteToggle: (index, newValue) {
                     // Update favorite in the model
