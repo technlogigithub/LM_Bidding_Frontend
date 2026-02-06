@@ -270,9 +270,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                     
                     Widget buildBtn(SubmitButton btn) {
                         String label = btn.label ?? '';
+
                         VoidCallback? onPressed;
 
                         onPressed = () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('cart_details_title',btn.title.toString());
                            bool hasApi = btn.apiEndpoint != null && btn.apiEndpoint!.isNotEmpty;
                            bool hasNextPage = btn.nextPageName != null && btn.nextPageName!.isNotEmpty;
                            bool hasNextApi = btn.nextPageApiEndpoint != null && btn.nextPageApiEndpoint!.isNotEmpty;
@@ -286,19 +289,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                            if (hasApi && !hasNextPage && !hasNextApi && !hasNextView && !hasConfirmData) {
                              print("Rule 1 → Direct API");
                              await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
-                             await getPostDetailsController.getPostDetails(widget.ukey ?? '');
+                             // await getPostDetailsController.getPostDetails(widget.ukey ?? '');
                              return;
                            }
 
                            // RULE 2: Navigate +API
-                           if (hasApi && hasNextPage && hasNextApi && !hasConfirmData) {
+                           if (hasApi && hasNextApi && !hasConfirmData) {
                              print("Rule 2 → Next API + Navigate");
-                             await getPostDetailsController.fetchCartDetails(btn.nextPageApiEndpoint.toString(),btn.nextPageName.toString());
-                             //  await getPostDetailsController.participateAndNavigate(
-                             //   participateEndpoint: btn.apiEndpoint!,
-                             //   cartEndpoint: btn.nextPageApiEndpoint!,
-                             //   nextPageName: btn.nextPageName.toString(),
-                             // );
+                             // await getPostDetailsController.fetchCartDetails(btn.nextPageApiEndpoint.toString(),btn.nextPageName.toString());
+                              await getPostDetailsController.participateAndNavigate(
+                               participateEndpoint: btn.apiEndpoint!,
+                               cartEndpoint: btn.nextPageApiEndpoint!,
+                               nextPageName: btn.nextPageName ?? '',
+                               shouldFetchCart: true,
+                             );
                              return;
                            }
 
@@ -337,7 +341,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                 if (btn.apiEndpoint != null && btn.apiEndpoint!.isNotEmpty) {
                                   await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
                                 }
-                                await getPostDetailsController.getPostDetails(widget.ukey ?? '');
+                                // await getPostDetailsController.getPostDetails(widget.ukey ?? '');
                              }
                              return;
                            }
@@ -555,7 +559,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                         !hasConfirmData) {
                                       print("Rule 1 → Direct API");
                                       await getPostDetailsController.actionButtonAction(btn.apiEndpoint!);
-                                      await getPostDetailsController.getPostDetails(widget.ukey ?? '');
+                                      // await getPostDetailsController.getPostDetails(widget.ukey ?? '');
                                       return;
                                     }
 
@@ -578,7 +582,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
                                         hasConfirmData) {
                                       print("Rule 3 → Confirm dialog");
                                       await _showCustomDialog(context, btn);
-                                      await getPostDetailsController.getPostDetails(widget.ukey ?? '');
+                                      // await getPostDetailsController.getPostDetails(widget.ukey ?? '');
                                       return;
                                     }
 

@@ -162,7 +162,7 @@ class _CustomBannerWithVideoState extends State<CustomBannerWithVideo> {
 
   // ************ IMAGE WITH SHIMMER ************
   Widget _buildImageContainer(String imageUrl, String? redirectUrl) {
-    if (imageUrl.isEmpty) {
+    if (imageUrl.isEmpty || !ImageTypeHelper.isImage(imageUrl)) {
       return GestureDetector(
         onTap: () {
           if (redirectUrl != null && redirectUrl.isNotEmpty) {

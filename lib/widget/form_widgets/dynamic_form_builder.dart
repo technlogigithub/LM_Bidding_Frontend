@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:libdding/widget/form_widgets/location_picker.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../controller/home/home_controller.dart';
+import '../../controller/cart/cart_controller.dart';
 import '../../core/app_textstyle.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../custom_tapbar.dart';
@@ -20,6 +22,7 @@ import 'custom_toggle.dart';
 import 'custom_file_picker.dart';
 import 'custom_multiple_file_picker.dart';
 import 'custom_date_time.dart';
+import '../custom_coupon_apply_field.dart';
 import '../../core/app_color.dart';
 import '../custom_horizontal_bullets.dart';
 import '../custom_input_plus_minus.dart';
@@ -1089,6 +1092,107 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         // Group inputs should not create any UI element
         return const SizedBox.shrink();
 
+      case 'custom_coupon_apply_field':
+        Widget nestedForm = const SizedBox.shrink();
+
+        if (input.design != null && input.design!['inputs'] != null) {
+          final inputsMap = input.design!['inputs'];
+          final nestedInputs = <RegisterInput>[];
+
+          if (inputsMap is Map) {
+            inputsMap.forEach((key, value) {
+              if (value is Map<String, dynamic>) {
+                // Fix typo from backend if present
+                if (value['input_type'] == 'botton') {
+                  value['input_type'] = 'button';
+                }
+                nestedInputs.add(RegisterInput.fromJson(value));
+              }
+            });
+          }
+
+        if (nestedInputs.isNotEmpty) {
+            nestedForm = DynamicFormBuilder(
+              inputs: nestedInputs,
+              formData: widget.formData,
+              onFieldChanged: widget.onFieldChanged,
+              errors: widget.errors,
+            );
+          }
+        }
+
+        fieldWidget = Obx(() {
+            bool isApplied = false;
+             if (Get.isRegistered<CartController>()) {
+              isApplied = Get.find<CartController>().isCouponApplied.value;
+            }
+            return Column(
+              children: [
+                _CouponApplyField(
+                  label: label,
+                  hintText: placeholder,
+                  initialValue: currentValue?.toString() ?? '',
+                  isApplied: isApplied,
+                  onChanged: (value) => _handleFieldChanged(fieldName, value,
+                      isUserInteraction: true),
+                  onApply: () {
+                    debugPrint("🟢 Apply button clicked");
+
+                    final value = widget.formData[fieldName];
+                    debugPrint("📌 Field Name: $fieldName");
+                    debugPrint("📌 Field Value: $value");
+
+                    _handleFieldChanged(
+                      fieldName,
+                      value,
+                      isUserInteraction: true,
+                      input: input,
+                    );
+
+                    // Check for API endpoint in design
+                    if (input.design != null && input.design!['api_endpoint'] != null) {
+                      debugPrint("✅ API endpoint found in design");
+
+                      try {
+                        if (Get.isRegistered<CartController>()) {
+                          debugPrint("✅ CartController is registered");
+
+                          final controller = Get.find<CartController>();
+                          final code = value?.toString() ?? '';
+
+                          debugPrint("🎟 Coupon Code: '$code'");
+                          debugPrint("🌐 API Endpoint: ${input.design!['api_endpoint']}");
+
+                          if (code.isNotEmpty) {
+                            debugPrint("🚀 Calling applyCoupon API");
+
+                            controller.applyCoupon(
+                              endpoint: input.design!['api_endpoint'],
+                              couponCode: code,
+                            );
+                          } else {
+                            debugPrint("⚠️ Coupon code is empty");
+                          }
+                        } else {
+                          debugPrint("❌ CartController NOT found");
+                        }
+                      } catch (e, stack) {
+                        debugPrint("❌ Error triggering coupon API: $e");
+                        debugPrint("📛 StackTrace: $stack");
+                      }
+                    } else {
+                      debugPrint("⚠️ No api_endpoint found in input.design");
+                    }
+                  },
+
+                ),
+                SizedBox(height: 10.h,),
+                nestedForm,
+              ],
+            );
+        });
+        break;
+
       default:
         fieldWidget = _TextField(
           label: label + (isRequired ? ' *' : ''),
@@ -1933,6 +2037,66 @@ class _SelectTabBarWidgetState extends State<_SelectTabBarWidget> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CouponApplyField extends StatefulWidget {
+  final String label;
+  final String hintText;
+  final String initialValue;
+  final Function(String) onChanged;
+  final VoidCallback onApply;
+  final bool? isApplied;
+
+  const _CouponApplyField({
+    required this.label,
+    required this.hintText,
+    required this.initialValue,
+    required this.onChanged,
+    required this.onApply,
+    this.isApplied,
+  });
+
+  @override
+  State<_CouponApplyField> createState() => _CouponApplyFieldState();
+}
+
+class _CouponApplyFieldState extends State<_CouponApplyField> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+    _controller.addListener(() {
+      widget.onChanged(_controller.text);
+    });
+  }
+
+  @override
+  void didUpdateWidget(_CouponApplyField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue &&
+        _controller.text == oldWidget.initialValue) {
+      _controller.text = widget.initialValue;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomCouponApplyField(
+      controller: _controller,
+      label: widget.label,
+      hintText: widget.hintText,
+      onApply: widget.onApply,
+      isApplied: widget.isApplied ?? false,
     );
   }
 }

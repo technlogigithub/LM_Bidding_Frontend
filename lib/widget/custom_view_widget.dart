@@ -30,6 +30,7 @@ class CustomViewWidget extends StatelessWidget {
   const CustomViewWidget({
     super.key,
     required this.type,
+    this.onActionTap,
     this.controller,
     this.onItemTap,
     this.onFavoriteToggle,
@@ -57,6 +58,7 @@ class CustomViewWidget extends StatelessWidget {
   });
 
   final String type;
+  final Function(Map<String, dynamic> buttonData, String userKey)? onActionTap;
 
   final AppPostController? controller;
 
@@ -121,20 +123,25 @@ class CustomViewWidget extends StatelessWidget {
     late Rx<GetPostListResponseModel?> model;
     late RxBool isLoading;
 
-
     if (postWidgetTypes.contains(type)) {
       try {
         postController = controller ?? Get.find<AppPostController>();
-        model = useHomeModel
-            ? postController.getPostForHomeResponseModel
-            : postController.getPostListResponseModel;
-        isLoading = postController.isLoading;
-
-        // debugPrint(
-        //   "📊 Model has data: ${model.value?.result?.length ?? 'null'}",
-        // );
-        // debugPrint("🔄 Is loading: ${isLoading.value}");
-        // debugPrint("🏷️ Use home model: ${useHomeModel}");
+        
+        // If itemDataList is provided, we use it to create a local model.
+        // This prevents showing old data from the global AppPostController.
+        if (itemDataList != null && itemDataList!.isNotEmpty) {
+          final localModel = GetPostListResponseModel(
+            success: true,
+            result: itemDataList!.map((e) => Result.fromJson(e)).toList(),
+          );
+          model = Rx<GetPostListResponseModel?>(localModel);
+          isLoading = false.obs;
+        } else {
+          model = useHomeModel
+              ? postController.getPostForHomeResponseModel
+              : postController.getPostListResponseModel;
+          isLoading = postController.isLoading;
+        }
       } catch (e) {
         debugPrint("❌ CustomViewWidget: controller is null for type: ${type}");
         return const SizedBox.shrink();
@@ -216,7 +223,7 @@ class CustomViewWidget extends StatelessWidget {
                     CustomNavigator.navigate(nextPageName, arguments: id);
                   }
                 },
-            onFavoriteToggle: onFavoriteToggle!,
+            onFavoriteToggle: onFavoriteToggle ?? (index, status) {},
             bgColor: bgColor,
             bgImg: bgImg,
             label: label,
@@ -304,22 +311,28 @@ class CustomViewWidget extends StatelessWidget {
         }
         // debugPrint("📃 Vertical List Data: ${model.value}");
         return Obx(() {
-          // If loading, show widget (it handles shimmer). If NOT loading and empty, hide.
-          if (!isLoading!.value && (model!.value?.result == null ||
-              model!.value!.result!.isEmpty)) {
+          final list = model.value?.result;
+
+          // 🔥 PRINT LENGTH IN UI
+          debugPrint("📦 VerticalList result length: ${list?.length ?? 0}");
+
+          // If loading is false and list empty → hide
+          if (!isLoading.value && (list == null || list.isEmpty)) {
             return const SizedBox.shrink();
           }
+
           return CustomVerticalListviewList(
             model: model,
             isLoading: isLoading,
             isFromCartScreen: isFromCartScreen,
+            onActionTap: onActionTap,
             onItemTap: onItemTap ??
-                (String id) {
+                    (String id) {
                   if (nextPageName?.isNotEmpty == true) {
                     CustomNavigator.navigate(nextPageName, arguments: id);
                   }
                 },
-            onFavoriteToggle: onFavoriteToggle!,
+            onFavoriteToggle: onFavoriteToggle ?? (index, status) {},
             bgColor: bgColor,
             bgImg: bgImg,
             label: label,
@@ -329,6 +342,7 @@ class CustomViewWidget extends StatelessWidget {
             nextPageViewType: nextPageViewType,
           );
         });
+
 
       case "my_post_list_custom":
         if (model == null || isLoading == null) {

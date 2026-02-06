@@ -15,6 +15,7 @@ import '../../view/Home_screen/select_categories_screen.dart';
 import '../view/search_filter_post/search_filter_screen.dart';
 import 'custom_auto_image_handle.dart';
 import 'custom_navigator.dart';
+import 'custom_tapbar.dart';
 
 class CustomVerticalListviewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
@@ -32,6 +33,7 @@ class CustomVerticalListviewList extends StatelessWidget {
   final String? viewAllNextPage;
   final String? nextPageName; // Added
   final String? nextPageViewType; // Added
+  final Function(Map<String, dynamic> buttonData, String userKey)? onActionTap;
 
   const CustomVerticalListviewList({
     super.key,
@@ -40,6 +42,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     this.onRemoveTap,
     this.onSaveForLaterTap,
     this.onBuyNowTap,
+    this.onActionTap,
     required this.onFavoriteToggle,
     required this.isLoading,
     this.isFromCartScreen = false,
@@ -65,7 +68,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     if (label == null || label!.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(15, 10, 15, 5),
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 5),
       child: Row(
         children: [
           Text(
@@ -307,76 +310,34 @@ class CustomVerticalListviewList extends StatelessWidget {
                   horizontal: 2.0,
                   vertical: 8.0,
                 ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal, // ✅ Horizontal scroll
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: onRemoveTap ?? () {},
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: Border.all(
-                              color: AppColors.appMutedTextColor,
-                            ),
-                          ),
-                          child: Text(
-                            AppStrings.remove,
-                            style: AppTextStyle.body(
-                              color: AppColors.appBodyTextColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 8), // ✅ spacing
-
-                      InkWell(
-                        onTap: onSaveForLaterTap ?? () {},
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: Border.all(
-                              color: AppColors.kBorderColorTextField,
-                            ),
-                          ),
-                          child: Text(
-                            AppStrings.saveForLater,
-                            style: AppTextStyle.body(
-                              color: AppColors.appBodyTextColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 8), // ✅ spacing
-
-                      InkWell(
-                        onTap: onBuyNowTap ?? () {},
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: Border.all(
-                              color: AppColors.kBorderColorTextField,
-                            ),
-                          ),
-                          child: Text(
-                            AppStrings.buyThisNow,
-                            style: AppTextStyle.body(
-                              color: AppColors.appBodyTextColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                child: result.actionButton != null && result.actionButton!.isNotEmpty
+                    ? CustomTabBar(
+                        tabs: result.actionButton!.map<String>((e) {
+                          if (e is Map<String, dynamic>) {
+                            return e['label']?.toString() ?? '';
+                          }
+                           // Fallback for unexpected types (though parsing logic in model makes it dynamic/Map usually, 
+                           // unless we strictly typed it later)
+                           // The model uses json['action_button'] which is List<dynamic> of Maps usually.
+                           try {
+                             return (e as dynamic)['label']?.toString() ?? '';
+                           } catch (err) {
+                             return '';
+                           }
+                        }).toList(),
+                        textStyle: AppTextStyle.body(),
+                        onTap: (index) {
+                          if (index >= 0 && index < result.actionButton!.length) {
+                             final btnData = result.actionButton![index];
+                             final ukey = result.hidden?.ukey ?? "";
+                             
+                             if (onActionTap != null && btnData is Map<String, dynamic>) {
+                                onActionTap!(btnData, ukey);
+                             }
+                          }
+                        },
+                      )
+                    : SizedBox()
               )
 
           ],
@@ -521,7 +482,7 @@ class CustomVerticalListviewList extends StatelessWidget {
 
   Widget _buildContentSection(Result result) {
     final title = result.info?['title'] ?? '';
-    final ratingReview = result.info?['ratingReview'];
+    final ratingReview = result.info?['rating_review'];
     final price = result.info?['price'];
 
     return Padding(
@@ -705,7 +666,7 @@ class CartActionButtons extends StatelessWidget {
         child: Column(
           children: [
             _actionButton(
-              title: AppStrings.remove,
+                title: AppStrings.remove,
               textColor: AppColors.appBodyTextColor,
               borderColor: AppColors.appMutedTextColor,
               onTap: onRemoveTap,

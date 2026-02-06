@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:libdding/widget/post_detail_screen.dart';
 import '../view/Post_new_screen/post_new_screen.dart';
+import '../view/post_details_service/cart_preview.dart';
 import '../view/post_details_service/cart_screen.dart';
 import '../view/Onboard_screen/onboard_screen.dart';
 import '../view/splash_screen/splash_screen.dart';
@@ -104,6 +105,9 @@ class CustomNavigator {
         Get.to(() => const CartScreen());
         break;
 
+      case "cart_preview":
+        Get.to(() => const CartPreview());
+        break;
       case "post_detail_screen":
         String? ukey;
         if (arguments is String) {

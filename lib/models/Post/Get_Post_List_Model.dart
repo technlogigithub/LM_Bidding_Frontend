@@ -35,6 +35,8 @@ class Result {
   Info? info;
   Details? details;
 
+  List<dynamic>? actionButton;
+
   factory Result.fromJson(Map<String, dynamic> json) {
     return Result(
       hidden: json['hidden'] != null ? Hidden.fromJson(json['hidden']) : null,
@@ -42,10 +44,11 @@ class Result {
       info: json['info'] != null ? Info.fromJson(json['info']) : null,
       details:
       json['details'] != null ? Details.fromJson(json['details']) : null,
+      actionButton: json['action_button'],
     );
   }
 
-  Result({this.hidden, this.media, this.info, this.details});
+  Result({this.hidden, this.media, this.info, this.details, this.actionButton});
 }
 
 class Hidden {

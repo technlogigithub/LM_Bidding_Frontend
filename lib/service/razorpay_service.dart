@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_images.dart';
@@ -13,7 +15,19 @@ class RazorpayService {
   static const String _razorpayKey = 'rzp_test_1DP5mmOlF5G5ag'; // Replace with your actual Razorpay key
   AppSettingsController appController = Get.find<AppSettingsController>();
   AppSettingsController appSettingsController = Get.find<AppSettingsController>();
-  void initRazorpay() {
+  Function(PaymentSuccessResponse)? onSuccess;
+  Function(PaymentFailureResponse)? onFailure;
+  Function(ExternalWalletResponse)? onExternalWallet;
+
+  void initRazorpay({
+    Function(PaymentSuccessResponse)? onSuccess,
+    Function(PaymentFailureResponse)? onFailure,
+    Function(ExternalWalletResponse)? onExternalWallet,
+  }) {
+    this.onSuccess = onSuccess;
+    this.onFailure = onFailure;
+    this.onExternalWallet = onExternalWallet;
+
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
@@ -32,16 +46,18 @@ class RazorpayService {
       'amount': (amount * 100).toInt(),
       'image': appSettingsController.logoSplash.value,
       'name': appSettingsController.appName.value,
-      'description': description ?? 'Payment for services',
+      'description': description ?? '',
       'prefill': {
-        'contact': prefillContact ?? '9999999999',
-        'email': prefillEmail ?? 'demo@libdding.com'
+        'contact': prefillContact ?? '',
+        'email': prefillEmail ?? ''
       },
       'external': {
         'wallets': ['paytm']
       },
       'theme': {
-        'color': appSettingsController.primaryColor.value, /// Header Color
+        'color': appSettingsController.primaryColor.value,
+
+        /// Header Color
         "isDarkMode": appController.isDarkMode.value
       },
       "display": {
@@ -112,7 +128,17 @@ class RazorpayService {
   // }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    debugPrint('Payment Success: ${response.paymentId}');
+    // Build full dump manually (SDK me sirf ye hi fields hoti hain)
+    final Map<String, dynamic> fullResponse = {
+      "paymentId": response.paymentId,
+      "orderId": response.orderId,
+      "signature": response.signature,
+    };
+
+    debugPrint('================ RAZORPAY PAYMENT SUCCESS ================');
+    debugPrint(const JsonEncoder.withIndent('  ').convert(fullResponse));
+    debugPrint('==========================================================');
+
     Get.snackbar(
       'Payment Success',
       'Payment ID: ${response.paymentId}',
@@ -121,10 +147,22 @@ class RazorpayService {
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
     );
+
+    if (onSuccess != null) onSuccess!(response);
   }
 
+
   void _handlePaymentError(PaymentFailureResponse response) {
-    debugPrint('Payment Error: ${response.code} - ${response.message}');
+    final Map<String, dynamic> fullErrorResponse = {
+      "code": response.code,
+      "message": response.message,
+      "error": response.error, // sometimes contains nested map
+    };
+
+    debugPrint('================ RAZORPAY PAYMENT FAILURE ================');
+    debugPrint(const JsonEncoder.withIndent('  ').convert(fullErrorResponse));
+    debugPrint('==========================================================');
+
     Get.snackbar(
       'Payment Failed',
       response.message ?? 'Payment failed. Please try again.',
@@ -133,7 +171,11 @@ class RazorpayService {
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 3),
     );
+
+    if (onFailure != null) onFailure!(response);
   }
+
+
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     debugPrint('External Wallet: ${response.walletName}');
@@ -144,10 +186,10 @@ class RazorpayService {
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
     );
+    if (onExternalWallet != null) onExternalWallet!(response);
   }
 
   void dispose() {
     _razorpay.clear();
   }
 }
-

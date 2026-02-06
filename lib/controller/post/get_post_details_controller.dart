@@ -8,12 +8,18 @@ import '../../models/Post/Get_Post_details_Model.dart';
 import '../../models/Post/Cart_Model.dart';
 import '../../service/socket_service_interface.dart';
 import '../../widget/custom_navigator.dart';
+import '../cart/cart_controller.dart';
 
 class GetPostDetailsController extends GetxController {
   Rx<PostDetailsResponseModel?> getPostDetailsModel = Rx<PostDetailsResponseModel?>(null);
   RxBool isLoading = false.obs;
+  RxBool isLoadingfordynamicForm  = false.obs;
   RxBool isLoadingGetFunction = false.obs;
+  RxBool isApplyingCoupon = false.obs;
+  final TextEditingController couponController = TextEditingController();
   Rx<CartResponseModel?> cartResponseModel = Rx<CartResponseModel?>(null);
+
+
 
   Future<void> getPostDetails(String postId) async {
     isLoading.value = true;
@@ -178,69 +184,17 @@ class GetPostDetailsController extends GetxController {
     }
   }
 
-  Future<void> fetchCartDetails(String cartEndpoint,String nextPageName) async {
-    isLoadingGetFunction.value = true;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      String? ukey = prefs.getString('ukey');
-      String? token = prefs.getString('auth_token');
-
-      // Get Location
-      String lat = '';
-      String long = '';
-      try {
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.denied) {
-          permission = await Geolocator.requestPermission();
-        }
-        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-          Position position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
-          ).timeout(const Duration(seconds: 5));
-          lat = position.latitude.toString();
-          long = position.longitude.toString();
-        }
-      } catch (e) {
-        print("❌ Error getting location for cart: $e");
-      }
-
-      final apiService = ApiServices();
-      final headers = {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
-
-      final body = <String, dynamic>{
-        if (ukey != null) 'user_key': ukey,
-        if (lat.isNotEmpty) 'gps_lat': lat,
-        if (long.isNotEmpty) 'gps_long': long,
-      };
-
-      print("➡️ Fetching Cart Details from: $cartEndpoint");
-      var response = await apiService.makeRequestFormData(
-        endPoint: cartEndpoint,
-        method: 'POST',
-        body: body,
-        headers: headers,
-      );
-
-      if (response != null) {
-        cartResponseModel.value = CartResponseModel.fromJson(response);
-        print("📦 Cart Response Stored: ${cartResponseModel.value?.message}");
-        CustomNavigator.navigate(nextPageName);
-      }
-    } catch (e) {
-      print("Error fetching cart details: $e");
-      rethrow;
-    } finally {
-      isLoadingGetFunction.value = false;
-    }
+  Future<void> fetchCartDetails({required String cartEndpoint, String? nextPageName}) async {
+    // Delegate to CartController
+    final cartController = Get.put(CartController());
+    await cartController.fetchCartDetails(cartEndpoint: cartEndpoint, nextPageName: nextPageName);
   }
 
   Future<void> participateAndNavigate({
     required String participateEndpoint,
     required String cartEndpoint,
     required String nextPageName,
+    bool shouldFetchCart = true,
   }) async {
     isLoadingGetFunction.value = true;
     try {
@@ -286,14 +240,18 @@ class GetPostDetailsController extends GetxController {
         headers: headers,
       );
 
-      // 2. Call Cart API
-      print("🚀 Calling Cart API: $cartEndpoint");
-      await fetchCartDetails(cartEndpoint,nextPageName);
-
-      // 3. Navigate
-      print("🚀 Navigating to: $nextPageName");
-
-
+      // 2. Call Cart API or Navigate
+      if (shouldFetchCart) {
+        print("🚀 Calling Cart API: $cartEndpoint and Navigating to $nextPageName");
+        // Use CartController
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cart_details_endpoint',cartEndpoint);
+        final cartController = Get.put(CartController());
+        await cartController.fetchCartDetails(cartEndpoint: cartEndpoint, nextPageName: nextPageName);
+      } else {
+        print("🚀 Navigating to: $nextPageName (Skipping Cart Fetch)");
+        CustomNavigator.navigate(nextPageName);
+      }
     } catch (e) {
       print("Error in participateAndNavigate: $e");
     } finally {
@@ -439,7 +397,7 @@ class GetPostDetailsController extends GetxController {
     required String endpoint,
     required Map<String, dynamic> formData,
   }) async {
-    isLoading.value = true;
+    isLoadingfordynamicForm.value = true;
     try {
       final prefs = await SharedPreferences.getInstance();
       String? ukey = prefs.getString('ukey');
@@ -501,10 +459,10 @@ class GetPostDetailsController extends GetxController {
         }
 
         if (isSuccess) {
-          Get.find<SocketService>().sendMessage({
-            'event': 'dynamic_form_submit',
-            'data': formData,
-          });
+          // Get.find<SocketService>().sendMessage({
+          //   'event': 'dynamic_form_submit',
+          //   'data': formData,
+          // });
           Utils.showSnackbar(
             isSuccess: true,
             title: "Success",
@@ -530,7 +488,7 @@ class GetPostDetailsController extends GetxController {
       );
       return false;
     } finally {
-      isLoading.value = false;
+      isLoadingfordynamicForm.value = false;
     }
   }
 }

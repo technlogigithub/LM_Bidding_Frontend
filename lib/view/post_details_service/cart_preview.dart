@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
-import 'package:step_progress_indicator/step_progress_indicator.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:libdding/core/app_color.dart';
+import 'package:libdding/core/app_string.dart';
+import 'package:nb_utils/nb_utils.dart';
+import 'package:shimmer/shimmer.dart';
 
-import '../../core/app_color.dart';
-import '../../core/app_constant.dart' as AppStrings;
-import '../../core/app_images.dart';
+import '../../controller/cart/cart_controller.dart';
+import '../../controller/home/home_controller.dart';
+import '../../core/api_config.dart';
+import '../../core/app_constant.dart';
 import '../../core/app_textstyle.dart';
+import '../../models/Post/Cart_Item_Model.dart';
+import '../../models/Post/Cart_preview_Model.dart'; // Model for this screen
+import '../../widget/button_global.dart';
+import '../../widget/custom_navigator.dart';
+import '../../widget/custom_payment_radio_button.dart';
+import '../../widget/custom_view_widget.dart';
+import '../../widget/form_widgets/location_picker.dart';
+import 'bidding_sheet.dart';
+
 class CartPreview extends StatefulWidget {
   const CartPreview({super.key});
 
@@ -16,411 +30,412 @@ class CartPreview extends StatefulWidget {
 }
 
 class _CartPreviewState extends State<CartPreview> {
-  List<String> paymentMethod = [
-    'Credit or Debit Card',
-    'Paypal',
-    'bkash',
-  ];
+  final controller = Get.find<CartController>();
+  Map<String, dynamic>? tempAddress;
 
-  String selectedPaymentMethod = 'Credit or Debit Card';
-  bool isFavorite = false;
-  List<String> imageList = [
-    '${AppImage.creditcard}',
-    '${AppImage.paypal2}',
-    '${AppImage.bkash2}',
+  // Selected Payment Method Index
+  final RxInt selectedPaymentIndex = (-1).obs;
 
-  ];
-  List<dynamic> notifications = [];
-  bool isLoading = true;
+  // Fetch items state
+  final RxList<CartItem> fetchedItems = <CartItem>[].obs;
+  final RxBool isFetchingItems = false.obs;
+  final RxBool hasFetchedItems = false.obs;
+  Worker? _cartWorker;
 
   @override
   void initState() {
     super.initState();
-    // fetchOrders();
+    _initializeAddress();
+
+    // Listen to cart PREVIEW response changes
+    _cartWorker = ever(controller.cartPreviewResponse, (model) {
+      if (model?.result != null && model!.result!.isNotEmpty) {
+        _handleItemFetch(model!);
+        _updateAddress(model);
+      }
+    });
+
+    // Initial check
+    if (controller.cartPreviewResponse.value?.result != null &&
+        controller.cartPreviewResponse.value!.result!.isNotEmpty) {
+      _handleItemFetch(controller.cartPreviewResponse.value!);
+      _updateAddress(controller.cartPreviewResponse.value!);
+    }
   }
-  // Future<void> fetchOrders() async {
-  //   try {
-  //     final res = await  ApiService.getRequest("ordersApi");
-  //     setState(() {
-  //       notifications = res["data"] ?? []; // <-- API response structure ke hisaab se adjust karna
-  //       isLoading = false;
-  //     });
-  //   } catch (e) {
-  //     setState(() => isLoading = false);
-  //     toast("Error: $e");
-  //   }
-  //
-  // }
+
+  void _updateAddress(CartPreviewResponseModel model) {
+    if (model.result == null || model.result!.isEmpty) return;
+    
+    final addressData = model.result!.first.address;
+    if (addressData != null) {
+      setState(() {
+         tempAddress = {
+          'label': addressData.label,
+          'title': addressData.title,
+          'description': addressData.description,
+          'address_lat': addressData.addressLat,
+          'address_long': addressData.addressLong,
+          'edit': addressData.edit == true // ensure boolean
+        };
+      });
+    }
+  }
+
+  void _initializeAddress() {
+    if (controller.cartPreviewResponse.value?.result != null && 
+        controller.cartPreviewResponse.value!.result!.isNotEmpty) {
+      _updateAddress(controller.cartPreviewResponse.value!);
+    }
+  }
+
+  void _handleItemFetch(CartPreviewResponseModel model) {
+    if (model.result == null || model.result!.isEmpty) return;
+    
+    final result = model.result!.first;
+    if (result.items != null && result.items!.isNotEmpty) {
+      final itemsList = result.items;
+      final firstItem = itemsList?.where((e) => e.apiEndpoint?.isNotEmpty == true).firstOrNull ?? itemsList?.firstOrNull;
+
+      if (firstItem?.apiEndpoint != null && firstItem!.apiEndpoint!.isNotEmpty && !hasFetchedItems.value) {
+        _fetchItems(firstItem.apiEndpoint!);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _cartWorker?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchItems(String endpoint) async {
+    if (isFetchingItems.value || hasFetchedItems.value) return;
+
+    debugPrint("🚀 Triggering _fetchItems for endpoint: $endpoint");
+
+    try {
+      isFetchingItems.value = true;
+
+      // Extract user_key from endpoint if possible
+      String userKey = "";
+      if (endpoint.isNotEmpty) {
+        final segments = endpoint.split('/');
+        if (segments.isNotEmpty) userKey = segments.last;
+      }
+
+      // Get Location
+      String lat = "";
+      String long = "";
+      try {
+        if (Get.isRegistered<ClientHomeController>()) {
+          final homeCtrl = Get.find<ClientHomeController>();
+          if (homeCtrl.currentLatLng.value.latitude != 0) {
+            lat = homeCtrl.currentLatLng.value.latitude.toString();
+            long = homeCtrl.currentLatLng.value.longitude.toString();
+          }
+        }
+      } catch (e) {
+        debugPrint("⚠️ Could not get location: $e");
+      }
+
+      final body = {"user_key": userKey, "gps_lat": lat, "gps_long": long};
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+      final headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token'
+      };
+
+      final response = await ApiService.postRequest(endpoint, body, headers: headers);
+
+      if (response != null && response['success'] == true && response['result'] != null) {
+        final cartItemResponse = CartItemResponseModel.fromJson(response);
+        if (cartItemResponse.result?.items != null) {
+          fetchedItems.assignAll(cartItemResponse.result!.items!);
+        }
+      }
+      hasFetchedItems.value = true;
+    } catch (e) {
+      debugPrint("❌ Error fetching items: $e");
+    } finally {
+      isFetchingItems.value = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: true,
-        iconTheme:  IconThemeData(color: AppColors.appTextColor,),
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
         flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appbarColor,
-            // borderRadius: const BorderRadius.only(
-            //   bottomLeft: Radius.circular(50.0),
-            //   bottomRight: Radius.circular(50.0),
-            // ),
-          ),
+          decoration: BoxDecoration(gradient: AppColors.appbarColor),
         ),
         toolbarHeight: 80,
         centerTitle: true,
-        title: Obx(() {
-          return Text(
-            'Cart Preview ',
-            // controller.referral.value?.label ?? '',
-            style:  AppTextStyle.title(
-              color: AppColors.appTextColor,
-              fontWeight: FontWeight.bold,
-
-            ),
-          );
-        }),
+        title: Text(
+          "Cart Preview", 
+          style: AppTextStyle.title(color: AppColors.appTextColor, fontWeight: FontWeight.bold),
+        ),
       ),
+      bottomNavigationBar: Obx(() {
+        final cartResult = controller.cartPreviewResponse.value?.result?.firstOrNull;
+        if (cartResult == null || cartResult.paymentMethods == null || cartResult.paymentMethods!.isEmpty) return const SizedBox.shrink();
 
-      // bottomNavigationBar: Container(
-      //   decoration: BoxDecoration(gradient: AppColors.appPagecolor),
-      //   child: ButtonGlobalWithoutIcon(
-      //     buttontext: 'Continue',
-      //     buttonDecoration: kButtonDecoration.copyWith(
-      //       color: AppColors.appButtonColor,
-      //       borderRadius: BorderRadius.circular(30.0),
-      //     ),
-      //     onPressed: () {
-      //       setState(() {
-      //         const AddNewCardScreen().launch(context);
-      //       });
-      //     },
-      //     buttonTextColor: AppColors.appButtonTextColor,
-      //   ),
-      // ),
+        // Ensure index is valid & something is selected
+        if (selectedPaymentIndex.value == -1 || selectedPaymentIndex.value >= cartResult.paymentMethods!.length) {
+           return const SizedBox.shrink();
+        }
+
+        final selectedMethod = cartResult.paymentMethods![selectedPaymentIndex.value];
+        final btn = selectedMethod.button;
+
+        if (btn == null) return const SizedBox.shrink();
+
+        return Container(
+          decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+          child: ButtonGlobalWithoutIcon(
+            buttontext: btn.label ?? 'Submit',
+            buttonDecoration: kButtonDecoration.copyWith(color: AppColors.appButtonColor, borderRadius: BorderRadius.circular(30.0)),
+            onPressed: () async {
+               if (btn.apiEndpoint?.isNotEmpty == true) {
+                 controller.paymentMethodCall(endpoint: btn.apiEndpoint!,nextpagename: btn.nextPageName!, nextpageapiendpoint: btn.nextPageApiEndpoint!);
+               }
+            },
+            buttonTextColor: AppColors.appButtonTextColor,
+          ),
+        );
+      }),
       body: Container(
         height: double.infinity,
         width: double.infinity,
-        decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: SingleChildScrollView(
-          // physics: const BouncingScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 15.0),
+            child: Obx(() {
+              final cartResult = controller.cartPreviewResponse.value?.result?.firstOrNull;
+              if (cartResult == null) return const SizedBox.shrink();
 
-                Container(
-                  height: 120.h,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.appPagecolor,
-                    borderRadius: BorderRadius.circular(8.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.appMutedColor,
-                        blurRadius: 5,
-                        spreadRadius: 1,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   // Address Section
+                   if (cartResult.address != null)
+                      _buildAddressCard({
+                        'label': cartResult.address!.label,
+                        'title': cartResult.address!.title,
+                        'address_lat': cartResult.address!.addressLat,
+                        'address_long': cartResult.address!.addressLong,
+                        'description': tempAddress?['description'] ?? cartResult.address!.description,
+                        'edit': cartResult.address!.edit
+                      }, 0),
+                   
+                   // Items Section
+                   if (cartResult.items != null && cartResult.items!.isNotEmpty)
+                      ...cartResult.items!.map((item) => _buildItemsSection(item)).toList(),
 
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Stack(
-                        alignment: Alignment.topLeft,
-                        children: [
-                          Container(
-                            height: 120,
-                            width: 120,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(8.0),
-                                topLeft: Radius.circular(8.0),
-                              ),
-                              image: DecorationImage(
-                                  image: AssetImage(
-                                    '${AppImage.shot}',
-                                  ),
-                                  fit: BoxFit.cover),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              // setState(() {
-                              //   isFavorite = !isFavorite;
-                              // });
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Container(
-                                height: 25,
-                                width: 25,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 10.0,
-                                      spreadRadius: 1.0,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: isFavorite
-                                    ? const Center(
-                                  child: Icon(
-                                    Icons.favorite,
-                                    color: Colors.red,
-                                    size: 16.0,
-                                  ),
-                                )
-                                    : Center(
-                                  child: Icon(
-                                    Icons.favorite_border,
-                                    color: AppColors.neutralColor,
-                                    size: 16.0,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: SizedBox(
-                                width: 190,
-                                child: Text(
-                                  'Mobile UI UX design or app UI UX design.',
-                                  style: AppTextStyle.title(),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 5.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const Icon(
-                                  IconlyBold.star,
-                                  color: Colors.amber,
-                                  size: 18.0,
-                                ),
-                                const SizedBox(width: 2.0),
-                                Text(
-                                  '5.0',
-                                  style: AppTextStyle.kTextStyle.copyWith(
-                                    color: AppColors.appTitleColor,
-                                  ),
-                                ),
-                                const SizedBox(width: 2.0),
-                                Text(
-                                  '(520)',
-                                  style: AppTextStyle.kTextStyle.copyWith(
-                                    color: AppColors.textgrey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 5.0),
-                            RichText(
-                              text: TextSpan(
-                                text: 'Price: ',
-                                style: AppTextStyle.kTextStyle.copyWith(
-                                  color: AppColors.textgrey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: '${AppStrings.currencySign}${30}',
-                                    style: AppTextStyle.kTextStyle.copyWith(
-                                      color: AppColors.appColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            )
-                          ],
+                   // Info Section
+                    if (cartResult.info != null)
+                      _buildInfoSection(cartResult.info!),
+                   
+                   // Payment Method Section
+                   if (cartResult.paymentMethods != null && cartResult.paymentMethods!.isNotEmpty)
+                      _buildPaymentMethodsSection(cartResult.paymentMethods!)
+
+                ],
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget customrow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Text(title, style: AppTextStyle.description()),
+          const Spacer(),
+          Text(value, style: AppTextStyle.description(color: AppColors.appBodyTextColor)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressCard(Map<String, dynamic> address, int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: AppColors.appPagecolor,
+        boxShadow: [BoxShadow(color: AppColors.appMutedColor, blurRadius: 5, spreadRadius: 1, offset: const Offset(0, 10))],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(address['label'] ?? '', style: AppTextStyle.description(color: AppColors.appDescriptionColor)),
+                        Text(
+                          " : ${address['title'] ?? ''}",
+                          style: AppTextStyle.title(fontWeight: FontWeight.bold, color: AppColors.appTitleColor),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 25.0),
-                Text(
-                    'Order Details',
-                    style: AppTextStyle.title()
-                ),
-                const SizedBox(height: 15.0),
-                customrow('Delivery days','2 days'),
-                const SizedBox(height: 15.0),
-                Row(
-                  children: [
-                    Text(
-                      'Revisions included',
-                      style: AppTextStyle.description(),
+                      ],
                     ),
-                    const Spacer(),
-                    Icon(
-                      Icons.check_rounded,
-                      color: AppColors.appDescriptionColor,
+                     SizedBox(height: 4.h),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.place_outlined, color: AppColors.appIconColor, size: 20),
+                         SizedBox(width: 10.w),
+                        Expanded(
+                          child: Text(address['description'] ?? '', style: AppTextStyle.description(color: AppColors.appDescriptionColor)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                // customrow('Revisions','Unlimited'),
-                const SizedBox(height: 15.0),
-                Row(
-                  children: [
-                    Text(
-                        '3 Page/Screen',
-                        style: AppTextStyle.description()
-                    ),
-                    const Spacer(),
-                    Icon(
-                      Icons.check_rounded,
-                      color: AppColors.appDescriptionColor,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15.0),
-                Row(
-                  children: [
-                    Text(
-                      'Responsive design',
-                      style: AppTextStyle.description(),
-                    ),
-                    const Spacer(),
-                    Icon(
-                      Icons.check_rounded,
-                      color: AppColors.appDescriptionColor,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15.0),
-                Row(
-                  children: [
-                    Text(
-                      'Source file',
-                      style: AppTextStyle.description(),
-                    ),
-                    const Spacer(),
-                    Icon(
-                      Icons.check_rounded,
-                      color: AppColors.appDescriptionColor,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15.0),
+              ),
+              // if (address['edit'] == true)
+              //   Row(
+              //     children: [
+              //       const SizedBox(width: 12),
+              //       GestureDetector(
+              //         onTap: () {
+              //            double targetLat = double.tryParse(address['address_lat']?.toString() ?? '0.0') ?? 0.0;
+              //           double targetLng = double.tryParse(address['address_long']?.toString() ?? '0.0') ?? 0.0;
+              //
+              //           Get.to(
+              //             () => LocationPickerScreen(
+              //               initialLat: targetLat,
+              //               initialLng: targetLng,
+              //               onLocationSelected: (LatLng location, String addressName) {
+              //                 setState(() {
+              //                   if (tempAddress == null) {
+              //                     tempAddress = {};
+              //                   }
+              //                   tempAddress!['description'] = addressName;
+              //                 });
+              //               },
+              //             ),
+              //           );
+              //         },
+              //         child: Icon(FeatherIcons.edit, color: AppColors.appButtonColor, size: 21),
+              //       ),
+              //     ],
+              //   ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-                // Text(
-                //   'Payment Method',
-                //   style: AppTextStyle.title(),
-                // ),
-                // const SizedBox(height: 20.0),
-                // ListView.builder(
-                //   itemCount: paymentMethod.length,
-                //   shrinkWrap: true,
-                //   padding: EdgeInsets.zero,
-                //   physics: const NeverScrollableScrollPhysics(),
-                //   itemBuilder: (_, i) {
-                //     return CustomPaymentRadioButton(
-                //       title: paymentMethod[i],
-                //       image: imageList[i],
-                //       isSelected: selectedPaymentMethod == paymentMethod[i],
-                //       onTap: () {
-                //         setState(() {
-                //           selectedPaymentMethod = paymentMethod[i];
-                //         });
-                //       },
-                //     );
-                //   },
-                // ),
-                //
-                // const SizedBox(height: 20.0),
-                // Text(
-                //   'Order Summary',
-                //   style: AppTextStyle.title(),
-                // ),
-                // const SizedBox(height: 20.0),
-                // customrow("Subtotal", "${AppStrings.currencySign}${30}"),
-                // const SizedBox(height: 10.0),
-                // customrow("Service Fee", "${AppStrings.currencySign}${5.50}"),
-                // const SizedBox(height: 10.0),
-                customrow("Total", "${AppStrings.currencySign}${35.50}"),
-                const SizedBox(height: 20.0),
-                // customrow("Delivery Date", "Thursday, 14 July 2023"),
-                // const SizedBox(height: 10.0),
+  Widget _buildInfoSection(Info info) {
+    if (info.rawData == null || info.rawData!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20.0),
+        ...info.rawData!.entries.map((entry) {
+          return customrow(
+            entry.key.toString(),
+            "${AppStrings.currencySign}${entry.value}",
+          );
+        }).toList(),
+        const SizedBox(height: 10.0),
+      ],
+    );
+  }
 
+  Widget _buildItemsSection(Items item) {
+    return Obx(() {
+      final shouldShowShimmer = !hasFetchedItems.value || 
+                                (fetchedItems.isEmpty && (isFetchingItems.value));
+      
+      if (shouldShowShimmer) {
+        return _buildItemsShimmer();
+      }
 
+      if (fetchedItems.isEmpty) return const SizedBox.shrink();
 
-                // ListTile(
-                //   contentPadding: EdgeInsets.zero,
-                //   horizontalTitleGap: 10.0,
-                //   leading: Container(
-                //     padding: const EdgeInsets.all(10),
-                //     decoration: BoxDecoration(
-                //       shape: BoxShape.circle,
-                //       color: AppColors.appButtonColor.withOpacity(0.1),
-                //       // color: kPrimaryColor.withOpacity(0.1),
-                //     ),
-                //     child:  Icon(
-                //       IconlyBold.document,
-                //       color:AppColors.appButtonColor,
-                //     ),
-                //   ),
-                //   title: Text(
-                //     'Source file Name',
-                //     style: AppTextStyle.description(color: AppColors.appBodyTextColor),
-                //   ),
-                //   // subtitle: StepProgressIndicator(
-                //   //   totalSteps: 100,
-                //   //   currentStep: 60,
-                //   //   size: 8,
-                //   //   padding: 0,
-                //   //   selectedColor: AppColors.appButtonColor,
-                //   //   unselectedColor: AppColors.appMutedColor ,
-                //   //   roundedEdges: const Radius.circular(10),
-                //   // ),
-                //   trailing: Icon(Icons.remove_red_eye,color: AppColors.appIconColor,),
-                // ),
-              ],
+      final listTypes = {'custom_vertical_listview_list', 'custom_horizontal_listview_list', 'custom_vertical_gridview_list', 'custom_horizontal_gridview_list'};
+
+      if (item.viewType != null && listTypes.contains(item.viewType)) {
+        return CustomViewWidget(
+          type: item.viewType!,
+          itemDataList: fetchedItems.map((e) => e.toJson()).toList(),
+          isFromCartScreen: false,
+          onActionTap: (btn, userKey) async {
+             // Handle action taps
+          },
+        );
+      }
+      return const SizedBox.shrink();
+    });
+  }
+
+  Widget _buildItemsShimmer() {
+    return Column(
+      children: List.generate(
+        3,
+        (index) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appTextColor.withOpacity(0.1),
+            child: Container(
+              height: 100.h,
+              width: double.infinity,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
             ),
           ),
         ),
       ),
     );
   }
-  Widget customrow( String title, String value){
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: AppTextStyle.description(),
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: AppTextStyle.description(color: AppColors.appBodyTextColor),
-          ),
-        ],
-      ),
+
+  Widget _buildPaymentMethodsSection(List<PaymentMethods> paymentMethods) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        // Text("Payment Methods", style: AppTextStyle.title()),
+        // const SizedBox(height: 15),
+        ListView.builder(
+          itemCount: paymentMethods.length,
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (_, i) {
+             final method = paymentMethods[i];
+             return Obx(() => CustomPaymentRadioButton(
+                title: method.label ?? '',
+                image: method.icon ?? '', 
+                isSelected: selectedPaymentIndex.value == i,
+                onTap: () {
+                   selectedPaymentIndex.value = i;
+                },
+             ));
+          },
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 }

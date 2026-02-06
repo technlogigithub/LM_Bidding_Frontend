@@ -35,7 +35,7 @@ void main() async {
   String? token = await notificationServices.getDeviceToken();
   debugPrint('📲 FCM Token: $token');
 
-  // // 🔌 SOCKET INIT (LOCAL + GLOBAL)
+  // 🔌 SOCKET INIT (LOCAL + GLOBAL)
   // final socketService = Get.put<SocketService>(
   //   SocketServiceImpl(), // from socket_factory.dart
   //   permanent: true,

@@ -1663,6 +1663,7 @@ class RegisterInput {
   List<dynamic>? stepSetting;
 
   dynamic value; // String, int, bool, List, Map, null
+  Map<String, dynamic>? design;
 
   RegisterInput({
     this.inputType,
@@ -1678,6 +1679,7 @@ class RegisterInput {
     this.groupValue,
     this.stepSetting,
     this.value,
+    this.design,
   });
 
   factory RegisterInput.fromJson(Map<String, dynamic> json) {
@@ -1723,6 +1725,7 @@ class RegisterInput {
           ? (json['step_setting'] as List)
           : null,
       value: json['value'],
+      design: json['design'],
     );
   }
 
@@ -1742,6 +1745,7 @@ class RegisterInput {
       'options': options,
     if (stepSetting != null) 'step_setting': stepSetting,
     'value': value,
+    'design': design,
   };
 }
 

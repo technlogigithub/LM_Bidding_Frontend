@@ -36,12 +36,23 @@ class CustomPaymentRadioButton extends StatelessWidget {
             leading: Container(
               height: 50.0,
               width: 50.0,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage(image),
-                  fit: BoxFit.cover,
-                ),
+              ),
+              child: ClipOval(
+                child: image.startsWith('http')
+                    ? Image.network(
+                        image,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Icon(Icons.image_not_supported, color: AppColors.appMutedColor),
+                      )
+                    : Image.asset(
+                        image,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Icon(Icons.image_not_supported, color: AppColors.appMutedColor),
+                      ),
               ),
             ),
             title: Text(
