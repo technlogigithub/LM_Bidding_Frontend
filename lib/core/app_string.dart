@@ -33,6 +33,7 @@ class AppStrings{
   static String myProfile  = 'My Profile';
   static String dashboard  = 'Dashboard';
   static String myPost  = 'My Posts';
+  static String myOrders  = 'My Orders';
   static String Deposit  = 'Deposit';
   static String withdraw  = 'Withdraw';
   static String Transaction  = 'Transaction';

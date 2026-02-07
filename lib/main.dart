@@ -7,6 +7,7 @@ import 'package:libdding/core/app_config.dart';
 import 'package:libdding/service/socket_service_interface.dart';
 import 'package:libdding/service/socket_service.dart';
 import 'package:libdding/view/splash_screen/splash_screen.dart';
+import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:firebase_core/firebase_core.dart';
 import 'Notifications Services/notifications_services.dart';
 import 'package:libdding/controller/network_controller.dart';
@@ -16,10 +17,6 @@ import 'package:libdding/view/widgets/no_internet_widget.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🔥 Firebase
-  await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
   // 📦 App version
   await AppInfo.getCurrentVersion();
 
@@ -27,13 +24,25 @@ void main() async {
   final appController = Get.put(AppSettingsController());
   await appController.fetchAllData();
 
-  // 🔔 Notifications
-  NotificationServices notificationServices = NotificationServices();
-  await notificationServices.requestNotificationPermission();
-  notificationServices.initLocalNotifications();
-  notificationServices.firebaseInit();
-  String? token = await notificationServices.getDeviceToken();
-  debugPrint('📲 FCM Token: $token');
+  if (!kIsWeb) {
+    // 🔥 Firebase (Mobile Only)
+    try {
+      await Firebase.initializeApp();
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+      // 🔔 Notifications
+      NotificationServices notificationServices = NotificationServices();
+      await notificationServices.requestNotificationPermission();
+      notificationServices.initLocalNotifications();
+      notificationServices.firebaseInit();
+      String? token = await notificationServices.getDeviceToken();
+      debugPrint('📲 FCM Token: $token');
+    } catch (e) {
+      debugPrint("❌ Firebase Init Failed: $e");
+    }
+  } else {
+    debugPrint("⚠️ Firebase & Notifications skipped on Web (Configuration missing)");
+  }
 
   // 🔌 SOCKET INIT (LOCAL + GLOBAL)
   // final socketService = Get.put<SocketService>(

@@ -16,6 +16,7 @@ import '../seller screen/buyer request/buyer_request.dart';
 import '../seller screen/report/seller_report_screen.dart';
 import '../seller screen/withdraw_money/withdraw_history.dart';
 import 'Dashboard_screen.dart';
+import 'My Orders/my_orders_screen.dart';
 import 'deposit_history_screen.dart';
 import 'Invite_screen.dart';
 import 'My Posts/my_post_screen.dart';
@@ -138,6 +139,22 @@ class ProfileScreen extends StatelessWidget {
                             child: const Icon(Icons.article_outlined, color: Colors.green),
                           ),
                           title: Obx(() => Text(AppStrings.myPost, maxLines: 1, style: AppTextStyle.description(color: text))),
+                          trailing:Icon(FeatherIcons.chevronRight, color: text),
+                        ),
+
+                        /// ---------------- MyOrdersScreen ----------------
+                        ListTile(
+                          onTap: () => Get.to(MyOrdersScreen()),
+                          visualDensity: const VisualDensity(vertical: -3),
+                          horizontalTitleGap: 10,
+                          contentPadding: const EdgeInsets.only(bottom: 20),
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration:  BoxDecoration(
+                                shape: BoxShape.circle, color: Colors.blueAccent.withOpacity(0.2)),
+                            child: const Icon(Icons.shopping_bag_outlined, color: Colors.blueAccent),
+                          ),
+                          title: Obx(() => Text(AppStrings.myOrders, maxLines: 1, style: AppTextStyle.description(color: text))),
                           trailing:Icon(FeatherIcons.chevronRight, color: text),
                         ),
 

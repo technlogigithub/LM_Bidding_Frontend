@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -180,7 +181,13 @@ class ApiServices {
   /// Internet check
   Future<bool> _isInternetAvailable() async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) return false;
+    if (connectivityResult == ConnectivityResult.none) {
+      return false;
+    }
+
+    if (kIsWeb) {
+      return true;
+    }
 
     try {
       final result = await InternetAddress.lookup('google.com');
