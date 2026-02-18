@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:libdding/widget/form_widgets/app_button.dart';
 import 'package:nb_utils/nb_utils.dart';
+import '../../../core/app_color.dart';
 import '../../../core/app_constant.dart';
+import '../../../core/app_textstyle.dart';
 import '../../../widget/button_global.dart';
+import '../../../widget/form_widgets/app_textfield.dart';
 import '../../client review/client_review.dart';
 
 class CreateCustomerOffer extends StatefulWidget {
@@ -24,7 +30,7 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
       dropDownItems.add(item);
     }
     return DropdownButton(
-      icon: const Icon(FeatherIcons.chevronDown),
+      icon:  Icon(FeatherIcons.chevronDown,color: AppColors.appIconColor,),
       items: dropDownItems,
       value: selectedDeliveryTimeList,
       style: kTextStyle.copyWith(color: kSubTitleColor),
@@ -64,46 +70,72 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
   ];
 
   List<String> selectedOfferScopeList = ['Source File'];
+  bool isExpanded = true;
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kDarkWhite,
       appBar: AppBar(
-        backgroundColor: kDarkWhite,
         elevation: 0,
-        iconTheme: const IconThemeData(color: kNeutralColor),
-        title: Text(
-          'Create a custom Offer',
-          style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+        automaticallyImplyLeading: true,
+        iconTheme:  IconThemeData(color: AppColors.appTextColor,),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appbarColor,
+            // borderRadius: const BorderRadius.only(
+            //   bottomLeft: Radius.circular(50.0),
+            //   bottomRight: Radius.circular(50.0),
+            // ),
+          ),
         ),
+        toolbarHeight: 80,
         centerTitle: true,
-      ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(color: kWhite),
-        child: ButtonGlobalWithoutIcon(
-            buttontext: 'Submit Offer',
-            buttonDecoration: kButtonDecoration.copyWith(color: kPrimaryColor, borderRadius: BorderRadius.circular(30.0)),
-            onPressed: () {
-              const SellerHome().launch(context);
-            },
-            buttonTextColor: kWhite),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 20.0),
-        child: Container(
-          padding: const EdgeInsets.only(
-            left: 15.0,
-            right: 15.0,
-          ),
-          width: context.width(),
-          decoration: const BoxDecoration(
-            color: kWhite,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30.0),
-              topRight: Radius.circular(30.0),
+        title: Obx(() {
+          return Text(
+            'Create a custom Offer',
+            style:  AppTextStyle.title(
+              color: AppColors.appTextColor,
+              fontWeight: FontWeight.bold,
+
             ),
-          ),
+          );
+        }),
+      ),
+      // appBar: AppBar(
+      //   backgroundColor: kDarkWhite,
+      //   elevation: 0,
+      //   iconTheme: const IconThemeData(color: kNeutralColor),
+      //   title: Text(
+      //     'Create a custom Offer',
+      //     style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+      //   ),
+      //   centerTitle: true,
+      // ),
+      bottomNavigationBar: Container(
+        decoration:  BoxDecoration(gradient: AppColors.appPagecolor),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: CustomButton(onTap: () {
+            const SellerHome().launch(context);
+          }, text: "Submit Offer"),
+        ),
+        // child: ButtonGlobalWithoutIcon(
+        //     buttontext: 'Submit Offer',
+        //     buttonDecoration: kButtonDecoration.copyWith(color: kPrimaryColor, borderRadius: BorderRadius.circular(30.0)),
+        //     onPressed: () {
+        //       const SellerHome().launch(context);
+        //     },
+        //     buttonTextColor: kWhite),
+      ),
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Column(
@@ -113,14 +145,16 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                 Container(
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                      color: kWhite,
-                      border: Border.all(color: kBorderColorTextField),
-                      boxShadow: const [
+                    gradient: AppColors.appPagecolor,
+                      boxShadow: [
                         BoxShadow(
-                          color: kBorderColorTextField,
-                          spreadRadius: 0.2,
-                          blurRadius: 4.0,
-                          offset: Offset(0, 2),
+                          color: AppColors.appMutedColor,
+                          blurRadius: 5,
+                          spreadRadius: 1,
+                          offset: Offset(0, 10),
+                          // blurRadius: 1,
+                          // spreadRadius: 1,
+                          // offset: Offset(0, 6),
                         ),
                       ],
                       borderRadius: BorderRadius.circular(10.0)),
@@ -130,8 +164,8 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: Container(
-                          height: 44,
-                          width: 44,
+                          height: 44.h,
+                          width: 44.w,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             image: DecorationImage(
@@ -142,29 +176,29 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                         ),
                         title: Text(
                           'Shaidul Islam',
-                          style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                          style: AppTextStyle.title(),
                         ),
                         subtitle: Text(
                           '28 Jun 2023',
-                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                          style: AppTextStyle.description(),
                         ),
                       ),
-                      const Divider(
+                       Divider(
                         height: 0,
                         thickness: 1.0,
-                        color: kBorderColorTextField,
+                        color:AppColors.appMutedColor,
                       ),
                       const SizedBox(height: 10.0),
                       Text(
                         'I Need UI UX Designer',
-                        style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                        style: AppTextStyle.title(),
                       ),
                       const SizedBox(height: 5.0),
                       ReadMoreText(
                         'Lorem ipsum dolor sit amet consectetur. Elementum nulla quis nunc Lorem ipsum dolor sit amet consectetur. O rci pulvinar sit nec donec pellentesque ve nenatis nunc vel pretium. Dictumst bib en dum pharetra hendrerit tortor nisl. Nulla accumsan ',
-                        style: kTextStyle.copyWith(color: kLightNeutralColor),
+                        style: AppTextStyle.description(),
                         trimLines: 2,
-                        colorClickableText: kPrimaryColor,
+                        colorClickableText: AppColors.appColor,
                         trimMode: TrimMode.Line,
                         trimCollapsedText: '..Read more',
                         trimExpandedText: '..Read less',
@@ -175,22 +209,24 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                 const SizedBox(height: 15.0),
                 Container(
                   decoration: BoxDecoration(
-                      color: kWhite,
-                      border: Border.all(color: kBorderColorTextField),
-                      boxShadow: const [
+                      gradient: AppColors.appPagecolor,
+                      boxShadow: [
                         BoxShadow(
-                          color: kBorderColorTextField,
-                          spreadRadius: 0.2,
-                          blurRadius: 4.0,
-                          offset: Offset(0, 2),
+                          color: AppColors.appMutedColor,
+                          blurRadius: 5,
+                          spreadRadius: 1,
+                          offset: Offset(0, 10),
+                          // blurRadius: 1,
+                          // spreadRadius: 1,
+                          // offset: Offset(0, 6),
                         ),
                       ],
                       borderRadius: BorderRadius.circular(10.0)),
                   child: Row(
                     children: [
                       Container(
-                        height: 67,
-                        width: 79,
+                        height: 67.h,
+                        width: 79.w,
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10.0),
@@ -205,7 +241,7 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                           child: Text(
                             'Mobile UI UX design or app UI UX design.',
                             maxLines: 2,
-                            style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                            style: AppTextStyle.description(color: AppColors.appTitleColor, fontWeight: FontWeight.w500),
                           ),
                         ),
                       ),
@@ -215,73 +251,51 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                 const SizedBox(height: 20.0),
                 Text(
                   'Description',
-                  style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                  style: AppTextStyle.title(),
                 ),
                 const SizedBox(height: 15.0),
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
-                    border: Border.all(color: kBorderColorTextField),
+                    gradient: AppColors.appPagecolor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.appMutedColor,
+                        blurRadius: 5,
+                        spreadRadius: 1,
+                        offset: Offset(0, 10),
+                        // blurRadius: 1,
+                        // spreadRadius: 1,
+                        // offset: Offset(0, 6),
+                      ),
+                    ],
+
                   ),
                   child: Text(
                     'Hello there, This is Ibne Riead! A professional UI/UX Design experience with 2+ years in this field. I specialize in Mobile Apps and Website Design. I always try to meet the needs of my client. ',
-                    style: kTextStyle.copyWith(color: kSubTitleColor),
-                  ),
-                ),
-                const SizedBox(height: 15.0),
-                TextFormField(
-                  keyboardType: TextInputType.name,
-                  cursorColor: kNeutralColor,
-                  decoration: kInputDecoration.copyWith(
-                    labelText: 'Total Offer Amount',
-                    labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                    hintText: 'Enter amount',
-                    hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                    focusColor: kNeutralColor,
-                    border: const OutlineInputBorder(),
+                    style: AppTextStyle.description(),
                   ),
                 ),
                 const SizedBox(height: 20.0),
-                FormField(
-                  builder: (FormFieldState<dynamic> field) {
-                    return InputDecorator(
-                      decoration: kInputDecoration.copyWith(
-                        enabledBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(8.0),
-                          ),
-                          borderSide: BorderSide(color: kBorderColorTextField, width: 2),
-                        ),
-                        contentPadding: const EdgeInsets.all(7.0),
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        labelText: 'Delivery Time',
-                        labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                      ),
-                      child: DropdownButtonHideUnderline(child: getDeliveryTime()),
-                    );
+                CustomTextfield(
+                  label: 'Total Offer Amount',
+                  hintText: 'Enter amount',
+                  keyboardType: TextInputType.number, // amount ke liye better
+                  // controller: totalOfferController,   // optional agar use karna ho
+                  onChanged: (value) {
+                    print(value);
                   },
+                  textInputAction: TextInputAction.done,
+                  maxLength: 10, // optional
                 ),
+
                 const SizedBox(height: 20.0),
-                FormField(
-                  builder: (FormFieldState<dynamic> field) {
-                    return InputDecorator(
-                      decoration: kInputDecoration.copyWith(
-                        enabledBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(8.0),
-                          ),
-                          borderSide: BorderSide(color: kBorderColorTextField, width: 2),
-                        ),
-                        contentPadding: const EdgeInsets.all(7.0),
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        labelText: 'Revisions (optional)',
-                        labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-                      ),
-                      child: DropdownButtonHideUnderline(child: getRevisionTime()),
-                    );
-                  },
-                ),
+                deliveryTimeDropdown(),
+
+                const SizedBox(height: 20.0),
+                revisionTimeDropdown(),
+
                 Theme(
                   data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
@@ -290,10 +304,10 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                     tilePadding: EdgeInsets.zero,
                     iconColor: kLightNeutralColor,
                     collapsedIconColor: kLightNeutralColor,
-                    trailing: const Icon(FeatherIcons.chevronDown),
+                    trailing:  Icon(FeatherIcons.chevronDown,color: AppColors.appIconColor,),
                     title: Text(
                       'Define the offer scope',
-                      style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: AppTextStyle.description(color: AppColors.appTitleColor,fontWeight: FontWeight.bold),
                     ),
                     children: [
                       ListView.builder(
@@ -316,16 +330,16 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
                                 visualDensity: const VisualDensity(vertical: -3),
                                 title: Text(
                                   offerScopeList[i],
-                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                  style: AppTextStyle.description(),
                                 ),
                                 trailing: Icon(
                                   selectedOfferScopeList.contains(offerScopeList[i]) ? Icons.check_circle : Icons.circle_outlined,
-                                  color: selectedOfferScopeList.contains(offerScopeList[i]) ? kPrimaryColor : kSubTitleColor,
+                                  color: selectedOfferScopeList.contains(offerScopeList[i]) ? AppColors.appButtonColor : AppColors.appIconColor,
                                 ),
                               ),
-                              const Divider(
+                               Divider(
                                 thickness: 1.0,
-                                color: kBorderColorTextField,
+                                color: AppColors.appMutedColor,
                                 height: 1,
                               )
                             ],
@@ -342,4 +356,174 @@ class _CreateCustomerOfferState extends State<CreateCustomerOffer> {
       ),
     );
   }
+  Widget deliveryTimeDropdown() {
+    return FormField<String>(
+      builder: (FormFieldState<String> field) {
+        return InputDecorator(
+          decoration: kInputDecoration.copyWith(
+            labelText: 'Delivery Time',
+            labelStyle: AppTextStyle.description(color: AppColors.appDescriptionColor,),
+            hintText: 'Select delivery time',
+            hintStyle: AppTextStyle.description(),
+
+            // ✅ TRANSPARENT BACKGROUND
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.01),
+
+            // ✅ NORMAL BORDER COLOR
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: AppColors.appDescriptionColor, // ✅ YOUR BORDER COLOR
+                width: 1,
+              ),
+            ),
+
+            // ✅ FOCUSED BORDER COLOR
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: AppColors.appDescriptionColor, // focus color
+                width: 1.5,
+              ),
+            ),
+
+            // ✅ DEFAULT BORDER (Fallback)
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: AppColors.appBodyTextColor,
+                width: 1,
+              ),
+            ),
+
+            contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: selectedDeliveryTimeList,
+              icon: Icon(
+                FeatherIcons.chevronDown,
+                color: AppColors.appIconColor,
+              ),
+              style: AppTextStyle.description(
+                color: AppColors.appTitleColor,
+              ),
+              items: deliveryTimeList.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(
+                    value,
+                    style: AppTextStyle.description(
+                      color: AppColors.appTitleColor,
+                    ),
+                  ),
+                );
+              }).toList(),
+              hint: Text(
+                'Select delivery time',
+                style: AppTextStyle.description(
+                  color: AppColors.appTitleColor,
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  selectedDeliveryTimeList = value!;
+                });
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+  Widget revisionTimeDropdown() {
+    return FormField<String>(
+      builder: (FormFieldState<String> field) {
+        return InputDecorator(
+          decoration: kInputDecoration.copyWith(
+            labelText: 'Revisions (optional)',
+            labelStyle:
+            AppTextStyle.description(color: AppColors.appDescriptionColor,),
+            hintText: 'Select revisions',
+            hintStyle: AppTextStyle.description(),
+
+            // ✅ TRANSPARENT BACKGROUND
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.01),
+
+            // ✅ NORMAL BORDER
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: AppColors.appDescriptionColor,
+                width: 1,
+              ),
+            ),
+
+            // ✅ FOCUSED BORDER
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: AppColors.appDescriptionColor,
+                width: 1.5,
+              ),
+            ),
+
+            // ✅ DEFAULT BORDER
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: AppColors.appBodyTextColor,
+                width: 1,
+              ),
+            ),
+
+            contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: selectedRevisionTime, // ✅ apna variable
+              icon: Icon(
+                FeatherIcons.chevronDown,
+                color: AppColors.appIconColor,
+              ),
+              style: AppTextStyle.description(
+                color: AppColors.appTitleColor,
+              ),
+              items: revisionTime.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(
+                    value,
+                    style: AppTextStyle.description(
+                      color: AppColors.appTitleColor,
+                    ),
+                  ),
+                );
+              }).toList(),
+              hint: Text(
+                'Select revisions',
+                style: AppTextStyle.description(
+                  color: AppColors.appTitleColor,
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  selectedRevisionTime = value!;
+                });
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
 }

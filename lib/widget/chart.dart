@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
 
+import '../core/app_textstyle.dart';
+
 class RecordStatistics extends StatelessWidget {
   const RecordStatistics({
     super.key,
@@ -23,14 +25,13 @@ class RecordStatistics extends StatelessWidget {
       chartType: ChartType.ring,
       ringStrokeWidth: 12,
       centerText: "Statistics\nRecord ",
-      legendOptions: const LegendOptions(
+      centerTextStyle: AppTextStyle.title(),
+      legendOptions: LegendOptions(
         showLegendsInRow: false,
         legendPosition: LegendPosition.right,
         showLegends: false,
         legendShape: BoxShape.circle,
-        legendTextStyle: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        legendTextStyle: AppTextStyle.title(),
       ),
       chartValuesOptions: const ChartValuesOptions(
         showChartValueBackground: false,

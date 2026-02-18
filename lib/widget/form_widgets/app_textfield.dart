@@ -9,7 +9,7 @@ class CustomTextfield extends StatelessWidget {
   final String label;
   final String hintText;
   final double lines;
-  final TextEditingController? controller; // 🔹 Now optional
+  final TextEditingController? controller;
   final bool obscureText;
   final TextInputType keyboardType;
   final Widget? suffixIcon;
@@ -19,6 +19,12 @@ class CustomTextfield extends StatelessWidget {
   final FocusNode? focusNode;
   final List<TextInputFormatter>? inputFormatters;
   final TextCapitalization textCapitalization;
+  final TextInputAction textInputAction;
+  final Function(String)? onSubmitted;
+
+  // 🔹 New
+  final bool readOnly;
+  final VoidCallback? onTap;
 
   const CustomTextfield({
     super.key,
@@ -35,6 +41,11 @@ class CustomTextfield extends StatelessWidget {
     this.focusNode,
     this.inputFormatters,
     this.textCapitalization = TextCapitalization.none,
+    this.textInputAction = TextInputAction.next,
+    this.onSubmitted,
+    this.readOnly = false,       // 🔹
+    this.onTap,                 // 🔹
+
   });
 
   @override
@@ -42,14 +53,13 @@ class CustomTextfield extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(
         textSelectionTheme: TextSelectionThemeData(
-          // selectionColor: AppColors.appTextColor.withValues(alpha: 0.20),
-          // selectionHandleColor: AppColors.appTextColor.withValues(alpha: 0.80),
           selectionColor: AppColors.appColor,
-            selectionHandleColor: AppColors.appColor,
+          selectionHandleColor: AppColors.appColor,
         ),
       ),
       child: TextField(
-        controller: controller, // can be null
+        textInputAction: textInputAction,
+        controller: controller,
         style: TextStyle(color: AppColors.appTitleColor),
         obscureText: obscureText,
         focusNode: focusNode,
@@ -57,17 +67,23 @@ class CustomTextfield extends StatelessWidget {
         textCapitalization: textCapitalization,
         cursorColor: AppColors.appColor,
         maxLines: lines.toInt(),
+        readOnly: readOnly,     // 🔹
+        onTap: onTap,           // 🔹
         inputFormatters: [
           if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
           ...?inputFormatters,
         ],
-        onChanged: onChanged, // 🔹 callback added
+        onChanged: onChanged,
+        onSubmitted: onSubmitted,
         decoration: InputDecoration(
-          label:Text(label,style:  AppTextStyle.description(color: AppColors.appDescriptionColor,),) ,
+          label: Text(
+            label,
+            style: AppTextStyle.description(color: AppColors.appDescriptionColor),
+          ),
           hintText: hintText,
           hintStyle: AppTextStyle.description(color: AppColors.appDescriptionColor),
           suffixIcon: suffixIcon,
-          counterText: "", // 🔹 hides default counter
+          counterText: "",
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: AppColors.appBodyTextColor),
           ),
@@ -79,3 +95,4 @@ class CustomTextfield extends StatelessWidget {
     );
   }
 }
+

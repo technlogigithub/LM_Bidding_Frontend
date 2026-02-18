@@ -1,17 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:libdding/core/app_color.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import '../core/app_constant.dart';
-import '../core/app_constant.dart' as AppTextStyle;
-import '../models/static models/participation_order.dart';
+import '../core/app_textstyle.dart';
+import '../core/app_constant.dart';
+import '../models/Order/my_order_list_model.dart';
 import '../view/client orders/client_order_details.dart';
+import 'custom_banner_with_video.dart';
+import 'form_widgets/app_button.dart';
+
+class ParticipationCardUiModel {
+  final String orderId;
+  final String? countdownDt;
+  final String? date;
+  final String? title;
+  final List<dynamic>? media; // Added media field
+  final Map<String, dynamic> dynamicDetails; // Changed from fixed fields to dynamic map
+  final List<ActionButton>? actionButtons;
+  final String? nextPageName;
+  final String? nextPageApiEndpoint;
+
+  ParticipationCardUiModel({
+    required this.orderId,
+    this.countdownDt,
+    this.date,
+    this.title,
+    this.media,
+    required this.dynamicDetails,
+    this.actionButtons,
+    this.nextPageName,
+    this.nextPageApiEndpoint,
+  });
+}
 
 class ParticipationListCustomWidget extends StatelessWidget {
-  final List<ParticipationOrder> items;
-  final VoidCallback? onItemTap;
+  final List<ParticipationCardUiModel> items;
+  final Function(ParticipationCardUiModel)? onItemTap;
   final RxBool isLoading;
 
   const ParticipationListCustomWidget({
@@ -52,8 +81,8 @@ class ParticipationListCustomWidget extends StatelessWidget {
       itemBuilder: (_, __) => Padding(
         padding: const EdgeInsets.all(10.0),
         child: Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: _buildShimmerCard(),
         ),
       ),
@@ -109,121 +138,109 @@ class ParticipationListCustomWidget extends StatelessWidget {
     );
   }
 
-  // Real Order Card
-  Widget _buildOrderCard(BuildContext context, ParticipationOrder item) {
+  Widget _buildOrderCard(BuildContext context, ParticipationCardUiModel item) {
     return GestureDetector(
-      onTap: onItemTap ?? () => const ClientOrderDetails().launch(context),
+      onTap: () => onItemTap?.call(item),
       child: Container(
         padding: const EdgeInsets.all(10.0),
         width: context.width(),
         decoration: BoxDecoration(
-          color: kWhite,
+          gradient: AppColors.appPagecolor,
           borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(color: kBorderColorTextField),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: kDarkWhite,
-              spreadRadius: 4.0,
-              blurRadius: 4.0,
-              offset: Offset(0, 2),
-            )
+              color: AppColors.appMutedColor,
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: Offset(0, 10),
+            ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Order ID + Countdown
+            if (item.media != null && item.media!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildMediaViewer(item.media!),
+              const SizedBox(height: 12),
+            ],
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Order ID #${item.orderId}',
-                  style: AppTextStyle.kTextStyle.copyWith(
-                    color: kNeutralColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  '${item.title}',
+                  style: AppTextStyle.title(fontWeight: FontWeight.bold),
                 ),
-                const Spacer(),
-                SlideCountdownSeparated(
-                  duration: item.countdownDuration,
-                  separatorType: SeparatorType.symbol,
-                  separatorStyle: AppTextStyle.kTextStyle.copyWith(color: Colors.transparent),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    borderRadius: BorderRadius.circular(3.0),
+                if (item.countdownDt != null && item.countdownDt!.isNotEmpty)
+                  Builder(
+                    builder: (context) {
+                      String? countdownStr = item.countdownDt;
+                      Duration remaining = Duration.zero;
+
+                      if (countdownStr != null && countdownStr.isNotEmpty) {
+                        try {
+                           // Try parsing manually first if format is known (e.g. HH:mm:ss or similar), 
+                           // otherwise DateTime.parse expects ISO 8601 usually.
+                           // Assuming countdownDt is absolute date string for now.
+                          final target = DateTime.tryParse(countdownStr);
+                           if (target != null) {
+                             final now = DateTime.now();
+                             final diff = target.difference(now);
+                             if (!diff.isNegative) {
+                               remaining = diff;
+                             }
+                           } else {
+                              // If it's a duration string like "3 days", logic would be different.
+                              // For now, if parsing fails, remaining is zero.
+                           }
+                        } catch (e) {
+                          debugPrint("Error parsing countdown date: $e");
+                        }
+                      }
+
+                      if (remaining.inSeconds > 0) {
+                        return SlideCountdownSeparated(
+                          duration: remaining,
+                          separatorType: SeparatorType.symbol,
+                          separatorStyle: AppTextStyle.body(color: Colors.transparent),
+                          decoration: BoxDecoration(
+                            color: AppColors.appButtonColor,
+                            borderRadius: BorderRadius.circular(3.0),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 10.0),
 
-            // Seller & Date
-            RichText(
-              text: TextSpan(
-                text: 'Seller: ',
-                style: AppTextStyle.kTextStyle.copyWith(color: kLightNeutralColor),
-                children: [
-                  TextSpan(
-                    text: item.sellerName,
-                    style: AppTextStyle.kTextStyle.copyWith(color: kNeutralColor),
-                  ),
-                  TextSpan(
-                    text: '  |  ',
-                    style: AppTextStyle.kTextStyle.copyWith(color: kLightNeutralColor),
-                  ),
-                  TextSpan(
-                    text: item.orderDate,
-                    style: AppTextStyle.kTextStyle.copyWith(color: kLightNeutralColor),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8.0),
-            const Divider(thickness: 1.0, color: kBorderColorTextField, height: 1.0),
+            // Date
+            // if (item.date != null)
+            //  Text("${item.date}",style: AppTextStyle.description(color: AppColors.appDescriptionColor),),
+            // const SizedBox(height: 8.0),
+            Divider(thickness: 1.0, color: AppColors.appMutedColor, height: 1.0),
             const SizedBox(height: 8.0),
 
-            // Title
-            _buildInfoRow('Title', item.title, maxLines: 2),
-            const SizedBox(height: 8.0),
+            // Dynamic Details Section
+            ...item.dynamicDetails.entries.map((entry) {
+              if (entry.value != null && entry.value.toString().isNotEmpty) {
+                 // Format key: "payment_status" -> "Payment Status"
+                String label = entry.key.split('_').map((word) => word.capitalizeFirstLetter()).join(' ');
+                
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: _buildInfoRow(label, entry.value.toString()),
+                );
+              }
+              return const SizedBox.shrink();
+            }).toList(),
 
-            // Duration
-            _buildInfoRow('Duration', item.duration),
-            const SizedBox(height: 8.0),
-
-            // Amount
-            _buildInfoRow('Amount', '$currencySign ${item.amount}'),
-            const SizedBox(height: 8.0),
-
-            // Status
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Status',
-                    style: AppTextStyle.kTextStyle.copyWith(color: kSubTitleColor),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Row(
-                    children: [
-                      Text(':',
-                          style: AppTextStyle.kTextStyle.copyWith(color: kSubTitleColor)),
-                      const SizedBox(width: 10.0),
-                      Flexible(
-                        child: Text(
-                          item.status,
-                          style: AppTextStyle.kTextStyle.copyWith(color: kNeutralColor),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            if (item.actionButtons != null && item.actionButtons!.isNotEmpty) ...[
+               const SizedBox(height: 10.0),
+              _buildActionButtons(item.actionButtons!),
+            ],
           ],
         ),
       ),
@@ -231,35 +248,112 @@ class ParticipationListCustomWidget extends StatelessWidget {
   }
 
   Widget _buildInfoRow(String label, String value, {int maxLines = 1}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 1,
-          child: Text(
-            label,
-            style: AppTextStyle.kTextStyle.copyWith(color: kSubTitleColor),
+    return RichText(
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: "$label: ",
+            style: AppTextStyle.description(
+              color: AppColors.appDescriptionColor,
+            ),
           ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Row(
+          TextSpan(
+            text: value,
+            style: AppTextStyle.title(
+              color: AppColors.appTitleColor,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildMediaViewer(List<dynamic> mediaList) {
+    // Convert Media list to format expected by CustomBannerWithVideo
+    final mediaItems = mediaList.map((media) {
+      // Check if media is a Map (from JSON) or an object
+      String type = 'image';
+      String url = '';
+
+      if (media is Map) {
+         type = media['media_type'] ?? 'image';
+         url = media['url'] ?? '';
+      } 
+      // Add other checks if media can be a class
+
+      return {
+        'type': type, 
+        'url': url,
+        'redirectUrl': null, 
+      };
+    }).toList();
+
+    // Filter out invalid items
+    mediaItems.removeWhere((item) => (item['url'] as String).isEmpty);
+
+    if (mediaItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return SizedBox(
+      height: 200, // Explicit height constraint
+      child: CustomBannerWithVideo(
+        mediaItems: mediaItems,
+        height: 200.0,
+        width: double.infinity,
+        borderRadius: 8.0,
+        padding: const EdgeInsets.all(0),
+        margin: const EdgeInsets.all(0),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(List<ActionButton> buttons) {
+    List<Widget> buttonWidgets = [];
+    int i = 0;
+    while (i < buttons.length) {
+      if (i + 1 < buttons.length) {
+        // Pair
+        buttonWidgets.add(
+          Row(
             children: [
-              Text(':',
-                  style: AppTextStyle.kTextStyle.copyWith(color: kSubTitleColor)),
-              const SizedBox(width: 10.0),
-              Flexible(
-                child: Text(
-                  value,
-                  style: AppTextStyle.kTextStyle.copyWith(color: kSubTitleColor),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: maxLines,
-                ),
+              Expanded(
+                child: _buildSingleButton(buttons[i]),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildSingleButton(buttons[i + 1]),
               ),
             ],
           ),
-        ),
-      ],
+        );
+        i += 2;
+      } else {
+        // Single (Remainder)
+        buttonWidgets.add(_buildSingleButton(buttons[i]));
+        i++;
+      }
+      
+      // Add spacing between rows
+      if (i < buttons.length) {
+        buttonWidgets.add(const SizedBox(height: 10));
+      }
+    }
+    
+    return Column(
+      children: buttonWidgets,
+    );
+  }
+
+  Widget _buildSingleButton(ActionButton button) {
+    return CustomButton(
+      onTap: () {
+        // Handle button tap
+        print("Tapped ${button.label}");
+      },
+      text: button.label ?? '',
     );
   }
 }

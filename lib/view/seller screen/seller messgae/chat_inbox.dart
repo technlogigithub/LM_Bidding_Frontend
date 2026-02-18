@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:libdding/core/app_color.dart';
@@ -7,6 +8,7 @@ import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../../core/app_constant.dart';
 import '../../../service/socket_service.dart';
+import '../../../service/socket_service_interface.dart';
 import '../seller popUp/seller_popup.dart';
 import 'model/chat_model.dart';
 import 'provider/data_provider.dart';
@@ -25,9 +27,7 @@ class ChatInbox extends StatefulWidget {
 class _ChatInboxState extends State<ChatInbox>
     with SingleTickerProviderStateMixin { // ✅ FIXED: Added mixin
 
-  // final SocketService _socketService = SocketService();
-
-  final SocketService _socketService = SocketService();
+  final SocketService _socketService = Get.find<SocketService>();
 
   //__________Popup Functions________________________________________________
   void showBlockPopUp() {
@@ -102,26 +102,30 @@ class _ChatInboxState extends State<ChatInbox>
       duration: const Duration(milliseconds: 1000),
     )..repeat();
 
-    // ✅ 1. Connect first
-      _socketService.connect('user_456');  // use your id
+    // ✅ Connect only if not already connected (usually handled in main.dart)
+    // _socketService.connect('user_456'); 
 
-      // ✅ 2. Listen for incoming messages
-      _socketService.onMessageReceived((messageData) {
+    // ✅ Listen for incoming messages
+    _socketService.onMessageReceived((messageData) {
+      if (mounted) {
         setState(() {
           data.insert(
             0,
             InboxData(
               id: 1, // receiver side
               message: messageData['message'],
+              type: messageData['type'],
             ),
           );
         });
-      });
+      }
+    });
 
-    // ✅ 3. Scroll listener
+    // ✅ Scroll listener
     scrollController.addListener(() {
-      if (scrollController.position.pixels >=
-          scrollController.position.maxScrollExtent - 10) {
+      if (scrollController.hasClients &&
+          scrollController.position.pixels >=
+              scrollController.position.maxScrollExtent - 10) {
         if (!showTime) setState(() => showTime = true);
       } else {
         if (showTime) setState(() => showTime = false);
@@ -135,36 +139,43 @@ class _ChatInboxState extends State<ChatInbox>
     scrollController.dispose();
     messageController.dispose();
     msgFocusNode.dispose();
-    _socketService.disconnect(); // ✅ Disconnect cleanly
+    // ✅ Do NOT disconnect the global service here!
+    // Instead, clear the callback or restore the default one
+    _socketService.onMessageReceived((data) {
+      debugPrint("📩 Socket Data (Restored): $data");
+    });
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: AppColors.appWhite,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         leadingWidth: 24,
-        iconTheme: const IconThemeData(color: kNeutralColor),
-        backgroundColor: Colors.transparent,   // important
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: AppColors.appbarColor,   // <-- your gradient applied here
+            gradient: AppColors.appbarColor,
           ),
         ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            CircleAvatar(radius: 20, backgroundImage: NetworkImage(widget.img.validate())),
+            CircleAvatar(
+                radius: 20,
+                backgroundImage: NetworkImage(widget.img.validate())),
             15.width,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.name.validate(), style: AppTextStyle.title(color: AppColors.appTextColor)),
-                Text('Online', style: AppTextStyle.description(color: AppColors.appTextColor)),
+                Text(widget.name.validate(),
+                    style: AppTextStyle.title(color: AppColors.appTextColor)),
+                Text('Online',
+                    style:
+                        AppTextStyle.description(color: AppColors.appTextColor)),
               ],
             ),
           ],
@@ -172,73 +183,66 @@ class _ChatInboxState extends State<ChatInbox>
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
-            child: Container(
-              padding: const EdgeInsets.all(5.0),
-              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.transparent),
-              child: PopupMenuButton(
-                color: AppColors.appColor,
-                itemBuilder: (BuildContext bc) => [
-                  PopupMenuItem(
-                    child: Text('Block', style: AppTextStyle.body(color: AppColors.appTextColor))
-                        .onTap(() => showBlockPopUp()),
-                  ),
-                  PopupMenuItem(
-                    child: Text('Report', style:  AppTextStyle.body(color: AppColors.appTextColor)),
-                  ),
-                ],
-                child: Icon(FeatherIcons.moreVertical, color: AppColors.appTextColor),
-              ),
+            child: PopupMenuButton(
+              color: AppColors.appColor,
+              itemBuilder: (BuildContext bc) => [
+                PopupMenuItem(
+                  child: Text('Block',
+                          style: AppTextStyle.body(color: AppColors.appTextColor))
+                      .onTap(() => showBlockPopUp()),
+                ),
+                PopupMenuItem(
+                  child: Text('Report',
+                      style: AppTextStyle.body(color: AppColors.appTextColor)),
+                ),
+              ],
+              child: Icon(FeatherIcons.moreVertical, color: AppColors.appTextColor),
             ),
           ),
         ],
       ),
-
-
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,  // 🎨 FULL PAGE GRADIENT HERE
+          gradient: AppColors.appPagecolor,
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                8.height,
-                AnimatedOpacity(
-                  opacity: showTime ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Text('10 June 25 9:41 AM', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                ),
-                8.height,
-
-                /// Message list
-                ListView.builder(
+          child: Column( // ✅ FIXED: Proper chat layout with Expanded
+            children: [
+              8.height,
+              AnimatedOpacity(
+                opacity: showTime ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: Text('10 June 25 9:41 AM',
+                    style:
+                        AppTextStyle.description(color: AppColors.appTitleColor)),
+              ),
+              8.height,
+              Expanded( // ✅ FIXED: Allow list to scroll while keeping input at bottom
+                child: ListView.builder(
                   padding: const EdgeInsets.all(10),
                   controller: scrollController,
-                  scrollDirection: Axis.vertical,
                   reverse: true,
-                  shrinkWrap: true,
                   physics: const BouncingScrollPhysics(),
                   itemCount: data.length,
                   itemBuilder: (context, index) {
                     final item = data[index];
                     final isSender = item.id == 0;
-
                     return isSender
                         ? _buildSenderBubble(item)
                         : _buildReceiverBubble(item);
                   },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
-
-
-      bottomNavigationBar: _buildBottomBar(context),
+      bottomNavigationBar: Padding(
+        padding: MediaQuery.of(context).viewInsets, // ✅ Move input with keyboard
+        child: _buildBottomBar(context),
+      ),
     );
   }
 
@@ -246,18 +250,26 @@ class _ChatInboxState extends State<ChatInbox>
     final message = item.message.validate();
 
     // detect image or document
+    final type = item.type;
     final lower = message.toLowerCase();
-    final isImage = lower.endsWith('.jpg') ||
-        lower.endsWith('.jpeg') ||
-        lower.endsWith('.png') ||
-        lower.endsWith('.gif') ||
-        lower.endsWith('.bmp') ||
-        lower.endsWith('.webp');
-    final isDoc = lower.endsWith('.pdf') ||
-        lower.endsWith('.doc') ||
-        lower.endsWith('.docx') ||
-        lower.endsWith('.txt') ||
-        lower.endsWith('.xlsx');
+    
+    bool isImage = type == 'image';
+    bool isDoc = type == 'doc';
+
+    // fallback to extension check if type is unspecified
+    if (type == null || type.isEmpty) {
+      isImage = lower.endsWith('.jpg') ||
+          lower.endsWith('.jpeg') ||
+          lower.endsWith('.png') ||
+          lower.endsWith('.gif') ||
+          lower.endsWith('.bmp') ||
+          lower.endsWith('.webp');
+      isDoc = lower.endsWith('.pdf') ||
+          lower.endsWith('.doc') ||
+          lower.endsWith('.docx') ||
+          lower.endsWith('.txt') ||
+          lower.endsWith('.xlsx');
+    }
 
     return Padding(
       padding: const EdgeInsets.only(left: 50, right: 8, bottom: 8),
@@ -315,18 +327,26 @@ class _ChatInboxState extends State<ChatInbox>
   Widget _buildReceiverBubble(InboxData item) {
     final message = item.message.validate();
 
+    final type = item.type;
     final lower = message.toLowerCase();
-    final isImage = lower.endsWith('.jpg') ||
-        lower.endsWith('.jpeg') ||
-        lower.endsWith('.png') ||
-        lower.endsWith('.gif') ||
-        lower.endsWith('.bmp') ||
-        lower.endsWith('.webp');
-    final isDoc = lower.endsWith('.pdf') ||
-        lower.endsWith('.doc') ||
-        lower.endsWith('.docx') ||
-        lower.endsWith('.txt') ||
-        lower.endsWith('.xlsx');
+    
+    bool isImage = type == 'image';
+    bool isDoc = type == 'doc';
+
+    // fallback to extension check if type is unspecified
+    if (type == null || type.isEmpty) {
+      isImage = lower.endsWith('.jpg') ||
+          lower.endsWith('.jpeg') ||
+          lower.endsWith('.png') ||
+          lower.endsWith('.gif') ||
+          lower.endsWith('.bmp') ||
+          lower.endsWith('.webp');
+      isDoc = lower.endsWith('.pdf') ||
+          lower.endsWith('.doc') ||
+          lower.endsWith('.docx') ||
+          lower.endsWith('.txt') ||
+          lower.endsWith('.xlsx');
+    }
 
     return Padding(
       padding: const EdgeInsets.only(right: 50, left: 8, bottom: 8),
@@ -385,7 +405,6 @@ class _ChatInboxState extends State<ChatInbox>
   Widget _buildBottomBar(BuildContext context) {
 
     return Container(
-      padding: MediaQuery.of(context).viewInsets,
       decoration: BoxDecoration(
       gradient: AppColors.appPagecolor,
       ),
@@ -471,7 +490,7 @@ class _ChatInboxState extends State<ChatInbox>
                         hintText: 'Message...',
                         hintStyle: AppTextStyle.description(color: AppColors.appMutedTextColor),
                         suffixIcon: Icon(Icons.send_outlined,
-                            size: 24, color: AppColors.appColor)
+                            size: 24, color: AppColors.appTextColor)
                             .paddingAll(4.0)
                             .onTap(() {
                           // ✅ If image or doc selected, send that
@@ -505,8 +524,8 @@ class _ChatInboxState extends State<ChatInbox>
     if (message.isEmpty) return;
 
     final messageData = {
-      'senderId': 'user_456',  // user id
-      'receiverId': 'user_123', // receiver id
+      'senderId': 'user_123',  // user id
+      'receiverId': 'user_456', // receiver id
       'message': message,
       'type': 'text',  // doc, image , text
       'time': DateTime.now().toIso8601String(),
@@ -515,7 +534,7 @@ class _ChatInboxState extends State<ChatInbox>
     _socketService.sendMessage(messageData);
 
     setState(() {
-      data.insert(0, InboxData(id: 0, message: message));
+      data.insert(0, InboxData(id: 0, message: message, type: 'text'));
       messageController.clear();
     });
 
@@ -528,14 +547,37 @@ class _ChatInboxState extends State<ChatInbox>
 
   void addMessageWithAttachment(String path) {
     hideKeyboard(context);
+
+    final lower = path.toLowerCase();
+    final isImage = lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.png') ||
+        lower.endsWith('.gif') ||
+        lower.endsWith('.bmp') ||
+        lower.endsWith('.webp');
+    final type = isImage ? 'image' : 'doc';
+
+    final messageData = {
+      'senderId': 'user_123',
+      'receiverId': 'user_456',
+      'message': path,
+      'type': type,
+      'time': DateTime.now().toIso8601String(),
+    };
+
+    _socketService.sendMessage(messageData);
+
     setState(() {
-      data.insert(0, InboxData(id: 0, message: path));
+      data.insert(0, InboxData(id: 0, message: path, type: type));
+    });
+
+    if (scrollController.hasClients) {
       scrollController.animateTo(
         scrollController.position.minScrollExtent,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
-    });
+    }
   }
 
 

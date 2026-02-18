@@ -68,8 +68,9 @@ class CustomButton extends StatelessWidget {
                 )
               : Text(
                   text,
-                  style: AppTextStyle.title(
+                  style: AppTextStyle.description(
                     color: AppColors.appButtonTextColor,
+                    fontWeight: FontWeight.bold
                   ),
                 ),
         ),

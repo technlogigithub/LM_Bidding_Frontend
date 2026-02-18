@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -6,29 +8,52 @@ import 'package:shimmer/shimmer.dart';
 import '../core/app_color.dart';
 
 import '../core/app_textstyle.dart';
-import '../models/static models/service_items_model.dart';
-import 'custom_detail_screen.dart';
+import '../models/Post/Get_Post_List_Model.dart';
+import '../core/app_images.dart';
+import '../core/app_imagetype_helper.dart';
+import '../../view/Home_screen/search_history_screen.dart';
+import '../../view/Home_screen/select_categories_screen.dart';
+import '../view/search_filter_post/search_filter_screen.dart';
+import 'custom_auto_image_handle.dart';
+import 'custom_navigator.dart';
+import 'custom_tapbar.dart';
 
 class CustomVerticalListviewList extends StatelessWidget {
-  final List<ServiceItem> items;
-  final VoidCallback? onItemTap;
+  final Rx<GetPostListResponseModel?> model;
+  final Function(String)? onItemTap;
   final VoidCallback? onRemoveTap;
   final VoidCallback? onSaveForLaterTap;
   final VoidCallback? onBuyNowTap;
   final Function(int, bool) onFavoriteToggle;
   final RxBool isLoading;
   final bool isFromCartScreen;
+  final String? bgColor;
+  final String? bgImg;
+  final String? label;
+  final String? viewAllLabel;
+  final String? viewAllNextPage;
+  final String? nextPageName; // Added
+  final String? nextPageViewType; // Added
+  final Function(Map<String, dynamic> buttonData, String userKey)? onActionTap;
 
   const CustomVerticalListviewList({
     super.key,
-    required this.items,
+    required this.model,
     this.onItemTap,
     this.onRemoveTap,
     this.onSaveForLaterTap,
     this.onBuyNowTap,
+    this.onActionTap,
     required this.onFavoriteToggle,
     required this.isLoading,
     this.isFromCartScreen = false,
+    this.bgColor,
+    this.bgImg,
+    this.label,
+    this.viewAllLabel,
+    this.viewAllNextPage,
+    this.nextPageName,
+    this.nextPageViewType,
   });
 
   @override
@@ -36,39 +61,131 @@ class CustomVerticalListviewList extends StatelessWidget {
     return Obx(
           () => isLoading.value
           ? _buildShimmerList()
-          : SizedBox(
-        height: items.length * 182.h,
-        child: ListView.separated(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(
-              bottom: 20, left: 0.0, right: 0.0),
-          scrollDirection: Axis.vertical,
-          itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-          itemBuilder: (_, index) {
-            final item = items[index];
-            return Padding(
-              padding: EdgeInsetsGeometry.only(top: 10),
-              child: _buildItemCard(context, item, index),);
-          },
-        ),
+          : _buildPostList(context),
+    );
+  }
+
+  Widget _buildHeader() {
+    if (label == null || label!.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+      child: Row(
+        children: [
+          Text(
+            label!,
+            style: AppTextStyle.title(
+              color: AppColors.appTitleColor,
+            ),
+          ),
+          const Spacer(),
+          if (viewAllLabel != null && viewAllLabel!.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                CustomNavigator.navigate(
+                    viewAllNextPage?.isNotEmpty == true
+                        ? viewAllNextPage
+                        : nextPageName);
+              },
+              child: Text(
+                viewAllLabel!,
+                style: AppTextStyle.description(
+                  color: AppColors.appLinkColor,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
+
+  Widget _buildPostList(BuildContext context) {
+    final results = model.value?.result;
+
+    if (results == null || results.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text(
+            'No posts found',
+            style: AppTextStyle.description(
+              color: AppColors.appDescriptionColor,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = kIsWeb || screenWidth > 800;
+
+    Widget contentList = ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.only(
+        bottom: 20,
+        left: isWeb ? 0 : 15.0,
+        right: isWeb ? 0 : 15.0,
+      ),
+      scrollDirection: Axis.vertical,
+      itemCount: results.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+      itemBuilder: (_, index) {
+        final result = results[index];
+        return Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: _buildItemCard(context, result, index),
+        );
+      },
+    );
+
+    Widget contentWithHeader = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(),
+        contentList,
+      ],
+    );
+
+    return Stack(
+      children: [
+        if (ImageTypeHelper.isImage(bgImg))
+          Positioned.fill(
+            child: AutoNetworkImage(imageUrl: bgImg),
+          ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: !ImageTypeHelper.isImage(bgImg)
+                ? (bgColor != null && bgColor!.isNotEmpty
+                    ? parseLinearGradient(bgColor)
+                    : AppColors.appPagecolor)
+                : null,
+          ),
+          child: contentWithHeader,
+        ),
+      ],
+    );
+  }
+
   // Shimmer effect for the list
   Widget _buildShimmerList() {
     return SizedBox(
-      height: 160,
+      height: 160 * 3,
       child: ListView.separated(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(top: 20, bottom: 20, left: 15.0, right: 15.0),
         scrollDirection: Axis.vertical,
         itemCount: 3, // Number of shimmer placeholders
         separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-        itemBuilder: (_, __) => Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
-          child: _buildShimmerItemCard(),
+        itemBuilder: (_, __) => Column(
+          children: [
+            Shimmer.fromColors(
+              baseColor: AppColors.appMutedColor,
+              highlightColor: AppColors.appMutedTextColor,
+              child: _buildShimmerItemCard(),
+            ),
+            SizedBox(height: 10.h,)
+          ],
         ),
       ),
     );
@@ -108,27 +225,15 @@ class CustomVerticalListviewList extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Title shimmer
-                  Container(
-                    width: 150,
-                    height: 16,
-                    color: Colors.white,
-                  ),
+                  Container(width: 150, height: 16, color: Colors.white),
                   const SizedBox(height: 5.0),
                   // Rating and price shimmer
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 80,
-                        height: 14,
-                        color: Colors.white,
-                      ),
+                      Container(width: 80, height: 14, color: Colors.white),
                       const SizedBox(width: 40),
-                      Container(
-                        width: 60,
-                        height: 14,
-                        color: Colors.white,
-                      ),
+                      Container(width: 60, height: 14, color: Colors.white),
                     ],
                   ),
                   const SizedBox(height: 5.0),
@@ -153,11 +258,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                             color: Colors.white,
                           ),
                           const SizedBox(height: 2.0),
-                          Container(
-                            width: 60,
-                            height: 12,
-                            color: Colors.white,
-                          ),
+                          Container(width: 60, height: 12, color: Colors.white),
                         ],
                       ),
                     ],
@@ -171,411 +272,430 @@ class CustomVerticalListviewList extends StatelessWidget {
     );
   }
 
-  Widget _buildItemCard(BuildContext context, ServiceItem item, int index) {
-    final screenWidth = MediaQuery.of(context).size.width;
+  Widget _buildItemCard(BuildContext context, Result result, int index) {
+    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+    final cardHeight = isWeb ? (isFromCartScreen ? 160.0 : 130.0) : (isFromCartScreen ? 185.h : 140.h);
+
     return GestureDetector(
-      onTap: onItemTap ?? () => _openCustomDetailScreen(context, item),
+      onTap: () {
+        if (onItemTap != null) {
+          onItemTap!(result.hidden?.ukey ?? '');
+        }
+      },
       child: Container(
-        width: 330,
-        height: isFromCartScreen ? 165 : 140,
+        width: double.infinity,
+        height: cardHeight,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
-          // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
-
-
           boxShadow: [
             BoxShadow(
               color: AppColors.appMutedColor,
               blurRadius: 5,
               spreadRadius: 1,
               offset: Offset(0, 10),
-              // blurRadius: 1,
-              // spreadRadius: 1,
-              // offset: Offset(0, 6),
             ),
           ],
-
-
           borderRadius: BorderRadius.circular(8.0),
-
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildImageSection(item, index),
-                _buildContentSection(item),
-              ],
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildImageSection(context, result, index, isFromCartScreen),
+                  Expanded(child: _buildContentSection(context, result)),
+                ],
+              ),
             ),
             if (isFromCartScreen)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: onRemoveTap ?? () {},
-                      child: Container(
-                        padding: EdgeInsetsGeometry.all(8),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: BoxBorder.all(color: AppColors.kBorderColorTextField)
-                        ),
-                        child: Text(AppStrings.remove, style: TextStyle(
-                          color: AppColors.appButtonTextColor,
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                        ),),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: onSaveForLaterTap ?? () {},
-                      child: Container(
-                        padding: EdgeInsetsGeometry.all(8),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: BoxBorder.all(color: AppColors.kBorderColorTextField)
-                        ),
-                        child: Text(AppStrings.saveForLater, style: TextStyle(
-                          color: AppColors.appButtonTextColor,
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                        ),),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: onBuyNowTap ?? () {},
-                      child: Container(
-                        padding: EdgeInsetsGeometry.all(8),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.r),
-                            border: BoxBorder.all(color: AppColors.kBorderColorTextField)
-                        ),
-                        child: Text(AppStrings.buyThisNow, style: TextStyle(
-                          color: AppColors.appButtonTextColor,
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                        ),),
-                      ),
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 2.0,
+                  vertical: 8.0,
                 ),
+                child: result.actionButton != null && result.actionButton!.isNotEmpty
+                    ? CustomTabBar(
+                        tabs: result.actionButton!.map<String>((e) {
+                          if (e is Map<String, dynamic>) {
+                            return e['label']?.toString() ?? '';
+                          }
+                           // Fallback for unexpected types (though parsing logic in model makes it dynamic/Map usually, 
+                           // unless we strictly typed it later)
+                           // The model uses json['action_button'] which is List<dynamic> of Maps usually.
+                           try {
+                             return (e as dynamic)['label']?.toString() ?? '';
+                           } catch (err) {
+                             return '';
+                           }
+                        }).toList(),
+                        textStyle: AppTextStyle.body(),
+                        onTap: (index) {
+                          if (index >= 0 && index < result.actionButton!.length) {
+                             final btnData = result.actionButton![index];
+                             final ukey = result.hidden?.ukey ?? "";
+                             
+                             if (onActionTap != null && btnData is Map<String, dynamic>) {
+                                onActionTap!(btnData, ukey);
+                             }
+                          }
+                        },
+                      )
+                    : SizedBox()
               )
+
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImageSection(ServiceItem item, int index) {
+  Widget _buildImageSection(BuildContext context, Result result, int index, bool isFromCart) {
+    // Get first image from media list
+    String? imageUrl;
+    if (result.media != null && result.media!.isNotEmpty) {
+      final firstImage = result.media!.firstWhere(
+            (media) => media.mediaType == 'image',
+        orElse: () => result.media!.first,
+      );
+      imageUrl = firstImage.url;
+    }
+
+    // Extract badge from result
+    final badge = result.info?['badge'];
+
+    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+    final imgWidth = isWeb ? 130.0 : 120.w;
+    final imgHeight = isWeb ? (isFromCart ? 140.0 : 130.0) : (isFromCart ? 120.h : 140.h);
+
     return Stack(
       alignment: Alignment.topLeft,
       children: [
         Container(
-          height: 138,
-          width: 120,
+          height: imgHeight,
+          width: imgWidth,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(8.0),
               topLeft: Radius.circular(8.0),
             ),
-            image: DecorationImage(
-              image: AssetImage(item.imagePath),
-              fit: BoxFit.cover,
+            color: AppColors.appWhite,
+          ),
+          child: imageUrl != null
+              ? ClipRRect(
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(8.0),
+              topLeft: Radius.circular(8.0),
             ),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: AppColors.appMutedColor,
+                highlightColor: AppColors.appMutedTextColor,
+                child: Container(
+                  height: imgHeight,
+                  width: imgWidth,
+                  color: AppColors.appMutedColor,
+                ),
+              ),
+              errorWidget: (context, url, error) => Image.asset(
+                AppImage.placeholder,
+                height: imgHeight,
+                width: imgWidth,
+                fit: BoxFit.cover,
+              ),
+            ),
+          )
+              : Image.asset(
+            AppImage.placeholder,
+            height: imgHeight,
+            width: imgWidth,
+            fit: BoxFit.cover,
           ),
         ),
-        Obx(() => GestureDetector(
-          onTap: () => onFavoriteToggle(index, !item.isFavorite.value),
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Container(
-              height: 25,
-              width: 25,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10.0,
-                    spreadRadius: 1.0,
-                    offset: Offset(0, 2),
+        // Always show favorite icon - filled when true, outline when false
+        Obx(() {
+          // Watch the model to get reactive updates
+          final currentResult = model.value?.result?[index];
+          final isFavorite = currentResult?.info?['favorite'] ?? result.info?['favorite'] ?? false;
+          return GestureDetector(
+            onTap: () {
+              // Toggle favorite state
+              final newValue = !isFavorite;
+              // Update the model immediately for better UX
+              if (result.info != null) {
+                result.info!['favorite'] = newValue;
+              }
+              // Defer refresh to avoid setState during build error
+              Future.microtask(() {
+                model.refresh();
+              });
+              // Call the callback to handle API call if needed
+              onFavoriteToggle(index, newValue);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Container(
+                height: 25,
+                width: 25,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10.0,
+                      spreadRadius: 1.0,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : AppColors.appIconColor,
+                    size: 16.0,
                   ),
-                ],
-              ),
-              child: Center(
-                child: Icon(
-                  item.isFavorite.value ? Icons.favorite : Icons.favorite_border,
-                  color: item.isFavorite.value ? Colors.red : AppColors.appIconColor,
-                  size: 16.0,
                 ),
               ),
             ),
+          );
+        }),
+        // Badge - show only if available
+        if (badge != null && badge.isNotEmpty)
+          Positioned(
+            top: 3,
+            right: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                gradient: AppColors.appPagecolor,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                badge,
+                textAlign: TextAlign.center,
+                style: AppTextStyle.body(),
+              ),
+            ),
           ),
-        )),
       ],
     );
   }
 
-  Widget _buildContentSection(ServiceItem item) {
+  Widget _buildContentSection(BuildContext context, Result result) {
+    final title = result.info?['title'] ?? '';
+    final ratingReview = result.info?['rating_review'];
+    final price = result.info?['price'];
+
+    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+
     return Padding(
-      padding: const EdgeInsets.all(5.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Flexible(
-            child: SizedBox(
-              width: 190,
-              child: Text(
-                item.title,
-                style: AppTextStyle.description(
-                  color: AppColors.appTitleColor,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+          // Title
+          Text(
+            title,
+            style: AppTextStyle.description(
+              color: AppColors.appTitleColor,
+              fontWeight: FontWeight.bold,
+            ).copyWith(
+              fontSize: isWeb ? 16 : null,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 5.0),
+          // Rating/Review and Price row
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const Icon(Icons.star, color: Colors.amber, size: 18.0),
-              const SizedBox(width: 2.0),
-              Text(
-                item.rating.toStringAsFixed(1),
-                style: AppTextStyle.body(
-                  color: AppColors.appTitleColor,
+              // Rating Review - show if available
+              if (ratingReview != null && ratingReview.isNotEmpty) ...[
+                const Icon(Icons.star, color: Colors.amber, size: 18.0),
+                const SizedBox(width: 2.0),
+                Flexible(
+                  child: Text(
+                    ratingReview,
+                    style: AppTextStyle.body(color: AppColors.appTitleColor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 2.0),
-              Text(
-                '(${item.reviewCount})',
-                style: AppTextStyle.body(
-                  color: AppColors.appDescriptionColor,
+              ],
+              // Price - show only if not null
+              if (price != null && price.isNotEmpty) ...[
+                if (ratingReview != null && ratingReview.isNotEmpty)
+                  const SizedBox(width: 20),
+                Text(
+                  "₹$price",
+                  style: AppTextStyle.description(
+                    color: AppColors.appTitleColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 40),
-              Text("₹${item.price.toStringAsFixed(0)}", style: AppTextStyle.description(
-                color: AppColors.appTitleColor,
-                fontWeight: FontWeight.bold,))
 
+              ],
             ],
           ),
           const SizedBox(height: 5.0),
-          Row(
-            children: [
-              Container(
-                height: 32,
-                width: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage(item.profileImagePath),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 5.0),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.sellerName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style:AppTextStyle.body(
-                      color: AppColors.appTitleColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    item.sellerLevel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyle.body(
-                      color: AppColors.appDescriptionColor,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          // Badge - show only if available
+          // if (badge != null && badge.isNotEmpty)
+          //   Row(
+          //     mainAxisAlignment: MainAxisAlignment.start,
+          //     children: [
+          //       Container(
+          //         padding: const EdgeInsets.symmetric(
+          //           horizontal: 14,
+          //           vertical: 6,
+          //         ),
+          //         decoration: BoxDecoration(
+          //           gradient: AppColors.appPagecolor,
+          //           borderRadius: BorderRadius.circular(10),
+          //           boxShadow: [
+          //             BoxShadow(
+          //               color: AppColors.appMutedColor,
+          //               blurRadius: 5,
+          //               spreadRadius: 1,
+          //               offset: Offset(0, 5),
+          //             ),
+          //           ],
+          //         ),
+          //         alignment: Alignment.center,
+          //         child: Text(
+          //           badge,
+          //           textAlign: TextAlign.center,
+          //           style: AppTextStyle.body(),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+
+          // // Seller info
+          // if (sellerName.isNotEmpty)
+          //   Row(
+          //     children: [
+          //       Container(
+          //         height: 32,
+          //         width: 32,
+          //         decoration: BoxDecoration(
+          //           shape: BoxShape.circle,
+          //           color: AppColors.appColor.withOpacity(0.2),
+          //         ),
+          //         child: Icon(
+          //           Icons.person,
+          //           size: 20,
+          //           color: AppColors.appColor,
+          //         ),
+          //       ),
+          //       const SizedBox(width: 5.0),
+          //       Flexible(
+          //         child: Column(
+          //           crossAxisAlignment: CrossAxisAlignment.start,
+          //           children: [
+          //             Text(
+          //               sellerName,
+          //               maxLines: 1,
+          //               overflow: TextOverflow.ellipsis,
+          //               style: AppTextStyle.body(
+          //                 color: AppColors.appTitleColor,
+          //                 fontWeight: FontWeight.bold,
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       ),
+          //     ],
+          //   ),
         ],
       ),
     );
   }
+}
 
-  void _openCustomDetailScreen(BuildContext context, ServiceItem item) {
-    // Static data for testing - you can replace these with real data from API
-    final staticData = _getStaticDetailData(item);
+class CartActionButtons extends StatelessWidget {
+  final VoidCallback? onRemoveTap;
+  final VoidCallback? onSaveForLaterTap;
+  final VoidCallback? onBuyNowTap;
+  final double screenWidth;
 
-    Get.to(() => CustomDetailScreen(
-      title: staticData['title'],
-      rating: staticData['rating'],
-      reviewCount: staticData['reviewCount'],
-      favoriteCount: staticData['favoriteCount'],
-      sellerName: staticData['sellerName'],
-      sellerLevel: staticData['sellerLevel'],
-      profileImagePath: staticData['profileImagePath'],
-      description: staticData['description'],
-      status: staticData['status'],
-      mediaUrls: staticData['mediaUrls'],
-      htmlContent: staticData['htmlContent'],
-      pricingPlans: staticData['pricingPlans'],
-      recentViewedList: staticData['recentViewedList'],
-      reviews: staticData['reviews'],
-    ));
+  const CartActionButtons({
+    super.key,
+    this.onRemoveTap,
+    this.onSaveForLaterTap,
+    this.onBuyNowTap,
+    required this.screenWidth,
+  });
+
+  Widget _actionButton({
+    required String title,
+    required Color textColor,
+    required Color borderColor,
+    required VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap ?? () {},
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        // margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: borderColor),
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: textColor,
+              fontSize: screenWidth * 0.04,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  Map<String, dynamic> _getStaticDetailData(ServiceItem item) {
-    return {
-      'title': item.title,
-      'rating': item.rating,
-      'reviewCount': item.reviewCount,
-      'favoriteCount': 150,
-      'sellerName': item.sellerName,
-      'sellerLevel': item.sellerLevel,
-      'profileImagePath': item.profileImagePath,
-      'description': 'Professional service with high quality delivery',
-      'status': 'bidding', // Can be 'bidding', 'waiting', 'before_pay', 'closed'
-      'mediaUrls': [
-
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-        // Sample image URLs
-        'https://picsum.photos/800/600?random=1',
-        'https://picsum.photos/800/600?random=2',
-        'https://picsum.photos/800/600?random=3',
-        'https://picsum.photos/800/600?random=4',
-      ],
-      'htmlContent': '''
-        <h3>Service Description</h3>
-        <p>This is a comprehensive service that includes:</p>
-        <ul>
-          <li>High-quality deliverables</li>
-          <li>Fast turnaround time</li>
-          <li>Unlimited revisions</li>
-          <li>24/7 customer support</li>
-          <li>Money-back guarantee</li>
-        </ul>
-        <p>We pride ourselves on delivering exceptional results that exceed client expectations. Our team of experienced professionals ensures that every project is completed to the highest standards.</p>
-        <h4>What you'll get:</h4>
-        <ol>
-          <li>Professional quality work</li>
-          <li>Source files included</li>
-          <li>Commercial use license</li>
-          <li>Lifetime support</li>
-        </ol>
-      ''',
-      'pricingPlans': [
-        {
-          'name': 'Basic',
-          'price': item.price,
-          'description': 'Perfect for small projects',
-          'deliveryDays': 3,
-          'revisions': '2 Revisions',
-          'isHighlighted': false,
-          'features': [
-            {'name': 'Basic Design', 'included': true},
-            {'name': 'Source Files', 'included': true},
-            {'name': 'Commercial Use', 'included': false},
-            {'name': 'Premium Support', 'included': false},
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _actionButton(
+                title: AppStrings.remove,
+              textColor: AppColors.appBodyTextColor,
+              borderColor: AppColors.appMutedTextColor,
+              onTap: onRemoveTap,
+            ),
+            _actionButton(
+              title: AppStrings.saveForLater,
+              textColor: AppColors.appButtonTextColor,
+              borderColor: AppColors.kBorderColorTextField,
+              onTap: onSaveForLaterTap,
+            ),
+            _actionButton(
+              title: AppStrings.buyThisNow,
+              textColor: AppColors.appButtonTextColor,
+              borderColor: AppColors.kBorderColorTextField,
+              onTap: onBuyNowTap,
+            ),
           ],
-        },
-        {
-          'name': 'Standard',
-          'price': (item.price * 1.5).round(),
-          'description': 'Most popular choice',
-          'deliveryDays': 5,
-          'revisions': '5 Revisions',
-          'isHighlighted': true,
-          'features': [
-            {'name': 'Premium Design', 'included': true},
-            {'name': 'Source Files', 'included': true},
-            {'name': 'Commercial Use', 'included': true},
-            {'name': 'Premium Support', 'included': false},
-          ],
-        },
-        {
-          'name': 'Premium',
-          'price': (item.price * 2).round(),
-          'description': 'For complex projects',
-          'deliveryDays': 7,
-          'revisions': 'Unlimited',
-          'isHighlighted': false,
-          'features': [
-            {'name': 'Premium Design', 'included': true},
-            {'name': 'Source Files', 'included': true},
-            {'name': 'Commercial Use', 'included': true},
-            {'name': 'Premium Support', 'included': true},
-          ],
-        },
-      ],
-      'recentViewedList': [
-        ServiceItem(
-          imagePath: 'assets/images/shot5.png',
-          title: 'Modern Logo Design',
-          rating: 4.8,
-          reviewCount: 120,
-          price: 25,
-          profileImagePath: 'assets/images/profilepic2.png',
-          sellerName: 'John Doe',
-          sellerLevel: 'Level 2 Seller',
-          isFavorite: false,
         ),
-        ServiceItem(
-          imagePath: 'assets/images/shot5.png',
-          title: 'Website Development',
-          rating: 4.9,
-          reviewCount: 89,
-          price: 150,
-          profileImagePath: 'assets/images/profilepic2.png',
-          sellerName: 'Jane Smith',
-          sellerLevel: 'Top Rated',
-          isFavorite: true,
-        ),
-        ServiceItem(
-          imagePath: 'assets/images/shot5.png',
-          title: 'Mobile App Design',
-          rating: 4.7,
-          reviewCount: 67,
-          price: 200,
-          profileImagePath: 'assets/images/profilepic2.png',
-          sellerName: 'Mike Johnson',
-          sellerLevel: 'Level 1 Seller',
-          isFavorite: false,
-        ),
-      ],
-      'reviews': [
-        {
-          'rating': 5.0,
-          'comment': 'Excellent work! Exceeded my expectations. Will definitely work with this seller again.',
-          'reviewerName': 'Sarah Wilson',
-          'date': '2 days ago',
-        },
-        {
-          'rating': 4.5,
-          'comment': 'Great quality and fast delivery. Very professional service.',
-          'reviewerName': 'David Brown',
-          'date': '1 week ago',
-        },
-        {
-          'rating': 5.0,
-          'comment': 'Perfect! Exactly what I was looking for. Highly recommended.',
-          'reviewerName': 'Emily Davis',
-          'date': '2 weeks ago',
-        },
-      ],
-    };
+      ),
+    );
   }
 }

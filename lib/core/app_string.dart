@@ -32,6 +32,8 @@ class AppStrings{
   static String didntreceivecode  = 'Didn’t receive code?';
   static String myProfile  = 'My Profile';
   static String dashboard  = 'Dashboard';
+  static String myPost  = 'My Posts';
+  static String myOrders  = 'My Orders';
   static String Deposit  = 'Deposit';
   static String withdraw  = 'Withdraw';
   static String Transaction  = 'Transaction';
@@ -78,6 +80,7 @@ class AppStrings{
   static String saveForLater = 'Save For later';
   static String buyThisNow = 'Buy This Now';
   static String cartScreen = 'Cart Screen';
+  static String allCategories = 'All Categories';
   static String transactions = 'Transactions';
   static String transaction = 'Transaction';
   // Generic UI text

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "153398968537",
+    "project_id": "lobalmart-com-cc8a0",
+    "storage_bucket": "lobalmart-com-cc8a0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:153398968537:android:fb1ed5c1cb29af01887ec8",
+        "android_client_info": {
+          "package_name": "com.lobalmart.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvzyjA7wL9ZMmqg-JarZyY5PyOTyTBPJA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

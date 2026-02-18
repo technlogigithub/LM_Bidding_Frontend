@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import '../../widget/web_card_container_layout.dart';
 import 'package:pinput/pinput.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -12,22 +14,45 @@ import '../../core/app_textstyle.dart';
 import '../../widget/app_image_handle.dart';
 import '../../widget/form_widgets/app_button.dart';
 
-class OtpVarificationScreen extends StatelessWidget {
+class OtpVarificationScreen extends StatefulWidget {
   final String mobile;
+  final String? otp;
+
+  const OtpVarificationScreen({super.key, required this.mobile, this.otp});
+
+  @override
+  State<OtpVarificationScreen> createState() => _OtpVarificationScreenState();
+}
+
+class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
   final OtpController controller = Get.put(OtpController());
   static final controllerApp = Get.put(AppSettingsController());
 
-  OtpVarificationScreen({super.key, required this.mobile}) {
-    controller.setMobile(mobile); // store mobile in controller
+  @override
+  void initState() {
+    super.initState();
+    controller.setMobile(widget.mobile);
+    if (widget.otp != null && widget.otp!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.pinController.text = widget.otp!;
+        controller.submitOtp();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return _buildWebUI(context);
+    }
+    return _buildMobileUI(context);
+  }
+
+  Widget _buildMobileUI(BuildContext context) {
     final width = Get.width;
     final height = Get.height;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-
 
     return Scaffold(
       appBar: AppBar(
@@ -55,17 +80,9 @@ class OtpVarificationScreen extends StatelessWidget {
 
           ),
           child: Column(
-
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // GestureDetector(
-              //   onTap: () => Navigator.pop(context),
-              //   child: const Padding(
-              //     padding: EdgeInsets.only(left: 10.0),
-              //     child: Icon(Icons.arrow_back),
-              //   ),
-              // ),
               Center(
                 child: Column(
                   children: [
@@ -77,8 +94,6 @@ class OtpVarificationScreen extends StatelessWidget {
                         fit: BoxFit.contain,
                       ),
                     ),
-                    // SizedBox(height: screenHeight*0.01,),
-                    // Text(controllerApp.appName.toString(),style: TextStyle(color: AppColors.appTextColor,fontWeight: FontWeight.bold,fontSize: screenWidth*0.07),)
                   ],
                 ),
               ),
@@ -96,123 +111,141 @@ class OtpVarificationScreen extends StatelessWidget {
           ),
           child: Padding(
             padding: EdgeInsets.all(width * 0.05),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: height * 0.02),
-                Obx(() {
-                  final v = controllerApp.verifyOtpPage.value;
-                  final desc = v?.pageDescription ?? AppStrings.wevesentthecodetoyourmobilenumber;
-                  return Text(
-                    desc,
-                    style: AppTextStyle.description(
-                      color: AppColors.appDescriptionColor,
-
-                    ),
-                    textAlign: TextAlign.center,
-                  );
-                }),
-                SizedBox(height: height * 0.005),
-                Text(
-                  mobile,
-                  style: AppTextStyle.title(
-                    color: AppColors.appTitleColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: height * 0.03),
-
-                /// Dynamic OTP length from verify_otp rules
-                Obx(() {
-                  final verify = controllerApp.verifyOtpPage.value;
-                  int length = 4;
-                  final inputs = verify?.inputs ?? [];
-                  if (inputs.isNotEmpty) {
-                    for (final v in (inputs.first.validations ?? [])) {
-                      if ((v.type ?? '').toLowerCase() == 'exact_length' && v.value != null) {
-                        length = v.value!;
-                        break;
-                      }
-                    }
-                  }
-                  return Pinput(
-                    length: length,
-                    controller: controller.pinController,
-                    defaultPinTheme: PinTheme(
-                      width: width * 0.15,
-                      height: width * 0.15,
-                      textStyle: TextStyle(
-                          fontSize: width * 0.05, color: AppColors.appTitleColor),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.appBodyTextColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    focusedPinTheme: PinTheme(
-                      width: width * 0.15,
-                      height: width * 0.15,
-                      textStyle: TextStyle(
-                          fontSize: width * 0.05, color: AppColors.appBodyTextColor),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.appMutedTextColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    showCursor: true,
-                    onCompleted: (_) => controller.submitOtp(),
-                  );
-                }),
-                SizedBox(height: height * 0.02),
-
-                /// Timer
-                Obx(() {
-                  final seconds = controller.secondsRemaining.value;
-                  final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
-                  final secs = (seconds % 60).toString().padLeft(2, '0');
-                  return Text(
-                    "$minutes:$secs",
-                    style: AppTextStyle.title(
-                      color: AppColors.appBodyTextColor,
-                      fontWeight: FontWeight.bold,
-
-                    ),
-                  );
-                }),
-                SizedBox(height: height * 0.015),
-
-                /// Resend Code
-                Obx(() => GestureDetector(
-                  onTap: controller.secondsRemaining.value == 0
-                      ? controller.resendOtp
-                      : null,
-                  child: Text(
-                    controller.secondsRemaining.value == 0
-                        ? AppStrings.resendCode
-                        : AppStrings.verification,
-                    style: AppTextStyle.title(
-                      color: controller.secondsRemaining.value == 0
-                          ? AppColors.appLinkColor
-                          : AppColors.appLinkColor,
-
-                    ),
-                  ),
-                )),
-                const Spacer(),
-
-                /// Submit button
-                Obx(() => CustomButton(
-                  text: controller.isLoading.value
-                      ? "${AppStrings.loggingIn}..."
-                      : AppStrings.loggingIn,
-                  onTap: controller.submitOtp,
-                )),
-                SizedBox(height: height * 0.05),
-              ],
-            ),
+            child: _buildFormContent(context, isWeb: false),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildWebUI(BuildContext context) {
+    return WebCardContainerLayout(
+      logoUrl: controllerApp.logoNameWhite.toString(),
+      child: _buildFormContent(context, isWeb: true),
+    );
+  }
+
+  Widget _buildFormContent(BuildContext context, {required bool isWeb}) {
+    final width = Get.width;
+    final height = Get.height;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(height: isWeb ? 10 : height * 0.02),
+        Obx(() {
+          final v = controllerApp.verifyOtpPage.value;
+          final desc = v?.pageDescription ?? AppStrings.wevesentthecodetoyourmobilenumber;
+          return Text(
+            desc,
+            style: AppTextStyle.description(
+              color: AppColors.appDescriptionColor,
+
+            ),
+            textAlign: TextAlign.center,
+          );
+        }),
+        SizedBox(height: isWeb ? 5 : height * 0.005),
+        Text(
+          widget.mobile,
+          style: AppTextStyle.title(
+            color: AppColors.appTitleColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: isWeb ? 15 : height * 0.03),
+
+        /// Dynamic OTP length from verify_otp rules
+        Obx(() {
+          final verify = controllerApp.verifyOtpPage.value;
+          int length = 4;
+          final inputs = verify?.inputs ?? [];
+          if (inputs.isNotEmpty) {
+            for (final v in (inputs.first.validations ?? [])) {
+              if ((v.type ?? '').toLowerCase() == 'exact_length' && v.value != null) {
+                length = v.value!;
+                break;
+              }
+            }
+          }
+          final pinWidth = isWeb ? 50.0 : width * 0.15;
+          return Pinput(
+            length: length,
+            autofillHints: const [AutofillHints.oneTimeCode],
+            controller: controller.pinController,
+            defaultPinTheme: PinTheme(
+              width: pinWidth,
+              height: pinWidth,
+              textStyle: TextStyle(
+                  fontSize: isWeb ? 20 : width * 0.05, color: AppColors.appTitleColor),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.appBodyTextColor),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            focusedPinTheme: PinTheme(
+              width: pinWidth,
+              height: pinWidth,
+              textStyle: TextStyle(
+                  fontSize: isWeb ? 20 : width * 0.05, color: AppColors.appBodyTextColor),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.appMutedTextColor),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            showCursor: true,
+            onCompleted: (_) => controller.submitOtp(),
+          );
+        }),
+        SizedBox(height: isWeb ? 15 : height * 0.02),
+
+        /// Timer
+        Obx(() {
+          final seconds = controller.secondsRemaining.value;
+          final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+          final secs = (seconds % 60).toString().padLeft(2, '0');
+          return Text(
+            "$minutes:$secs",
+            style: AppTextStyle.title(
+              color: AppColors.appBodyTextColor,
+              fontWeight: FontWeight.bold,
+
+            ),
+          );
+        }),
+        SizedBox(height: isWeb ? 10 : height * 0.015),
+
+        /// Resend Code
+        Obx(() => GestureDetector(
+          onTap: controller.secondsRemaining.value == 0
+              ? controller.resendOtp
+              : null,
+          child: Text(
+            controller.secondsRemaining.value == 0
+                ? AppStrings.resendCode
+                : AppStrings.verification,
+            style: AppTextStyle.title(
+              color: controller.secondsRemaining.value == 0
+                  ? AppColors.appLinkColor
+                  : AppColors.appLinkColor,
+
+            ),
+          ),
+        )),
+        if (!isWeb) const Spacer(),
+        if (isWeb) const SizedBox(height: 25),
+
+        /// Submit button
+        Obx(() => CustomButton(
+          text: controller.isLoading.value
+              ? "${AppStrings.loggingIn}..."
+              : AppStrings.loggingIn,
+          onTap: controller.submitOtp,
+        )),
+        SizedBox(height: isWeb ? 10 : height * 0.05),
+      ],
+    );
+
   }
 }
 

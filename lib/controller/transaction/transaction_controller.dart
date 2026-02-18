@@ -4,10 +4,12 @@ import 'package:intl/intl.dart';
 
 import '../../core/app_color.dart';
 import '../../models/static models/transaction_data.dart';
+import '../../widget/form_widgets/custom_date_time.dart';
 
 class TransactionController extends GetxController {
   var selectedDate = DateTime.now().obs;
   var transactions = <TransactionData>[].obs;
+
 
   @override
   void onInit() {
@@ -35,29 +37,22 @@ class TransactionController extends GetxController {
   Future<void> pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate.value,
+      initialDate: selectedDate.value ?? DateTime.now(),
       firstDate: DateTime(2015),
       lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.appColor,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(foregroundColor: AppColors.appColor),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      builder: (context, child) => themedPicker(context, child!),
     );
 
     if (picked != null && picked != selectedDate.value) {
       selectedDate.value = picked;
-      // TODO: filter transactions by selected date
+
+      // ✅ Call your filter API / logic here
+      // filterTransactionsByDate(picked);
     }
   }
+  void updateDate(DateTime date) {
+    selectedDate.value = date;
+    // loadTransactionsByDate(date); // if you filter API/local list
+  }
+
 }

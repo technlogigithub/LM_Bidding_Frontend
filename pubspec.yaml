@@ -81,7 +81,9 @@ dependencies:
   path_provider:
   pdf_thumbnail:
   pdfx:
-
+  firebase_messaging: ^16.1.0
+  flutter_local_notifications: ^19.5.0
+  firebase_core: ^4.3.0
 
 
 

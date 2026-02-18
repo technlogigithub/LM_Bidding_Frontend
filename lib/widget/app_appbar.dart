@@ -11,14 +11,12 @@ class CustomHeader extends StatelessWidget {
   final String username;
   final double balance;
   final String images;
-  final UserInfo? userInfo;
 
   const CustomHeader({
     super.key,
     required this.username,
     required this.balance,
     required this.images,
-    this.userInfo,
   });
 
   Future<bool> _checkLogin() async {
@@ -49,8 +47,8 @@ class CustomHeader extends StatelessWidget {
                 imageUrl: images,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: AppColors.simmerColor,
-                  highlightColor: AppColors.appWhite,
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: 50,
                     height: 50,

@@ -1,15 +1,13 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'socket_service_interface.dart';
 
-class SocketService {
-  static final SocketService _instance = SocketService._internal();
-  factory SocketService() => _instance;
-  SocketService._internal();
-
+class SocketServiceImpl implements SocketService {
   WebSocket? _socket;
   Function(Map<String, dynamic>)? _onMessage;
 
+  @override
   Future<void> connect(String userId) async {
     try {
       final url = _getServerUrl();
@@ -38,24 +36,29 @@ class SocketService {
 
   String _getServerUrl() {
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'ws://10.252.34.70:8080'; // Android emulator
+      // ✅ REAL ANDROID PHONE
+      return 'ws://143.110.183.169:9001';
     }
-    return 'ws://localhost:8080';
+    return 'ws://143.110.183.169:9001';
   }
 
-  void sendMessage(Map<String, dynamic> messageData) {
+
+  @override
+  void sendMessage(Map<String, dynamic> data) {
     if (_socket?.readyState == WebSocket.open) {
-      _socket!.add(jsonEncode({'type': 'message', ...messageData}));
-      debugPrint('📤 Sent: $messageData');
+      _socket!.add(jsonEncode({'type': 'message', ...data}));
+      debugPrint('📤 Sent: $data');
     } else {
       debugPrint('⚠️ Socket not connected');
     }
   }
 
+  @override
   void onMessageReceived(Function(Map<String, dynamic>) callback) {
     _onMessage = callback;
   }
 
+  @override
   void disconnect() {
     _socket?.close();
     _socket = null;

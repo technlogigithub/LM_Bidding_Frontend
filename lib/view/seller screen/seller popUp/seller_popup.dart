@@ -2,11 +2,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:libdding/view/auth/login_screen.dart';
+import 'package:libdding/widget/form_widgets/app_button.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../../core/app_constant.dart';
 import '../../../widget/app_social_icons.dart';
@@ -916,17 +918,17 @@ class _SendOfferPopUpState extends State<SendOfferPopUp> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: const EdgeInsets.all(15.0),
+            padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
                 Text(
                   'Select a Service to offer',
-                  style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                  style: AppTextStyle.title(),
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => finish(context),
-                  child: const Icon(FeatherIcons.x, color: kSubTitleColor),
+                  child:  Icon(FeatherIcons.x, color:AppColors.appTitleColor ),
                 ),
               ],
             ),
@@ -948,22 +950,33 @@ class _SendOfferPopUpState extends State<SendOfferPopUp> {
                   });
                 },
                 child: Container(
-                  height: 154,
-                  width: 156,
+                  height: 166.h,
+                  width: 156.w,
                   decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.appMutedColor,
+                          blurRadius: 5,
+                          spreadRadius: 1,
+                          offset: Offset(0, 10),
+                          // blurRadius: 1,
+                          // spreadRadius: 1,
+                          // offset: Offset(0, 6),
+                        ),
+                      ],
                       border: Border.all(
-                        color: selectedTitleList.contains(titleList[i]) ? kPrimaryColor : kBorderColorTextField,
+                        color: selectedTitleList.contains(titleList[i]) ? AppColors.appButtonColor : AppColors.appMutedColor,
                       ),
                       borderRadius: BorderRadius.circular(6.0),
-                      color: kWhite),
+                      gradient: AppColors.appPagecolor),
                   child: Column(
                     children: [
                       Stack(
                         alignment: Alignment.topLeft,
                         children: [
                           Container(
-                            height: 99,
-                            width: 154,
+                            height: 99.h,
+                            width: 154.w,
                             decoration: const BoxDecoration(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(8.0),
@@ -978,7 +991,7 @@ class _SendOfferPopUpState extends State<SendOfferPopUp> {
                               children: [
                                 Icon(
                                   selectedTitleList.contains(titleList[i]) ? Icons.check_circle : Icons.circle_outlined,
-                                  color: selectedTitleList.contains(titleList[i]) ? kPrimaryColor : kSubTitleColor,
+                                  color: selectedTitleList.contains(titleList[i]) ? AppColors.appButtonColor : AppColors.appIconColor,
                                 ),
                                 const Spacer(),
                                 GestureDetector(
@@ -988,9 +1001,9 @@ class _SendOfferPopUpState extends State<SendOfferPopUp> {
                                     });
                                   },
                                   child: Container(
-                                    height: 24,
-                                    width: 24,
-                                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                                    height: 24.h,
+                                    width: 24.w,
+                                    decoration:  BoxDecoration(color: AppColors.appMutedColor, shape: BoxShape.circle),
                                     child: isFavorite
                                         ? const Center(
                                             child: Icon(
@@ -999,10 +1012,11 @@ class _SendOfferPopUpState extends State<SendOfferPopUp> {
                                               color: Colors.red,
                                             ),
                                           )
-                                        : const Center(
+                                        :  Center(
                                             child: Icon(
                                             Icons.favorite_border,
                                             size: 18.0,
+                                              color: AppColors.appIconColor,
                                           )),
                                   ),
                                 ),
@@ -1017,7 +1031,7 @@ class _SendOfferPopUpState extends State<SendOfferPopUp> {
                           titleList[i],
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                          style: AppTextStyle.body( fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -1027,20 +1041,27 @@ class _SendOfferPopUpState extends State<SendOfferPopUp> {
             },
           ),
           const SizedBox(height: 20.0),
-          ButtonGlobalWithoutIcon(
-              buttontext: 'Send Offer',
-              buttonDecoration: kButtonDecoration.copyWith(
-                color: kPrimaryColor,
-                borderRadius: BorderRadius.circular(30.0),
-              ),
-              onPressed: () {
-                setState(() {
-                  finish(context);
-                  const CreateCustomerOffer().launch(context);
-                });
-              },
-              buttonTextColor: kWhite),
-          const SizedBox(height: 15.0),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: CustomButton(onTap: () {
+              setState(() {
+                finish(context);
+                const CreateCustomerOffer().launch(context);
+              });
+
+            }, text: "Send Offer"),
+          ),
+          // ButtonGlobalWithoutIcon(
+          //     buttontext: 'Send Offer',
+          //     buttonDecoration: kButtonDecoration.copyWith(
+          //       color: kPrimaryColor,
+          //       borderRadius: BorderRadius.circular(30.0),
+          //     ),
+          //     onPressed: () {
+          //
+          //     },
+          //     buttonTextColor: kWhite),
+          // const SizedBox(height: 15.0),
         ],
       ),
     );
@@ -1323,106 +1344,89 @@ class _WithdrawHistoryPopUpState extends State<WithdrawHistoryPopUp> {
               children: [
                 Text(
                   'Withdrawal Completed',
-                  style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+                  style:AppTextStyle.description(color: AppColors.appTitleColor, fontWeight: FontWeight.bold),
+
                 ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => finish(context),
-                  child: const Icon(FeatherIcons.x, color: kSubTitleColor),
+                  child:  Icon(FeatherIcons.x, color: AppColors.appTitleColor),
                 ),
               ],
             ),
             const SizedBox(height: 5.0),
-            const Divider(
+             Divider(
               thickness: 1.0,
-              color: kBorderColorTextField,
+              color: AppColors.appMutedColor,
             ),
             const SizedBox(height: 10.0),
-            Row(
-              children: [
-                Text(
-                  'Withdraw to:',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-                const Spacer(),
-                Text(
-                  'PayPal Account',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-              ],
-            ),
-            const SizedBox(height: 5.0),
-            Row(
-              children: [
-                Text(
-                  'Transaction ID:',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-                const Spacer(),
-                Text(
-                  '7254636544114',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-              ],
-            ),
-            const SizedBox(height: 5.0),
-            Row(
-              children: [
-                Text(
-                  'Price:',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-                const Spacer(),
-                Text(
-                  '$currencySign 5,000.00',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-              ],
-            ),
-            const SizedBox(height: 5.0),
-            Row(
-              children: [
-                Text(
-                  'Transaction Made:',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-                const Spacer(),
-                Text(
-                  '10 Jun 2023',
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                ),
-              ],
-            ),
+            infoRow('Withdraw to:', 'PayPal Account'),
+            infoRow('Transaction ID:', '7254636544114'),
+            infoRow('Price:', '$currencySign 5,000.00'),
+            infoRow('Transaction Made:', '10 Jun 2023'),
+
             const SizedBox(height: 20.0),
             Row(
               children: [
                 Expanded(
-                  child: Button(
-                    containerBg: kWhite,
-                    borderColor: redColor,
-                    buttonText: 'Cancel',
-                    textColor: redColor,
-                    onPressed: () {
+                  child: CustomButton(
+                    text: 'Cancel',
+                    backgroundColor: AppColors.appButtonColor,
+                    onTap: () {
                       finish(context);
                     },
                   ),
                 ),
+
+                const SizedBox(width: 12), // ✅ spacing between buttons
+
                 Expanded(
-                  child: Button(
-                    containerBg: kPrimaryColor,
-                    borderColor: Colors.transparent,
-                    buttonText: 'Confirm',
-                    textColor: kWhite,
-                    onPressed: () {
+                  child: CustomButton(
+                    text: 'Confirm',
+                    backgroundColor: AppColors.appButtonColor,
+                    onTap: () {
                       finish(context);
                     },
                   ),
                 ),
               ],
             ),
+
           ],
         ),
       ),
     );
   }
+  Widget infoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              title,
+              style: AppTextStyle.description(
+                color: AppColors.appDescriptionColor,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 6,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: AppTextStyle.description(
+                color: AppColors.appTitleColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

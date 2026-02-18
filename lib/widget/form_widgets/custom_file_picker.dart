@@ -4,14 +4,17 @@
   import 'package:flutter/material.dart';
   import 'package:flutter/foundation.dart';
   import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
   import 'package:image_picker/image_picker.dart';
   import 'package:pdfx/pdfx.dart';
   import 'package:pro_image_editor/pro_image_editor.dart';
   import 'package:video_player/video_player.dart';
   import 'package:video_thumbnail/video_thumbnail.dart';
+  import 'package:get/get.dart';
   import '../../core/app_color.dart';
   import '../../core/app_textstyle.dart';
   import '../../core/app_string.dart';
+  import '../../controller/post/post_form_controller.dart';
   import '../../view/image_view_screen/image_view_screen.dart';
   import '../../view/video_view_screen/video_view_screen.dart';
   import 'web_file_drop_zone_stub.dart'
@@ -112,83 +115,31 @@
   
   
     Future<void> _pick(BuildContext context) async {
+      try {
+        final controller = Get.find<PostFormController>();
+        controller.setUserInteracting(true);
+        Future.delayed(const Duration(seconds: 5), () {
+          if (mounted) controller.setUserInteracting(false);
+        });
+      } catch (_) {}
+      
       final category = widget.category ?? (widget.isImageFile ? 'image' : 'any');
   
       if (category == 'image') {
-        await showModalBottomSheet(
-          context: context,
-          builder: (_) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading:  Icon(Icons.photo_library_outlined,color: AppColors.appIconColor),
-                  title:  Text('Gallery',style: AppTextStyle.description(color: AppColors.appTitleColor),),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? picked = await _picker.pickImage(source: ImageSource.gallery);
-                    if (picked != null) await _handleImagePicked(File(picked.path));
-                  },
-                ),
-                ListTile(
-                  leading:  Icon(Icons.photo_camera_outlined,color: AppColors.appIconColor,),
-                  title:  Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
-                    if (picked != null) await _handleImagePicked(File(picked.path));
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
+        if (kIsWeb) {
+          await _showWebImagePicker();
+        } else {
+          await _showMobileImagePicker();
+        }
         return;
       }
   
       if (category == 'video') {
-        await showModalBottomSheet(
-          context: context,
-          builder: (_) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading:  Icon(Icons.video_library_outlined,color: AppColors.appIconColor,),
-                  title:  Text('Video Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
-                    if (picked != null) {
-                      final file = File(picked.path);
-                      widget.onPicked(file);
-                      setState(() {
-                        _localFile = file;
-                        _networkThumbnail = null;  // reset old image
-                      });
-                      await _loadVideoThumbnail(file);
-  
-                    }
-                  },
-                ),
-                ListTile(
-                  leading:  Icon(Icons.videocam_outlined,color: AppColors.appIconColor,),
-                  title:  Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
-                    if (picked != null) {
-                      final file = File(picked.path);
-                      widget.onPicked(file);
-                      setState(() => _localFile = file);
-                      await _loadVideoThumbnail(file);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
+        if (kIsWeb) {
+          await _showWebVideoPicker();
+        } else {
+          await _showMobileVideoPicker();
+        }
         return;
       }
   
@@ -205,15 +156,172 @@
           widget.onPicked(file);
           setState(() {
             _localFile = file;
-            _pdfThumb = null; // Reset PDF thumb when new file is picked
+            _pdfThumb = null;
           });
-          // Load PDF thumbnail if it's a PDF
-          if (_isPdf(file.path)) {
-            await _loadPdfThumbnail(file);
-          }
+          try {
+            final controller = Get.find<PostFormController>();
+            controller.setUserInteracting(true);
+            Future.delayed(const Duration(seconds: 3), () => controller.setUserInteracting(false));
+          } catch (_) {}
+          if (_isPdf(file.path)) await _loadPdfThumbnail(file);
         }
       }
     }
+
+    Future<void> _showWebImagePicker() async {
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Select Image Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.photo_library_outlined, color: AppColors.appIconColor),
+                title: Text('Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickImage(source: ImageSource.gallery);
+                  if (picked != null) await _handleImagePicked(File(picked.path));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_camera_outlined, color: AppColors.appIconColor),
+                title: Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
+                  if (picked != null) await _handleImagePicked(File(picked.path));
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future<void> _showMobileImagePicker() async {
+      await showModalBottomSheet(
+        context: context,
+        builder: (_) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.photo_library_outlined, color: AppColors.appIconColor),
+                title: Text('Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickImage(source: ImageSource.gallery);
+                  if (picked != null) await _handleImagePicked(File(picked.path));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_camera_outlined, color: AppColors.appIconColor),
+                title: Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
+                  if (picked != null) await _handleImagePicked(File(picked.path));
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future<void> _showWebVideoPicker() async {
+      await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Select Video Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.video_library_outlined, color: AppColors.appIconColor),
+                title: Text('Video Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
+                  if (picked != null) {
+                    final file = File(picked.path);
+                    widget.onPicked(file);
+                    setState(() {
+                      _localFile = file;
+                      _networkThumbnail = null;
+                    });
+                    await _loadVideoThumbnail(file);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.videocam_outlined, color: AppColors.appIconColor),
+                title: Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
+                  if (picked != null) {
+                    final file = File(picked.path);
+                    widget.onPicked(file);
+                    setState(() => _localFile = file);
+                    await _loadVideoThumbnail(file);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future<void> _showMobileVideoPicker() async {
+      await showModalBottomSheet(
+        context: context,
+        builder: (_) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.video_library_outlined, color: AppColors.appIconColor),
+                title: Text('Video Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
+                  if (picked != null) {
+                    final file = File(picked.path);
+                    widget.onPicked(file);
+                    setState(() {
+                      _localFile = file;
+                      _networkThumbnail = null;
+                    });
+                    await _loadVideoThumbnail(file);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.videocam_outlined, color: AppColors.appIconColor),
+                title: Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
+                  if (picked != null) {
+                    final file = File(picked.path);
+                    widget.onPicked(file);
+                    setState(() => _localFile = file);
+                    await _loadVideoThumbnail(file);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
   
     Future<void> _handleImagePicked(File file) async {
       final editedFile = await _openImageEditor(file);
@@ -484,7 +592,7 @@
                 onTap: () => _pick(context),
                 child: Container(
                   width: double.infinity,
-                  height: 180,
+                  height: 180.h,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     color: Colors.transparent,

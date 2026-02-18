@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:get/get.dart';
 import 'package:step_progress_indicator/step_progress_indicator.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../controller/post/post_form_controller.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../core/app_color.dart';
@@ -10,28 +12,101 @@ import '../../core/app_string.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
+import '../../models/Post/Post_Form_Genrate_Model.dart' as PostModel;
+import '../../widget/web_form_container.dart';
 
-class PostNewScreen extends GetView<PostFormController> {
-  const PostNewScreen({super.key});
+class PostNewScreen extends StatefulWidget {
+  final String? apiEndpoint;
+  const PostNewScreen({super.key, this.apiEndpoint});
 
   @override
-  Widget build(BuildContext context) {
+  State<PostNewScreen> createState() => _PostNewScreenState();
+}
+
+class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserver {
+  late PostFormController controller;
+  bool _hasInitialized = false;
+  DateTime? _lastRefreshTime;
+  bool _isUserInteracting = false; // Track if user is actively interacting with form
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
     // Register controller if not already registered
     if (!Get.isRegistered<PostFormController>()) {
       Get.put(PostFormController());
     }
+    controller = Get.find<PostFormController>();
 
+    // Load form data when screen is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_hasInitialized) {
+        _hasInitialized = true;
+        controller.refreshFormData(endpoint: widget.apiEndpoint);
+        _lastRefreshTime = DateTime.now();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    // Reset form session when leaving screen
+    if (Get.isRegistered<PostFormController>()) {
+      controller.resetSession();
+    }
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh form data when screen is revisited (navigation back)
+    // BUT: Don't refresh if user is actively interacting with the form (uploading images, etc.)
+    // Only refresh if it's been more than 1 second since last refresh to avoid excessive calls
+    if (mounted && _hasInitialized && !_isUserInteracting) {
+      final now = DateTime.now();
+      if (_lastRefreshTime == null ||
+          now.difference(_lastRefreshTime!).inSeconds > 1) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_isUserInteracting) {
+            controller.refreshFormData(endpoint: widget.apiEndpoint);
+            _lastRefreshTime = DateTime.now();
+          }
+        });
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // When app comes back to foreground, refresh form data
+    if (state == AppLifecycleState.resumed && mounted && _hasInitialized) {
+      controller.refreshFormData(endpoint: widget.apiEndpoint);
+      _lastRefreshTime = DateTime.now();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return _buildWebUI(context);
+    }
+    return _buildMobileUI(context);
+  }
+
+  Widget _buildMobileUI(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final appController = Get.find<AppSettingsController>();
+    final postForm = appController.postFormFromApi.value;
 
     return Container(
-      // FULL PAGE GRADIENT — FIXES WHITE SPACE ISSUE
-      decoration: BoxDecoration(
-        gradient: AppColors.appPagecolor,
-      ),
+      decoration: BoxDecoration(gradient: AppColors.appPagecolor),
       child: Scaffold(
-        backgroundColor: Colors
-            .transparent, // Important so scaffold doesn't hide gradient under body
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
           elevation: 0,
           automaticallyImplyLeading: false,
@@ -41,31 +116,27 @@ class PostNewScreen extends GetView<PostFormController> {
           backgroundColor: Colors.transparent,
           flexibleSpace: Container(
             decoration: BoxDecoration(
-              gradient: AppColors.appbarColor,   // ← APPLY GRADIENT HERE
+              gradient: AppColors.appbarColor,
             ),
           ),
-          title: Obx(() {
-            final postForm = appController.postFormPage.value;
-            return Text(
-              postForm?.pageTitle ?? '',
-              style: AppTextStyle.title(
-                color: AppColors.appTextColor,
-                fontWeight: FontWeight.bold,
-
-              ),
-            );
-          }),
+          title: Text(
+            postForm?.pageTitle ?? '',
+            style: AppTextStyle.title(
+              color: AppColors.appTextColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-
-
-        // BODY
         body: Obx(() {
-          final postForm = appController.postFormPage.value;
+          final postForm = appController.postFormFromApi.value;
+          final isLoadingForm = controller.isLoadingForm.value;
 
-          if (postForm == null) {
-            return  Center(
-              child: Text('Post form configuration not available',style: AppTextStyle.description(color: AppColors.appDescriptionColor),),
-            );
+          if (isLoadingForm || postForm == null) {
+            if (isLoadingForm) {
+              return _buildShimmerLoading(screenHeight);
+            } else {
+              return _buildEmptyState();
+            }
           }
 
           return SingleChildScrollView(
@@ -73,57 +144,152 @@ class PostNewScreen extends GetView<PostFormController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Page Description
-                if (postForm.pageDescription?.isNotEmpty == true) ...[
-                  Text(
-                    postForm.pageDescription!,
-                    style: AppTextStyle.description(
-                      color: AppColors.appDescriptionColor,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-
-                // Progress Bar
-                if (postForm.progressBar == true) ...[
-                  _buildProgressBar(postForm),
-                  const SizedBox(height: 20),
-                ],
-
-                // Form Content
-                GetBuilder<PostFormController>(
-                  id: 'form_content',
-                  builder: (controller) =>
-                      _buildFormContent(postForm, screenHeight),
-                ),
-
-                const SizedBox(height: 160), // For bottom nav spacing
+                _buildFormHeader(postForm),
+                _buildFormContentWithPageView(postForm, screenHeight),
+                const SizedBox(height: 160),
               ],
             ),
           );
         }),
-
-        // BOTTOM BAR
         bottomNavigationBar: Obx(() {
-          final postForm = appController.postFormPage.value;
-          if (postForm == null) return const SizedBox.shrink();
+          final postForm = appController.postFormFromApi.value;
+          final isLoadingForm = controller.isLoadingForm.value;
+          if (isLoadingForm || postForm == null) return const SizedBox.shrink();
 
           return Container(
             padding: const EdgeInsets.all(16.0),
-            color: Colors
-                .transparent, // FIX: do not apply gradient again → no white gap
-            child: SafeArea(
-              child: _buildActionButtons(postForm, screenHeight),
-            ),
+            color: Colors.transparent,
+            child: SafeArea(child: _buildActionButtons(postForm, screenHeight, context)),
           );
         }),
       ),
     );
   }
 
+  Widget _buildWebUI(BuildContext context) {
+    final appController = Get.find<AppSettingsController>();
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Obx(() {
+      final postForm = appController.postFormFromApi.value;
+      final isLoadingForm = controller.isLoadingForm.value;
+
+      if (isLoadingForm || postForm == null) {
+        return Scaffold(
+          body: isLoadingForm
+              ? _buildShimmerLoading(screenHeight)
+              : _buildEmptyState(),
+        );
+      }
+
+      return Container(
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              children: [
+                // Header outside the card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 100),
+                  child: Column(
+                    children: [
+                      Text(
+                        postForm.pageTitle ?? '',
+                        style: AppTextStyle.title(
+                          color: AppColors.appTitleColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildFormHeader(postForm),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Card containing ONLY the steps and actions
+                Expanded(
+                  child: WebFormContainer(
+                    widthFactor: 0.9,
+                    heightFactor: 1.0, 
+                    htmlContent: """
+                      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                        <h4 style="color: #1A73E8;">Bidding Guidelines</h4>
+                        <p>Welcome to the Post Form. Please follow these steps to ensure your post is approved quickly:</p>
+                        <ul style="padding-left: 20px;">
+                          <li><b>Accuracy:</b> Enter precise details for your item or service.</li>
+                          <li><b>Media:</b> Upload clear photos. Posts with images get 3x more visibility.</li>
+                          <li><b>Bidding Mode:</b> Choose the mode that best fits your requirements.</li>
+                        </ul>
+                        <div style="background: #F8F9FA; padding: 10px; border-left: 4px solid #1A73E8; margin-top: 20px;">
+                          <b>Need Help?</b><br>
+                          Contact our 24/7 support team if you encounter any issues while filling the form.
+                        </div>
+                      </div>
+                    """,
+                    footer: _buildActionButtons(postForm, screenHeight, context),
+                    child: _buildFormContentWithPageView(postForm, screenHeight),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildFormHeader(PostModel.PostForm postForm) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (postForm.pageDescription?.isNotEmpty == true) ...[
+          Text(
+            postForm.pageDescription!,
+            style: AppTextStyle.description(
+              color: AppColors.appDescriptionColor,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+        if (postForm.progressBar == true) ...[
+          _buildProgressBar(postForm),
+          const SizedBox(height: 20),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              FeatherIcons.alertCircle,
+              size: 48,
+              color: AppColors.appDescriptionColor,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Post form configuration not available',
+              style: AppTextStyle.description(
+                color: AppColors.appDescriptionColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ------------------------- PROGRESS BAR -------------------------
 
-  Widget _buildProgressBar(ProfileFormPage postForm) {
+  Widget _buildProgressBar(PostModel.PostForm postForm) {
     final currentStep = controller.currentStep.value;
     final totalSteps = postForm.totalSteps ?? 26;
 
@@ -146,7 +312,6 @@ class PostNewScreen extends GetView<PostFormController> {
             style: AppTextStyle.title(
               color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
-
             ),
           ),
         ],
@@ -154,57 +319,219 @@ class PostNewScreen extends GetView<PostFormController> {
     );
   }
 
-  // ------------------------- FORM CONTENT -------------------------
+  // ------------------------- FORM CONTENT WITH PAGEVIEW -------------------------
 
-  Widget _buildFormContent(ProfileFormPage postForm, double screenHeight) {
-    final currentStep = controller.currentStep.value;
-    List<RegisterInput>? currentStepInputs;
-
+  Widget _buildFormContentWithPageView(
+      PostModel.PostForm postForm,
+      double screenHeight,
+      ) {
     final totalSteps = postForm.totalSteps ?? 26;
-    if (currentStep >= 0 && currentStep < totalSteps) {
-      currentStepInputs = _getStepInputs(postForm, currentStep);
-    }
 
-    if (currentStepInputs == null || currentStepInputs.isEmpty) {
-      return  Center(
-        child: Text('No form fields available for this step',style: AppTextStyle.title(color: AppColors.appDescriptionColor),),
+    // Ensure PageController is initialized (should be done in onInit, but check here)
+    if (controller.pageController == null) {
+      controller.pageController = PageController(
+        initialPage: controller.currentStep.value,
       );
     }
 
-    final currentStepTitle = _getCurrentStepTitle(postForm, currentStep);
+    // Sync PageController with current step if they're out of sync
+    // Only do this if controller has clients (PageView is attached) and exactly one PageView
+    if (controller.pageController!.hasClients) {
+      // Check that only one PageView is attached to avoid the error
+      try {
+        final positions = controller.pageController!.positions;
+        if (positions.length == 1) {
+          final currentPage = controller.pageController!.page?.round();
+          if (currentPage != null &&
+              currentPage != controller.currentStep.value) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (controller.pageController != null &&
+                  controller.pageController!.hasClients) {
+                final positions = controller.pageController!.positions;
+                // Only jump if there's exactly one position (one PageView attached)
+                if (positions.length == 1) {
+                  controller.pageController!.jumpToPage(
+                    controller.currentStep.value,
+                  );
+                }
+              }
+            });
+          }
+        }
+      } catch (e) {
+        // If there are multiple PageViews attached, ignore the sync
+        print('Warning: Multiple PageViews detected, skipping sync: $e');
+      }
+    }
 
-    final hasMultipleMarker = currentStepInputs
-        .any((e) => (e.inputType ?? '').toLowerCase() == 'multiple');
+    return Builder(
+      builder: (context) {
+        // Get keyboard height dynamically
+        final mediaQuery = MediaQuery.of(context);
+        final keyboardHeight = mediaQuery.viewInsets.bottom;
+        final screenSize = mediaQuery.size;
+        final padding = mediaQuery.padding;
+
+        // Calculate available height dynamically
+        final viewportHeight = kIsWeb
+            ? (screenSize.height * 0.5) // Adaptive height for web content area
+            : (screenSize.height - padding.top - padding.bottom - (80.0 + 60.0 + 40.0 + 80.0 + 32.0) - keyboardHeight);
+
+        // Ensure minimum height for proper rendering
+        final height = (viewportHeight > 300 ? viewportHeight : 300.0);
+
+        return SizedBox(
+          height: height,
+          child: PageView.builder(
+            key: ValueKey(
+              'post_form_pageview_${controller.hashCode}',
+            ), // Unique key to prevent multiple instances
+            controller: controller.pageController,
+            physics: const ClampingScrollPhysics(), // Enable swipe gestures
+            onPageChanged: (int page) {
+              final previousPage = controller.currentStep.value;
+              controller.onPageChanged(page, previousPage);
+            },
+            itemCount: totalSteps,
+            itemBuilder: (context, index) {
+              // Get keyboard height in itemBuilder to ensure it's always current
+              final currentKeyboardHeight = MediaQuery.of(
+                context,
+              ).viewInsets.bottom;
+              return SingleChildScrollView(
+                physics:
+                const AlwaysScrollableScrollPhysics(), // Ensure scrollable even when content fits
+                padding: EdgeInsets.only(
+                  top: 8.0,
+                  bottom: currentKeyboardHeight > 0
+                      ? 20.0
+                      : 8.0, // Extra bottom padding when keyboard is visible
+                ),
+                child: _buildFormContentForStep(postForm, index, screenHeight,context),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFormContentForStep(
+      PostModel.PostForm postForm,
+      int stepIndex,
+      double screenHeight,
+      BuildContext context
+      ) {
+    List<RegisterInput>? currentStepInputs;
+
+    final totalSteps = postForm.totalSteps ?? 26;
+    final bool isLastStep = stepIndex >= totalSteps - 1;
+    if (stepIndex >= 0 && stepIndex < totalSteps) {
+      currentStepInputs = _getStepInputs(postForm, stepIndex);
+    }
+
+    if (currentStepInputs == null || currentStepInputs.isEmpty) {
+      return Center(
+        child: Text(
+          'No form fields available for this step',
+          style: AppTextStyle.title(color: AppColors.appDescriptionColor),
+        ),
+      );
+    }
+
+    final currentStepTitle = _getCurrentStepTitle(postForm, stepIndex);
+
+    final hasMultipleMarker = currentStepInputs.any(
+          (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+    );
 
     final filteredInputs = currentStepInputs
         .where((e) => (e.name ?? '').toLowerCase() != 'step_type')
         .toList();
 
-    return Column(
-      children: [
-        if (hasMultipleMarker)
-          _buildGenericMultipleStep(
-            currentStep,
-            filteredInputs,
-            title: currentStepTitle,
-          )
-        else
-          DynamicFormBuilder(
-            inputs: filteredInputs,
-            formData: controller.formData,
-            onFieldChanged: controller.updateFormData,
-            errors: controller.formErrors,
-          ),
-      ],
+    // Check if all visible inputs have autoForward: true
+    final allAutoForward = filteredInputs.every((input) {
+      final type = (input.inputType ?? '').toLowerCase();
+      // Skip non-UI / technical fields
+      if (type == 'group' || type == 'hidden') return true;
+      return input.autoForward == true;
+    });
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: 20.0,
+      ), // Extra padding to prevent label cutoff
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasMultipleMarker)
+            _buildGenericMultipleStep(
+              stepIndex,
+              filteredInputs,
+              title: currentStepTitle,
+            )
+          else
+            DynamicFormBuilder(
+              key: ValueKey('form_${controller.currentStep.value}_${controller.formData.length}'),
+              inputs: filteredInputs,
+              formData: controller.formData,
+              onFieldChanged: (fieldName, value) {
+                // Mark as user interacting when field changes (especially file uploads)
+                _isUserInteracting = true;
+                controller.updateFormData(fieldName, value);
+                // Reset interaction flag after a delay to allow refresh on navigation back
+                Future.delayed(const Duration(seconds: 3), () {
+                  if (mounted) {
+                    _isUserInteracting = false;
+                  }
+                });
+              },
+              errors: controller.formErrors,
+              onAutoForward: () {
+                // Auto-advance to next step when auto-forward is triggered
+                // This can be triggered by individual field autoForward or all fields autoForward
+                Future.delayed(const Duration(milliseconds: 300), () {
+                  if (isLastStep) {
+                    controller.submitForm(context);
+                  } else {
+                    controller.nextStep();
+                  }
+                });
+              },
+              // Keyboard Enter/Next navigation for enterEnable = true inputs
+              onStepNext: () {
+                if (isLastStep) {
+                  controller.submitForm(context);
+                } else {
+                  controller.nextStep();
+                }
+              },
+            ),
+        ],
+      ),
     );
   }
 
-  List<RegisterInput>? _getStepInputs(ProfileFormPage postForm, int stepIndex) {
+  List<RegisterInput>? _getStepInputs(
+      PostModel.PostForm postForm,
+      int stepIndex,
+      ) {
     if (postForm.inputs == null) return null;
-    return postForm.inputs!.getStepInputs(stepIndex);
+
+    // Get StepInput from PostForm and convert to RegisterInput
+    List<PostModel.StepInput>? stepInputs = postForm.inputs!.getStepInputs(
+      stepIndex,
+    );
+    if (stepInputs == null) return null;
+
+    // Convert StepInput to RegisterInput using controller's converter
+    return stepInputs
+        .map((si) => controller.convertStepInputToRegisterInput(si))
+        .toList();
   }
 
-  String? _getCurrentStepTitle(ProfileFormPage postForm, int stepIndex) {
+  String? _getCurrentStepTitle(PostModel.PostForm postForm, int stepIndex) {
     if (postForm.stepTitles == null ||
         stepIndex >= postForm.stepTitles!.length) {
       return null;
@@ -215,25 +542,21 @@ class PostNewScreen extends GetView<PostFormController> {
   // ------------------------- MULTI ENTRY STEP -------------------------
 
   Widget _buildGenericMultipleStep(
-      int stepIndex, List<RegisterInput>? inputs,
-      {String? title}) {
+      int stepIndex,
+      List<RegisterInput>? inputs, {
+        String? title,
+      }) {
     return Obx(() {
       final list = controller.getEntriesForStep(stepIndex);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title ?? 'Items',
-            style:  AppTextStyle.title(),
-          ),
+          Text(title ?? 'Items', style: AppTextStyle.title()),
           const SizedBox(height: 20),
 
           if (list.isEmpty)
-             Text(
-              'No items added',
-              style: AppTextStyle.description(),
-            )
+            Text('No items added', style: AppTextStyle.description())
           else
             Column(
               children: list.asMap().entries.map((entry) {
@@ -280,8 +603,11 @@ class PostNewScreen extends GetView<PostFormController> {
                         children: [
                           GestureDetector(
                             onTap: () => _showGenericEntryDialog(
-                                stepIndex, inputs,
-                                existingData: data, index: index),
+                              stepIndex,
+                              inputs,
+                              existingData: data,
+                              index: index,
+                            ),
                             child: const Icon(
                               FeatherIcons.edit,
                               color: Colors.blue,
@@ -290,8 +616,8 @@ class PostNewScreen extends GetView<PostFormController> {
                           ),
                           const SizedBox(width: 12),
                           GestureDetector(
-                            onTap: () => controller.removeEntryForStep(
-                                stepIndex, index),
+                            onTap: () =>
+                                controller.removeEntryForStep(stepIndex, index),
                             child: const Icon(
                               FeatherIcons.trash2,
                               color: Colors.red,
@@ -310,8 +636,12 @@ class PostNewScreen extends GetView<PostFormController> {
     });
   }
 
-  void _showGenericEntryDialog(int stepIndex, List<RegisterInput>? inputs,
-      {Map<String, dynamic>? existingData, int? index}) {
+  void _showGenericEntryDialog(
+      int stepIndex,
+      List<RegisterInput>? inputs, {
+        Map<String, dynamic>? existingData,
+        int? index,
+      }) {
     Get.bottomSheet(
       GenericMultiEntryDialog(
         inputs: inputs,
@@ -332,7 +662,7 @@ class PostNewScreen extends GetView<PostFormController> {
 
   // ------------------------- ACTION BUTTONS -------------------------
 
-  Widget _buildActionButtons(ProfileFormPage postForm, double screenHeight) {
+  Widget _buildActionButtons(PostModel.PostForm postForm, double screenHeight,BuildContext context) {
     return Obx(() {
       final currentStep = controller.currentStep.value;
 
@@ -340,22 +670,35 @@ class PostNewScreen extends GetView<PostFormController> {
         final buttons = postForm.buttons ?? [];
         final currentStepOneBased = currentStep + 1;
         for (final b in buttons) {
-          final a = (b.action ?? '').toLowerCase();
-          if (a != action) continue;
+          // Handle both PostModel.Buttons and ProfileFormButton types
+          String? buttonAction;
+          int? visibleFromStep;
+          int? visibleUntilStep;
+          int? visibleOnStep;
+          String? label;
+
+          // PostForm uses PostModel.Buttons
+          buttonAction = b.action?.toLowerCase();
+          visibleFromStep = b.visibleFromStep;
+          visibleUntilStep = b.visibleUntilStep;
+          visibleOnStep = b.visibleOnStep;
+          label = b.label;
+
+          if (buttonAction != action) continue;
+
           if (action == 'prev_step' &&
-              (b.visibleFromStep == null ||
-                  currentStepOneBased >= b.visibleFromStep!)) {
-            return b.label;
+              (visibleFromStep == null ||
+                  currentStepOneBased >= visibleFromStep)) {
+            return label;
           }
           if (action == 'next_step' &&
-              (b.visibleUntilStep == null ||
-                  currentStepOneBased <= b.visibleUntilStep!)) {
-            return b.label;
+              (visibleUntilStep == null ||
+                  currentStepOneBased <= visibleUntilStep)) {
+            return label;
           }
           if (action == 'submit_form' &&
-              (b.visibleOnStep != null &&
-                  currentStepOneBased == b.visibleOnStep!)) {
-            return b.label;
+              (visibleOnStep != null && currentStepOneBased == visibleOnStep)) {
+            return label;
           }
         }
         return null;
@@ -389,7 +732,7 @@ class PostNewScreen extends GetView<PostFormController> {
                 onTap: controller.isLoading.value
                     ? null
                     : () => controller.showSubmitButton.value
-                    ? controller.submitForm()
+                    ? controller.submitForm(context)
                     : controller.nextStep(),
                 isLoading: controller.isLoading.value,
               ),
@@ -397,6 +740,114 @@ class PostNewScreen extends GetView<PostFormController> {
         ],
       );
     });
+  }
+
+  // ------------------------- SHIMMER LOADING -------------------------
+
+  Widget _buildShimmerLoading(double screenHeight) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Page Description Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
+            child: Container(
+              height: 20,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Progress Bar Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
+            child: Container(
+              height: 8,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Step Title Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
+            child: Container(
+              height: 24,
+              width: 200,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          // Form Fields Shimmer (5 fields)
+          ...List.generate(
+            5,
+                (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Label Shimmer
+                  Shimmer.fromColors(
+                    baseColor: AppColors.appMutedColor,
+                    highlightColor: AppColors.appMutedTextColor,
+                    child: Container(
+                      height: 16,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Input Field Shimmer
+                  Shimmer.fromColors(
+                    baseColor: AppColors.appMutedColor,
+                    highlightColor: AppColors.appMutedTextColor,
+                    child: Container(
+                      height: 50,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+          // Button Shimmer
+          Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
+            child: Container(
+              height: 50,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -486,7 +937,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: AppColors.appMutedColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -508,10 +959,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
                       ),
                       GestureDetector(
                         onTap: () => Get.back(),
-                        child: const Icon(
-                          FeatherIcons.x,
-                          size: 24,
-                        ),
+                        child: const Icon(FeatherIcons.x, size: 24),
                       ),
                     ],
                   ),
@@ -533,10 +981,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: CustomButton(
-                          text: 'Save',
-                          onTap: _save,
-                        ),
+                        child: CustomButton(text: 'Save', onTap: _save),
                       ),
                     ],
                   ),

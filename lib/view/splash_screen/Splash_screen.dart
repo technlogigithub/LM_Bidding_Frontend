@@ -12,8 +12,9 @@ import '../../core/app_color.dart';
 import '../../core/app_config.dart';
 import '../../widget/app_image_handle.dart';
 import '../Bottom_navigation_screen/Botom_navigation_screen.dart';
-import '../force_update/ForceUpdateScreen.dart';
-import '../language_selection/LanguageSelectionScreen.dart';
+import '../force_update/force_update_screen.dart';
+import '../language_selection/language_selection_screen.dart';
+import 'package:libdding/core/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,10 +32,7 @@ class SplashScreenState extends State<SplashScreen> {
 
     final updateRequired = await controller.isUpdateRequired();
     if (updateRequired) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ForceUpdateScreen()),
-      );
+      Get.offAllNamed(AppRoutes.forceUpdate);
       return;
     }
     
@@ -50,38 +48,16 @@ class SplashScreenState extends State<SplashScreen> {
     }
 
     if (isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => BottomNavigationScreen()),
-      );
+      Get.offAllNamed(AppRoutes.bottomNav);
     }
-    else if(loginRequired)
-      {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
-      }
-    else if (isOnboardingCompleted)
-      {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => BottomNavigationScreen()),
-        );
-      }
-    // else if (!isLanguageSelected) {
-    //   // Show language selection screen first
-    //   Navigator.pushReplacement(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => const LanguageSelectionScreen()),
-    //   );
-    // }
+    else if(loginRequired) {
+      Get.offAllNamed(AppRoutes.login);
+    }
+    else if (isOnboardingCompleted) {
+      Get.offAllNamed(AppRoutes.bottomNav);
+    }
     else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LanguageSelectionScreen()),
-        // MaterialPageRoute(builder: (context) => BotomNavigationScreen()),
-      );
+      Get.offAllNamed(AppRoutes.languageSelection);
     }
   }
 
@@ -118,8 +94,8 @@ class SplashScreenState extends State<SplashScreen> {
               if (controller.logo.value.isEmpty) {
                 // Full screen shimmer while loading
                 return Shimmer.fromColors(
-                  baseColor: Colors.grey.shade300.withValues(alpha: 0.6),
-                  highlightColor: Colors.grey.shade100.withValues(alpha: 0.6),
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: double.infinity,
                     height: double.infinity,

@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/app_color.dart';
 import '../../core/app_images.dart';
 import '../core/app_constant.dart';
+import '../core/app_textstyle.dart';
 import '../models/static models/transaction_data.dart';
 
 class TransactionListItem extends StatelessWidget {
@@ -27,15 +28,20 @@ class TransactionListItem extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(8.w),
         decoration: BoxDecoration(
-          color: AppColors.appWhite,
+         gradient: AppColors.appPagecolor,
           borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: AppColors.kBorderColorTextField),
           boxShadow: [
             BoxShadow(
-              color: AppColors.darkWhite,
-              blurRadius: 4.r,
-              spreadRadius: 2.r,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.20), // stronger shadow
+              blurRadius: 12,     // soft glow
+              spreadRadius: 5,    // outer spread
+              offset: Offset(0, 4), // down shadow
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.8), // top highlight
+              blurRadius: 6,
+              spreadRadius: -2,
+              offset: Offset(0, -2),
             ),
           ],
         ),
@@ -58,24 +64,23 @@ class TransactionListItem extends StatelessWidget {
             item.name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: kTextStyle.copyWith(
-              color: AppColors.neutralColor,
+            style:AppTextStyle.description(
+              color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
-              fontSize: 14.sp,
+
             ),
           ),
           subtitle: Text(
             item.date,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: kTextStyle.copyWith(color: kLightNeutralColor, fontSize: 12.sp),
+            style: AppTextStyle.body(color: AppColors.appDescriptionColor,),
           ),
           trailing: Text(
             '${item.isDeposit ? '+' : '-'}₹ ${item.amount.abs().toStringAsFixed(0)}',
-            style: kTextStyle.copyWith(
+            style: AppTextStyle.description(
               color: item.isDeposit ? Colors.green : Colors.red,
               fontWeight: FontWeight.bold,
-              fontSize: 14.sp,
             ),
           ),
         ),

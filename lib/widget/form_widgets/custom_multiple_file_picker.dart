@@ -7,8 +7,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:video_editor/video_editor.dart';
 import 'package:video_player/video_player.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:get/get.dart';
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
+import '../../controller/post/post_form_controller.dart';
 // Conditional import for web drag & drop
 import '../../view/image_view_screen/image_view_screen.dart';
 import '../../view/video_view_screen/video_view_screen.dart';
@@ -43,6 +46,7 @@ class CustomMultipleFilePicker extends StatefulWidget {
 
 class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
   List<File> _localFiles = [];
+  List<String> _imageUrls = []; // Local copy of imageUrls that can be modified
   final ImagePicker _picker = ImagePicker();
   bool _isDragging = false;
   final Map<String, VideoPlayerController> _videoControllers = {};
@@ -53,6 +57,19 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
     if (widget.value != null) {
       _localFiles = List.from(widget.value!);
       _initializeVideoControllers();
+    }
+    // Initialize local imageUrls from widget
+    if (widget.imageUrls != null) {
+      _imageUrls = List<String>.from(widget.imageUrls!);
+    }
+  }
+
+  @override
+  void didUpdateWidget(CustomMultipleFilePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update local imageUrls if widget.imageUrls changed
+    if (widget.imageUrls != null && widget.imageUrls != oldWidget.imageUrls) {
+      _imageUrls = List<String>.from(widget.imageUrls!);
     }
   }
 
@@ -210,6 +227,21 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
 
   // === FILE PICKING ===
   Future<void> _pickFiles(BuildContext context) async {
+    // Set interaction flag immediately when user taps to pick files
+    // This prevents refresh during file picking process
+    try {
+      final controller = Get.find<PostFormController>();
+      controller.setUserInteracting(true);
+      // Reset after delay (will be reset again when files are picked)
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted) {
+          controller.setUserInteracting(false);
+        }
+      });
+    } catch (e) {
+      // Controller might not be available, ignore
+    }
+    
     final category = widget.category ?? (widget.isImageFile ? 'image' : 'any');
 
     if (category == 'video') {
@@ -254,15 +286,25 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
   }
 
   Future<void> _pickImages(BuildContext context) async {
-    await showModalBottomSheet(
+    if (kIsWeb) {
+      await _showWebImagePicker();
+    } else {
+      await _showMobileImagePicker();
+    }
+  }
+
+  Future<void> _showWebImagePicker() async {
+    await showDialog(
       context: context,
-      builder: (_) => SafeArea(
-        child: Column(
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Select Image Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading:  Icon(Icons.photo_library_outlined,color: AppColors.appIconColor),
-              title:  Text('Gallery',style: AppTextStyle.description(color: AppColors.appTitleColor),),
+              leading: Icon(Icons.photo_library_outlined, color: AppColors.appIconColor),
+              title: Text('Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
               onTap: () async {
                 Navigator.pop(context);
                 final List<XFile>? picked = await _picker.pickMultiImage();
@@ -273,8 +315,44 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               },
             ),
             ListTile(
-              leading:  Icon(Icons.photo_camera_outlined,color: AppColors.appIconColor),
-              title:  Text('Camera',style: AppTextStyle.description(color: AppColors.appTitleColor),),
+              leading: Icon(Icons.photo_camera_outlined, color: AppColors.appIconColor),
+              title: Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
+                if (picked != null) {
+                  await _validateAndAddFiles([File(picked.path)]);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showMobileImagePicker() async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.photo_library_outlined, color: AppColors.appIconColor),
+              title: Text('Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+              onTap: () async {
+                Navigator.pop(context);
+                final List<XFile>? picked = await _picker.pickMultiImage();
+                if (picked != null && picked.isNotEmpty) {
+                  final files = picked.map((x) => File(x.path)).toList();
+                  await _validateAndAddFiles(files);
+                }
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.photo_camera_outlined, color: AppColors.appIconColor),
+              title: Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
               onTap: () async {
                 Navigator.pop(context);
                 final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
@@ -290,24 +368,34 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
   }
 
   Future<void> _pickVideos(BuildContext context) async {
-    await showModalBottomSheet(
+    if (kIsWeb) {
+      await _showWebVideoPicker();
+    } else {
+      await _showMobileVideoPicker();
+    }
+  }
+
+  Future<void> _showWebVideoPicker() async {
+    await showDialog(
       context: context,
-      builder: (_) => SafeArea(
-        child: Column(
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Select Video Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading:  Icon(Icons.video_library_outlined,color: AppColors.appIconColor),
-              title:  Text('Pick Videos from Gallery',style: AppTextStyle.title(color: AppColors.appTitleColor),),
-              subtitle:  Text('Select one video at a time',style: AppTextStyle.description(color: AppColors.appTitleColor),),
+              leading: Icon(Icons.video_library_outlined, color: AppColors.appIconColor),
+              title: Text('Pick Videos from Gallery', style: AppTextStyle.title(color: AppColors.appTitleColor)),
+              subtitle: Text('Select one video at a time', style: AppTextStyle.description(color: AppColors.appTitleColor)),
               onTap: () async {
                 Navigator.pop(context);
                 await _pickVideoFromGallery();
               },
             ),
             ListTile(
-              leading:  Icon(Icons.videocam_outlined,color: AppColors.appIconColor),
-              title:  Text('Record Video',style: AppTextStyle.description(color: AppColors.appTitleColor),),
+              leading: Icon(Icons.videocam_outlined, color: AppColors.appIconColor),
+              title: Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
               onTap: () async {
                 Navigator.pop(context);
                 final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
@@ -318,7 +406,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
                   } else {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Selected file is not a video.',), backgroundColor: Colors.red),
+                        const SnackBar(content: Text('Selected file is not a video.')),
                       );
                     }
                   }
@@ -330,6 +418,49 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
       ),
     );
   }
+
+  Future<void> _showMobileVideoPicker() async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.video_library_outlined, color: AppColors.appIconColor),
+              title: Text('Pick Videos from Gallery', style: AppTextStyle.title(color: AppColors.appTitleColor)),
+              subtitle: Text('Select one video at a time', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickVideoFromGallery();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.videocam_outlined, color: AppColors.appIconColor),
+              title: Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
+              onTap: () async {
+                Navigator.pop(context);
+                final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
+                if (picked != null) {
+                  final file = File(picked.path);
+                  if (_isVideoFile(file.path)) {
+                    await _validateAndAddFiles([file]);
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Selected file is not a video.')),
+                      );
+                    }
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Future<void> _pickVideoFromGallery() async {
     final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
@@ -397,11 +528,21 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
       }
     }
 
-    if (validFiles.isNotEmpty) {
+    if (validFiles.isNotEmpty && mounted) {
       setState(() {
         _localFiles.addAll(validFiles);
       });
       widget.onPicked(_localFiles);
+      // Keep interaction flag set for a bit longer after files are picked
+      try {
+        final controller = Get.find<PostFormController>();
+        controller.setUserInteracting(true);
+        Future.delayed(const Duration(seconds: 3), () {
+          controller.setUserInteracting(false);
+        });
+      } catch (e) {
+        // Controller might not be available, ignore
+      }
     }
   }
 
@@ -453,6 +594,90 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
         ),
       ],
     );
+  }
+
+  // === IMAGE URL PREVIEW (with shimmer) ===
+  Widget _buildImageUrlPreview(String imageUrl, int index) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8, bottom: 8),
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.transparent,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(7),
+              child: GestureDetector(
+              onTap: () {
+                // Navigate to full image view
+                // Create a dummy File for URL images (ImageViewScreen requires it)
+                final dummyFile = File('');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ImageViewScreen(
+                      imageFile: dummyFile,
+                      imageUrl: imageUrl,
+                    ),
+                  ),
+                );
+              },
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  }
+                  // Show shimmer while loading
+                  return Shimmer.fromColors(
+                    baseColor: AppColors.appMutedColor,
+                    highlightColor: AppColors.appMutedTextColor,
+                    child: Container(
+                      color: Colors.white,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return _buildPlaceholder();
+                },
+              ),
+            ),
+          ),
+          // Remove Icon
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: () => _removeImageUrl(index),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _removeImageUrl(int index) {
+    if (index >= 0 && index < _imageUrls.length) {
+      setState(() {
+        _imageUrls.removeAt(index);
+      });
+    }
   }
 
   // === FILE PREVIEW ===
@@ -716,7 +941,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
           ),
         ),
 
-        if (effectiveFiles.isNotEmpty) ...[
+        if (effectiveFiles.isNotEmpty || _imageUrls.isNotEmpty) ...[
           const SizedBox(height: 16),
           LayoutBuilder(
             builder: (context, constraints) {
@@ -726,14 +951,27 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               final totalSpacing = spacing * (crossAxisCount - 1);
               final itemWidth = (screenWidth - totalSpacing) / crossAxisCount;
 
+              // Combine local files and URL images
+              final totalItems = effectiveFiles.length + _imageUrls.length;
+              
               return Wrap(
                 spacing: spacing,
                 runSpacing: spacing,
-                children: List.generate(effectiveFiles.length, (i) {
-                  return SizedBox(
-                    width: itemWidth,
-                    child: _buildFilePreview(effectiveFiles[i], i),
-                  );
+                children: List.generate(totalItems, (i) {
+                  // First show URL images, then local files
+                  if (i < _imageUrls.length) {
+                    return SizedBox(
+                      width: itemWidth,
+                      child: _buildImageUrlPreview(_imageUrls[i], i),
+                    );
+                  } else {
+                    // Then show local files
+                    final fileIndex = i - _imageUrls.length;
+                    return SizedBox(
+                      width: itemWidth,
+                      child: _buildFilePreview(effectiveFiles[fileIndex], fileIndex),
+                    );
+                  }
                 }),
               );
             },
