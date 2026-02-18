@@ -8,6 +8,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/profile/setting _controller.dart';
 import '../../widget/form_widgets/custom_toggle.dart';
+import '../../models/App_moduls/AppResponseModel.dart';
 
 class settingScreen {
   final IconData icon;
@@ -16,7 +17,8 @@ class settingScreen {
 }
 
 class SettingScreen extends StatelessWidget {
-  const SettingScreen({super.key});
+  final AppMenuItem? menuItem;
+  const SettingScreen({super.key, this.menuItem});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,10 @@ class SettingScreen extends StatelessWidget {
           controller.selectedLanguageName.value;
     }
 
-    final setting = controller.settings.value;
+    SettingsMenuItem? setting;
+    if (menuItem != null) {
+      setting = SettingsMenuItem.fromJson(menuItem!.toJson());
+    }
 
     final inputs = setting?.design?.inputs ?? {};
     final links = setting?.design?.link ?? [];

@@ -127,46 +127,7 @@ class CustomDateRangePicker extends StatelessWidget {
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
       initialDateRange: value,
-
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            primaryColor: AppColors.appColor,
-            colorScheme: ColorScheme.light(
-              primary: AppColors.appColor,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            dialogBackgroundColor: Colors.white,
-            // Date range picker theme for range highlight color
-            datePickerTheme: DatePickerThemeData(
-              // Range highlight strip color
-              rangeSelectionBackgroundColor: AppColors.appColor.withValues(alpha: 0.3),
-              rangeSelectionOverlayColor:
-                  WidgetStateProperty.all(AppColors.appColor.withOpacity(0.2)),
-              // Header (top bar) color
-              rangePickerHeaderBackgroundColor: AppColors.appColor,
-              // Selected start/end circle
-              dayBackgroundColor: MaterialStateColor.resolveWith((states) {
-                if (states.contains(MaterialState.selected)) {
-                  return AppColors.appColor;
-                }
-                return Colors.transparent;
-              }),
-              // Selected day text color
-              dayForegroundColor: MaterialStateColor.resolveWith((states) {
-                if (states.contains(MaterialState.selected)) {
-                  return Colors.white;
-                }
-                return AppColors.appBodyTextColor;
-              }),
-              // Today outline
-              todayBorder: BorderSide(color: AppColors.appColor),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      builder: (context, child) => themedPicker(context, child!),
     );
     onChanged(range);
   }
@@ -354,6 +315,7 @@ Future<DateTimeRangeResult?> showDateTimeRangePicker(BuildContext context) async
     context: context,
     firstDate: DateTime(2000),
     lastDate: DateTime(2100),
+    builder: (ctx, child) => themedPicker(ctx, child!),
   );
 
   if (pickedDateRange == null) return null;
@@ -362,6 +324,7 @@ Future<DateTimeRangeResult?> showDateTimeRangePicker(BuildContext context) async
   final startTime = await showTimePicker(
     context: context,
     initialTime: TimeOfDay.now(),
+    builder: (ctx, child) => themedPicker(ctx, child!),
   );
 
   if (startTime == null) return null;
@@ -370,6 +333,7 @@ Future<DateTimeRangeResult?> showDateTimeRangePicker(BuildContext context) async
   final endTime = await showTimePicker(
     context: context,
     initialTime: TimeOfDay.now(),
+    builder: (ctx, child) => themedPicker(ctx, child!),
   );
 
   if (endTime == null) return null;
@@ -513,12 +477,12 @@ Widget themedPicker(BuildContext context, Widget child) {
         dayPeriodBorderSide: const BorderSide(color: Colors.transparent),
       ),
 
-      // ⭐ DATE RANGE PICKER THEME ⭐
+      // ⭐ DATE RANGE PICKER THEME ⭐ (shared by CustomDateRangePicker & CustomDateTimeRangePicker)
       datePickerTheme: DatePickerThemeData(
-        // Range highlight strip
-        rangeSelectionBackgroundColor: AppColors.appColor,
+        // Range highlight strip (between start & end)
+        rangeSelectionBackgroundColor: AppColors.appColor.withValues(alpha: 0.3),
         rangeSelectionOverlayColor:
-        WidgetStateProperty.all(AppColors.appColor.withOpacity(0.2)),
+            WidgetStateProperty.all(AppColors.appColor.withOpacity(0.2)),
 
         // Header (top bar) color
         rangePickerHeaderBackgroundColor: AppColors.appColor,
@@ -526,7 +490,7 @@ Widget themedPicker(BuildContext context, Widget child) {
         // Selected start/end circle
         dayBackgroundColor: MaterialStateColor.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return AppColors.appColor.withValues(alpha: 0.3);
+            return AppColors.appColor;
           }
           return Colors.transparent;
         }),

@@ -52,7 +52,7 @@ InputDecoration kInputDecoration = const InputDecoration(
     borderRadius: BorderRadius.all(
       Radius.circular(8.0),
     ),
-    borderSide: BorderSide(color: kBorderColorTextField, width: 2),
+    // borderSide: BorderSide(color: kBorderColorTextField, width: 2),
   ),
   focusedBorder: OutlineInputBorder(
     borderRadius: BorderRadius.all(

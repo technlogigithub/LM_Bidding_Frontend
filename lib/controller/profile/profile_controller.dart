@@ -18,17 +18,17 @@ class ProfileController extends GetxController {
   Rx<ProfileDetailsResponseModel?>(null);
 
   // ✅ ADD THIS (you forgot this earlier)
-  Rx<AppMenu?> appMenu = Rx<AppMenu?>(null);
+  RxList<AppMenuItem> appMenu = <AppMenuItem>[].obs;
 
-  // API UserInfo flags (dp, name, mobile, email, wallet_balance)
-  var userInfo = UserInfo().obs;
+  Rx<AppMenuItem?> userInfo = Rx<AppMenuItem?>(null);
+  var dynamicEndpoint = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
     fetchOrders();
     loadLoginStatus();
-    fetchProfileDetails();
+    // fetchProfileDetails();
   }
 
   Future<void> fetchOrders() async {
@@ -60,8 +60,12 @@ class ProfileController extends GetxController {
       final token = await getAuthToken();
       print("Token is $token");
 
+      final endpoint = dynamicEndpoint.value.isNotEmpty
+          ? dynamicEndpoint.value
+          : "profile/details";
+
       final res = await ApiServices().makeRequestRaw(
-        endPoint: "profile/details",
+        endPoint: endpoint,
         method: "GET",
         headers: {
           "Authorization": "Bearer $token",
@@ -88,11 +92,11 @@ class ProfileController extends GetxController {
   // ✅ Store flags & menu safely
   void setAppMenu(Result? result) {
     if (result?.appMenu != null) {
-      appMenu.value = result!.appMenu;
+      appMenu.assignAll(result!.appMenu!);
 
       // Save userInfo flags (dp, name, mobile, email, balance)
-      if (result.appMenu!.userInfo != null) {
-        userInfo.value = result.appMenu!.userInfo!;
+      if (appMenu.isNotEmpty && (appMenu[0].dp != null || appMenu[0].name != null)) {
+        userInfo.value = appMenu[0];
       }
     }
   }

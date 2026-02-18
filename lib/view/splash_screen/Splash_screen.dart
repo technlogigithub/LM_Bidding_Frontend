@@ -12,8 +12,8 @@ import '../../core/app_color.dart';
 import '../../core/app_config.dart';
 import '../../widget/app_image_handle.dart';
 import '../Bottom_navigation_screen/Botom_navigation_screen.dart';
-import '../force_update/ForceUpdateScreen.dart';
-import '../language_selection/LanguageSelectionScreen.dart';
+import '../force_update/force_update_screen.dart';
+import '../language_selection/language_selection_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -118,8 +118,8 @@ class SplashScreenState extends State<SplashScreen> {
               if (controller.logo.value.isEmpty) {
                 // Full screen shimmer while loading
                 return Shimmer.fromColors(
-                  baseColor: Colors.grey.shade300.withValues(alpha: 0.6),
-                  highlightColor: Colors.grey.shade100.withValues(alpha: 0.6),
+                  baseColor: AppColors.appMutedColor,
+                  highlightColor: AppColors.appMutedTextColor,
                   child: Container(
                     width: double.infinity,
                     height: double.infinity,

@@ -29,7 +29,7 @@ class AppColors {
   static Color subTitleColor = Color(0xFF4F5350);
   static Color textgrey = Color(0xFF8E8E8E);
   static Color ratingBarColor = Color(0xFFFFB33E);
-  static Color simmerColor =  Colors.grey.shade300;
+  static Color get simmerColor => appMutedColor;
 
   static Color appSuccesses = Colors.green;
   static Color appFail = Colors.red;

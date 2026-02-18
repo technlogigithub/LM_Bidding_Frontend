@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/app_constant.dart';
 import '../../core/network.dart';
@@ -25,14 +26,13 @@ class OtpController extends GetxController {
   final appController = Get.find<AppSettingsController>();
   final profilecontroller = Get.put(ProfileController());
 
-
-
   @override
   void onInit() {
     // TODO: implement onInit
     startTimer();
     super.onInit();
   }
+
   @override
   void onClose() {
     _timer?.cancel();
@@ -63,6 +63,8 @@ class OtpController extends GetxController {
   }
 
   Future<void> submitOtp() async {
+    if (isLoading.value) return; // Prevent double submission
+
     String pin = pinController.text.trim();
 
     // Read dynamic verify_otp rules
@@ -71,7 +73,11 @@ class OtpController extends GetxController {
       final field = verify.inputs!.first; // assume single OTP field
       // required
       if ((field.required ?? false) && pin.isEmpty) {
-        toast(field.label != null ? "${field.label} is required" : "Please enter OTP");
+        toast(
+          field.label != null
+              ? "${field.label} is required"
+              : "Please enter OTP",
+        );
         return;
       }
       for (final v in (field.validations ?? [])) {
@@ -90,13 +96,21 @@ class OtpController extends GetxController {
         } else if (t == 'min_length') {
           final len = v.value ?? v.minLength ?? 0;
           if (pin.length < len) {
-            toast(v.errorMessage ?? v.minLengthError ?? "OTP must be at least $len digits");
+            toast(
+              v.errorMessage ??
+                  v.minLengthError ??
+                  "OTP must be at least $len digits",
+            );
             return;
           }
         } else if (t == 'max_length') {
           final len = v.value ?? v.maxLength ?? 999999;
           if (pin.length > len) {
-            toast(v.errorMessage ?? v.maxLengthError ?? "OTP must be at most $len digits");
+            toast(
+              v.errorMessage ??
+                  v.maxLengthError ??
+                  "OTP must be at most $len digits",
+            );
             return;
           }
         }
@@ -115,28 +129,32 @@ class OtpController extends GetxController {
       var response = await apiService.makeRequestFormData(
         endPoint: AppConstants.verifyotp,
         method: "POST",
-        body: {
-          "mobile_no": mobile,
-          "otp": pin,
-        },
+        body: {"mobile_no": mobile, "otp": pin},
       );
 
       print("OTP Verification Response: $response");
 
       if (response['success'] == true) {
-        final token = response['result']['token'];
-        await saveAuthToken(token);
         final loginData = response['result'];
+        final token = loginData['token'];
+        final ukey = loginData['ukey']; // ⬅ ukey
+
+        await saveAuthToken(token);
+        await saveUkey(ukey);
         await saveUserData(loginData['user']);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         homecontroller.checkLoginStatus();
         appController.fetchAppContent();
         profilecontroller.fetchProfileDetails();
-        toast("OTP verified successfully");
-        Utils.gotoNextPage(() => BottomNavigationScreen(),);
-        // Navigate to Home
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ClientHome()));
+        
+        // toast("OTP verified successfully");
+        
+        // Slight delay to ensure toast is visible before navigation
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        Utils.gotoNextPage(() => BottomNavigationScreen());
+        
       } else {
         toast(response['message'] ?? "OTP verification failed");
       }
@@ -153,10 +171,15 @@ class OtpController extends GetxController {
     print("Auth Token Saved: $token");
   }
 
+  /// ✅ Save Ukey
+  Future<void> saveUkey(String ukey) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('ukey', ukey);
+    print("Ukey Saved: $ukey");
+  }
 
   Future<void> saveUserData(Map<String, dynamic> data) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString("user_data", jsonEncode(data));
   }
-
 }

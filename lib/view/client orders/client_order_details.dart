@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import '../../core/api_config.dart';
+import '../../core/app_color.dart';
 import '../../core/app_constant.dart';
+import '../../core/app_textstyle.dart';
 import '../../widget/button_global.dart';
 import '../client popup/client_popup.dart';
 import '../client review/client_review.dart';
@@ -60,16 +63,31 @@ class _ClientOrderDetailsState extends State<ClientOrderDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kDarkWhite,
       appBar: AppBar(
-        backgroundColor: kDarkWhite,
         elevation: 0,
-        iconTheme: const IconThemeData(color: kNeutralColor),
-        title: Text(
-          'Participation Details',
-          style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+        automaticallyImplyLeading: true,
+        iconTheme:  IconThemeData(color: AppColors.appTextColor,),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appbarColor,
+            // borderRadius: const BorderRadius.only(
+            //   bottomLeft: Radius.circular(50.0),
+            //   bottomRight: Radius.circular(50.0),
+            // ),
+          ),
         ),
+        toolbarHeight: 80,
         centerTitle: true,
+        title: Obx(() {
+          return Text(
+           'Participation Details',
+            style:  AppTextStyle.title(
+              color: AppColors.appTextColor,
+              fontWeight: FontWeight.bold,
+
+            ),
+          );
+        }),
         actions: [
           PopupMenuButton(
             padding: EdgeInsets.zero,
@@ -81,36 +99,47 @@ class _ClientOrderDetailsState extends State<ClientOrderDetails> {
                     const SizedBox(width: 5.0),
                     Text(
                       'Message',
-                      style: kTextStyle.copyWith(color: kNeutralColor),
+                      style:AppTextStyle.body(color: AppColors.appBodyTextColor),
                     ).onTap(
-                      () => const ChatScreen().launch(context),
+                          () => const ChatListScreen().launch(context),
                     ),
                   ],
                 ),
               ),
               PopupMenuItem(
                   child: Row(
-                children: [
-                  const Icon(IconlyBold.document, color: Colors.red),
-                  const SizedBox(width: 5.0),
-                  Text(
-                    'Report',
-                    style: kTextStyle.copyWith(color: kNeutralColor),
-                  ),
-                ],
-              ))
+                    children: [
+                       Icon(IconlyBold.document, color:AppColors.appIconColor),
+                      const SizedBox(width: 5.0),
+                      Text(
+                        'Report',
+                        style: AppTextStyle.body(color: AppColors.appBodyTextColor),
+                      ),
+                    ],
+                  ))
             ],
             onSelected: (value) {},
-            child: const Padding(
+            child:  Padding(
               padding: EdgeInsets.only(right: 10.0),
               child: Icon(
                 Icons.more_vert_rounded,
-                color: kNeutralColor,
+                color: AppColors.appIconColor,
               ),
             ),
           ),
         ],
       ),
+      // appBar: AppBar(
+      //   backgroundColor: kDarkWhite,
+      //   elevation: 0,
+      //   iconTheme: const IconThemeData(color: kNeutralColor),
+      //   title: Text(
+      //     'Participation Details',
+      //     style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold),
+      //   ),
+      //   centerTitle: true,
+
+      // ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: kWhite,

@@ -8,9 +8,9 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:http/http.dart' as http;
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_string.dart';
+import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../core/app_config.dart';
-import '../../core/app_constant.dart' as AppTextStyle;
 import 'app_button.dart';
 import 'app_textfield.dart';
 
@@ -40,6 +40,9 @@ class _ReusableLocationPickerScreenState extends State<ReusableLocationPickerScr
   final TextEditingController _searchController = TextEditingController();
   bool isLoadingAddress = false;
   Timer? _debounce;
+
+  @override
+  final String _darkMapStyle = '''[{"elementType":"geometry","stylers":[{"color":"#242f3e"}]},{"elementType":"labels.text.fill","stylers":[{"color":"#746855"}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#242f3e"}]},{"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#263c3f"}]},{"featureType":"poi.park","elementType":"labels.text.fill","stylers":[{"color":"#6b9a76"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#38414e"}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#212a37"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#9ca5b3"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#746855"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#1f2835"}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#f3d19c"}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#2f3948"}]},{"featureType":"transit.station","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#17263c"}]},{"featureType":"water","elementType":"labels.text.fill","stylers":[{"color":"#515c6d"}]},{"featureType":"water","elementType":"labels.text.stroke","stylers":[{"color":"#17263c"}]}]''';
 
   @override
   void initState() {
@@ -189,10 +192,7 @@ class _ReusableLocationPickerScreenState extends State<ReusableLocationPickerScr
         backgroundColor: AppColors.appColor,
         title: Text(
           widget.title ?? AppStrings.selectLocation,
-          style: AppTextStyle.kTextStyle.copyWith(
-            color: AppColors.appTextColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyle.title(color: AppColors.appTextColor),
         ),
       ),
       body: Stack(
@@ -202,6 +202,9 @@ class _ReusableLocationPickerScreenState extends State<ReusableLocationPickerScr
             initialCameraPosition: CameraPosition(target: selectedLocation!, zoom: 15),
             onMapCreated: (controller) {
               if (mounted) mapController = controller;
+              if (Get.isDarkMode) {
+                controller.setMapStyle(_darkMapStyle);
+              }
             },
             onTap: _onMapTap,
             markers: selectedLocation != null
@@ -223,17 +226,17 @@ class _ReusableLocationPickerScreenState extends State<ReusableLocationPickerScr
             right: 15,
             child: Material(
               elevation: 4,
-              color: whiteColor,
+
               borderRadius: BorderRadius.circular(8),
-              child: TypeAheadField<Map<String, dynamic>>(
+              child:TypeAheadField<Map<String, dynamic>>(
                 controller: _searchController,
+
                 builder: (context, controller, focusNode) {
                   return CustomTextfield(
                     label: AppStrings.searchLocation,
                     controller: controller,
                     focusNode: focusNode,
                     onChanged: (value) {
-                      // Debounce API calls to prevent excessive requests
                       if (_debounce?.isActive ?? false) _debounce!.cancel();
                       _debounce = Timer(const Duration(milliseconds: 300), () {
                         _getPlaceSuggestions(value);
@@ -242,34 +245,54 @@ class _ReusableLocationPickerScreenState extends State<ReusableLocationPickerScr
                     hintText: AppStrings.searchLocation,
                   );
                 },
+
                 suggestionsCallback: _getPlaceSuggestions,
+
                 itemBuilder: (context, suggestion) {
                   return ListTile(
-                    title: Text(suggestion['description'] ?? AppStrings.unknown, 
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.appTextColor,
+                    title: Text(
+                      suggestion['description'] ?? AppStrings.unknown,
+                      style: AppTextStyle.description(
+                        color: AppColors.appDescriptionColor,
                       ),
                     ),
                   );
                 },
+
                 onSelected: (suggestion) {
                   _selectPlace(suggestion['place_id']);
                 },
+
                 emptyBuilder: (context) => Padding(
-                  padding: EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
                   child: Text(
                     AppStrings.noPlacesFound,
-                    style: AppTextStyle.kTextStyle.copyWith(
+                    style: AppTextStyle.description(
                       color: AppColors.appTextColor,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
+
+                // ⬇️ CUSTOM LOADING INDICATOR
+                loadingBuilder: (context) {
+                  return  Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color:AppColors.appColor,  // 🔥 YOUR COLOR
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  );
+                },
+
+                // ⬇️ CUSTOM DROPDOWN CONTAINER
                 decorationBuilder: (context, child) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
+                      gradient: AppColors.appPagecolor, // 🔥 Set container bg color
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
@@ -282,7 +305,8 @@ class _ReusableLocationPickerScreenState extends State<ReusableLocationPickerScr
                     child: child,
                   );
                 },
-              ),
+              )
+              ,
             ),
           ),
         ],
@@ -290,14 +314,16 @@ class _ReusableLocationPickerScreenState extends State<ReusableLocationPickerScr
       bottomNavigationBar: selectedAddress != null
           ? Container(
         padding: const EdgeInsets.all(16),
-        color: Colors.white,
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               isLoadingAddress ? AppStrings.loading : selectedAddress!,
-              style: AppTextStyle.kTextStyle.copyWith(
-                color: AppColors.appTextColor,
+              style: AppTextStyle.title(
+                color: AppColors.appTitleColor,
               ),
               textAlign: TextAlign.center,
             ),

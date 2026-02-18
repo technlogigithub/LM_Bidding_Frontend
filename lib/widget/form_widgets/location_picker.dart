@@ -18,11 +18,13 @@ import 'app_textfield.dart';
 class LocationPickerScreen extends StatefulWidget {
   final double initialLat;
   final double initialLng;
+  final Function(LatLng, String)? onLocationSelected;
 
   const LocationPickerScreen({
     Key? key,
     required this.initialLat,
     required this.initialLng,
+    this.onLocationSelected,
   }) : super(key: key);
 
   @override
@@ -36,6 +38,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool isLoadingAddress = false;
   Timer? _debounce;
+  @override
+  final String _darkMapStyle = '''[{"elementType":"geometry","stylers":[{"color":"#242f3e"}]},{"elementType":"labels.text.fill","stylers":[{"color":"#746855"}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#242f3e"}]},{"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#263c3f"}]},{"featureType":"poi.park","elementType":"labels.text.fill","stylers":[{"color":"#6b9a76"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#38414e"}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#212a37"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#9ca5b3"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#746855"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#1f2835"}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#f3d19c"}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#2f3948"}]},{"featureType":"transit.station","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#17263c"}]},{"featureType":"water","elementType":"labels.text.fill","stylers":[{"color":"#515c6d"}]},{"featureType":"water","elementType":"labels.text.stroke","stylers":[{"color":"#17263c"}]}]''';
+
   @override
   void initState() {
     super.initState();
@@ -105,8 +110,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           setState(() {
             selectedLocation = newLocation;
             _searchController.text = data['result']['formatted_address'];
+            selectedAddress = data['result']['formatted_address'];
           });
-          await _getAddressFromLatLng(newLocation);
+          
           mapController?.animateCamera(
             CameraUpdate.newCameraPosition(
               CameraPosition(target: newLocation, zoom: 15),
@@ -165,6 +171,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 ),
                 onMapCreated: (controller) {
                   if (mounted) mapController = controller;
+                  if (Get.isDarkMode) {
+                    controller.setMapStyle(_darkMapStyle);
+                  }
                 },
                 onTap: _onMapTap,
                 markers: selectedLocation != null
@@ -295,12 +304,19 @@ decoration: BoxDecoration(
             const SizedBox(height: 10),
             CustomButton(
               onTap: (){
-              Get.find<ClientHomeController>().updateLocation(
-                selectedLocation!,
-                selectedAddress ?? '',
-              );
-              Get.back();
-            }, text: AppStrings.select,),
+                if (widget.onLocationSelected != null) {
+                  widget.onLocationSelected!(selectedLocation!, selectedAddress ?? '');
+                  Get.back();
+                  return;
+                }
+                Get.find<ClientHomeController>().updateLocation(
+                  selectedLocation!,
+                  selectedAddress ?? '',
+                );
+                Get.back();
+              }, 
+              text: AppStrings.select,
+            ),
           ],
         ),
       )

@@ -1,13 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../core/app_color.dart';
-import '../../core/app_constant.dart' as AppTextStyle;
 import '../controller/review/review_controller.dart';
+import '../core/app_textstyle.dart';
+import 'form_widgets/custom_file_picker.dart';
+import 'form_widgets/custom_textarea.dart';
 
 class ReviewFormContainer extends StatelessWidget {
   final VoidCallback? onSubmit;
@@ -26,15 +29,15 @@ class ReviewFormContainer extends StatelessWidget {
       }
 
       return Container(
-        padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+        padding: const EdgeInsets.all(10),
         width: screenWidth,
         height: screenHeight,
         decoration: BoxDecoration(
-          color: AppColors.appWhite,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30.0),
-            topRight: Radius.circular(30.0),
-          ),
+          gradient: AppColors.appPagecolor
+          // borderRadius: const BorderRadius.only(
+          //   topLeft: Radius.circular(30.0),
+          //   topRight: Radius.circular(30.0),
+          // ),
         ),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -44,15 +47,15 @@ class ReviewFormContainer extends StatelessWidget {
               const SizedBox(height: 15.0),
               Text(
                 'Review your experience',
-                style: AppTextStyle.kTextStyle.copyWith(
-                  color: AppColors.neutralColor,
+                style: AppTextStyle.title(
+
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 5.0),
               Text(
                 'How would you rate your overall experience with this buyer?',
-                style: AppTextStyle.kTextStyle.copyWith(color: AppColors.subTitleColor),
+                style: AppTextStyle.description(color: AppColors.appDescriptionColor),
               ),
               const SizedBox(height: 20.0),
 
@@ -61,9 +64,23 @@ class ReviewFormContainer extends StatelessWidget {
                 child: Column(
                   children: [
                     Container(
-                      height: 100,
-                      width: 100,
+                      height: 90.h,
+                      width: 90.w,
                       decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.20), // stronger shadow
+                            blurRadius: 12,     // soft glow
+                            spreadRadius: 5,    // outer spread
+                            offset: Offset(0, 4), // down shadow
+                          ),
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.8), // top highlight
+                            blurRadius: 6,
+                            spreadRadius: -2,
+                            offset: Offset(0, -2),
+                          ),
+                        ],
                         shape: BoxShape.circle,
                         image: DecorationImage(
                           image: AssetImage(controller.reviewData.profileImage),
@@ -74,15 +91,14 @@ class ReviewFormContainer extends StatelessWidget {
                     const SizedBox(height: 10.0),
                     Text(
                       controller.reviewData.name,
-                      style: AppTextStyle.kTextStyle.copyWith(
-                        color: AppColors.neutralColor,
+                      style: AppTextStyle.title(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 5.0),
                     Text(
                       controller.reviewData.level,
-                      style: AppTextStyle.kTextStyle.copyWith(color: AppColors.subTitleColor),
+                      style: AppTextStyle.description(color: AppColors.appDescriptionColor),
                     ),
                   ],
                 ),
@@ -91,67 +107,49 @@ class ReviewFormContainer extends StatelessWidget {
               const SizedBox(height: 20.0),
               Text(
                 'Select Rating',
-                style: AppTextStyle.kTextStyle.copyWith(color: AppColors.neutralColor),
+                style: AppTextStyle.title(),
               ),
               const SizedBox(height: 5.0),
               RatingBarWidget(
                 itemCount: 5,
-                activeColor: AppTextStyle.ratingBarColor,
-                inActiveColor: AppColors.kBorderColorTextField,
+                activeColor: Colors.amber,
+                inActiveColor:  Colors.amber,
                 rating: controller.rating.value,
                 onRatingChanged: (rating) => controller.updateRating(rating),
               ),
 
               const SizedBox(height: 20.0),
-              TextFormField(
-                keyboardType: TextInputType.multiline,
-                cursorColor: AppColors.neutralColor,
+              CustomTextarea(
+                label: 'Write a Comment',
+                hintText: 'Share your experience...',
+                minLines: 3,
                 maxLines: 3,
-                onChanged: controller.updateComment,
-                decoration: AppTextStyle.kInputDecoration.copyWith(
-                  labelText: 'Write a Comment',
-                  labelStyle: AppTextStyle.kTextStyle.copyWith(color: AppColors.neutralColor),
-                  hintText: 'Share your experience...',
-                  hintStyle: AppTextStyle.kTextStyle.copyWith(color: AppTextStyle.kLightNeutralColor),
-                  focusColor: AppColors.neutralColor,
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                ),
+                // controller: commentController, // optional
               ),
+
 
               const SizedBox(height: 20.0),
               Text(
                 'Upload Image (Optional)',
-                style: AppTextStyle.kTextStyle.copyWith(color: AppColors.neutralColor),
+                style: AppTextStyle.title(),
               ),
               const SizedBox(height: 10.0),
 
               // Image Upload Box
-              Obx(() => GestureDetector(
-                onTap: controller.pickImage,
-                child: Container(
-                  width: 93,
-                  height: 65,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4.0),
-                    color: AppColors.appWhite,
-                    border: Border.all(color: AppColors.kBorderColorTextField),
-                    image: controller.uploadedImage.value != null
-                        ? DecorationImage(
-                      image: FileImage(File(controller.uploadedImage.value!)),
-                      fit: BoxFit.cover,
-                    )
-                        : null,
-                  ),
-                  child: controller.uploadedImage.value == null
-                      ? const Center(
-                    child: Icon(
-                      IconlyBold.camera,
-                      color: AppTextStyle.kLightNeutralColor,
-                    ),
-                  )
+              Obx(
+                    () => CustomFilePicker(
+                  label: '', // no top label (since your old UI had no text)
+                  isImageFile: true,
+                  category: 'image',
+                  value: controller.uploadedImage.value != null
+                      ? File(controller.uploadedImage.value!)
                       : null,
+                  onPicked: (file) {
+                    controller.uploadedImage.value = file?.path;
+                  },
                 ),
-              )),
+              ),
+
 
               const SizedBox(height: 30.0),
             ],
@@ -163,8 +161,8 @@ class ReviewFormContainer extends StatelessWidget {
 
   Widget _buildShimmer(double height, double width) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: AppColors.appMutedColor,
+      highlightColor: AppColors.appMutedTextColor,
       child: Container(
         padding: const EdgeInsets.only(left: 15.0, right: 15.0),
         width: width,

@@ -17,6 +17,7 @@ class NotificationDetailScreen extends StatelessWidget {
 
   Widget _buildNotificationIcon(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     String? iconUrl = notification['icon'] ?? notification['image'];
     
     if (iconUrl == null || iconUrl.isEmpty) {
@@ -43,21 +44,21 @@ class NotificationDetailScreen extends StatelessWidget {
     }
 
     return Container(
+      width: screenWidth ,
+      height: screenWidth * 1,
       decoration: BoxDecoration(
         color: AppColors.appColor.withValues(alpha: 0.15),
       ),
       clipBehavior: Clip.antiAlias,
-      child: (iconUrl != null &&
-          iconUrl.isNotEmpty)
-          ? CachedNetworkImage(
+      child: CachedNetworkImage(
         imageUrl: iconUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => Shimmer.fromColors(
-          baseColor: AppColors.simmerColor,
-          highlightColor: AppColors.appWhite,
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
           child: Container(
-            width: double.infinity,
-            height: double.infinity,
+            width: screenWidth * 0.4,
+            height: screenWidth * 0.4,
             color: AppColors.appWhite,
           ),
         ),
@@ -66,11 +67,6 @@ class NotificationDetailScreen extends StatelessWidget {
           size: screenHeight * 0.1,
           color: AppColors.appColor,
         ),
-      )
-          : Icon(
-        Icons.group_add_outlined,
-        size: screenHeight * 0.1,
-        color: AppColors.appColor,
       ),
     );
   }
@@ -86,26 +82,34 @@ class NotificationDetailScreen extends StatelessWidget {
     final redirectUrl = notification['redirect_url'] ?? '';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: true,
-        iconTheme: const IconThemeData(color: Color(0xFF1D1D1D)),
-        backgroundColor: const Color(0xFFF5F5F5),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(50.0),
-            bottomRight: Radius.circular(50.0),
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
+        backgroundColor: Colors.transparent, // MUST be transparent
+        // shape: const RoundedRectangleBorder(
+        //   borderRadius: BorderRadius.only(
+        //     bottomLeft: Radius.circular(50.0),
+        //     bottomRight: Radius.circular(50.0),
+        //   ),
+        // ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.appbarColor, // <-- Your gradient here
+            // borderRadius: const BorderRadius.only(
+            //   bottomLeft: Radius.circular(50.0),
+            //   bottomRight: Radius.circular(50.0),
+            // ),
           ),
         ),
         toolbarHeight: 80,
         centerTitle: true,
-        title: Text(
-          'Notification Details',
-          style: const TextStyle(
-            color: Color(0xFF1D1D1D),
+        title:  Text(
+          'Notification Details ',
+          style: AppTextStyle.title(
+            color: AppColors.appTextColor,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
           ),
         ),
       ),
@@ -120,14 +124,15 @@ class NotificationDetailScreen extends StatelessWidget {
               child: Container(
                 width: screenWidth,
                 decoration: BoxDecoration(
-                  color: AppColors.appWhite,
+                  gradient: AppColors.appPagecolor,
+                  // color: AppColors.appWhite,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(30.0),
                     topRight: Radius.circular(30.0),
                   ),
                 ),
                 child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+                  // physics: const BouncingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -136,10 +141,10 @@ class NotificationDetailScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                       Text(
                         title,
-                        style: AppTextStyle.kTextStyle.copyWith(
-                          color: AppColors.appTextColor,
+                        style: AppTextStyle.title(
+                          color: AppColors.appTitleColor,
                           fontWeight: FontWeight.bold,
-                          fontSize: 22,
+
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -149,19 +154,25 @@ class NotificationDetailScreen extends StatelessWidget {
                         margin: EdgeInsets.symmetric(horizontal: 20),
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
-                          color: AppColors.darkWhite,
+                          gradient: AppColors.appPagecolor,
                           borderRadius: BorderRadius.circular(12.0),
-                          border: Border.all(
-                            color: AppColors.kBorderColorTextField,
-                            width: 1,
-                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.appMutedColor,
+                              blurRadius: 5,
+                              spreadRadius: 1,
+                              offset: Offset(0, 10),
+                              // blurRadius: 1,
+                              // spreadRadius: 1,
+                              // offset: Offset(0, 6),
+                            ),
+                          ],
                         ),
                         child: Text(
                           message,
-                          style: AppTextStyle.kTextStyle.copyWith(
-                            color: AppColors.appTextColor,
-                            fontSize: 15,
-                            height: 1.5,
+                          style: AppTextStyle.description(
+                            color: AppColors.appDescriptionColor  ,
+
                           ),
                         ),
                       ),

@@ -30,7 +30,7 @@ class CustomCheckbox extends StatelessWidget {
                 color: AppColors.appColor ,
                 width: 2,
               ),
-              color: value ? AppColors.appColor : Colors.transparent,
+              color: value ? AppColors.appButtonColor : Colors.transparent,
             ),
             child: value
                 ? const Icon(
