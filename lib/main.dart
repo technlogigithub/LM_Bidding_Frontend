@@ -45,6 +45,7 @@ void main() async {
   } else {
     debugPrint("⚠️ Firebase & Notifications skipped on Web (Configuration missing)");
   }
+  #test
 
   // 🔌 SOCKET INIT (LOCAL + GLOBAL)
   final socketService = Get.put<SocketService>(
