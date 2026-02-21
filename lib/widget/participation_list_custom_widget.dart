@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
@@ -52,10 +53,31 @@ class ParticipationListCustomWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-          () => isLoading.value
-          ? _buildShimmerList()
-          : ListView.builder(
+    final isWeb = kIsWeb || context.width() > 800;
+
+    return Obx(() {
+      if (isLoading.value) {
+        return _buildShimmerList(isWeb);
+      }
+
+      if (isWeb) {
+        return Container(
+          width: double.infinity,
+          alignment: Alignment.topLeft,
+          child: Wrap(
+            spacing: 20.0,
+            runSpacing: 20.0,
+            children: items.map((item) {
+              return SizedBox(
+                width: 380, // Fixed width for web cards
+                child: _buildOrderCard(context, item),
+              );
+            }).toList(),
+          ),
+        );
+      }
+
+      return ListView.builder(
         padding: EdgeInsets.zero,
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
@@ -63,23 +85,42 @@ class ParticipationListCustomWidget extends StatelessWidget {
         itemBuilder: (_, index) {
           final item = items[index];
           return Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.only(bottom: 12.0),
             child: _buildOrderCard(context, item),
           );
         },
-      ),
-    );
+      );
+    });
   }
 
   // Shimmer List
-  Widget _buildShimmerList() {
+  Widget _buildShimmerList(bool isWeb) {
+    if (isWeb) {
+      return Container(
+        width: double.infinity,
+        alignment: Alignment.topLeft,
+        child: Wrap(
+          spacing: 20.0,
+          runSpacing: 20.0,
+          children: List.generate(6, (_) => SizedBox(
+            width: 380, // Fixed width for web cards
+            child: Shimmer.fromColors(
+              baseColor: AppColors.appMutedColor,
+              highlightColor: AppColors.appMutedTextColor,
+              child: _buildShimmerCard(),
+            ),
+          )),
+        ),
+      );
+    }
+
     return ListView.builder(
       padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       itemCount: 3,
       itemBuilder: (_, __) => Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.only(bottom: 12.0),
         child: Shimmer.fromColors(
           baseColor: AppColors.appMutedColor,
           highlightColor: AppColors.appMutedTextColor,
@@ -142,8 +183,8 @@ class ParticipationListCustomWidget extends StatelessWidget {
     return GestureDetector(
       onTap: () => onItemTap?.call(item),
       child: Container(
-        padding: const EdgeInsets.all(10.0),
-        width: context.width(),
+        padding: const EdgeInsets.all(15.0), // increased padding slightly for better desktop feel
+        width: double.infinity,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
           borderRadius: BorderRadius.circular(8.0),

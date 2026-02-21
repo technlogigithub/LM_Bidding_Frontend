@@ -48,81 +48,86 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
         ),
 
-        body: Padding(
-          padding: const EdgeInsets.only(top: 10.0),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            decoration: BoxDecoration(
-              gradient: AppColors.appPagecolor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(30.0),
-                topRight: Radius.circular(30.0),
-              ),
-            ),
-
-            child: Obx(() => ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              itemCount: list_data.length,
-              itemBuilder: (context, index) {
-                final data = list_data[index];
-
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 10),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.appPagecolor,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.appMutedColor,
-                        blurRadius: 5,
-                        spreadRadius: 1,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                decoration: BoxDecoration(
+                  gradient: AppColors.appPagecolor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
                   ),
-                  child: ListTile(
-                    contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(25),
-                      child: Image.network(
-                        data.image.validate(),
-                        height: 50,
-                        width: 50,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          debugPrint("Image Error: $error");
-                          return Container(
+                ),
+    
+                child: Obx(() => ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: list_data.length,
+                  itemBuilder: (context, index) {
+                    final data = list_data[index];
+    
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10.0, horizontal: 10),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.appPagecolor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.appMutedColor,
+                            blurRadius: 5,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16),
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(25),
+                          child: Image.network(
+                            data.image.validate(),
                             height: 50,
                             width: 50,
-                            color: Colors.grey.shade300,
-                            child: Icon(Icons.person),
-                          );
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              debugPrint("Image Error: $error");
+                              return Container(
+                                height: 50,
+                                width: 50,
+                                color: Colors.grey.shade300,
+                                child: const Icon(Icons.person),
+                              );
+                            },
+                          ),
+                        ),
+                        title: Text(
+                          data.title.validate(),
+                          style: AppTextStyle.title(),
+                        ),
+                        subtitle: Text(
+                          data.subTitle.validate(),
+                          style: AppTextStyle.description(),
+                        ),
+                        trailing: Text(
+                          "11.05 AM",
+                          style: AppTextStyle.description(),
+                        ),
+                        onTap: () {
+                          ChatInbox(
+                            img: data.image.validate(),
+                            name: data.title.validate(),
+                          ).launch(context);
                         },
                       ),
-                    ),
-                    title: Text(
-                      data.title.validate(),
-                      style: AppTextStyle.title(),
-                    ),
-                    subtitle: Text(
-                      data.subTitle.validate(),
-                      style: AppTextStyle.description(),
-                    ),
-                    trailing: Text(
-                      "11.05 AM",
-                      style: AppTextStyle.description(),
-                    ),
-                    onTap: () {
-                      ChatInbox(
-                        img: data.image.validate(),
-                        name: data.title.validate(),
-                      ).launch(context);
-                    },
-                  ),
-                );
-              },
-            )),
+                    );
+                  },
+                )),
+              ),
+            ),
           ),
         ),
       ),

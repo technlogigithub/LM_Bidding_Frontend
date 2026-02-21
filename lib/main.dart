@@ -26,6 +26,12 @@ void main() async {
   // 🎨 App settings controller
   final appController = Get.put(AppSettingsController());
   await appController.fetchAllData();
+  
+  final prefsMain = await SharedPreferences.getInstance();
+  final isLanguageSelectedMain = prefsMain.getBool('is_language_selected') ?? false;
+  if (isLanguageSelectedMain) {
+    await appController.fetchAppContent();
+  }
 
   if (!kIsWeb) {
     // 🔥 Firebase (Mobile Only)

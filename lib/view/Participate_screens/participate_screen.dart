@@ -107,100 +107,78 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
             gradient: AppColors.appPagecolor
           ),
           child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: screenHeight * 0.010),
-                CustomTabBar(
-                  // height: 50,
-                  tabs: tabs,
-                  initialIndex: 0,
-                  // primaryColor: AppColors.appColor,
-                  // borderColor: Colors.grey.shade300,
-                    textStyle: AppTextStyle.description(),
-                  onTap: (index) {
-                    String statusValue = "";
-                     if (widget.menuItem?.design != null && 
-                        widget.menuItem!.design is Map && 
-                        widget.menuItem!.design['inputs'] != null &&
-                        widget.menuItem!.design['inputs']['select'] != null &&
-                        widget.menuItem!.design['inputs']['select']['options'] != null) {
-                        
-                        final options = widget.menuItem!.design['inputs']['select']['options'] as List;
-                        if (index < options.length) {
-                           statusValue = options[index]['value'].toString();
+            padding: EdgeInsets.symmetric(horizontal: isWeb ? screenWidth * 0.03 : screenWidth * 0.01),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: 1200), // Max width for web dashboard feel
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: screenHeight * 0.010),
+                    CustomTabBar(
+                      // height: 50,
+                      tabs: tabs,
+                      initialIndex: 0,
+                      // primaryColor: AppColors.appColor,
+                      // borderColor: Colors.grey.shade300,
+                        textStyle: AppTextStyle.description(),
+                      onTap: (index) {
+                        String statusValue = "";
+                         if (widget.menuItem?.design != null && 
+                            widget.menuItem!.design is Map && 
+                            widget.menuItem!.design['inputs'] != null &&
+                            widget.menuItem!.design['inputs']['select'] != null &&
+                            widget.menuItem!.design['inputs']['select']['options'] != null) {
+                            
+                            final options = widget.menuItem!.design['inputs']['select']['options'] as List;
+                            if (index < options.length) {
+                               statusValue = options[index]['value'].toString();
+                            }
                         }
-                    }
-                    controller.updateTab(index, statusValue);
-                  },
-                ),
-                SizedBox(height: screenHeight * 0.010),
-                Obx(() {
-                  if (!controller.isLoading.value && controller.currentList.isEmpty) {
-                    return SizedBox(
-                      height: screenHeight * 0.7,
-                      child: Center(
-                        // child: Text(
-                        //   controller.getParticipateListResponseModel.value?.message ?? "No orders found",
-                        //   style: AppTextStyle.description(color: AppColors.appDescriptionColor),
-                        // ),
-                        child: Text(
-                         "No participate found",
-                          style: AppTextStyle.description(color: AppColors.appDescriptionColor),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ParticipationListCustomWidget(
-                    items: controller.currentList.map((e) {
-                      final detailsMap = e.details?.toJson() ?? {};
-                      // Remove keys that are null
-                      detailsMap.removeWhere((key, value) => value == null);
-
-                      return ParticipationCardUiModel(
-                        orderId: e.hidden?.orderId?.toString() ?? e.hidden?.postKey?.toString() ?? '',
-                        date: e.details?.orderDate,
-                        title: e.info?.title,
-                        countdownDt: e.info?.countdownDt,
-                        media: e.media,
-                        dynamicDetails: detailsMap,
-                        // actionButtons: e.,
-                        nextPageName: e.hidden?.nextPageName,
-                        nextPageApiEndpoint: e.hidden?.nextPageApiEndpoint,
+                        controller.updateTab(index, statusValue);
+                      },
+                    ),
+                    SizedBox(height: screenHeight * 0.010),
+                    Obx(() {
+                      if (!controller.isLoading.value && controller.currentList.isEmpty) {
+                        return SizedBox(
+                          height: screenHeight * 0.7,
+                          child: Center(
+                            child: Text(
+                             "No participate found",
+                              style: AppTextStyle.description(color: AppColors.appDescriptionColor),
+                            ),
+                          ),
+                        );
+                      }
+    
+                      return ParticipationListCustomWidget(
+                        items: controller.currentList.map((e) {
+                          final detailsMap = e.details?.toJson() ?? {};
+                          // Remove keys that are null
+                          detailsMap.removeWhere((key, value) => value == null);
+    
+                          return ParticipationCardUiModel(
+                            orderId: e.hidden?.orderId?.toString() ?? e.hidden?.postKey?.toString() ?? '',
+                            date: e.details?.orderDate,
+                            title: e.info?.title,
+                            countdownDt: e.info?.countdownDt,
+                            media: e.media,
+                            dynamicDetails: detailsMap,
+                            // actionButtons: e.,
+                            nextPageName: e.hidden?.nextPageName,
+                            nextPageApiEndpoint: e.hidden?.nextPageApiEndpoint,
+                          );
+                        }).toList(),
+                        isLoading: controller.isLoading,
+                        onItemTap: (item) {
+                          // API call logic reserved if re-enabled
+                        },
                       );
-                    }).toList(),
-                    isLoading: controller.isLoading,
-                    onItemTap: (item) {
-                      // if (item.nextPageName != null && item.nextPageApiEndpoint != null) {
-                      //   controller.fetchMyOrderDetails(
-                      //       item.nextPageApiEndpoint!,
-                      //       item.nextPageName!,
-                      //       true
-                      //   );
-                      // }
-                    },
-                  );
-                }),
-                // Obx(() => ParticipationListCustomWidget(
-                //   items: controller.currentList.map((e) => ParticipationCardUiModel(
-                //     orderId: e.hidden?.orderId?.toString() ?? '',
-                //     date: e.details?.orderDate ?? '',
-                //     title: e.info?.title ?? '',
-                //     countdownDt: e.info?.countdownDt ?? '',
-                //     dynamicDetails: {
-                //       if (e.info?.price != null) 'Amount': '${AppStrings.currencySign} ${e.info!.price}',
-                //       if (e.details?.participationStatus != null) 'Status': e.details!.participationStatus!,
-                //       if (e.info?.countdownDt != null) 'Duration': e.info!.countdownDt!,
-                //     },
-                //   )).toList(),
-                //   isLoading: controller.currentLoading.obs,
-                //   // onItemTap: () {
-                //   //   const ParticipateDetailsScreen().launch(context);
-                //   // },
-                // )),
-              ],
+                    }),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

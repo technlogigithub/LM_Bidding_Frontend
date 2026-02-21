@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
@@ -232,266 +233,317 @@ class SettingScreen extends StatelessWidget {
         designSize: const Size(375, 812), minTextAdapt: true);
     final languageOptions = appController.getLanguageOptions();
     String? selectedLanguageKey = appController.selectedLanguageKey.value;
+    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Container(
-              decoration: BoxDecoration(
-                gradient: AppColors.appPagecolor,
-                borderRadius: BorderRadius.only(
+    Widget buildLanguageContent(StateSetter setState) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,
+          borderRadius: isWeb 
+              ? BorderRadius.circular(20.r)
+              : BorderRadius.only(
                   topLeft: Radius.circular(20.r),
                   topRight: Radius.circular(20.r),
                 ),
-              ),
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-                left: 24.w,
-                right: 24.w,
-                top: 20.h,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40.w,
-                      height: 4.h,
-                      margin: EdgeInsets.only(bottom: 20.h),
-                      decoration: BoxDecoration(
-                        color: AppColors.appDescriptionColor,
-                        borderRadius: BorderRadius.circular(2.r),
-                      ),
-                    ),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 24.w,
+          right: 24.w,
+          top: 20.h,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!isWeb)
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 20.h),
+                  decoration: BoxDecoration(
+                    color: AppColors.appDescriptionColor,
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
-                  Obx(() => Text(
-                    'Select Language',
-                    style: AppTextStyle.title(
-                      color: AppColors.appTitleColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  )),
-                  SizedBox(height: 20.h),
+                ),
+              ),
+            Obx(() => Text(
+              'Select Language',
+              style: AppTextStyle.title(
+                color: AppColors.appTitleColor,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            )),
+            SizedBox(height: 20.h),
 
-                  Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: languageOptions.length,
-                      itemBuilder: (context, index) {
-                        final option = languageOptions[index];
-                        final isSelected =
-                            selectedLanguageKey == option['key'];
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: languageOptions.length,
+                itemBuilder: (context, index) {
+                  final option = languageOptions[index];
+                  final isSelected =
+                      selectedLanguageKey == option['key'];
 
-                        return GestureDetector(
-                          onTap: () async {
-                            if (selectedLanguageKey == option['key']) {
-                              Navigator.pop(context);
-                              return;
-                            }
+                  return GestureDetector(
+                    onTap: () async {
+                      if (selectedLanguageKey == option['key']) {
+                        Navigator.pop(context);
+                        return;
+                      }
 
-                            setState(() {
-                              selectedLanguageKey = option['key'];
-                            });
+                      setState(() {
+                        selectedLanguageKey = option['key'];
+                      });
 
-                            Navigator.pop(context);
+                      Navigator.pop(context);
 
-                            await Future.delayed(
-                                const Duration(milliseconds: 300));
+                      await Future.delayed(
+                          const Duration(milliseconds: 300));
 
-                            Get.dialog(
-                              Center(
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: Container(
-                                    padding: EdgeInsets.all(20.w),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius:
-                                      BorderRadius.circular(10.r),
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        CircularProgressIndicator(
-                                          valueColor:
-                                          AlwaysStoppedAnimation<Color>(
-                                              AppColors.appColor),
-                                        ),
-                                        SizedBox(height: 16.h),
-                                        Obx(() => Text(
-                                          'Updating language...',
-                                          style:
-                                          AppTextStyle.description(),
-                                        )),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                      Get.dialog(
+                        Center(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: Container(
+                              padding: EdgeInsets.all(20.w),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius:
+                                BorderRadius.circular(10.r),
                               ),
-                              barrierDismissible: false,
-                            );
-
-                            try {
-                              await appController
-                                  .setSelectedLanguage(option['key']!);
-                              settingsController.selectedLanguage =
-                                  option['name'] ?? 'English';
-
-                              await appController.fetchAppContent();
-                              await appController.fetchAllData();
-
-                              Get.back();
-
-                              toast('Language changed successfully');
-                            } catch (e) {
-                              Get.back();
-                              toast('Failed: $e');
-                            }
-                          },
-                          child: Container(
-                            height: 50.h,
-                            padding:
-                            EdgeInsets.symmetric(horizontal: 16.w),
-                            margin: EdgeInsets.symmetric(vertical: 5.h),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.appColor
-                                  : AppColors.appMutedColor,
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Obx(() => Text(
-                                    option['name'] ?? '',
-                                    style: AppTextStyle.description(
-                                      color: isSelected
-                                          ? AppColors.appTextColor
-                                          : AppColors.appMutedTextColor,
-                                    ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(
+                                    valueColor:
+                                    AlwaysStoppedAnimation<Color>(
+                                        AppColors.appColor),
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  Obx(() => Text(
+                                    'Updating language...',
+                                    style:
+                                    AppTextStyle.description(),
                                   )),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                        barrierDismissible: false,
+                      );
+
+                      try {
+                        await appController
+                            .setSelectedLanguage(option['key']!);
+                        settingsController.selectedLanguage =
+                            option['name'] ?? 'English';
+
+                        await appController.fetchAppContent();
+                        await appController.fetchAllData();
+
+                        Get.back();
+
+                        toast('Language changed successfully');
+                      } catch (e) {
+                        Get.back();
+                        toast('Failed: $e');
+                      }
+                    },
+                    child: Container(
+                      height: 50.h,
+                      padding:
+                      EdgeInsets.symmetric(horizontal: 16.w),
+                      margin: EdgeInsets.symmetric(vertical: 5.h),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.appColor
+                            : AppColors.appMutedColor,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Obx(() => Text(
+                              option['name'] ?? '',
+                              style: AppTextStyle.description(
+                                color: isSelected
+                                    ? AppColors.appTextColor
+                                    : AppColors.appMutedTextColor,
+                              ),
+                            )),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
-            );
-          },
-        );
-      },
-    );
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isWeb) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: buildLanguageContent(setState),
+                ),
+              );
+            },
+          );
+        },
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return buildLanguageContent(setState);
+            },
+          );
+        },
+      );
+    }
   }
 
   void showFontSizeBottomSheet(BuildContext context) {
     final controller = Get.find<AppSettingsController>();
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+
+    Widget buildFontSizeContent() {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.appPagecolor,
+          borderRadius: isWeb 
+              ? BorderRadius.circular(16)
+              : const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Obx(() => Text(
+                    "Font Size",
+                    style: AppTextStyle.title(
+                      color: AppColors.appBodyTextColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )),
+                  InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Icon(Icons.close,
+                          color: AppColors.appMutedTextColor)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      controller.decreaseCounter();
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.appButtonColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.remove,
+                          color: AppColors.appButtonTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Obx(() => Text(
+                    controller.fontCounter.value.toString(),
+                    style: AppTextStyle.title(
+                      color: AppColors.appBodyTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )),
+                  GestureDetector(
+                    onTap: () {
+                      controller.increaseCounter();
+                    },
+                    child: Container(
+                      height: 40,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.appButtonColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.add,
+                          color: AppColors.appButtonTextColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Obx(() => Text(
-                      "Font Size",
-                      style: AppTextStyle.title(
-                        color: AppColors.appBodyTextColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )),
-                    InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: Icon(Icons.close,
-                            color: AppColors.appMutedTextColor)),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        // controller.decreaseTitle();
-                        // controller.decreaseDescription();
-                        // controller.decreaseBody();
-                        controller.decreaseCounter();
-                      },
-                      child: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.appButtonColor,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.remove,
-                            color: AppColors.appButtonTextColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Obx(() => Text(
-                      controller.fontCounter.value.toString(),
-                      style: AppTextStyle.title(
-                        color: AppColors.appBodyTextColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )),
-                    GestureDetector(
-                      onTap: () {
-                        // controller.increaseTitle();
-                        // controller.increaseDescription();
-                        // controller.increaseBody();
-                        controller.increaseCounter();
-                      },
-                      child: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.appButtonColor,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.add,
-                            color: AppColors.appButtonTextColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-              ],
+        ),
+      );
+    }
+
+    if (isWeb) {
+      showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-        );
-      },
-    );
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: buildFontSizeContent(),
+            ),
+          );
+        },
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (_) {
+          return buildFontSizeContent();
+        },
+      );
+    }
   }
 }
