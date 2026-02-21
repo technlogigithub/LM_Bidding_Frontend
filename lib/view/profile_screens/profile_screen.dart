@@ -11,6 +11,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
+import '../../core/app_routes.dart';
 import '../../core/app_string.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../../controller/post/My_Post_controller.dart';
@@ -32,7 +33,7 @@ import '../../widget/custom_navigator.dart';
 import '../../widget/app_image_handle.dart';
 
 class ProfileScreen extends StatelessWidget {
-  ProfileScreen({super.key});
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -428,10 +429,12 @@ class ProfileScreen extends StatelessWidget {
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('isLoggedIn', false);
 
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => LoginScreen()),
-                );
+                Get.offAllNamed(AppRoutes.login);
+
+                // Navigator.pushReplacement(
+                //   context,
+                //   MaterialPageRoute(builder: (_) => LoginScreen()),
+                // );
               },
               child: Obx(() => Text(
                     "Yes, Logout",

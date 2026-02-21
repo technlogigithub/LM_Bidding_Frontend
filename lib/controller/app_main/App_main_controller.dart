@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -172,7 +173,7 @@ class AppSettingsController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       final userKey = prefs.getString('ukey');
 
-      // Get Current Location
+      // Get Current Location (with timeout to prevent hanging on Web)
       String? lat;
       String? long;
       try {
@@ -185,14 +186,16 @@ class AppSettingsController extends GetxController {
           
           if (permission == LocationPermission.whileInUse || 
               permission == LocationPermission.always) {
-            // Get position with current settings
-            Position position = await Geolocator.getCurrentPosition();
+            // Added timeout only for Web to prevent hanging on reloads
+            Position position = await Geolocator.getCurrentPosition(
+              timeLimit: kIsWeb ? const Duration(seconds: 3) : null,
+            );
             lat = position.latitude.toString();
             long = position.longitude.toString();
           }
         }
       } catch (e) {
-        print("Error getting location: $e");
+        print("Error getting location (skipped after timeout/error): $e");
       }
 
       // Construct Request Body

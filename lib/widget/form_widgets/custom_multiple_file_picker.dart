@@ -196,14 +196,17 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
     );
 
     if (result != null) {
-      final tempDir = Directory.systemTemp;
-      final tempFile = File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg');
-      await tempFile.writeAsBytes(result);
-
       if (kIsWeb) {
-        web_drop.storeWebFileBytes(tempFile.path, result);
+        final fileName = 'edited_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final webPath = 'web://$fileName';
+        web_drop.storeWebFileBytes(webPath, result);
+        return File(webPath);
+      } else {
+        final tempDir = Directory.systemTemp;
+        final tempFile = File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg');
+        await tempFile.writeAsBytes(result);
+        return tempFile;
       }
-      return tempFile;
     }
     return null;
   }
@@ -274,9 +277,20 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
 
     if (result != null && result.files.isNotEmpty) {
       final files = <File>[];
-      for (var platformFile in result.files) {
-        if (platformFile.path != null) {
-          files.add(File(platformFile.path!));
+      if (kIsWeb) {
+        for (var platformFile in result.files) {
+          final bytes = platformFile.bytes;
+          if (bytes != null) {
+            final webPath = 'web://${platformFile.name}';
+            web_drop.storeWebFileBytes(webPath, bytes);
+            files.add(File(webPath));
+          }
+        }
+      } else {
+        for (var platformFile in result.files) {
+          if (platformFile.path != null) {
+            files.add(File(platformFile.path!));
+          }
         }
       }
       if (files.isNotEmpty) {
@@ -294,41 +308,17 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
   }
 
   Future<void> _showWebImagePicker() async {
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Select Image Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.photo_library_outlined, color: AppColors.appIconColor),
-              title: Text('Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-              onTap: () async {
-                Navigator.pop(context);
-                final List<XFile>? picked = await _picker.pickMultiImage();
-                if (picked != null && picked.isNotEmpty) {
-                  final files = picked.map((x) => File(x.path)).toList();
-                  await _validateAndAddFiles(files);
-                }
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.photo_camera_outlined, color: AppColors.appIconColor),
-              title: Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
-                if (picked != null) {
-                  await _validateAndAddFiles([File(picked.path)]);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+    final List<XFile>? picked = await _picker.pickMultiImage();
+    if (picked != null && picked.isNotEmpty) {
+      final files = <File>[];
+      for (var xFile in picked) {
+        final bytes = await xFile.readAsBytes();
+        final webPath = 'web://${xFile.name}';
+        web_drop.storeWebFileBytes(webPath, bytes);
+        files.add(File(webPath));
+      }
+      await _validateAndAddFiles(files);
+    }
   }
 
   Future<void> _showMobileImagePicker() async {
@@ -376,47 +366,23 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
   }
 
   Future<void> _showWebVideoPicker() async {
-    await showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Select Video Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.video_library_outlined, color: AppColors.appIconColor),
-              title: Text('Pick Videos from Gallery', style: AppTextStyle.title(color: AppColors.appTitleColor)),
-              subtitle: Text('Select one video at a time', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-              onTap: () async {
-                Navigator.pop(context);
-                await _pickVideoFromGallery();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.videocam_outlined, color: AppColors.appIconColor),
-              title: Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
-                if (picked != null) {
-                  final file = File(picked.path);
-                  if (_isVideoFile(file.path)) {
-                    await _validateAndAddFiles([file]);
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Selected file is not a video.')),
-                      );
-                    }
-                  }
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+    final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
+    if (picked != null) {
+      final bytes = await picked.readAsBytes();
+      final webPath = 'web://${picked.name}';
+      web_drop.storeWebFileBytes(webPath, bytes);
+      
+      final file = File(webPath);
+      if (_isVideoFile(file.path)) {
+        await _validateAndAddFiles([file]);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Selected file is not a video.')),
+          );
+        }
+      }
+    }
   }
 
   Future<void> _showMobileVideoPicker() async {
@@ -559,7 +525,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
   }
 
   // === DRAG TARGET ===
-  Widget _buildDragTarget({required Widget child}) {
+  Widget _buildDragTarget({required Widget child, VoidCallback? onTap}) {
     if (!kIsWeb) return child;
     return web_drop.WebFileDropZone(
       isDragging: _isDragging,
@@ -568,6 +534,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
         setState(() => _isDragging = false);
         _validateAndAddFiles(files);
       },
+      onTap: onTap,
       child: child,
     );
   }
@@ -724,7 +691,11 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
               child: isVideo
                   ? _buildVideoThumbnail(file)
                   : (isImage
-                      ? Image.file(file, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildPlaceholder())
+                      ? (kIsWeb 
+                          ? (web_drop.getWebFileBytes(file.path) != null 
+                              ? Image.memory(web_drop.getWebFileBytes(file.path)!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildPlaceholder())
+                              : _buildPlaceholder())
+                          : Image.file(file, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _buildPlaceholder()))
                       : (isDocument
                           ? _buildDocumentPreview(file)
                           : _buildPlaceholder())),
@@ -889,6 +860,7 @@ class _CustomMultipleFilePickerState extends State<CustomMultipleFilePicker> {
         const SizedBox(height: 12),
 
         _buildDragTarget(
+          onTap: () => _pickFiles(context),
           child: GestureDetector(
             onTap: () => _pickFiles(context),
             child: Container(

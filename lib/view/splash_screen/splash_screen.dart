@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -38,9 +39,19 @@ class SplashScreenState extends State<SplashScreen> {
     
     final bool loginRequired = controller.loginRequired.value;
     SharedPreferences sp = await SharedPreferences.getInstance();
-    final isLoggedIn = sp.getBool('isLoggedIn') ?? false;
+    
+    // For Web, check token + flag (more robust)
+    // For Mobile, keep original behavior
+    final authToken = sp.getString('auth_token');
+    final isLoggedInFlag = sp.getBool('isLoggedIn') ?? false;
+    final isLoggedIn = kIsWeb 
+        ? (isLoggedInFlag || (authToken != null && authToken.isNotEmpty)) 
+        : isLoggedInFlag;
+    
     final isOnboardingCompleted = sp.getBool('is_onboarding_completed') ?? false;
     final isLanguageSelected = sp.getBool('is_language_selected') ?? false;
+
+    debugPrint("🕵️ Login Check - Flag: $isLoggedInFlag, Token: ${authToken != null}, Final: $isLoggedIn");
 
     // If language already selected, prefetch app content
     if (isLanguageSelected) {
@@ -48,15 +59,19 @@ class SplashScreenState extends State<SplashScreen> {
     }
 
     if (isLoggedIn) {
+      debugPrint("🚀 Session found, going to BottomNav");
       Get.offAllNamed(AppRoutes.bottomNav);
     }
     else if(loginRequired) {
+      debugPrint("🔑 Login required, going to LoginScreen");
       Get.offAllNamed(AppRoutes.login);
     }
     else if (isOnboardingCompleted) {
+      debugPrint("👋 Onboarding done, going to BottomNav");
       Get.offAllNamed(AppRoutes.bottomNav);
     }
     else {
+      debugPrint("🌍 Going to LanguageSelection");
       Get.offAllNamed(AppRoutes.languageSelection);
     }
   }
@@ -66,7 +81,7 @@ class SplashScreenState extends State<SplashScreen> {
     super.initState();
     loadVersion();
     whereToGo();
-    controller.fetchAllData();
+    // Removed duplicate fetchAllData() - it's already in main.dart
   }
   void loadVersion() async {
     appVersion = await AppInfo.getCurrentVersion();
@@ -75,8 +90,6 @@ class SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize ScreenUtil with a reference design size (375x812 for mobile)
-    ScreenUtil.init(context, designSize: const Size(375, 812), minTextAdapt: true);
     final screenWidth = MediaQuery.of(context).size.width;
     // Define max width for web/large screens
     final maxContentWidth = screenWidth > 1200 ? 1200.0 : screenWidth;

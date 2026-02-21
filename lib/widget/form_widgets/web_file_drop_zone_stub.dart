@@ -21,6 +21,7 @@ class WebFileDropZone extends StatelessWidget {
   final bool isDragging;
   final Function(bool) onDragStateChanged;
   final Function(List<File>) onFilesDropped;
+  final VoidCallback? onTap;
 
   const WebFileDropZone({
     super.key,
@@ -28,6 +29,7 @@ class WebFileDropZone extends StatelessWidget {
     required this.isDragging,
     required this.onDragStateChanged,
     required this.onFilesDropped,
+    this.onTap,
   });
 
   @override

@@ -1,5 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import '../../../widget/form_widgets/web_file_drop_zone_stub.dart'
+    if (dart.library.html) '../../../widget/form_widgets/web_file_drop_zone_web.dart' as web_drop;
 
 class ImageViewScreen extends StatelessWidget {
   final File imageFile;
@@ -40,15 +43,27 @@ class ImageViewScreen extends StatelessWidget {
               size: 100,
             ),
           )
-              : Image.file(
-            imageFile,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const Icon(
-              Icons.broken_image,
-              color: Colors.white70,
-              size: 100,
-            ),
-          ),
+              : kIsWeb
+                  ? (web_drop.getWebFileBytes(imageFile.path) != null
+                      ? Image.memory(
+                          web_drop.getWebFileBytes(imageFile.path)!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.broken_image,
+                            color: Colors.white70,
+                            size: 100,
+                          ),
+                        )
+                      : const Icon(Icons.broken_image, color: Colors.white70, size: 100))
+                  : Image.file(
+                      imageFile,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.broken_image,
+                        color: Colors.white70,
+                        size: 100,
+                      ),
+                    ),
         ),
       ),
     );

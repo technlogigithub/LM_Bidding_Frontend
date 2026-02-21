@@ -119,25 +119,67 @@ class CustomVerticalListviewList extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isWeb = kIsWeb || screenWidth > 800;
 
-    Widget contentList = ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: EdgeInsets.only(
-        bottom: 20,
-        left: isWeb ? 0 : 15.0,
-        right: isWeb ? 0 : 15.0,
-      ),
-      scrollDirection: Axis.vertical,
-      itemCount: results.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10.0),
-      itemBuilder: (_, index) {
-        final result = results[index];
-        return Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: _buildItemCard(context, result, index),
-        );
-      },
-    );
+    Widget contentList;
+
+    if (isWeb) {
+      contentList = GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(bottom: 20),
+        itemCount: results.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, // ✅ 1 Row me 3 items
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 20,
+          childAspectRatio: 2.4, // thoda wide card look ke liye
+        ),
+        itemBuilder: (_, index) {
+          final result = results[index];
+          return _buildItemCard(context, result, index);
+        },
+      );
+    } else {
+      // ✅ Mobile same rahega
+      contentList = ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(
+          bottom: 20,
+          left: 15.0,
+          right: 15.0,
+        ),
+        scrollDirection: Axis.vertical,
+        itemCount: results.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+        itemBuilder: (_, index) {
+          final result = results[index];
+          return Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: _buildItemCard(context, result, index),
+          );
+        },
+      );
+    }
+
+    // Widget contentList = ListView.separated(
+    //   physics: const NeverScrollableScrollPhysics(),
+    //   shrinkWrap: true,
+    //   padding: EdgeInsets.only(
+    //     bottom: 20,
+    //     left: isWeb ? 0 : 15.0,
+    //     right: isWeb ? 0 : 15.0,
+    //   ),
+    //   scrollDirection: Axis.vertical,
+    //   itemCount: results.length,
+    //   separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+    //   itemBuilder: (_, index) {
+    //     final result = results[index];
+    //     return Padding(
+    //       padding: const EdgeInsets.only(top: 10),
+    //       child: _buildItemCard(context, result, index),
+    //     );
+    //   },
+    // );
 
     Widget contentWithHeader = Column(
       mainAxisSize: MainAxisSize.min,
@@ -170,25 +212,43 @@ class CustomVerticalListviewList extends StatelessWidget {
 
   // Shimmer effect for the list
   Widget _buildShimmerList() {
-    return SizedBox(
-      height: 160 * 3,
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        scrollDirection: Axis.vertical,
-        itemCount: 3, // Number of shimmer placeholders
-        separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-        itemBuilder: (_, __) => Column(
-          children: [
-            Shimmer.fromColors(
-              baseColor: AppColors.appMutedColor,
-              highlightColor: AppColors.appMutedTextColor,
-              child: _buildShimmerItemCard(),
-            ),
-            SizedBox(height: 10.h,)
-          ],
+    final isWeb = kIsWeb;
+
+    if (isWeb) {
+      return GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: 6,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 20,
+          childAspectRatio: 2.4,
         ),
-      ),
-    );
+        itemBuilder: (_, __) {
+          return Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
+            child: _buildShimmerItemCard(),
+          );
+        },
+      );
+    } else {
+      return SizedBox(
+        height: 160 * 3,
+        child: ListView.separated(
+          physics: const NeverScrollableScrollPhysics(),
+          scrollDirection: Axis.vertical,
+          itemCount: 3,
+          separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+          itemBuilder: (_, __) => Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
+            child: _buildShimmerItemCard(),
+          ),
+        ),
+      );
+    }
   }
 
   // Shimmer placeholder for a single card
@@ -283,7 +343,7 @@ class CustomVerticalListviewList extends StatelessWidget {
         }
       },
       child: Container(
-        width: double.infinity,
+        width: isWeb ? null : double.infinity,
         height: cardHeight,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,

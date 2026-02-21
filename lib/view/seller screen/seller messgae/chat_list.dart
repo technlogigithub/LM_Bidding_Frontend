@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
@@ -21,13 +22,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.appPagecolor,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
+        appBar: isWeb ? null : AppBar(
           iconTheme: IconThemeData(color: AppColors.appTextColor),
           elevation: 0,
           centerTitle: true,
@@ -87,6 +90,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         height: 50,
                         width: 50,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint("Image Error: $error");
+                          return Container(
+                            height: 50,
+                            width: 50,
+                            color: Colors.grey.shade300,
+                            child: Icon(Icons.person),
+                          );
+                        },
                       ),
                     ),
                     title: Text(

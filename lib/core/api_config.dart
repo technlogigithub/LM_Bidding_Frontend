@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import '../widget/form_widgets/web_file_drop_zone_stub.dart'
+    if (dart.library.html) '../widget/form_widgets/web_file_drop_zone_web.dart' as web_drop;
+
 
 class ApiService {
   static const String baseUrl = "https://phplaravel-1517766-5835172.cloudwaysapps.com/api/";
@@ -88,9 +92,23 @@ class ApiService {
       request.fields.addAll(fields);
 
       // Add file
-      request.files.add(
-        await http.MultipartFile.fromPath(fileField, file.path),
-      );
+      if (kIsWeb) {
+        final bytes = web_drop.getWebFileBytes(file.path);
+        if (bytes != null) {
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              fileField,
+              bytes,
+              filename: file.path.split('/').last.replaceFirst('web://', ''),
+            ),
+          );
+        }
+      } else {
+        request.files.add(
+          await http.MultipartFile.fromPath(fileField, file.path),
+        );
+      }
+
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);

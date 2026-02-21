@@ -10,9 +10,10 @@ import '../core/app_color.dart';
 class RazorpayService {
   late Razorpay _razorpay;
 
-  // Static Razorpay Key (Demo purpose - replace with your actual key)
-  // For testing, you can use Razorpay's test keys
-  static const String _razorpayKey = 'rzp_test_1DP5mmOlF5G5ag'; // Replace with your actual Razorpay key
+  // Fallback key — override via openCheckout(razorpayKey: ...)
+  static const String _fallbackKey = 'rzp_test_1DP5mmOlF5G5ag';
+  String _razorpayKey = _fallbackKey;
+
   AppSettingsController appController = Get.find<AppSettingsController>();
   AppSettingsController appSettingsController = Get.find<AppSettingsController>();
   Function(PaymentSuccessResponse)? onSuccess;
@@ -36,11 +37,17 @@ class RazorpayService {
 
   void openCheckout({
     required double amount,
+    String? razorpayKey,   // ← dynamic key from backend
     String? name,
     String? description,
     String? prefillEmail,
     String? prefillContact,
   }) {
+    // Use backend-provided key, fall back to constant if absent
+    _razorpayKey = (razorpayKey != null && razorpayKey.isNotEmpty)
+        ? razorpayKey
+        : _fallbackKey;
+
     var options = {
       'key': _razorpayKey,
       'amount': (amount * 100).toInt(),

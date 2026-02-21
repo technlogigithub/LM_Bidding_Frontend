@@ -5,11 +5,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/models/App_moduls/AppResponseModel.dart';
+import 'package:nb_utils/nb_utils.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/bottom/bottom_bar_controller.dart';
+import '../../controller/home/home_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/custom_navigator.dart'; // Added import
+import '../../widget/custom_view_widget.dart';
 import '../Home_screen/home_screen.dart';
 import '../Participate_screens/participate_screen.dart';
 import '../Post_new_screen/post_new_screen.dart';
@@ -82,8 +85,10 @@ class BottomNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(BottomBarController());
+    final ClientHomeController homeController = Get.put(ClientHomeController());
     final appSettingsController = Get.find<AppSettingsController>();
-    
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     Widget shimmerCircle(double size) {
       return Container(
         height: size,
@@ -123,156 +128,438 @@ class BottomNavigationScreen extends StatelessWidget {
       if (isWeb) {
         // --- WEB / DESKTOP HEADER LAYOUT ---
         return Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: AppColors.appbarColor,
-              ),
-            ),
-            titleSpacing: 0,
-            
-            // Left Side: App Icon
-            leadingWidth: 100, // Adjust as needed
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 20.0),
-              child: UniversalImage(
+          // appBar: AppBar(
+          //   toolbarHeight: 200,
+          //   automaticallyImplyLeading: false,
+          //   elevation: 0,
+          //   backgroundColor: Colors.transparent,
+          //   flexibleSpace: Container(
+          //     decoration: BoxDecoration(
+          //       gradient: AppColors.appbarColor,
+          //     ),
+          //   ),
+          //   titleSpacing: 0,
+          //
+          //   // Left Side: App Icon
+          //   leadingWidth: 100, // Adjust as needed
+          //   leading: Padding(
+          //     padding: const EdgeInsets.only(left: 20.0),
+          //     child: Row(
+          //       children: [
+          //         UniversalImage(
+          //                     url: appSettingsController.logoNameWhite.toString(),
+          //                     height: MediaQuery.of(context).size.height * 0.1,
+          //                     width: MediaQuery.of(context).size.width * 0.7,
+          //                     fit: BoxFit.contain,
+          //                   ),
+          //         SizedBox(width: screenWidth * 0.010),
+          //         GestureDetector(
+          //           onTap: () => homeController.changeLocation(),
+          //           child: headerConfig?.currentLocation == true
+          //               ? Row(
+          //             children: [
+          //               Icon(
+          //                 Icons.place_outlined,
+          //                 color: AppColors.appTextColor,
+          //               ),
+          //               Obx(
+          //                     () => SizedBox(
+          //                   width: screenWidth * 0.05,
+          //                   child: Marquee(
+          //                     child: Text(
+          //                       homeController
+          //                           .currentLocation
+          //                           .value
+          //                           .isEmpty
+          //                           ? 'Fetching location...'
+          //                           : homeController
+          //                           .currentLocation
+          //                           .value,
+          //                       style: AppTextStyle.description(
+          //                         color: AppColors.appTextColor,
+          //                       ),
+          //                     ),
+          //                   ),
+          //                 ),
+          //               ),
+          //             ],
+          //           )
+          //               : SizedBox.shrink(),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          //
+          //   // Center: Menu Items
+          //   title: Column(
+          //     children: [
+          //       // 🔎 Dynamic Search Bar
+          //       Builder(
+          //         builder: (context) {
+          //           final bodySections = homePage?.design?.body;
+          //
+          //           if (bodySections == null || bodySections.isEmpty) {
+          //             return const SizedBox.shrink();
+          //           }
+          //
+          //           final searchSection = bodySections.firstWhereOrNull(
+          //                 (section) => section.viewType == 'search_bar',
+          //           );
+          //
+          //           if (searchSection == null) {
+          //             return const SizedBox.shrink();
+          //           }
+          //
+          //           return SizedBox(
+          //             width: 250,
+          //             child: CustomViewWidget(
+          //               type: 'search_bar',
+          //               title: searchSection.title,
+          //               bgColor: searchSection.bgColor,
+          //               // bgImg: searchSection.bgImg,
+          //               nextPageName: searchSection.nextPageName,
+          //             ),
+          //           );
+          //         },
+          //       ),
+          //       Wrap(
+          //         alignment: WrapAlignment.center,
+          //         spacing: 25,
+          //         children: menuList.asMap().entries.map((entry) {
+          //           int index = entry.key;
+          //           AppMenuItem item = entry.value;
+          //           bool isActive = controller.currentPage.value == index;
+          //
+          //           return MouseRegion(
+          //             cursor: SystemMouseCursors.click,
+          //             child: GestureDetector(
+          //               onTap: () => controller.onItemTapped(index),
+          //               child: AnimatedContainer(
+          //                 duration: const Duration(milliseconds: 200),
+          //                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          //                 decoration: BoxDecoration(
+          //                   borderRadius: BorderRadius.circular(6),
+          //                   color: isActive
+          //                       ? Colors.white.withOpacity(0.15)
+          //                       : Colors.transparent,
+          //                 ),
+          //                 child: Text(
+          //                   item.label ?? "",
+          //                   style: AppTextStyle.description(
+          //                     color: AppColors.appTextColor,
+          //                   ).copyWith(
+          //                     fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+          //                   ),
+          //                 ),
+          //               ),
+          //             ),
+          //           );
+          //         }).toList(),
+          //       ),
+          //
+          //     ],
+          //   ),
+          //
+          //   // Right Side: Menu Dropdown
+          //   actions: [
+          //     if (headerConfig?.headerMenu != null)
+          //       ...headerConfig!.headerMenu!
+          //           .where((item) => item.isActive == true)
+          //           .map((item) {
+          //         final String label = (item.label?.isNotEmpty == true)
+          //             ? item.label!
+          //             : (item.title?.isNotEmpty == true
+          //             ? item.title!
+          //             : "Menu");
+          //
+          //         return Padding(
+          //           padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          //           child: InkWell(
+          //             onTap: () {
+          //               if (item.nextPageName == "invite_screen") {
+          //                 final controller = Get.put(ProfileController());
+          //                 String code = controller.profileDetailsResponeModel.value
+          //                     ?.result?.hidden?.referralCode ??
+          //                     "";
+          //
+          //                 CustomNavigator.navigate(
+          //                   "invite_screen",
+          //                   arguments: {
+          //                     'menuItem': item,
+          //                     'referralCode': code,
+          //                   },
+          //                 );
+          //               } else {
+          //                 CustomNavigator.navigate(
+          //                   item.nextPageName,
+          //                   arguments: item,
+          //                 );
+          //               }
+          //             },
+          //             child: Column(
+          //               mainAxisAlignment: MainAxisAlignment.center,
+          //               children: [
+          //                 if (item.icon != null && item.icon!.isNotEmpty)
+          //                   UniversalImage(
+          //                     url: item.icon!,
+          //                     height: 22,
+          //                     width: 22,
+          //                     fit: BoxFit.contain,
+          //                   )
+          //                 else
+          //                   Icon(
+          //                     Icons.circle,
+          //                     size: 8,
+          //                     color: AppColors.appTextColor,
+          //                   ),
+          //                 const SizedBox(height: 4),
+          //                 Text(
+          //                   label,
+          //                   style: AppTextStyle.description(
+          //                     color: AppColors.appTextColor,
+          //                   ),
+          //                 ),
+          //               ],
+          //             ),
+          //           ),
+          //         );
+          //       }).toList(),
+          //     const SizedBox(width: 20),
+          //   ],
+          //
+          // ),
+          body: Column(
+            children: [
+              /// =========================
+              /// 🔵 TOP HEADER SECTION
+              /// =========================
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                decoration: BoxDecoration(
+                  gradient: AppColors.appbarColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    )
+                  ],
+                ),
+                child: Column(
+                  children: [
+
+                    /// -------- TOP ROW (Logo + Location + Search + Right Icons) -------
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+
+                        /// LOGO
+                        UniversalImage(
                           url: appSettingsController.logoNameWhite.toString(),
                           height: MediaQuery.of(context).size.height * 0.1,
                           width: MediaQuery.of(context).size.width * 0.7,
                           fit: BoxFit.contain,
                         ),
-            ),
-            
-            // Center: Menu Items
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: menuList.asMap().entries.map((entry) {
-                int index = entry.key;
-                AppMenuItem item = entry.value;
-                bool isActive = controller.currentPage.value == index;
 
-                return InkWell(
-                  onTap: () => controller.onItemTapped(index),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                    child: Text(
-                      item.label ?? "",
-                      style: AppTextStyle.description(
-                        color: AppColors.appTextColor,
-                      ).copyWith(
-                        fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            
-            // Right Side: Menu Dropdown
-            actions: [
-              PopupMenuButton<dynamic>(
-                icon: Icon(Icons.menu, color: AppColors.appTextColor),
-                offset: const Offset(0, 50),
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                onSelected: (value) {
-                  if (value == 'search') {
-                    // Handle search action
-                    print("Search Tapped");
-                  } else {
-                    // Handle dynamic item navigation
-                    final item = value; // Type is inferred dynamically
-                    if (item != null) {
-                      if (item.nextPageName == "invite_screen") {
-                         final controller = Get.put(ProfileController());
-                         String code = controller.profileDetailsResponeModel.value?.result?.hidden?.referralCode ?? "";
-                         CustomNavigator.navigate("invite_screen", arguments: {
-                           'menuItem': item,
-                           'referralCode': code
-                         });
-                      } else {
-                        CustomNavigator.navigate(item.nextPageName, arguments: item);
-                      }
-                    }
-                  }
-                },
-                itemBuilder: (BuildContext context) {
-                  List<PopupMenuEntry<dynamic>> items = [];
+                        const SizedBox(width: 25),
 
-                  // 1. Fixed Search Item
-                  items.add(
-                    PopupMenuItem<dynamic>(
-                      value: 'search',
-                      child: Row(
-                        children: [
-                          Icon(Icons.search, color: Colors.black54, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Search",
-                            style: AppTextStyle.description(color: Colors.black87),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-
-                  // 2. Dynamic Items
-                  if (headerConfig?.headerMenu != null) {
-                    for (var item in headerConfig!.headerMenu!) {
-                      if (item.isActive == false) continue;
-
-                      final String label = (item.label?.isNotEmpty == true)
-                          ? item.label!
-                          : (item.title?.isNotEmpty == true ? item.title! : "Menu Item");
-
-                      items.add(
-                        PopupMenuItem<dynamic>(
-                          value: item,
-                          child: Row(
-                            children: [
-                              if (item.icon != null && item.icon!.isNotEmpty) ...[
-                                UniversalImage(
-                                  url: item.icon!,
-                                  height: 20,
-                                  width: 20,
-                                  fit: BoxFit.contain,
+                        /// LOCATION
+                        if (headerConfig?.currentLocation == true)
+                          GestureDetector(
+                            onTap: () => homeController.changeLocation(),
+                            child: headerConfig?.currentLocation == true
+                                ? Row(
+                              children: [
+                                Icon(
+                                  Icons.place_outlined,
+                                  color: AppColors.appTextColor,
                                 ),
-                                const SizedBox(width: 12),
-                              ] else ...[
-                                const Icon(Icons.circle, size: 8, color: Colors.black26),
-                                const SizedBox(width: 12),
+                                Obx(
+                                      () => SizedBox(
+                                    width: screenWidth * 0.16,
+                                    child: Marquee(
+                                      child: Text(
+                                        homeController
+                                            .currentLocation
+                                            .value
+                                            .isEmpty
+                                            ? 'Fetching location...'
+                                            : homeController
+                                            .currentLocation
+                                            .value,
+                                        style: AppTextStyle.description(
+                                          color: AppColors.appTextColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
-                              Expanded(
-                                child: Text(
-                                  label,
-                                  style: AppTextStyle.description(color: Colors.black87),
-                                  overflow: TextOverflow.ellipsis,
+                            )
+                                : SizedBox.shrink(),
+                          ),
+
+                        const Spacer(),
+
+                        /// SEARCH BAR (Responsive)
+                        SizedBox(
+                          width: screenWidth * 0.35,
+                          child: Builder(
+                            builder: (context) {
+                              final bodySections = homePage?.design?.body;
+
+                              if (bodySections == null || bodySections.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+
+                              final searchSection = bodySections.firstWhereOrNull(
+                                    (section) => section.viewType == 'search_bar',
+                              );
+
+                              if (searchSection == null) {
+                                return const SizedBox.shrink();
+                              }
+
+                              return SizedBox(
+                                width: 250,
+                                child: CustomViewWidget(
+                                  type: 'search_bar',
+                                  title: searchSection.title,
+                                  bgColor: searchSection.bgColor,
+                                  // bgImg: searchSection.bgImg,
+                                  nextPageName: searchSection.nextPageName,
                                 ),
-                              ),
-                            ],
+                              );
+                            },
                           ),
                         ),
-                      );
-                    }
-                  }
 
-                  return items;
-                },
+                        const Spacer(),
+
+                        /// RIGHT SIDE HEADER ICONS
+                        if (headerConfig?.headerMenu != null)
+                          ...headerConfig!.headerMenu!
+                              .where((item) => item.isActive == true)
+                              .map((item) {
+                            final String label = (item.label?.isNotEmpty == true)
+                                ? item.label!
+                                : (item.title?.isNotEmpty == true
+                                ? item.title!
+                                : "Menu");
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                              child: InkWell(
+                                onTap: () {
+                                  if (item.nextPageName == "invite_screen") {
+                                    final controller = Get.put(ProfileController());
+                                    String code = controller.profileDetailsResponeModel.value
+                                        ?.result?.hidden?.referralCode ??
+                                        "";
+
+                                    CustomNavigator.navigate(
+                                      "invite_screen",
+                                      arguments: {
+                                        'menuItem': item,
+                                        'referralCode': code,
+                                      },
+                                    );
+                                  } else {
+                                    CustomNavigator.navigate(
+                                      item.nextPageName,
+                                      arguments: item,
+                                    );
+                                  }
+                                },
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    if (item.icon != null && item.icon!.isNotEmpty)
+                                      UniversalImage(
+                                        url: item.icon!,
+                                        height: 22,
+                                        width: 22,
+                                        fit: BoxFit.contain,
+                                      )
+                                    else
+                                      Icon(
+                                        Icons.circle,
+                                        size: 8,
+                                        color: AppColors.appTextColor,
+                                      ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      label,
+                                      style: AppTextStyle.description(
+                                        color: AppColors.appTextColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    /// -------- MENU ITEMS ROW --------
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 30,
+                      children: menuList.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        AppMenuItem item = entry.value;
+                        bool isActive =
+                            controller.currentPage.value == index;
+
+                        return MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () =>
+                                controller.onItemTapped(index),
+                            child: AnimatedContainer(
+                              duration:
+                              const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                BorderRadius.circular(6),
+                                color: isActive
+                                    ? Colors.white.withOpacity(0.15)
+                                    : Colors.transparent,
+                              ),
+                              child: Text(
+                                item.label ?? "",
+                                style:
+                                AppTextStyle.description(
+                                  color:
+                                  AppColors.appTextColor,
+                                ).copyWith(
+                                  fontWeight: isActive
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 20),
+
+              /// =========================
+              /// 🔘 BODY CONTENT
+              /// =========================
+              Expanded(
+                child: bodyContent,
+              ),
             ],
           ),
-          body: bodyContent,
         );
       } else {
         // --- MOBILE BOTTOM NAV LAYOUT ---

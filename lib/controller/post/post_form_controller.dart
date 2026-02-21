@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
+import '../../widget/form_widgets/web_file_drop_zone_stub.dart'
+    if (dart.library.html) '../../widget/form_widgets/web_file_drop_zone_web.dart' as web_drop;
 import 'dart:io';
+import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter/material.dart';
 import '../../core/utils.dart';
 import '../../view/Bottom_navigation_screen/Botom_navigation_screen.dart';
 import '../../view/Home_screen/home_screen.dart';
@@ -980,20 +983,47 @@ class PostFormController extends GetxController {
 
       // Add single files
       for (final entry in filesToUpload.entries) {
-        request.files.add(
-          await http.MultipartFile.fromPath(entry.key, entry.value.path),
-        );
+        if (kIsWeb) {
+          final bytes = web_drop.getWebFileBytes(entry.value.path);
+          if (bytes != null) {
+            request.files.add(
+              http.MultipartFile.fromBytes(
+                entry.key,
+                bytes,
+                filename: entry.value.path.split('/').last.replaceFirst('web://', ''),
+              ),
+            );
+          }
+        } else {
+          request.files.add(
+            await http.MultipartFile.fromPath(entry.key, entry.value.path),
+          );
+        }
       }
 
       // Add multiple files (for files input type)
       for (final entry in multipleFilesToUpload.entries) {
         for (int i = 0; i < entry.value.length; i++) {
-          request.files.add(
-            await http.MultipartFile.fromPath(
-              '${entry.key}[$i]',
-              entry.value[i].path,
-            ),
-          );
+          final file = entry.value[i];
+          if (kIsWeb) {
+            final bytes = web_drop.getWebFileBytes(file.path);
+            if (bytes != null) {
+              request.files.add(
+                http.MultipartFile.fromBytes(
+                  '${entry.key}[$i]',
+                  bytes,
+                  filename: file.path.split('/').last.replaceFirst('web://', ''),
+                ),
+              );
+            }
+          } else {
+            request.files.add(
+              await http.MultipartFile.fromPath(
+                '${entry.key}[$i]',
+                file.path,
+              ),
+            );
+          }
         }
       }
 

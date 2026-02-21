@@ -150,55 +150,58 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
         allowedExtensions: widget.allowedExtensions,
       );
       if (result != null && result.files.isNotEmpty) {
-        final path = result.files.single.path;
-        if (path != null) {
-          final file = File(path);
-          widget.onPicked(file);
-          setState(() {
-            _localFile = file;
-            _pdfThumb = null;
-          });
-          try {
-            final controller = Get.find<PostFormController>();
-            controller.setUserInteracting(true);
-            Future.delayed(const Duration(seconds: 3), () => controller.setUserInteracting(false));
-          } catch (_) {}
-          if (_isPdf(file.path)) await _loadPdfThumbnail(file);
+        if (kIsWeb) {
+          final platformFile = result.files.single;
+          final bytes = platformFile.bytes;
+          if (bytes != null) {
+            final webPath = 'web://${platformFile.name}';
+            // Store bytes for web usage
+            _storeWebFileBytesForWeb(webPath, bytes);
+            
+            final file = File(webPath);
+            widget.onPicked(file);
+            setState(() {
+              _localFile = file;
+              _pdfThumb = null;
+            });
+            try {
+              final controller = Get.find<PostFormController>();
+              controller.setUserInteracting(true);
+              Future.delayed(const Duration(seconds: 3), () => controller.setUserInteracting(false));
+            } catch (_) {}
+            // PDF thumb generation might fail on web with this fake path if not handled, 
+            // but we can leave it or add check. _loadPdfThumbnail uses PdfDocument.openFile(file.path)
+            // which likely fails on web unless we change it to openData(bytes).
+            // For now, let's just skip it or let it fail gracefully.
+          }
+        } else {
+          final path = result.files.single.path;
+          if (path != null) {
+            final file = File(path);
+            widget.onPicked(file);
+            setState(() {
+              _localFile = file;
+              _pdfThumb = null;
+            });
+            try {
+              final controller = Get.find<PostFormController>();
+              controller.setUserInteracting(true);
+              Future.delayed(const Duration(seconds: 3), () => controller.setUserInteracting(false));
+            } catch (_) {}
+            if (_isPdf(file.path)) await _loadPdfThumbnail(file);
+          }
         }
       }
     }
 
     Future<void> _showWebImagePicker() async {
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Select Image Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.photo_library_outlined, color: AppColors.appIconColor),
-                title: Text('Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final XFile? picked = await _picker.pickImage(source: ImageSource.gallery);
-                  if (picked != null) await _handleImagePicked(File(picked.path));
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.photo_camera_outlined, color: AppColors.appIconColor),
-                title: Text('Camera', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final XFile? picked = await _picker.pickImage(source: ImageSource.camera);
-                  if (picked != null) await _handleImagePicked(File(picked.path));
-                },
-              ),
-            ],
-          ),
-        ),
-      );
+      final XFile? picked = await _picker.pickImage(source: ImageSource.gallery);
+      if (picked != null) {
+        final bytes = await picked.readAsBytes();
+        final webPath = 'web://${picked.name}';
+        web_drop.storeWebFileBytes(webPath, bytes);
+        await _handleImagePicked(File(webPath));
+      }
     }
 
     Future<void> _showMobileImagePicker() async {
@@ -233,49 +236,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
     }
 
     Future<void> _showWebVideoPicker() async {
-      await showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Select Video Source', style: AppTextStyle.title(color: AppColors.appTitleColor)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.video_library_outlined, color: AppColors.appIconColor),
-                title: Text('Video Gallery', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
-                  if (picked != null) {
-                    final file = File(picked.path);
-                    widget.onPicked(file);
-                    setState(() {
-                      _localFile = file;
-                      _networkThumbnail = null;
-                    });
-                    await _loadVideoThumbnail(file);
-                  }
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.videocam_outlined, color: AppColors.appIconColor),
-                title: Text('Record Video', style: AppTextStyle.description(color: AppColors.appTitleColor)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final XFile? picked = await _picker.pickVideo(source: ImageSource.camera);
-                  if (picked != null) {
-                    final file = File(picked.path);
-                    widget.onPicked(file);
-                    setState(() => _localFile = file);
-                    await _loadVideoThumbnail(file);
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      );
+      final XFile? picked = await _picker.pickVideo(source: ImageSource.gallery);
+      if (picked != null) {
+        final bytes = await picked.readAsBytes();
+        final webPath = 'web://${picked.name}';
+        web_drop.storeWebFileBytes(webPath, bytes);
+        
+        final file = File(webPath);
+        widget.onPicked(file);
+        setState(() {
+          _localFile = file;
+          _networkThumbnail = null;
+        });
+        await _loadVideoThumbnail(file);
+      }
     }
 
     Future<void> _showMobileVideoPicker() async {
@@ -333,7 +307,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
   
     // FIXED: Return type + callbacks + i18n
     Future<File?> _openImageEditor(File file) async {
-      final bytes = await file.readAsBytes();
+      Uint8List bytes;
+      try {
+        bytes = await file.readAsBytes();
+      } catch (e) {
+        if (kIsWeb) {
+          final webBytes = web_drop.getWebFileBytes(file.path);
+          if (webBytes != null) {
+            bytes = webBytes;
+          } else {
+            return null;
+          }
+        } else {
+          rethrow;
+        }
+      }
   
       final result = await Navigator.of(context).push<Uint8List?>(
         MaterialPageRoute(
@@ -355,10 +343,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
       );
   
       if (result != null) {
-        final tempDir = Directory.systemTemp;
-        final tempFile = File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg');
-        await tempFile.writeAsBytes(result);
-        return tempFile;
+        if (kIsWeb) {
+          final fileName = 'edited_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          final webPath = 'web://$fileName';
+          web_drop.storeWebFileBytes(webPath, result);
+          return File(webPath);
+        } else {
+          final tempDir = Directory.systemTemp;
+          final tempFile = File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.jpg');
+          await tempFile.writeAsBytes(result);
+          return tempFile;
+        }
       }
       return null;
     }
@@ -426,8 +421,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
       if (kIsWeb) web_drop.storeWebFileBytes(path, bytes);
     }
   
-    Widget _buildDragTarget({required Widget child}) {
+    Widget _buildDragTarget({required Widget child, VoidCallback? onTap}) {
       if (!kIsWeb) return child;
+
+      final effectiveFile = _localFile ?? widget.value;
+      final hasMedia = effectiveFile != null || (widget.imageUrl != null && widget.imageUrl!.isNotEmpty);
+      if (hasMedia) return child;
+
       return web_drop.WebFileDropZone(
         isDragging: _isDragging,
         onDragStateChanged: (dragging) => setState(() => _isDragging = dragging),
@@ -435,6 +435,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
           setState(() => _isDragging = false);
           _handleDroppedFiles(files);
         },
+        onTap: onTap,
         child: child,
       );
     }
@@ -488,6 +489,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
           if (isDisplayPicture) ...[
             Center(
               child: _buildDragTarget(
+                onTap: () => _pick(context),
                 child: GestureDetector(
                   onTap: () => _pick(context),
                   child: Column(
@@ -588,6 +590,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
           // === BANNER IMAGE ===
           else if (isBannerImage) ...[
             _buildDragTarget(
+              onTap: () => _pick(context),
               child: GestureDetector(
                 onTap: () => _pick(context),
                 child: Container(
@@ -660,11 +663,19 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
                                         ),
                                       );
                                     },
-                                    child: Image.file(
-                                      effectiveFile,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                    ),
+                                    child: kIsWeb
+                                        ? (web_drop.getWebFileBytes(effectiveFile.path) != null
+                                            ? Image.memory(
+                                                web_drop.getWebFileBytes(effectiveFile.path)!,
+                                                fit: BoxFit.cover,
+                                                width: double.infinity,
+                                              )
+                                            : _buildNoImagePlaceholder())
+                                        : Image.file(
+                                            effectiveFile,
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                          ),
                                   )))
                             : (isVideoUrl && _networkThumbnail != null
                                 ? GestureDetector(
@@ -839,6 +850,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
           ]
           else if (widget.isImageFile || widget.category == 'video') ...[
               _buildDragTarget(
+                onTap: () => _pick(context),
                 child: GestureDetector(
                   onTap: () => _pick(context),
                   child: Container(
@@ -1050,17 +1062,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
                                                   ),
                                                 )
                                               : _buildNoImagePlaceholder(),
-                                            if (kIsWeb && widget.category != 'video')
-                                              Center(
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appIconColor),
-                                                    const SizedBox(height: 8),
-                                                    Text(_isDragging ? 'Drop Image Here' : 'Drag & Drop or Click', style: AppTextStyle.body(color: AppColors.appDescriptionColor)),
-                                                  ],
-                                                ),
-                                              ),
                                           ],
                                         ))))),
                     ),
@@ -1072,6 +1073,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
             // === DEFAULT FILE PICKER ===
             else ...[
                 _buildDragTarget(
+                  onTap: () => _pick(context),
                   child: GestureDetector(
                     onTap: () => _pick(context),
                     child: Container(
@@ -1188,7 +1190,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
   
     Future<Uint8List?> _generatePdfThumbnail(String path) async {
       try {
-        final pdf = await PdfDocument.openFile(path);
+        final PdfDocument pdf;
+        if (kIsWeb) {
+          final bytes = web_drop.getWebFileBytes(path);
+          if (bytes == null) return null;
+          pdf = await PdfDocument.openData(bytes);
+        } else {
+          pdf = await PdfDocument.openFile(path);
+        }
+
         final page = await pdf.getPage(1);
   
         final render = await page.render(
@@ -1222,7 +1232,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
   
     Widget _buildDocumentPreview(File file) {
       final fileName = file.path.split('/').last;
-      final fileSize = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
+      String fileSize = "0.00";
+      if (!kIsWeb) {
+        try {
+          fileSize = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
+        } catch (_) {}
+      } else {
+          final bytes = web_drop.getWebFileBytes(file.path);
+          if (bytes != null) {
+            fileSize = (bytes.length / (1024 * 1024)).toStringAsFixed(2);
+          }
+      }
   
       return Row(
         children: [
@@ -1288,13 +1308,31 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
         return _buildFullSizeDocumentPreview(file);
       }
   
-      // 🖼 Normal Image file
+      // 🖼 Normal Image file — web-safe
+      if (kIsWeb) {
+        final bytes = web_drop.getWebFileBytes(file.path);
+        if (bytes != null) {
+          return Image.memory(bytes, fit: BoxFit.cover);
+        }
+        // Bytes not cached: show a neutral placeholder instead of crashing
+        return _buildNoImagePlaceholder();
+      }
       return Image.file(file, fit: BoxFit.cover);
     }
   
     Widget _buildFullSizeDocumentPreview(File file) {
       final fileName = file.path.split('/').last;
-      final fileSize = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
+      String fileSize = "0.00";
+      if (!kIsWeb) {
+        try {
+          fileSize = (file.lengthSync() / (1024 * 1024)).toStringAsFixed(2);
+        } catch (_) {}
+      } else {
+          final bytes = web_drop.getWebFileBytes(file.path);
+          if (bytes != null) {
+            fileSize = (bytes.length / (1024 * 1024)).toStringAsFixed(2);
+          }
+      }
       final extension = file.path.split('.').last.toUpperCase();
   
       return Container(
@@ -1438,15 +1476,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
     }
   
     Widget _buildNoImagePlaceholder() {
+      final labelLower = (widget.label ?? '').toLowerCase();
+      final isDpOrBanner = labelLower.contains('display') || 
+                           labelLower.contains('profile') || 
+                           labelLower.contains('banner');
+
       return SizedBox.expand(
         child: Container(
           color: AppColors.appTextColor.withValues(alpha: 0.1),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.image_outlined, size: 40, color: AppColors.appIconColor),
-              const SizedBox(height: 8),
-              Text(AppStrings.noImage, style: AppTextStyle.body( color: AppColors.appDescriptionColor)),
+              Icon(_isDragging ? Icons.cloud_upload : Icons.image_outlined, size: 40, color: _isDragging ? AppColors.appColor : AppColors.appIconColor),
+              if (!isDpOrBanner) ...[
+                const SizedBox(height: 8),
+                Text(_isDragging ? 'Drop Image Here' : (kIsWeb && widget.category != 'video' ? 'Drag & Drop or Click' : AppStrings.noImage), 
+                     style: AppTextStyle.body( color: AppColors.appDescriptionColor),
+                     textAlign: TextAlign.center),
+              ]
             ],
           ),
         ),

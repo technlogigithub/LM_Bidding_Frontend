@@ -14,6 +14,7 @@ import 'Notifications Services/notifications_services.dart';
 import 'package:libdding/controller/network_controller.dart';
 import 'package:libdding/view/widgets/no_internet_widget.dart';
 import 'package:libdding/core/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 void main() async {
@@ -102,6 +103,15 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) => _buildApp(),
+    );
+  }
+
+  Widget _buildApp() {
     return Obx(() {
       return GetMaterialApp(
         debugShowCheckedModeBanner: false,
@@ -115,10 +125,10 @@ class _MyAppState extends State<MyApp> {
             : ThemeMode.light,
         initialRoute: AppPages.initial,
         getPages: AppPages.routes,
-        builder: (context, child) {
+        builder: (context, materialChild) {
           return Stack(
             children: [
-              child!,
+              materialChild!,
               Obx(() {
                 final networkController = Get.find<NetworkController>();
                 if (!networkController.isConnected.value) {
@@ -130,7 +140,6 @@ class _MyAppState extends State<MyApp> {
           );
         },
       );
-
     });
   }
 }

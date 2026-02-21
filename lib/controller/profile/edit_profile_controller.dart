@@ -12,6 +12,10 @@ import '../app_main/App_main_controller.dart';
 import '../../widget/form_widgets/dynamic_form_builder.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 import '../../core/app_constant.dart';
+import '../../widget/form_widgets/web_file_drop_zone_stub.dart'
+    if (dart.library.html) '../../widget/form_widgets/web_file_drop_zone_web.dart' as web_drop;
+import 'package:flutter/foundation.dart';
+
 
 class SetupProfileController extends GetxController {
   static SetupProfileController get to => Get.find();
@@ -799,8 +803,22 @@ class SetupProfileController extends GetxController {
 
       // Add files
       for (final entry in filesToUpload.entries) {
-        request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value.path));
+        if (kIsWeb) {
+          final bytes = web_drop.getWebFileBytes(entry.value.path);
+          if (bytes != null) {
+            request.files.add(
+              http.MultipartFile.fromBytes(
+                entry.key,
+                bytes,
+                filename: entry.value.path.split('/').last.replaceFirst('web://', ''),
+              ),
+            );
+          }
+        } else {
+          request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value.path));
+        }
       }
+
 
       // Debug: Final fields just before send (after addresses/files fields have been set)
       try {
@@ -1049,8 +1067,22 @@ class SetupProfileController extends GetxController {
 
     // Add files
     for (final entry in files.entries) {
-      request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value.path));
+      if (kIsWeb) {
+        final bytes = web_drop.getWebFileBytes(entry.value.path);
+        if (bytes != null) {
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              entry.key,
+              bytes,
+              filename: entry.value.path.split('/').last.replaceFirst('web://', ''),
+            ),
+          );
+        }
+      } else {
+        request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value.path));
+      }
     }
+
 
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();

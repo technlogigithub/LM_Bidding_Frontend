@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -84,11 +85,21 @@ class CustomTextfield extends StatelessWidget {
           hintStyle: AppTextStyle.description(color: AppColors.appDescriptionColor),
           suffixIcon: suffixIcon,
           counterText: "",
+          filled: kIsWeb,
+          fillColor: kIsWeb ? Colors.grey.shade50 : null,
+          contentPadding: kIsWeb 
+              ? const EdgeInsets.symmetric(horizontal: 20, vertical: 18) 
+              : const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appBodyTextColor),
+            borderSide: BorderSide(color: kIsWeb ? Colors.grey.shade300 : AppColors.appBodyTextColor),
+            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 4),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appDescriptionColor),
+            borderSide: BorderSide(color: kIsWeb ? AppColors.appColor : AppColors.appDescriptionColor, width: kIsWeb ? 2 : 1),
+            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 4),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 4),
           ),
         ),
       ),

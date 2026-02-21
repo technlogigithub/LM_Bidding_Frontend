@@ -9,6 +9,7 @@ import 'package:libdding/widget/form_widgets/app_button.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../controller/profile/edit_profile_controller.dart';
+import '../../core/app_routes.dart';
 import 'dynamic_profile_form_screen.dart';
 
 
@@ -91,10 +92,11 @@ class MyProfileScreen extends StatelessWidget {
             child: CustomButton(
               onTap: () {
                 Get.put(SetupProfileController());
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
-                );
+                Get.toNamed(AppRoutes.dynamicProfileForm);
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
+                // );
               },
               text: 'Edit Profile',
             ),
@@ -1149,10 +1151,11 @@ class MyProfileScreen extends StatelessWidget {
                         child: CustomButton(
                           onTap: () {
                             Get.put(SetupProfileController());
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
-                            );
+                            Get.toNamed(AppRoutes.dynamicProfileForm);
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
+                            // );
                           },
                           text: 'Edit Profile',
                         ),
