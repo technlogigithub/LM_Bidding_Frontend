@@ -48,7 +48,7 @@ class ProfileScreen extends StatelessWidget {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    bool isWeb = kIsWeb || screenWidth > 800;
+    bool isWeb = kIsWeb || GetPlatform.isDesktop || screenWidth > 800;
 
     final Color text = AppColors.appTitleColor;
 

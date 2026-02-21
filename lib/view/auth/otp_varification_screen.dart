@@ -42,7 +42,11 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
+    bool isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    if (isWeb) {
       return _buildWebUI(context);
     }
     return _buildMobileUI(context);
@@ -72,12 +76,11 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
               BoxShadow(
                 color: Colors.black.withOpacity(0.2), // shadow color
                 spreadRadius: 2, // how much the shadow spreads
-                blurRadius: 6,   // blur effect
+                blurRadius: 6, // blur effect
                 offset: Offset(0, 3), // x, y offset
               ),
             ],
             gradient: AppColors.appbarColor,
-
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +100,6 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
                   ],
                 ),
               ),
-
             ],
           ),
         ),
@@ -106,9 +108,7 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
         child: Container(
           width: width,
           height: height,
-          decoration: BoxDecoration(
-            gradient: AppColors.appPagecolor,
-          ),
+          decoration: BoxDecoration(gradient: AppColors.appPagecolor),
           child: Padding(
             padding: EdgeInsets.all(width * 0.05),
             child: _buildFormContent(context, isWeb: false),
@@ -135,12 +135,13 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
         SizedBox(height: isWeb ? 10 : height * 0.02),
         Obx(() {
           final v = controllerApp.verifyOtpPage.value;
-          final desc = v?.pageDescription ?? AppStrings.wevesentthecodetoyourmobilenumber;
+          final desc =
+              v?.pageDescription ??
+              AppStrings.wevesentthecodetoyourmobilenumber;
           return Text(
             desc,
             style: AppTextStyle.description(
               color: AppColors.appDescriptionColor,
-
             ),
             textAlign: TextAlign.center,
           );
@@ -162,7 +163,8 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
           final inputs = verify?.inputs ?? [];
           if (inputs.isNotEmpty) {
             for (final v in (inputs.first.validations ?? [])) {
-              if ((v.type ?? '').toLowerCase() == 'exact_length' && v.value != null) {
+              if ((v.type ?? '').toLowerCase() == 'exact_length' &&
+                  v.value != null) {
                 length = v.value!;
                 break;
               }
@@ -177,7 +179,9 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
               width: pinWidth,
               height: pinWidth,
               textStyle: TextStyle(
-                  fontSize: isWeb ? 20 : width * 0.05, color: AppColors.appTitleColor),
+                fontSize: isWeb ? 20 : width * 0.05,
+                color: AppColors.appTitleColor,
+              ),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.appBodyTextColor),
                 borderRadius: BorderRadius.circular(10),
@@ -187,7 +191,9 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
               width: pinWidth,
               height: pinWidth,
               textStyle: TextStyle(
-                  fontSize: isWeb ? 20 : width * 0.05, color: AppColors.appBodyTextColor),
+                fontSize: isWeb ? 20 : width * 0.05,
+                color: AppColors.appBodyTextColor,
+              ),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.appMutedTextColor),
                 borderRadius: BorderRadius.circular(10),
@@ -209,43 +215,43 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
             style: AppTextStyle.title(
               color: AppColors.appBodyTextColor,
               fontWeight: FontWeight.bold,
-
             ),
           );
         }),
         SizedBox(height: isWeb ? 10 : height * 0.015),
 
         /// Resend Code
-        Obx(() => GestureDetector(
-          onTap: controller.secondsRemaining.value == 0
-              ? controller.resendOtp
-              : null,
-          child: Text(
-            controller.secondsRemaining.value == 0
-                ? AppStrings.resendCode
-                : AppStrings.verification,
-            style: AppTextStyle.title(
-              color: controller.secondsRemaining.value == 0
-                  ? AppColors.appLinkColor
-                  : AppColors.appLinkColor,
-
+        Obx(
+          () => GestureDetector(
+            onTap: controller.secondsRemaining.value == 0
+                ? controller.resendOtp
+                : null,
+            child: Text(
+              controller.secondsRemaining.value == 0
+                  ? AppStrings.resendCode
+                  : AppStrings.verification,
+              style: AppTextStyle.title(
+                color: controller.secondsRemaining.value == 0
+                    ? AppColors.appLinkColor
+                    : AppColors.appLinkColor,
+              ),
             ),
           ),
-        )),
+        ),
         if (!isWeb) const Spacer(),
         if (isWeb) const SizedBox(height: 25),
 
         /// Submit button
-        Obx(() => CustomButton(
-          text: controller.isLoading.value
-              ? "${AppStrings.loggingIn}..."
-              : AppStrings.loggingIn,
-          onTap: controller.submitOtp,
-        )),
+        Obx(
+          () => CustomButton(
+            text: controller.isLoading.value
+                ? "${AppStrings.loggingIn}..."
+                : AppStrings.loggingIn,
+            onTap: controller.submitOtp,
+          ),
+        ),
         SizedBox(height: isWeb ? 10 : height * 0.05),
       ],
     );
-
   }
 }
-

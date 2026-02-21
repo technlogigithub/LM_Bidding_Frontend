@@ -12,7 +12,6 @@ import '../../controller/profile/edit_profile_controller.dart';
 import '../../core/app_routes.dart';
 import 'dynamic_profile_form_screen.dart';
 
-
 class MyProfileScreen extends StatelessWidget {
   const MyProfileScreen({super.key});
 
@@ -40,16 +39,22 @@ class MyProfileScreen extends StatelessWidget {
     return key
         .replaceAll('_', ' ')
         .split(' ')
-        .map((word) => word.isEmpty
-        ? ''
-        : word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .map(
+          (word) => word.isEmpty
+              ? ''
+              : word[0].toUpperCase() + word.substring(1).toLowerCase(),
+        )
         .join(' ');
   }
 
   @override
   Widget build(BuildContext context) {
     // Initialize ScreenUtil with a reference design size (375x812 for mobile)
-    ScreenUtil.init(context, designSize: const Size(375, 812), minTextAdapt: true);
+    ScreenUtil.init(
+      context,
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+    );
 
     final controller = Get.put(ProfileController());
 
@@ -61,56 +66,58 @@ class MyProfileScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     // Define max width for web/large screens
     final maxContentWidth = screenWidth > 1200 ? 1200.0 : screenWidth;
+    bool isWeb = kIsWeb || GetPlatform.isDesktop || screenWidth > 800;
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             elevation: 0,
-            iconTheme:  IconThemeData(color: AppColors.appTextColor),
+            iconTheme: IconThemeData(color: AppColors.appTextColor),
             flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: AppColors.appbarColor,
-              ),
+              decoration: BoxDecoration(gradient: AppColors.appbarColor),
             ),
             title: Text(
               'My Profile',
               style: AppTextStyle.title(
                 color: AppColors.appTextColor,
                 fontWeight: FontWeight.bold,
-
               ),
             ),
             centerTitle: true,
           ),
-          bottomNavigationBar: kIsWeb ? null : Padding(
-            padding: EdgeInsets.only(left: 15,right: 15,bottom: 10,top: 5),
-            child: CustomButton(
-              onTap: () {
-                Get.put(SetupProfileController());
-                Get.toNamed(AppRoutes.dynamicProfileForm);
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
-                // );
-              },
-              text: 'Edit Profile',
-            ),
-          ),
+          bottomNavigationBar: isWeb
+              ? null
+              : Padding(
+                  padding: EdgeInsets.only(
+                    left: 15,
+                    right: 15,
+                    bottom: 10,
+                    top: 5,
+                  ),
+                  child: CustomButton(
+                    onTap: () {
+                      Get.put(SetupProfileController());
+                      Get.toNamed(AppRoutes.dynamicProfileForm);
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(builder: (context) => const DynamicProfileFormScreen()),
+                      // );
+                    },
+                    text: 'Edit Profile',
+                  ),
+                ),
           body: Obx(() {
             if (controller.isLoading.value) {
               return _buildShimmerLoading(context, screenWidth);
             }
 
-            final rawData = controller.profileDetailsResponeModel.value?.result?.rawData;
+            final rawData =
+                controller.profileDetailsResponeModel.value?.result?.rawData;
             if (rawData == null) {
-              return const Center(
-                child: Text('No profile data available'),
-              );
+              return const Center(child: Text('No profile data available'));
             }
 
             // Get DP URL (check nested structure)
@@ -135,10 +142,13 @@ class MyProfileScreen extends StatelessWidget {
               bannerUrl = rawData['Banner']['Banner']?.toString();
             }
             // Also check case-insensitive keys
-            if ((bannerUrl == null || bannerUrl.isEmpty) && rawData.containsKey('banner')) {
+            if ((bannerUrl == null || bannerUrl.isEmpty) &&
+                rawData.containsKey('banner')) {
               final bannerData = rawData['banner'];
               if (bannerData is Map) {
-                bannerUrl = bannerData['Banner']?.toString() ?? bannerData['banner']?.toString();
+                bannerUrl =
+                    bannerData['Banner']?.toString() ??
+                    bannerData['banner']?.toString();
               }
             }
             // Debug: Print Banner URL
@@ -154,8 +164,15 @@ class MyProfileScreen extends StatelessWidget {
               email = basicInfo['Email']?.toString();
             }
 
-            if (kIsWeb) {
-               return _buildWebLayout(context, rawData, dpUrl, bannerUrl, name, email);
+            if (isWeb) {
+              return _buildWebLayout(
+                context,
+                rawData,
+                dpUrl,
+                bannerUrl,
+                name,
+                email,
+              );
             }
 
             return Center(
@@ -164,10 +181,13 @@ class MyProfileScreen extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(top: 20.h),
                   child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 15.w,
+                      vertical: 15.h,
+                    ),
                     width: double.infinity,
                     decoration: BoxDecoration(
-                        gradient: AppColors.appPagecolor
+                      gradient: AppColors.appPagecolor,
                       // borderRadius: BorderRadius.only(
                       //   topLeft: Radius.circular(30.r),
                       //   topRight: Radius.circular(30.r),
@@ -187,69 +207,78 @@ class MyProfileScreen extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.appBlack.withValues(alpha: 0.20), // stronger shadow
-                                    blurRadius: 12,     // soft glow
-                                    spreadRadius: 5,    // outer spread
+                                    color: AppColors.appBlack.withValues(
+                                      alpha: 0.20,
+                                    ), // stronger shadow
+                                    blurRadius: 12, // soft glow
+                                    spreadRadius: 5, // outer spread
                                     offset: Offset(0, 4), // down shadow
                                   ),
                                   BoxShadow(
-                                    color: AppColors.appWhite.withValues(alpha: 0.8), // top highlight
+                                    color: AppColors.appWhite.withValues(
+                                      alpha: 0.8,
+                                    ), // top highlight
                                     blurRadius: 6,
                                     spreadRadius: -2,
                                     offset: Offset(0, -2),
                                   ),
                                 ],
-
                               ),
                               child: ClipOval(
-                                child: (dpUrl != null && dpUrl.isNotEmpty && _isImageFile(dpUrl))
+                                child:
+                                    (dpUrl != null &&
+                                        dpUrl.isNotEmpty &&
+                                        _isImageFile(dpUrl))
                                     ? CachedNetworkImage(
-                                  imageUrl: dpUrl,
-                                  fit: BoxFit.cover,
-                                  width: 80.w,
-                                  height: 80.h,
-                                  placeholder: (context, url) => Shimmer.fromColors(
-                                    baseColor: AppColors.appMutedColor,
-                                    highlightColor: AppColors.appMutedTextColor,
-                                    child: Container(
-                                      width: 80.w,
-                                      height: 80.h,
-                                      decoration:  BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: AppColors.appWhite,
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) {
-                                    print('❌ Image load error: $error');
-                                    return Container(
+                                        imageUrl: dpUrl,
+                                        fit: BoxFit.cover,
                                         width: 80.w,
                                         height: 80.h,
-                                        decoration:  BoxDecoration(
+                                        placeholder: (context, url) =>
+                                            Shimmer.fromColors(
+                                              baseColor:
+                                                  AppColors.appMutedColor,
+                                              highlightColor:
+                                                  AppColors.appMutedTextColor,
+                                              child: Container(
+                                                width: 80.w,
+                                                height: 80.h,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: AppColors.appWhite,
+                                                ),
+                                              ),
+                                            ),
+                                        errorWidget: (context, url, error) {
+                                          print('❌ Image load error: $error');
+                                          return Container(
+                                            width: 80.w,
+                                            height: 80.h,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: AppColors.textgrey,
+                                            ),
+                                            child: Icon(
+                                              Icons.person,
+                                              size: 50.sp,
+                                              color: AppColors.appWhite,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : Container(
+                                        width: 80.w,
+                                        height: 80.h,
+                                        decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: AppColors.textgrey,
+                                          color: AppColors.appMutedColor,
                                         ),
                                         child: Icon(
                                           Icons.person,
                                           size: 50.sp,
-                                          color: AppColors.appWhite,
-                                        )
-                                    );
-                                  },
-                                )
-                                    : Container(
-                                  width: 80.w,
-                                  height: 80.h,
-                                  decoration:  BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color:AppColors.appMutedColor,
-                                  ),
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 50.sp,
-                                    color: AppColors.appIconColor,
-                                  ),
-                                ),
+                                          color: AppColors.appIconColor,
+                                        ),
+                                      ),
                               ),
                             ),
                           ),
@@ -275,7 +304,6 @@ class MyProfileScreen extends StatelessWidget {
                           //       ),
                           //     ),
                           //   ),
-
                           SizedBox(height: 20.h),
 
                           /// BANNER IMAGE
@@ -299,40 +327,44 @@ class MyProfileScreen extends StatelessWidget {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10.r),
-                              child: (bannerUrl != null && _isImageFile(bannerUrl))
+                              child:
+                                  (bannerUrl != null && _isImageFile(bannerUrl))
                                   ? CachedNetworkImage(
-                                imageUrl: bannerUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Shimmer.fromColors(
-                                  baseColor: AppColors.appMutedColor,
-                                  highlightColor: AppColors.appMutedTextColor,
-                                  child: Container(
-                                    width: double.infinity,
-                                    height: 100.h,
-                                    color: AppColors.appWhite,
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Center(
-                                  child: Icon(Icons.image, size: 40.sp),
-                                ),
-                              )
-
-                              // ✅ WHEN bannerUrl IS NULL
+                                      imageUrl: bannerUrl!,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) =>
+                                          Shimmer.fromColors(
+                                            baseColor: AppColors.appMutedColor,
+                                            highlightColor:
+                                                AppColors.appMutedTextColor,
+                                            child: Container(
+                                              width: double.infinity,
+                                              height: 100.h,
+                                              color: AppColors.appWhite,
+                                            ),
+                                          ),
+                                      errorWidget: (context, url, error) =>
+                                          Center(
+                                            child: Icon(
+                                              Icons.image,
+                                              size: 40.sp,
+                                            ),
+                                          ),
+                                    )
+                                  // ✅ WHEN bannerUrl IS NULL
                                   : Container(
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.appPagecolor,
-                                ),
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  size: 36.sp,
-                                  color: AppColors.appIconColor,
-                                ),
-                              ),
+                                      decoration: BoxDecoration(
+                                        gradient: AppColors.appPagecolor,
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        size: 36.sp,
+                                        color: AppColors.appIconColor,
+                                      ),
+                                    ),
                             ),
                           ),
-
-
 
                           SizedBox(height: 25.h),
 
@@ -351,7 +383,10 @@ class MyProfileScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildDynamicSections(Map<String, dynamic> rawData, BuildContext context) {
+  List<Widget> _buildDynamicSections(
+    Map<String, dynamic> rawData,
+    BuildContext context,
+  ) {
     final sections = <Widget>[];
 
     // Iterate through all keys in rawData
@@ -381,8 +416,10 @@ class MyProfileScreen extends StatelessWidget {
   }
 
   List<Widget> _buildObjectSection(
-      String sectionKey, Map<dynamic, dynamic> sectionData, BuildContext context) {
-
+    String sectionKey,
+    Map<dynamic, dynamic> sectionData,
+    BuildContext context,
+  ) {
     final widgets = <Widget>[];
 
     // Section title OUTSIDE card
@@ -464,8 +501,11 @@ class MyProfileScreen extends StatelessWidget {
     return widgets;
   }
 
-
-  List<Widget> _buildArraySection(String sectionKey, List<dynamic> sectionArray, BuildContext context) {
+  List<Widget> _buildArraySection(
+    String sectionKey,
+    List<dynamic> sectionArray,
+    BuildContext context,
+  ) {
     final widgets = <Widget>[];
 
     if (sectionArray.isEmpty) return widgets;
@@ -477,7 +517,6 @@ class MyProfileScreen extends StatelessWidget {
         style: AppTextStyle.title(
           color: AppColors.appTitleColor,
           fontWeight: FontWeight.bold,
-
         ),
       ),
     );
@@ -559,8 +598,8 @@ class MyProfileScreen extends StatelessWidget {
               padding: EdgeInsets.all(15.w),
               decoration: BoxDecoration(
                 gradient: AppColors.appPagecolor,
-                // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
 
+                // border: Border.all(color: AppColors.appDescriptionColor,width: 1),
                 borderRadius: BorderRadius.circular(12.r),
                 boxShadow: [
                   BoxShadow(
@@ -771,8 +810,6 @@ class MyProfileScreen extends StatelessWidget {
     return widgets;
   }
 
-
-
   Widget _buildInfoRow(String label, String value, BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
@@ -785,7 +822,6 @@ class MyProfileScreen extends StatelessWidget {
               label,
               style: AppTextStyle.description(
                 color: AppColors.appDescriptionColor,
-
               ),
             ),
           ),
@@ -805,7 +841,6 @@ class MyProfileScreen extends StatelessWidget {
                     value,
                     style: AppTextStyle.description(
                       color: AppColors.appBodyTextColor,
-
                     ),
                   ),
                 ),
@@ -816,7 +851,8 @@ class MyProfileScreen extends StatelessWidget {
       ),
     );
   }
-  Widget _buildInfoRowDoc(String label,BuildContext context) {
+
+  Widget _buildInfoRowDoc(String label, BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
       child: Row(
@@ -828,7 +864,6 @@ class MyProfileScreen extends StatelessWidget {
               "$label : ",
               style: AppTextStyle.description(
                 color: AppColors.appDescriptionColor,
-
               ),
             ),
           ),
@@ -881,7 +916,8 @@ class MyProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                errorWidget: (context, url, error) => Icon(Icons.error, size: 24.sp),
+                errorWidget: (context, url, error) =>
+                    Icon(Icons.error, size: 24.sp),
               ),
             ),
           ),
@@ -889,10 +925,7 @@ class MyProfileScreen extends StatelessWidget {
         SizedBox(height: 4.h),
         Text(
           label,
-          style: AppTextStyle.description(
-            color: AppColors.subTitleColor,
-
-          ),
+          style: AppTextStyle.description(color: AppColors.subTitleColor),
         ),
       ],
     );
@@ -901,7 +934,9 @@ class MyProfileScreen extends StatelessWidget {
   Widget _buildShimmerLoading(BuildContext context, double screenWidth) {
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: screenWidth > 1200 ? 1200.0 : screenWidth),
+        constraints: BoxConstraints(
+          maxWidth: screenWidth > 1200 ? 1200.0 : screenWidth,
+        ),
         child: Padding(
           padding: EdgeInsets.only(top: 20.h),
           child: Container(
@@ -950,97 +985,113 @@ class MyProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 25.h),
                   // Section Shimmer
-                  ...List.generate(3, (index) => Padding(
-                    padding: EdgeInsets.only(bottom: 22.h),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Section Title Shimmer
-                        Shimmer.fromColors(
-                          baseColor: AppColors.appMutedColor,
-                          highlightColor: AppColors.appMutedTextColor,
-                          child: Container(
-                            height: 20.h,
-                            width: 150.w,
-                            decoration: BoxDecoration(
-                              color: AppColors.appWhite,
-                              borderRadius: BorderRadius.circular(4.r),
+                  ...List.generate(
+                    3,
+                    (index) => Padding(
+                      padding: EdgeInsets.only(bottom: 22.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Section Title Shimmer
+                          Shimmer.fromColors(
+                            baseColor: AppColors.appMutedColor,
+                            highlightColor: AppColors.appMutedTextColor,
+                            child: Container(
+                              height: 20.h,
+                              width: 150.w,
+                              decoration: BoxDecoration(
+                                color: AppColors.appWhite,
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 8.h),
-                        // Card Shimmer
-                        Container(
-                          padding: EdgeInsets.all(15.w),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.appBlack.withValues(alpha: 0.12),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: List.generate(3, (itemIndex) => Padding(
-                              padding: EdgeInsets.only(bottom: 10.h),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    flex: 2,
-                                    child: Shimmer.fromColors(
-                                      baseColor: AppColors.appMutedColor,
-                                      highlightColor: AppColors.appMutedTextColor,
-                                      child: Container(
-                                        height: 14.h,
-                                        width: 80.w,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.appWhite,
-                                          borderRadius: BorderRadius.circular(4.r),
-                                        ),
-                                      ),
-                                    ),
+                          SizedBox(height: 8.h),
+                          // Card Shimmer
+                          Container(
+                            padding: EdgeInsets.all(15.w),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.appBlack.withValues(
+                                    alpha: 0.12,
                                   ),
-                                  Expanded(
-                                    flex: 4,
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          ":",
-                                          style: AppTextStyle.description(
-                                            color: AppColors.appDescriptionColor,
-
-                                          ),
-                                        ),
-                                        SizedBox(width: 10.w),
-                                        Expanded(
-                                          child: Shimmer.fromColors(
-                                            baseColor: AppColors.appMutedColor,
-                                            highlightColor: AppColors.appMutedTextColor,
-                                            child: Container(
-                                              height: 14.h,
-                                              width: double.infinity,
-                                              decoration: BoxDecoration(
-                                                color: AppColors.appWhite,
-                                                borderRadius: BorderRadius.circular(4.r),
-                                              ),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: List.generate(
+                                3,
+                                (itemIndex) => Padding(
+                                  padding: EdgeInsets.only(bottom: 10.h),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: Shimmer.fromColors(
+                                          baseColor: AppColors.appMutedColor,
+                                          highlightColor:
+                                              AppColors.appMutedTextColor,
+                                          child: Container(
+                                            height: 14.h,
+                                            width: 80.w,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.appWhite,
+                                              borderRadius:
+                                                  BorderRadius.circular(4.r),
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      Expanded(
+                                        flex: 4,
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              ":",
+                                              style: AppTextStyle.description(
+                                                color: AppColors
+                                                    .appDescriptionColor,
+                                              ),
+                                            ),
+                                            SizedBox(width: 10.w),
+                                            Expanded(
+                                              child: Shimmer.fromColors(
+                                                baseColor:
+                                                    AppColors.appMutedColor,
+                                                highlightColor:
+                                                    AppColors.appMutedTextColor,
+                                                child: Container(
+                                                  height: 14.h,
+                                                  width: double.infinity,
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.appWhite,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4.r,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            )),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  )),
+                  ),
                 ],
               ),
             ),
@@ -1050,14 +1101,20 @@ class MyProfileScreen extends StatelessWidget {
     );
   }
 
-
-  Widget _buildWebLayout(BuildContext context, Map<String, dynamic> rawData, String? dpUrl, String? bannerUrl, String? name, String? email) {
+  Widget _buildWebLayout(
+    BuildContext context,
+    Map<String, dynamic> rawData,
+    String? dpUrl,
+    String? bannerUrl,
+    String? name,
+    String? email,
+  ) {
     // Extract Section Data
     var basicInfo = <String, dynamic>{};
     if (rawData['Basic Info'] is Map) {
       basicInfo = Map<String, dynamic>.from(rawData['Basic Info']);
     }
-    // Filter out Name/Email from Grid if they are redundant with Header, but user asked for "Right side basic information", so keeping them is safe or filtering if desired. 
+    // Filter out Name/Email from Grid if they are redundant with Header, but user asked for "Right side basic information", so keeping them is safe or filtering if desired.
     // Usually Profile Header has Name, so removing Name from Basic Info grid is good UI.
     basicInfo.removeWhere((key, value) => key.toLowerCase() == 'name');
 
@@ -1086,7 +1143,7 @@ class MyProfileScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.appBlack.withValues(alpha:0.05),
+                  color: AppColors.appBlack.withValues(alpha: 0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 5),
                 ),
@@ -1105,24 +1162,43 @@ class MyProfileScreen extends StatelessWidget {
                         height: 150,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.appWhite, width: 4),
+                          border: Border.all(
+                            color: AppColors.appWhite,
+                            width: 4,
+                          ),
                           boxShadow: [
-                             BoxShadow(
-                              color: AppColors.appBlack.withValues(alpha:0.1),
+                            BoxShadow(
+                              color: AppColors.appBlack.withValues(alpha: 0.1),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
                             ),
                           ],
                         ),
                         child: ClipOval(
-                          child: (dpUrl != null && dpUrl.isNotEmpty && _isImageFile(dpUrl))
+                          child:
+                              (dpUrl != null &&
+                                  dpUrl.isNotEmpty &&
+                                  _isImageFile(dpUrl))
                               ? CachedNetworkImage(
                                   imageUrl: dpUrl,
                                   fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(color: AppColors.kBorderColorTextField),
-                                  errorWidget: (context, url, e) => Icon(Icons.person, size: 50, color: AppColors.textgrey),
+                                  placeholder: (context, url) => Container(
+                                    color: AppColors.kBorderColorTextField,
+                                  ),
+                                  errorWidget: (context, url, e) => Icon(
+                                    Icons.person,
+                                    size: 50,
+                                    color: AppColors.textgrey,
+                                  ),
                                 )
-                              : Container(color: AppColors.kBorderColorTextField, child: Icon(Icons.person, size: 60, color: AppColors.textgrey)),
+                              : Container(
+                                  color: AppColors.kBorderColorTextField,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 60,
+                                    color: AppColors.textgrey,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -1131,7 +1207,7 @@ class MyProfileScreen extends StatelessWidget {
                           name,
                           textAlign: TextAlign.center,
                           style: AppTextStyle.title(
-                             fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                           ).copyWith(fontSize: 24),
                         ),
                       if (email != null) ...[
@@ -1139,7 +1215,10 @@ class MyProfileScreen extends StatelessWidget {
                         Text(
                           email,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.appMutedTextColor, fontSize: 14),
+                          style: TextStyle(
+                            color: AppColors.appMutedTextColor,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                       // Trust Score / Rating Placeholder (from image)
@@ -1168,7 +1247,7 @@ class MyProfileScreen extends StatelessWidget {
                 // VERTICAL DIVIDER
                 Container(
                   width: 1,
-                  height: 300, 
+                  height: 300,
                   color: AppColors.kBorderColorTextField,
                 ),
                 const SizedBox(width: 50),
@@ -1180,15 +1259,19 @@ class MyProfileScreen extends StatelessWidget {
                     children: [
                       // BASIC INFO
                       Text(
-                        "Basic Information", 
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.appTitleColor)
+                        "Basic Information",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.appTitleColor,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Wrap(
                         spacing: 60,
                         runSpacing: 25,
                         children: basicInfo.entries.map((e) {
-                           return _buildWebFieldItem(e.key, e.value.toString());
+                          return _buildWebFieldItem(e.key, e.value.toString());
                         }).toList(),
                       ),
 
@@ -1197,25 +1280,38 @@ class MyProfileScreen extends StatelessWidget {
                         const SizedBox(height: 40),
                         Divider(color: AppColors.kBorderColorTextField),
                         const SizedBox(height: 20),
-                         Text(
-                          "Address", 
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.appTitleColor)
+                        Text(
+                          "Address",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.appTitleColor,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Column(
-                            children: addressList.map((addrItem) {
-                                if (addrItem is Map) {
-                                   return Padding(
-                                     padding: const EdgeInsets.only(bottom: 15),
-                                     child: Row(
-                                       children: addrItem.entries.map((e) => Expanded(child: _buildWebFieldItem(e.key.toString(), e.value.toString()))).toList(),
-                                     ),
-                                   );
-                                }
-                                return SizedBox();
-                            }).toList()
-                        )
-                      ]
+                          children: addressList.map((addrItem) {
+                            if (addrItem is Map) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 15),
+                                child: Row(
+                                  children: addrItem.entries
+                                      .map(
+                                        (e) => Expanded(
+                                          child: _buildWebFieldItem(
+                                            e.key.toString(),
+                                            e.value.toString(),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              );
+                            }
+                            return SizedBox();
+                          }).toList(),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1237,7 +1333,7 @@ class MyProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.appBlack.withValues(alpha:0.05),
+                    color: AppColors.appBlack.withValues(alpha: 0.05),
                     blurRadius: 20,
                     offset: const Offset(0, 5),
                   ),
@@ -1246,9 +1342,13 @@ class MyProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text(
-                    "Documents", 
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.appTitleColor)
+                  Text(
+                    "Documents",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.appTitleColor,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Wrap(
@@ -1279,7 +1379,7 @@ class MyProfileScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: AppTextStyle.description(color: AppColors.appBodyTextColor)
+            style: AppTextStyle.description(color: AppColors.appBodyTextColor),
           ),
         ],
       ),
@@ -1287,106 +1387,116 @@ class MyProfileScreen extends StatelessWidget {
   }
 
   Widget _buildWebDocCard(BuildContext context, dynamic docData) {
-     if (docData is! Map) return const SizedBox();
+    if (docData is! Map) return const SizedBox();
 
-     String name = docData['Name']?.toString() ?? '';
-     String number = docData['Number']?.toString() ?? '';
-     String image = docData['Image']?.toString() ?? '';
-     
-     // Format name
-     String displayName = _formatFieldLabel(name);
+    String name = docData['Name']?.toString() ?? '';
+    String number = docData['Number']?.toString() ?? '';
+    String image = docData['Image']?.toString() ?? '';
 
-     return Container(
-       width: 300, 
-       padding: const EdgeInsets.all(16),
-       decoration: BoxDecoration(
-         color: AppColors.appWhite,
-         borderRadius: BorderRadius.circular(12),
-         border: Border.all(color: AppColors.kBorderColorTextField),
-         boxShadow: [
-           BoxShadow(
-             color: AppColors.appBlack.withValues(alpha:0.03),
-             blurRadius: 10,
-             offset: const Offset(0, 4),
-           ),
-         ],
-       ),
-       child: Column(
-         crossAxisAlignment: CrossAxisAlignment.start,
-         children: [
-           Row(
-             children: [
-               Icon(Icons.description, color: AppColors.appColor, size: 20),
-               const SizedBox(width: 8),
-               Expanded(
-                 child: Text(
-                   displayName, 
-                   style: AppTextStyle.title(fontWeight: FontWeight.bold).copyWith(fontSize: 16),
-                   overflow: TextOverflow.ellipsis,
-                 ),
-               ),
-             ],
-           ),
-           const SizedBox(height: 16),
-           
-           if (image.isNotEmpty && _isImageFile(image))
-             GestureDetector(
-               onTap: () {
-                 showDialog(
-                   context: context, 
-                   builder: (context) => Dialog(
-                     child: CachedNetworkImage(
-                       imageUrl: image,
-                       placeholder: (context, url) => const SizedBox(height: 50, width: 50, child: Center(child: CircularProgressIndicator())),
-                       errorWidget: (context, url, error) => const Icon(Icons.error),
-                     ),
-                   )
-                 );
-               },
-               child: Container(
-                 height: 150,
-                 width: double.infinity,
-                 decoration: BoxDecoration(
-                   color: AppColors.darkWhite,
-                   borderRadius: BorderRadius.circular(8),
-                   border: Border.all(color: AppColors.kBorderColorTextField)
-                 ),
-                 child: ClipRRect(
-                   borderRadius: BorderRadius.circular(8),
-                   child: CachedNetworkImage(
-                     imageUrl: image,
-                     fit: BoxFit.cover,
-                     placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                     errorWidget: (context, url, error) =>  Center(child: Icon(Icons.broken_image, color: AppColors.textgrey)),
-                   ),
-                 ),
-               ),
-             )
-           else if (number.isNotEmpty)
-             Container(
-               width: double.infinity,
-               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-               decoration: BoxDecoration(
-                 color: AppColors.appColor.withOpacity(0.05),
-                 borderRadius: BorderRadius.circular(8),
-               ),
-               child: Center(
-                 child: Text(
-                   number,
-                   style:AppTextStyle.body()
-                 ),
-               ),
-             )
-           else
-              Padding(
-               padding: EdgeInsets.symmetric(vertical: 20),
-               child: Center(child: Text("No Preview", style: TextStyle(color: AppColors.textgrey))),
-             ),
-         ],
-       ),
-     );
+    // Format name
+    String displayName = _formatFieldLabel(name);
+
+    return Container(
+      width: 300,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.appWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.kBorderColorTextField),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.appBlack.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.description, color: AppColors.appColor, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  displayName,
+                  style: AppTextStyle.title(
+                    fontWeight: FontWeight.bold,
+                  ).copyWith(fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          if (image.isNotEmpty && _isImageFile(image))
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => Dialog(
+                    child: CachedNetworkImage(
+                      imageUrl: image,
+                      placeholder: (context, url) => const SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                height: 150,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.darkWhite,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.kBorderColorTextField),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: CachedNetworkImage(
+                    imageUrl: image,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: AppColors.textgrey,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else if (number.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+              decoration: BoxDecoration(
+                color: AppColors.appColor.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(child: Text(number, style: AppTextStyle.body())),
+            )
+          else
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Text(
+                  "No Preview",
+                  style: TextStyle(color: AppColors.textgrey),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
-} 
-
-
-
+}

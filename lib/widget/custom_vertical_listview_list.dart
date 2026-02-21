@@ -59,9 +59,7 @@ class CustomVerticalListviewList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => isLoading.value
-          ? _buildShimmerList()
-          : _buildPostList(context),
+      () => isLoading.value ? _buildShimmerList() : _buildPostList(context),
     );
   }
 
@@ -74,24 +72,21 @@ class CustomVerticalListviewList extends StatelessWidget {
         children: [
           Text(
             label!,
-            style: AppTextStyle.title(
-              color: AppColors.appTitleColor,
-            ),
+            style: AppTextStyle.title(color: AppColors.appTitleColor),
           ),
           const Spacer(),
           if (viewAllLabel != null && viewAllLabel!.isNotEmpty)
             GestureDetector(
               onTap: () {
                 CustomNavigator.navigate(
-                    viewAllNextPage?.isNotEmpty == true
-                        ? viewAllNextPage
-                        : nextPageName);
+                  viewAllNextPage?.isNotEmpty == true
+                      ? viewAllNextPage
+                      : nextPageName,
+                );
               },
               child: Text(
                 viewAllLabel!,
-                style: AppTextStyle.description(
-                  color: AppColors.appLinkColor,
-                ),
+                style: AppTextStyle.description(color: AppColors.appLinkColor),
               ),
             ),
         ],
@@ -117,7 +112,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final isWeb = kIsWeb || screenWidth > 800;
+    final isWeb = kIsWeb || GetPlatform.isDesktop || screenWidth > 800;
 
     Widget contentList;
 
@@ -127,11 +122,11 @@ class CustomVerticalListviewList extends StatelessWidget {
         shrinkWrap: true,
         padding: const EdgeInsets.only(bottom: 20),
         itemCount: results.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3, // ✅ 1 Row me 3 items
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
-          childAspectRatio: 2.4, // thoda wide card look ke liye
+          mainAxisExtent: 130.0, // Fixed height to match card
         ),
         itemBuilder: (_, index) {
           final result = results[index];
@@ -143,11 +138,7 @@ class CustomVerticalListviewList extends StatelessWidget {
       contentList = ListView.separated(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        padding: const EdgeInsets.only(
-          bottom: 20,
-          left: 15.0,
-          right: 15.0,
-        ),
+        padding: const EdgeInsets.only(bottom: 20, left: 15.0, right: 15.0),
         scrollDirection: Axis.vertical,
         itemCount: results.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10.0),
@@ -184,24 +175,19 @@ class CustomVerticalListviewList extends StatelessWidget {
     Widget contentWithHeader = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeader(),
-        contentList,
-      ],
+      children: [_buildHeader(), contentList],
     );
 
     return Stack(
       children: [
         if (ImageTypeHelper.isImage(bgImg))
-          Positioned.fill(
-            child: AutoNetworkImage(imageUrl: bgImg),
-          ),
+          Positioned.fill(child: AutoNetworkImage(imageUrl: bgImg)),
         Container(
           decoration: BoxDecoration(
             gradient: !ImageTypeHelper.isImage(bgImg)
                 ? (bgColor != null && bgColor!.isNotEmpty
-                    ? parseLinearGradient(bgColor)
-                    : AppColors.appPagecolor)
+                      ? parseLinearGradient(bgColor)
+                      : AppColors.appPagecolor)
                 : null,
           ),
           child: contentWithHeader,
@@ -212,7 +198,7 @@ class CustomVerticalListviewList extends StatelessWidget {
 
   // Shimmer effect for the list
   Widget _buildShimmerList() {
-    final isWeb = kIsWeb;
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
 
     if (isWeb) {
       return GridView.builder(
@@ -223,7 +209,7 @@ class CustomVerticalListviewList extends StatelessWidget {
           crossAxisCount: 3,
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
-          childAspectRatio: 2.4,
+          mainAxisExtent: 130.0,
         ),
         itemBuilder: (_, __) {
           return Shimmer.fromColors(
@@ -333,8 +319,11 @@ class CustomVerticalListviewList extends StatelessWidget {
   }
 
   Widget _buildItemCard(BuildContext context, Result result, int index) {
-    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
-    final cardHeight = isWeb ? (isFromCartScreen ? 160.0 : 130.0) : (isFromCartScreen ? 185.h : 140.h);
+    final isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    final cardHeight = isWeb ? 130.0 : (isFromCartScreen ? 185.h : 140.h);
 
     return GestureDetector(
       onTap: () {
@@ -371,54 +360,62 @@ class CustomVerticalListviewList extends StatelessWidget {
                 ],
               ),
             ),
-            if (isFromCartScreen)
+            if (isFromCartScreen && !isWeb)
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 2.0,
                   vertical: 8.0,
                 ),
-                child: result.actionButton != null && result.actionButton!.isNotEmpty
+                child:
+                    result.actionButton != null &&
+                        result.actionButton!.isNotEmpty
                     ? CustomTabBar(
                         tabs: result.actionButton!.map<String>((e) {
                           if (e is Map<String, dynamic>) {
                             return e['label']?.toString() ?? '';
                           }
-                           // Fallback for unexpected types (though parsing logic in model makes it dynamic/Map usually, 
-                           // unless we strictly typed it later)
-                           // The model uses json['action_button'] which is List<dynamic> of Maps usually.
-                           try {
-                             return (e as dynamic)['label']?.toString() ?? '';
-                           } catch (err) {
-                             return '';
-                           }
+                          // Fallback for unexpected types (though parsing logic in model makes it dynamic/Map usually,
+                          // unless we strictly typed it later)
+                          // The model uses json['action_button'] which is List<dynamic> of Maps usually.
+                          try {
+                            return (e as dynamic)['label']?.toString() ?? '';
+                          } catch (err) {
+                            return '';
+                          }
                         }).toList(),
                         textStyle: AppTextStyle.body(),
                         onTap: (index) {
-                          if (index >= 0 && index < result.actionButton!.length) {
-                             final btnData = result.actionButton![index];
-                             final ukey = result.hidden?.ukey ?? "";
-                             
-                             if (onActionTap != null && btnData is Map<String, dynamic>) {
-                                onActionTap!(btnData, ukey);
-                             }
+                          if (index >= 0 &&
+                              index < result.actionButton!.length) {
+                            final btnData = result.actionButton![index];
+                            final ukey = result.hidden?.ukey ?? "";
+
+                            if (onActionTap != null &&
+                                btnData is Map<String, dynamic>) {
+                              onActionTap!(btnData, ukey);
+                            }
                           }
                         },
                       )
-                    : SizedBox()
-              )
-
+                    : SizedBox(),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImageSection(BuildContext context, Result result, int index, bool isFromCart) {
+  Widget _buildImageSection(
+    BuildContext context,
+    Result result,
+    int index,
+    bool isFromCart,
+  ) {
     // Get first image from media list
     String? imageUrl;
     if (result.media != null && result.media!.isNotEmpty) {
       final firstImage = result.media!.firstWhere(
-            (media) => media.mediaType == 'image',
+        (media) => media.mediaType == 'image',
         orElse: () => result.media!.first,
       );
       imageUrl = firstImage.url;
@@ -427,9 +424,12 @@ class CustomVerticalListviewList extends StatelessWidget {
     // Extract badge from result
     final badge = result.info?['badge'];
 
-    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+    final isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
     final imgWidth = isWeb ? 130.0 : 120.w;
-    final imgHeight = isWeb ? (isFromCart ? 140.0 : 130.0) : (isFromCart ? 120.h : 140.h);
+    final imgHeight = isWeb ? 130.0 : (isFromCart ? 120.h : 140.h);
 
     return Stack(
       alignment: Alignment.topLeft,
@@ -446,42 +446,45 @@ class CustomVerticalListviewList extends StatelessWidget {
           ),
           child: imageUrl != null
               ? ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(8.0),
-              topLeft: Radius.circular(8.0),
-            ),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.appMutedColor,
-                highlightColor: AppColors.appMutedTextColor,
-                child: Container(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(8.0),
+                    topLeft: Radius.circular(8.0),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: AppColors.appMutedColor,
+                      highlightColor: AppColors.appMutedTextColor,
+                      child: Container(
+                        height: imgHeight,
+                        width: imgWidth,
+                        color: AppColors.appMutedColor,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Image.asset(
+                      AppImage.placeholder,
+                      height: imgHeight,
+                      width: imgWidth,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              : Image.asset(
+                  AppImage.placeholder,
                   height: imgHeight,
                   width: imgWidth,
-                  color: AppColors.appMutedColor,
+                  fit: BoxFit.cover,
                 ),
-              ),
-              errorWidget: (context, url, error) => Image.asset(
-                AppImage.placeholder,
-                height: imgHeight,
-                width: imgWidth,
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
-              : Image.asset(
-            AppImage.placeholder,
-            height: imgHeight,
-            width: imgWidth,
-            fit: BoxFit.cover,
-          ),
         ),
         // Always show favorite icon - filled when true, outline when false
         Obx(() {
           // Watch the model to get reactive updates
           final currentResult = model.value?.result?[index];
-          final isFavorite = currentResult?.info?['favorite'] ?? result.info?['favorite'] ?? false;
+          final isFavorite =
+              currentResult?.info?['favorite'] ??
+              result.info?['favorite'] ??
+              false;
           return GestureDetector(
             onTap: () {
               // Toggle favorite state
@@ -531,10 +534,7 @@ class CustomVerticalListviewList extends StatelessWidget {
             top: 3,
             right: 2,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
               decoration: BoxDecoration(
                 gradient: AppColors.appPagecolor,
                 borderRadius: BorderRadius.circular(5),
@@ -556,7 +556,10 @@ class CustomVerticalListviewList extends StatelessWidget {
     final ratingReview = result.info?['rating_review'];
     final price = result.info?['price'];
 
-    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+    final isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -570,9 +573,7 @@ class CustomVerticalListviewList extends StatelessWidget {
             style: AppTextStyle.description(
               color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
-            ).copyWith(
-              fontSize: isWeb ? 16 : null,
-            ),
+            ).copyWith(fontSize: isWeb ? 16 : null),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -605,7 +606,6 @@ class CustomVerticalListviewList extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
               ],
             ],
           ),
@@ -736,7 +736,7 @@ class CartActionButtons extends StatelessWidget {
         child: Column(
           children: [
             _actionButton(
-                title: AppStrings.remove,
+              title: AppStrings.remove,
               textColor: AppColors.appBodyTextColor,
               borderColor: AppColors.appMutedTextColor,
               onTap: onRemoveTap,

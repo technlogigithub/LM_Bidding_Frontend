@@ -53,11 +53,6 @@ class SplashScreenState extends State<SplashScreen> {
 
     debugPrint("🕵️ Login Check - Flag: $isLoggedInFlag, Token: ${authToken != null}, Final: $isLoggedIn");
 
-    // If language already selected, prefetch app content
-    if (isLanguageSelected) {
-      await controller.fetchAppContent();
-    }
-
     if (isLoggedIn) {
       debugPrint("🚀 Session found, going to BottomNav");
       Get.offAllNamed(AppRoutes.bottomNav);

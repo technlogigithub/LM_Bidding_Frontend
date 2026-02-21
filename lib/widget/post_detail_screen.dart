@@ -261,7 +261,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
           dynamicMediaItems = [];
         }
 
-        final isWeb = MediaQuery.of(context).size.width > 900;
+        final isWeb = kIsWeb || GetPlatform.isDesktop || MediaQuery.of(context).size.width > 900;
         if (isWeb) {
           return _buildWebLayout(context, result!, info, postOwner, media, menuButtons, detailsTabs, htmlDetails, dynamicMediaItems);
         }

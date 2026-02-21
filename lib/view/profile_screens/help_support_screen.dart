@@ -19,7 +19,8 @@ class HelpSupportScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    if (kIsWeb) {
+    bool isWeb = kIsWeb || GetPlatform.isDesktop || screenWidth > 800;
+    if (isWeb) {
       return _buildWebLayout(context);
     }
 
@@ -30,15 +31,13 @@ class HelpSupportScreen extends StatelessWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             elevation: 0,
             automaticallyImplyLeading: true,
-            iconTheme:  IconThemeData(color: AppColors.appTextColor),
+            iconTheme: IconThemeData(color: AppColors.appTextColor),
             flexibleSpace: Container(
               decoration: BoxDecoration(
                 gradient: AppColors.appbarColor,
@@ -52,210 +51,245 @@ class HelpSupportScreen extends StatelessWidget {
             centerTitle: true,
             title: Text(
               support?.label ?? 'Help & Support',
-              style:  AppTextStyle.title(
+              style: AppTextStyle.title(
                 color: AppColors.appTextColor,
                 fontWeight: FontWeight.bold,
-
               ),
             ),
           ),
 
           body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-
-                color: AppColors.appColor.withValues(alpha: 0.15),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: (support?.pageImage != null &&
-                  support!.pageImage!.isNotEmpty)
-                  ? CachedNetworkImage(
-                imageUrl: support.pageImage!,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Shimmer.fromColors(
-                  baseColor: AppColors.appMutedColor,
-                  highlightColor: AppColors.appMutedTextColor,
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    color: AppColors.appWhite,
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.appColor.withValues(alpha: 0.15),
                   ),
+                  clipBehavior: Clip.antiAlias,
+                  child:
+                      (support?.pageImage != null &&
+                          support!.pageImage!.isNotEmpty)
+                      ? CachedNetworkImage(
+                          imageUrl: support.pageImage!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: AppColors.appMutedColor,
+                            highlightColor: AppColors.appMutedTextColor,
+                            child: Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              color: AppColors.appWhite,
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Icon(
+                            Icons.help_outline,
+                            size: screenHeight * 0.1,
+                            color: AppColors.appIconColor,
+                          ),
+                        )
+                      : Icon(
+                          Icons.help_outline,
+                          size: screenHeight * 0.1,
+                          color: AppColors.appIconColor,
+                        ),
                 ),
-                errorWidget: (context, url, error) => Icon(
-                  Icons.help_outline,
-                  size: screenHeight * 0.1,
-                  color: AppColors.appIconColor,
-                ),
-              )
-                  : Icon(
-                Icons.help_outline,
-                size: screenHeight * 0.1,
-                color: AppColors.appIconColor,
-              ),
-            ),
 
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(height: screenHeight * 0.03),
-
-                  // ✔ Big Circle Avatar with page_image
-
-
-                  SizedBox(height: screenHeight * 0.02),
-
-                  // Title from support.title
-                  Text(
-                    support?.title ?? "",
-                    style: AppTextStyle.title(
-                      color: AppColors.appTitleColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-
-                  SizedBox(height: screenHeight * 0.01),
-
-                  // Description from support.description
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      support?.description ?? "",
-                      textAlign: TextAlign.center,
-                      style: AppTextStyle.description(
-                        color: AppColors.appDescriptionColor,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: screenHeight * 0.03),
-
-                  // ✔ First Row (Call, WhatsApp, Email)
-                  if (support?.design != null)
-                    Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-              if (support!.design!.call != null)
-                helpBoxWithIcon(
-                  screenHeight,
-                  screenWidth,
-                  support.design!.call!.icon,
-                      () {
-                    makePhoneCall(support!.design!.call!.detail!);
-                  },
-                ),
+                      SizedBox(height: screenHeight * 0.03),
 
-              if (support.design!.whatsapp != null)
-                helpBoxWithIcon(
-                  screenHeight,
-                  screenWidth,
-                  support.design!.whatsapp!.icon,
-                      () {
-                    openWhatsApp(support!.design!.whatsapp!.detail!);
-                  },
-                ),
+                      // ✔ Big Circle Avatar with page_image
+                      SizedBox(height: screenHeight * 0.02),
 
-              if (support.design!.email != null)
-                helpBoxWithIcon(
-                  screenHeight,
-                  screenWidth,
-                  support.design!.email!.icon,
-                      () {
-                    sendEmail(support!.design!.email!.detail!);
-                  },
-                ),
-                    ],
-                  ),
-
-                    SizedBox(height: screenHeight * 0.03),
-
-                  // ✔ OR Divider
-                  Row(
-                    children:  [
-                      Expanded(child: Divider(thickness: 1,color: AppColors.appDescriptionColor,)),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text("OR",style:AppTextStyle.description(color: AppColors.appDescriptionColor),),
+                      // Title from support.title
+                      Text(
+                        support?.title ?? "",
+                        style: AppTextStyle.title(
+                          color: AppColors.appTitleColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      Expanded(child: Divider(thickness: 1,color:AppColors.appDescriptionColor)),
+
+                      SizedBox(height: screenHeight * 0.01),
+
+                      // Description from support.description
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          support?.description ?? "",
+                          textAlign: TextAlign.center,
+                          style: AppTextStyle.description(
+                            color: AppColors.appDescriptionColor,
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: screenHeight * 0.03),
+
+                      // ✔ First Row (Call, WhatsApp, Email)
+                      if (support?.design != null)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            if (support!.design!.call != null)
+                              helpBoxWithIcon(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.call!.icon,
+                                () {
+                                  makePhoneCall(support!.design!.call!.detail!);
+                                },
+                              ),
+
+                            if (support.design!.whatsapp != null)
+                              helpBoxWithIcon(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.whatsapp!.icon,
+                                () {
+                                  openWhatsApp(
+                                    support!.design!.whatsapp!.detail!,
+                                  );
+                                },
+                              ),
+
+                            if (support.design!.email != null)
+                              helpBoxWithIcon(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.email!.icon,
+                                () {
+                                  sendEmail(support!.design!.email!.detail!);
+                                },
+                              ),
+                          ],
+                        ),
+
+                      SizedBox(height: screenHeight * 0.03),
+
+                      // ✔ OR Divider
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: AppColors.appDescriptionColor,
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              "OR",
+                              style: AppTextStyle.description(
+                                color: AppColors.appDescriptionColor,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: AppColors.appDescriptionColor,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: screenHeight * 0.03),
+
+                      // ✔ Second Row (Social Media)
+                      if (support?.design?.socialMedia != null)
+                        Wrap(
+                          spacing: 9,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            if (support!.design!.socialMedia!.facebook != null)
+                              helpBoxWithImage(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.socialMedia!.facebook!.icon,
+                                () {
+                                  openSocialUrl(
+                                    support!
+                                        .design!
+                                        .socialMedia!
+                                        .facebook!
+                                        .url!,
+                                  );
+                                },
+                              ),
+
+                            if (support.design!.socialMedia!.instagram != null)
+                              helpBoxWithImage(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.socialMedia!.instagram!.icon,
+                                () {
+                                  openSocialUrl(
+                                    support!
+                                        .design!
+                                        .socialMedia!
+                                        .instagram!
+                                        .url!,
+                                  );
+                                },
+                              ),
+
+                            if (support.design!.socialMedia!.youtube != null)
+                              helpBoxWithImage(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.socialMedia!.youtube!.icon,
+                                () {
+                                  openSocialUrl(
+                                    support!.design!.socialMedia!.youtube!.url!,
+                                  );
+                                },
+                              ),
+
+                            if (support.design!.socialMedia!.twitter != null)
+                              helpBoxWithImage(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.socialMedia!.twitter!.icon,
+                                () {
+                                  openSocialUrl(
+                                    support!.design!.socialMedia!.twitter!.url!,
+                                  );
+                                },
+                              ),
+
+                            if (support.design!.socialMedia!.linkedin != null)
+                              helpBoxWithImage(
+                                screenHeight,
+                                screenWidth,
+                                support.design!.socialMedia!.linkedin!.icon,
+                                () {
+                                  openSocialUrl(
+                                    support!
+                                        .design!
+                                        .socialMedia!
+                                        .linkedin!
+                                        .url!,
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+
+                      SizedBox(height: screenHeight * 0.03),
                     ],
                   ),
-
-                  SizedBox(height: screenHeight * 0.03),
-
-                  // ✔ Second Row (Social Media)
-                  if (support?.design?.socialMedia != null)
-                    Wrap(
-                      spacing: 9,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        if (support!.design!.socialMedia!.facebook != null)
-                          helpBoxWithImage(
-                            screenHeight,
-                            screenWidth,
-                            support.design!.socialMedia!.facebook!.icon,
-                                () {
-                              openSocialUrl(support!.design!.socialMedia!.facebook!.url!);
-                            },
-                          ),
-
-                        if (support.design!.socialMedia!.instagram != null)
-                          helpBoxWithImage(
-                            screenHeight,
-                            screenWidth,
-                            support.design!.socialMedia!.instagram!.icon,
-                                () {
-                              openSocialUrl(support!.design!.socialMedia!.instagram!.url!);
-                            },
-                          ),
-
-                        if (support.design!.socialMedia!.youtube != null)
-                          helpBoxWithImage(
-                            screenHeight,
-                            screenWidth,
-                            support.design!.socialMedia!.youtube!.icon,
-                                () {
-                              openSocialUrl(support!.design!.socialMedia!.youtube!.url!);
-                            },
-                          ),
-
-                        if (support.design!.socialMedia!.twitter != null)
-                          helpBoxWithImage(
-                            screenHeight,
-                            screenWidth,
-                            support.design!.socialMedia!.twitter!.icon,
-                                () {
-                              openSocialUrl(support!.design!.socialMedia!.twitter!.url!);
-                            },
-                          ),
-
-                        if (support.design!.socialMedia!.linkedin != null)
-                          helpBoxWithImage(
-                            screenHeight,
-                            screenWidth,
-                            support.design!.socialMedia!.linkedin!.icon,
-                                () {
-                              openSocialUrl(support!.design!.socialMedia!.linkedin!.url!);
-                            },
-                          ),
-                      ],
-                    ),
-
-                  SizedBox(height: screenHeight * 0.03),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
         ),
       ),
     );
   }
-
 
   Widget _buildWebLayout(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -282,22 +316,19 @@ class HelpSupportScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: Column(
           children: [
             // Hero Section: "How can we help you?" vibe
             Container(
               width: double.infinity,
               height: screenHeight * 0.45,
-              decoration: BoxDecoration(
-                gradient: AppColors.appbarColor,
-              ),
+              decoration: BoxDecoration(gradient: AppColors.appbarColor),
               child: Stack(
                 children: [
                   // Subtle background image overlay
-                  if (support?.pageImage != null && (support?.pageImage?.isNotEmpty ?? false))
+                  if (support?.pageImage != null &&
+                      (support?.pageImage?.isNotEmpty ?? false))
                     Positioned.fill(
                       child: Opacity(
                         opacity: 0.15,
@@ -307,7 +338,7 @@ class HelpSupportScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  
+
                   // Central Hero Content
                   Center(
                     child: Container(
@@ -319,10 +350,14 @@ class HelpSupportScreen extends StatelessWidget {
                           Text(
                             support?.title ?? "",
                             textAlign: TextAlign.center,
-                            style: AppTextStyle.title(
-                              color: AppColors.appWhite,
-                              fontWeight: FontWeight.bold,
-                            ).copyWith(fontSize: screenWidth < 800 ? 32 : 48, letterSpacing: -1),
+                            style:
+                                AppTextStyle.title(
+                                  color: AppColors.appWhite,
+                                  fontWeight: FontWeight.bold,
+                                ).copyWith(
+                                  fontSize: screenWidth < 800 ? 32 : 48,
+                                  letterSpacing: -1,
+                                ),
                           ),
                           SizedBox(height: 20),
                           Text(
@@ -359,37 +394,49 @@ class HelpSupportScreen extends StatelessWidget {
                             children: [
                               if (support!.design!.call != null)
                                 Container(
-                                  width: screenWidth < 900 ? screenWidth * 0.8 : 300,
+                                  width: screenWidth < 900
+                                      ? screenWidth * 0.8
+                                      : 300,
                                   child: _webContactTile(
                                     support.design!.call!.detail!,
                                     support.design!.call!.icon,
-                                    () => makePhoneCall(support!.design!.call!.detail!),
+                                    () => makePhoneCall(
+                                      support!.design!.call!.detail!,
+                                    ),
                                     Icons.phone_in_talk_rounded,
                                   ),
                                 ),
                               if (support.design!.whatsapp != null)
                                 Container(
-                                  width: screenWidth < 900 ? screenWidth * 0.8 : 300,
+                                  width: screenWidth < 900
+                                      ? screenWidth * 0.8
+                                      : 300,
                                   child: _webContactTile(
                                     support.design!.whatsapp!.detail!,
                                     support.design!.whatsapp!.icon,
-                                    () => openWhatsApp(support!.design!.whatsapp!.detail!),
+                                    () => openWhatsApp(
+                                      support!.design!.whatsapp!.detail!,
+                                    ),
                                     Icons.chat_rounded,
                                   ),
                                 ),
                               if (support.design!.email != null)
                                 Container(
-                                  width: screenWidth < 900 ? screenWidth * 0.8 : 300,
+                                  width: screenWidth < 900
+                                      ? screenWidth * 0.8
+                                      : 300,
                                   child: _webContactTile(
                                     support.design!.email!.detail!,
                                     support.design!.email!.icon,
-                                    () => sendEmail(support!.design!.email!.detail!),
+                                    () => sendEmail(
+                                      support!.design!.email!.detail!,
+                                    ),
                                     Icons.alternate_email_rounded,
                                   ),
                                 ),
                             ],
                           ),
-                        
+
                         SizedBox(height: 50),
 
                         // Social Links
@@ -398,30 +445,54 @@ class HelpSupportScreen extends StatelessWidget {
                             spacing: 15,
                             runSpacing: 15,
                             children: [
-                              if (support!.design!.socialMedia!.facebook != null)
+                              if (support!.design!.socialMedia!.facebook !=
+                                  null)
                                 _webSocialIcon(
                                   support.design!.socialMedia!.facebook!.icon,
-                                  () => openSocialUrl(support!.design!.socialMedia!.facebook!.url!),
+                                  () => openSocialUrl(
+                                    support!
+                                        .design!
+                                        .socialMedia!
+                                        .facebook!
+                                        .url!,
+                                  ),
                                 ),
-                              if (support.design!.socialMedia!.instagram != null)
+                              if (support.design!.socialMedia!.instagram !=
+                                  null)
                                 _webSocialIcon(
                                   support.design!.socialMedia!.instagram!.icon,
-                                  () => openSocialUrl(support!.design!.socialMedia!.instagram!.url!),
+                                  () => openSocialUrl(
+                                    support!
+                                        .design!
+                                        .socialMedia!
+                                        .instagram!
+                                        .url!,
+                                  ),
                                 ),
                               if (support.design!.socialMedia!.youtube != null)
                                 _webSocialIcon(
                                   support.design!.socialMedia!.youtube!.icon,
-                                  () => openSocialUrl(support!.design!.socialMedia!.youtube!.url!),
+                                  () => openSocialUrl(
+                                    support!.design!.socialMedia!.youtube!.url!,
+                                  ),
                                 ),
                               if (support.design!.socialMedia!.twitter != null)
                                 _webSocialIcon(
                                   support.design!.socialMedia!.twitter!.icon,
-                                  () => openSocialUrl(support!.design!.socialMedia!.twitter!.url!),
+                                  () => openSocialUrl(
+                                    support!.design!.socialMedia!.twitter!.url!,
+                                  ),
                                 ),
                               if (support.design!.socialMedia!.linkedin != null)
                                 _webSocialIcon(
                                   support.design!.socialMedia!.linkedin!.icon,
-                                  () => openSocialUrl(support!.design!.socialMedia!.linkedin!.url!),
+                                  () => openSocialUrl(
+                                    support!
+                                        .design!
+                                        .socialMedia!
+                                        .linkedin!
+                                        .url!,
+                                  ),
                                 ),
                             ],
                           ),
@@ -437,8 +508,16 @@ class HelpSupportScreen extends StatelessWidget {
     );
   }
 
-  Widget _webContactTile(String detail, String? iconUrl, VoidCallback onTap, IconData fallbackIcon) {
-    bool hasUrl = iconUrl != null && iconUrl.isNotEmpty && (iconUrl.startsWith("http://") || iconUrl.startsWith("https://"));
+  Widget _webContactTile(
+    String detail,
+    String? iconUrl,
+    VoidCallback onTap,
+    IconData fallbackIcon,
+  ) {
+    bool hasUrl =
+        iconUrl != null &&
+        iconUrl.isNotEmpty &&
+        (iconUrl.startsWith("http://") || iconUrl.startsWith("https://"));
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -473,11 +552,8 @@ class HelpSupportScreen extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: hasUrl ? iconUrl! : '',
                   fit: BoxFit.contain,
-                  errorWidget: (context, url, error) => Icon(
-                    fallbackIcon,
-                    color: AppColors.appColor,
-                    size: 32,
-                  ),
+                  errorWidget: (context, url, error) =>
+                      Icon(fallbackIcon, color: AppColors.appColor, size: 32),
                 ),
               ),
               SizedBox(height: 24),
@@ -525,11 +601,8 @@ class HelpSupportScreen extends StatelessWidget {
           child: CachedNetworkImage(
             imageUrl: hasUrl ? iconUrl! : '',
             fit: BoxFit.contain,
-            errorWidget: (context, url, error) => Icon(
-              Icons.link_rounded,
-              color: AppColors.appColor,
-              size: 24,
-            ),
+            errorWidget: (context, url, error) =>
+                Icon(Icons.link_rounded, color: AppColors.appColor, size: 24),
           ),
         ),
       ),
@@ -537,8 +610,13 @@ class HelpSupportScreen extends StatelessWidget {
   }
 
   Widget helpBoxWithIcon(
-      double screenHeight, double screenWidth, String? iconUrl, VoidCallback onTap) {
-    bool hasUrl = iconUrl != null &&
+    double screenHeight,
+    double screenWidth,
+    String? iconUrl,
+    VoidCallback onTap,
+  ) {
+    bool hasUrl =
+        iconUrl != null &&
         iconUrl.isNotEmpty &&
         (iconUrl.startsWith("http://") || iconUrl.startsWith("https://"));
 
@@ -550,10 +628,7 @@ class HelpSupportScreen extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           gradient: AppColors.appPagecolor,
-          border: Border.all(
-            color: AppColors.appDescriptionColor,
-            width: 1,
-          ),
+          border: Border.all(color: AppColors.appDescriptionColor, width: 1),
         ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -569,19 +644,21 @@ class HelpSupportScreen extends StatelessWidget {
                 color: AppColors.appWhite,
               ),
             ),
-            errorWidget: (context, url, error) => Image.asset(
-              AppImage.placeholder,
-              fit: BoxFit.contain,
-            ),
+            errorWidget: (context, url, error) =>
+                Image.asset(AppImage.placeholder, fit: BoxFit.contain),
           ),
         ),
       ),
     );
   }
 
-// ⭐ Reusable Box Widget with Image (for social media)
+  // ⭐ Reusable Box Widget with Image (for social media)
   Widget helpBoxWithImage(
-      double screenHeight, double screenWidth, String? iconUrl, VoidCallback onTap) {
+    double screenHeight,
+    double screenWidth,
+    String? iconUrl,
+    VoidCallback onTap,
+  ) {
     bool hasUrl = iconUrl != null && iconUrl.isNotEmpty;
 
     return Padding(
@@ -594,31 +671,23 @@ class HelpSupportScreen extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: AppColors.appPagecolor,
-            border: Border.all(
-              color: AppColors.appDescriptionColor,
-              width: 1,
-            ),
+            border: Border.all(color: AppColors.appDescriptionColor, width: 1),
           ),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: CachedNetworkImage(
               imageUrl: hasUrl ? iconUrl! : AppImage.placeholder,
               fit: BoxFit.contain,
-              placeholder: (context, url) => Image.asset(
-                AppImage.placeholder,
-                fit: BoxFit.contain,
-              ),
-              errorWidget: (context, url, error) => Image.asset(
-                AppImage.placeholder,
-                fit: BoxFit.contain,
-              ),
+              placeholder: (context, url) =>
+                  Image.asset(AppImage.placeholder, fit: BoxFit.contain),
+              errorWidget: (context, url, error) =>
+                  Image.asset(AppImage.placeholder, fit: BoxFit.contain),
             ),
           ),
         ),
       ),
     );
   }
-
 
   Future<void> makePhoneCall(String phoneNumber) async {
     final Uri uri = Uri(scheme: 'tel', path: phoneNumber);
@@ -628,6 +697,7 @@ class HelpSupportScreen extends StatelessWidget {
       debugPrint("Cannot launch phone dialer");
     }
   }
+
   Future<void> openWhatsApp(String phone) async {
     // Remove + if exists
     String cleaned = phone.replaceAll('+', '');
@@ -640,11 +710,9 @@ class HelpSupportScreen extends StatelessWidget {
       debugPrint("Cannot open WhatsApp");
     }
   }
+
   Future<void> sendEmail(String email) async {
-    final Uri uri = Uri(
-      scheme: 'mailto',
-      path: email,
-    );
+    final Uri uri = Uri(scheme: 'mailto', path: email);
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -659,26 +727,13 @@ class HelpSupportScreen extends StatelessWidget {
 
       // Try to launch in native app
       if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         // Fallback → open in browser
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     } catch (e) {
       debugPrint("Error opening social URL: $e");
     }
   }
-
-
-
-
-
-
-
 }

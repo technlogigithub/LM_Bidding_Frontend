@@ -31,25 +31,39 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     final profileForm = appController.profileFormPage.value;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    if (kIsWeb) {
+    bool isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    if (isWeb) {
       return _buildWebLayout(appController, profileForm, screenHeight, context);
     }
 
-    return _buildMobileLayout(appController, profileForm, screenHeight, context);
+    return _buildMobileLayout(
+      appController,
+      profileForm,
+      screenHeight,
+      context,
+    );
   }
 
-  Widget _buildMobileLayout(AppSettingsController appController, ProfileFormPage? profileForm, double screenHeight, BuildContext context) {
+  Widget _buildMobileLayout(
+    AppSettingsController appController,
+    ProfileFormPage? profileForm,
+    double screenHeight,
+    BuildContext context,
+  ) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: _buildAppBar(appController),
           body: Obx(() {
             if (profileForm == null) {
-              return const Center(child: Text('Profile form configuration not available'));
+              return const Center(
+                child: Text('Profile form configuration not available'),
+              );
             }
 
             if (controller.isLoading.value) {
@@ -64,7 +78,9 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                   if (profileForm.pageDescription?.isNotEmpty == true) ...[
                     Text(
                       profileForm.pageDescription!,
-                      style: AppTextStyle.description(color: AppColors.appDescriptionColor),
+                      style: AppTextStyle.description(
+                        color: AppColors.appDescriptionColor,
+                      ),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -76,7 +92,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
 
                   GetBuilder<SetupProfileController>(
                     id: 'form_content',
-                    builder: (controller) => _buildFormContent(profileForm, screenHeight, context),
+                    builder: (controller) =>
+                        _buildFormContent(profileForm, screenHeight, context),
                   ),
                 ],
               ),
@@ -87,7 +104,12 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  Widget _buildWebLayout(AppSettingsController appController, ProfileFormPage? profileForm, double screenHeight, BuildContext context) {
+  Widget _buildWebLayout(
+    AppSettingsController appController,
+    ProfileFormPage? profileForm,
+    double screenHeight,
+    BuildContext context,
+  ) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -97,9 +119,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
         iconTheme: IconThemeData(color: AppColors.appTextColor),
         centerTitle: true,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.appbarColor,
-          ),
+          decoration: BoxDecoration(gradient: AppColors.appbarColor),
         ),
         title: Text(
           profileForm?.pageTitle ?? 'Setup Profile',
@@ -112,12 +132,12 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: Obx(() {
           if (profileForm == null) {
-            return const Center(child: Text('Profile form configuration not available'));
+            return const Center(
+              child: Text('Profile form configuration not available'),
+            );
           }
 
           if (controller.isLoading.value) {
@@ -133,7 +153,9 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             padding: const EdgeInsets.symmetric(vertical: 40),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1000), // Slightly narrower for better focus
+                constraints: const BoxConstraints(
+                  maxWidth: 1000,
+                ), // Slightly narrower for better focus
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
@@ -174,7 +196,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                         ),
                         child: GetBuilder<SetupProfileController>(
                           id: 'form_content',
-                          builder: (controller) => _buildFormContent(profileForm, screenHeight, context),
+                          builder: (controller) => _buildFormContent(
+                            profileForm,
+                            screenHeight,
+                            context,
+                          ),
                         ),
                       ),
                     ],
@@ -188,17 +214,27 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  Widget _buildDocumentVerificationStep(ProfileFormPage profileForm, double screenHeight, BuildContext context) {
-    final currentStepInputs = _getStepInputs(profileForm, controller.currentStep.value);
-    if (currentStepInputs == null || currentStepInputs.isEmpty) return const SizedBox();
+  Widget _buildDocumentVerificationStep(
+    ProfileFormPage profileForm,
+    double screenHeight,
+    BuildContext context,
+  ) {
+    final currentStepInputs = _getStepInputs(
+      profileForm,
+      controller.currentStep.value,
+    );
+    if (currentStepInputs == null || currentStepInputs.isEmpty)
+      return const SizedBox();
 
-    final filteredInputs = currentStepInputs.where((e) => (e.name ?? '').toLowerCase() != 'step_type').toList();
+    final filteredInputs = currentStepInputs
+        .where((e) => (e.name ?? '').toLowerCase() != 'step_type')
+        .toList();
 
     // Grouping by Labels for Layout Logic
     Map<String, List<RegisterInput>> groupedInputs = {};
     for (var input in filteredInputs) {
       String label = input.label ?? '';
-      String key = label.split(' ')[0]; 
+      String key = label.split(' ')[0];
       groupedInputs.putIfAbsent(key, () => []).add(input);
     }
 
@@ -207,30 +243,52 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
         final inputs = entry.value;
 
         // Number/Text fields (e.g., Aadhar Number)
-        final topFields = inputs.where((i) => (i.inputType ?? '').toLowerCase() != 'file' && (i.inputType ?? '').toLowerCase() != 'files').toList();
+        final topFields = inputs
+            .where(
+              (i) =>
+                  (i.inputType ?? '').toLowerCase() != 'file' &&
+                  (i.inputType ?? '').toLowerCase() != 'files',
+            )
+            .toList();
         // Upload fields (e.g., Front/Back images)
-        final bottomFields = inputs.where((i) => (i.inputType ?? '').toLowerCase() == 'file' || (i.inputType ?? '').toLowerCase() == 'files').toList();
+        final bottomFields = inputs
+            .where(
+              (i) =>
+                  (i.inputType ?? '').toLowerCase() == 'file' ||
+                  (i.inputType ?? '').toLowerCase() == 'files',
+            )
+            .toList();
 
         return Column(
           children: [
             // Top Fields (usually ID Numbers)
-            ...topFields.map((f) => Padding(
-              padding: const EdgeInsets.only(bottom: 25),
-              child: _buildFormField(f),
-            )),
+            ...topFields.map(
+              (f) => Padding(
+                padding: const EdgeInsets.only(bottom: 25),
+                child: _buildFormField(f),
+              ),
+            ),
 
             // Bottom Fields (usually Document Images) in a Row
             if (bottomFields.isNotEmpty)
-              LayoutBuilder(builder: (context, constraints) {
-                return Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: bottomFields.map((f) => SizedBox(
-                    width: bottomFields.length > 1 ? (constraints.maxWidth - 16) / 2 : constraints.maxWidth,
-                    child: _buildFormField(f),
-                  )).toList(),
-                );
-              }),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: bottomFields
+                        .map(
+                          (f) => SizedBox(
+                            width: bottomFields.length > 1
+                                ? (constraints.maxWidth - 16) / 2
+                                : constraints.maxWidth,
+                            child: _buildFormField(f),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
+              ),
             const SizedBox(height: 30),
           ],
         );
@@ -253,9 +311,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
       automaticallyImplyLeading: true,
       iconTheme: IconThemeData(color: AppColors.appTextColor),
       flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.appbarColor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appbarColor),
       ),
       toolbarHeight: 80,
       centerTitle: true,
@@ -292,13 +348,15 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
               decoration: BoxDecoration(
                 color: isActive ? AppColors.appColor : Colors.grey.shade100,
                 shape: BoxShape.circle,
-                boxShadow: isCurrent ? [
-                  BoxShadow(
-                    color: AppColors.appColor.withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    spreadRadius: 4,
-                  )
-                ] : null,
+                boxShadow: isCurrent
+                    ? [
+                        BoxShadow(
+                          color: AppColors.appColor.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          spreadRadius: 4,
+                        ),
+                      ]
+                    : null,
               ),
               child: Center(
                 child: isActive && !isCurrent && index < currentStep
@@ -325,7 +383,9 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                       height: 10,
                       margin: const EdgeInsets.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
-                        color: index < currentStep ? AppColors.appColor : Colors.grey.shade200,
+                        color: index < currentStep
+                            ? AppColors.appColor
+                            : Colors.grey.shade200,
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
@@ -350,7 +410,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.appColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(30),
@@ -395,7 +458,6 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             style: AppTextStyle.title(
               color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
-
             ),
           ),
         ],
@@ -403,7 +465,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  Widget _buildFormContent(ProfileFormPage profileForm, double screenHeight,BuildContext context) {
+  Widget _buildFormContent(
+    ProfileFormPage profileForm,
+    double screenHeight,
+    BuildContext context,
+  ) {
     final currentStep = controller.currentStep.value;
     List<RegisterInput>? currentStepInputs;
 
@@ -423,23 +489,28 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     final currentStepTitle = _getCurrentStepTitle(profileForm, currentStep);
 
     // Determine if step is marked as multiple/single by input marker
-    final hasMultipleMarker = currentStepInputs.any((e) => (e.inputType ?? '').toLowerCase() == 'multiple');
-    final filteredInputs = currentStepInputs.where((e) => (e.name ?? '').toLowerCase() != 'step_type').toList();
+    final hasMultipleMarker = currentStepInputs.any(
+      (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+    );
+    final filteredInputs = currentStepInputs
+        .where((e) => (e.name ?? '').toLowerCase() != 'step_type')
+        .toList();
 
     return Column(
       children: [
         // If address step, keep legacy UI
-          if(_isAddressStep(currentStepTitle))
+        if (_isAddressStep(currentStepTitle))
           _buildAddressStep(filteredInputs, title: currentStepTitle)
-
         // Generic multiple step renderer for non-address, non-document steps
         else if (hasMultipleMarker)
-          _buildGenericMultipleStep(currentStep, filteredInputs, title: currentStepTitle)
-
+          _buildGenericMultipleStep(
+            currentStep,
+            filteredInputs,
+            title: currentStepTitle,
+          )
         // Document verification step
         else if (_isDocumentStep(currentStepTitle))
           _buildDocumentVerificationStep(profileForm, screenHeight, context)
-
         // If generic single step, show dynamic form
         else
           DynamicFormBuilder(
@@ -452,13 +523,16 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
         const SizedBox(height: 30),
 
         // Action Buttons
-        _buildActionButtons(profileForm, screenHeight,context),
+        _buildActionButtons(profileForm, screenHeight, context),
       ],
     );
   }
 
   // Helper method to get inputs for any step dynamically
-  List<RegisterInput>? _getStepInputs(ProfileFormPage profileForm, int stepIndex) {
+  List<RegisterInput>? _getStepInputs(
+    ProfileFormPage profileForm,
+    int stepIndex,
+  ) {
     if (profileForm.inputs == null) return null;
 
     // Use the dynamic method from the model
@@ -467,7 +541,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
 
   // Helper method to get current step title
   String? _getCurrentStepTitle(ProfileFormPage profileForm, int stepIndex) {
-    if (profileForm.stepTitles == null || stepIndex >= profileForm.stepTitles!.length) {
+    if (profileForm.stepTitles == null ||
+        stepIndex >= profileForm.stepTitles!.length) {
       return null;
     }
     return profileForm.stepTitles![stepIndex];
@@ -476,14 +551,15 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
   // Helper method to check if current step is address step based on step_titles
   bool _isAddressStep(String? stepTitle) {
     if (stepTitle == null) return false;
-    return stepTitle.toLowerCase().contains('address') || stepTitle.toLowerCase().contains("पता विवरण");
+    return stepTitle.toLowerCase().contains('address') ||
+        stepTitle.toLowerCase().contains("पता विवरण");
   }
 
   // Helper method to check if current step is document step based on step_titles
   bool _isDocumentStep(String? stepTitle) {
     if (stepTitle == null) return false;
     return stepTitle.toLowerCase().contains('document') ||
-           stepTitle.toLowerCase().contains('verification');
+        stepTitle.toLowerCase().contains('verification');
   }
 
   // Filter out special marker inputs like step_type/single/multiple
@@ -496,7 +572,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     }).toList();
   }
 
-  Widget _buildAddressStep(List<RegisterInput>? addressInputs, {String? title}) {
+  Widget _buildAddressStep(
+    List<RegisterInput>? addressInputs, {
+    String? title,
+  }) {
     final appController = Get.find<AppSettingsController>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,25 +595,38 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
               final profileForm = appController.profileFormPage.value;
 
               if (profileForm != null) {
-                final inputs = controller.getCurrentStepInputs(currentStep) ?? [];
-                final isAddress = inputs.any((e) => (e.inputType ?? '').toLowerCase() == 'address');
-                final isMultiple = inputs.any((e) => (e.inputType ?? '').toLowerCase() == 'multiple');
+                final inputs =
+                    controller.getCurrentStepInputs(currentStep) ?? [];
+                final isAddress = inputs.any(
+                  (e) => (e.inputType ?? '').toLowerCase() == 'address',
+                );
+                final isMultiple = inputs.any(
+                  (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+                );
 
                 if (isMultiple) {
                   return SizedBox(
                     height: 44,
                     child: FloatingActionButton.extended(
                       backgroundColor: AppColors.appButtonColor,
-                      elevation: kIsWeb ? 2 : 6,
+                      elevation:
+                          (kIsWeb || GetPlatform.isDesktop || Get.width > 800)
+                          ? 2
+                          : 6,
                       onPressed: () => isAddress
                           ? _showAddressDialog(_filterMarkerInputs(inputs))
                           : _showGenericEntryDialog(currentStep, inputs),
-                      icon: Icon(FeatherIcons.plusCircle, color: AppColors.appButtonTextColor, size: 20),
+                      icon: Icon(
+                        FeatherIcons.plusCircle,
+                        color: AppColors.appButtonTextColor,
+                        size: 20,
+                      ),
                       label: Text(
                         (() {
                           final buttons = profileForm.buttons ?? [];
                           for (final b in buttons) {
-                            if ((b.visibleOnStep ?? -1) == 0) return b.label ?? AppStrings.addNew;
+                            if ((b.visibleOnStep ?? -1) == 0)
+                              return b.label ?? AppStrings.addNew;
                           }
                           return AppStrings.addNew;
                         })(),
@@ -548,7 +640,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 }
               }
               return const SizedBox.shrink();
-            })
+            }),
           ],
         ),
         const SizedBox(height: 24),
@@ -573,7 +665,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             );
           }
 
-          if (kIsWeb) {
+          if (kIsWeb || GetPlatform.isDesktop || Get.width > 800) {
             return Wrap(
               spacing: 20,
               runSpacing: 20,
@@ -596,7 +688,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  Widget _buildGenericMultipleStep(int stepIndex, List<RegisterInput>? inputs, {String? title}) {
+  Widget _buildGenericMultipleStep(
+    int stepIndex,
+    List<RegisterInput>? inputs, {
+    String? title,
+  }) {
     return Obx(() {
       final list = controller.getEntriesForStep(stepIndex);
       return Column(
@@ -618,26 +714,56 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
               ),
               child: const Center(child: Text('No items added')),
             )
-          else if (kIsWeb)
+          else if (kIsWeb || GetPlatform.isDesktop || Get.width > 800)
             Wrap(
               spacing: 20,
               runSpacing: 20,
-              children: list.asMap().entries.map((entry) => SizedBox(
-                width: 390,
-                child: _buildGenericItemCard(stepIndex, entry.key, entry.value, inputs),
-              )).toList(),
+              children: list
+                  .asMap()
+                  .entries
+                  .map(
+                    (entry) => SizedBox(
+                      width: 390,
+                      child: _buildGenericItemCard(
+                        stepIndex,
+                        entry.key,
+                        entry.value,
+                        inputs,
+                      ),
+                    ),
+                  )
+                  .toList(),
             )
           else
             Column(
-              children: list.asMap().entries.map((entry) => _buildGenericItemCard(stepIndex, entry.key, entry.value, inputs)).toList(),
+              children: list
+                  .asMap()
+                  .entries
+                  .map(
+                    (entry) => _buildGenericItemCard(
+                      stepIndex,
+                      entry.key,
+                      entry.value,
+                      inputs,
+                    ),
+                  )
+                  .toList(),
             ),
         ],
       );
     });
   }
 
-  Widget _buildGenericItemCard(int stepIndex, int index, Map<String, dynamic> data, List<RegisterInput>? inputs) {
-    String subtitle = data.entries.take(3).map((e) => '${e.key}: ${e.value}').join(' • ');
+  Widget _buildGenericItemCard(
+    int stepIndex,
+    int index,
+    Map<String, dynamic> data,
+    List<RegisterInput>? inputs,
+  ) {
+    String subtitle = data.entries
+        .take(3)
+        .map((e) => '${e.key}: ${e.value}')
+        .join(' • ');
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -673,9 +799,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                   subtitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyle.description(
-                    color: Colors.grey.shade600,
-                  ),
+                  style: AppTextStyle.description(color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -683,12 +807,26 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(FeatherIcons.edit, color: Colors.blue, size: 20),
-                onPressed: () => _showGenericEntryDialog(stepIndex, inputs, existingData: data, index: index),
+                icon: const Icon(
+                  FeatherIcons.edit,
+                  color: Colors.blue,
+                  size: 20,
+                ),
+                onPressed: () => _showGenericEntryDialog(
+                  stepIndex,
+                  inputs,
+                  existingData: data,
+                  index: index,
+                ),
               ),
               IconButton(
-                icon: const Icon(FeatherIcons.trash2, color: Colors.red, size: 20),
-                onPressed: () => controller.removeEntryForStep(stepIndex, index),
+                icon: const Icon(
+                  FeatherIcons.trash2,
+                  color: Colors.red,
+                  size: 20,
+                ),
+                onPressed: () =>
+                    controller.removeEntryForStep(stepIndex, index),
               ),
             ],
           ),
@@ -698,7 +836,7 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
   }
 
   Widget _buildAddressCard(Map<String, dynamic> address, int index) {
-    if (kIsWeb) {
+    if (kIsWeb || GetPlatform.isDesktop || Get.width > 800) {
       return Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
@@ -728,7 +866,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                         color: AppColors.appColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(FeatherIcons.mapPin, color: AppColors.appColor, size: 18),
+                      child: Icon(
+                        FeatherIcons.mapPin,
+                        color: AppColors.appColor,
+                        size: 18,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -744,7 +886,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(FeatherIcons.edit, color: Colors.blue, size: 18),
+                      icon: const Icon(
+                        FeatherIcons.edit,
+                        color: Colors.blue,
+                        size: 18,
+                      ),
                       onPressed: () => _showAddressDialog(
                         _filterMarkerInputs(controller.getCurrentStepInputs(1)),
                         existingAddress: address,
@@ -752,7 +898,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(FeatherIcons.trash2, color: Colors.red, size: 18),
+                      icon: const Icon(
+                        FeatherIcons.trash2,
+                        color: Colors.red,
+                        size: 18,
+                      ),
                       onPressed: () => controller.removeAddress(index),
                     ),
                   ],
@@ -769,17 +919,19 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-            Obx(() => CustomToggle(
-              label: AppStrings.setAsDefault,
-              value: index == controller.defaultAddressIndex.value,
-              onChanged: (value) {
-                if (value) {
-                  controller.defaultAddressIndex.value = index;
-                } else if (index == controller.defaultAddressIndex.value) {
-                  controller.defaultAddressIndex.value = -1;
-                }
-              },
-            )),
+            Obx(
+              () => CustomToggle(
+                label: AppStrings.setAsDefault,
+                value: index == controller.defaultAddressIndex.value,
+                onChanged: (value) {
+                  if (value) {
+                    controller.defaultAddressIndex.value = index;
+                  } else if (index == controller.defaultAddressIndex.value) {
+                    controller.defaultAddressIndex.value = -1;
+                  }
+                },
+              ),
+            ),
           ],
         ),
       );
@@ -821,14 +973,27 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                         GestureDetector(
-                           onTap: () {
-                             final lat = double.tryParse((address['latitude'] ?? '').toString());
-                             final lng = double.tryParse((address['longitude'] ?? '').toString());
-                             final fullAddress = address['address']?.toString();
-                             _openInGoogleMaps(lat: lat, lng: lng, queryAddress: fullAddress);
-                           },
-                             child: Icon(Icons.place_outlined, color: AppColors.appIconColor, size: 20)),
+                        GestureDetector(
+                          onTap: () {
+                            final lat = double.tryParse(
+                              (address['latitude'] ?? '').toString(),
+                            );
+                            final lng = double.tryParse(
+                              (address['longitude'] ?? '').toString(),
+                            );
+                            final fullAddress = address['address']?.toString();
+                            _openInGoogleMaps(
+                              lat: lat,
+                              lng: lng,
+                              queryAddress: fullAddress,
+                            );
+                          },
+                          child: Icon(
+                            Icons.place_outlined,
+                            color: AppColors.appIconColor,
+                            size: 20,
+                          ),
+                        ),
                         SizedBox(width: 10.w),
                         SizedBox(
                           width: Get.width * 0.6,
@@ -836,8 +1001,8 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                             address['address']?.isNotEmpty == true
                                 ? '${address['address']}${address['landmark']?.isNotEmpty == true ? ', ${address['landmark']}' : ''}'
                                 : 'Latitude: ${address['latitude'] ?? 'N/A'}, Longitude: ${address['longitude'] ?? 'N/A'}',
-                            style:  AppTextStyle.description(
-                              color:AppColors.appDescriptionColor ,
+                            style: AppTextStyle.description(
+                              color: AppColors.appDescriptionColor,
                             ),
                           ),
                         ),
@@ -859,11 +1024,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () => _showAddressDialog(
-                        _filterMarkerInputs(controller.getCurrentStepInputs(1)),
-                        existingAddress: address,
-                        index: index
+                      _filterMarkerInputs(controller.getCurrentStepInputs(1)),
+                      existingAddress: address,
+                      index: index,
                     ),
-                    child:  Icon(
+                    child: Icon(
                       FeatherIcons.edit,
                       color: AppColors.appButtonColor,
                       size: 18,
@@ -877,19 +1042,22 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Obx(() => Expanded(
-                child: CustomToggle(
-                  label: AppStrings.setAsDefault,
-                  value: index == controller.defaultAddressIndex.value,
-                  onChanged: (value) {
-                    if (value) {
-                      controller.defaultAddressIndex.value = index;
-                    } else if (index == controller.defaultAddressIndex.value) {
-                      controller.defaultAddressIndex.value = -1;
-                    }
-                  },
+              Obx(
+                () => Expanded(
+                  child: CustomToggle(
+                    label: AppStrings.setAsDefault,
+                    value: index == controller.defaultAddressIndex.value,
+                    onChanged: (value) {
+                      if (value) {
+                        controller.defaultAddressIndex.value = index;
+                      } else if (index ==
+                          controller.defaultAddressIndex.value) {
+                        controller.defaultAddressIndex.value = -1;
+                      }
+                    },
+                  ),
                 ),
-              )),
+              ),
             ],
           ),
         ],
@@ -897,7 +1065,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  void _showAddressDialog(List<RegisterInput>? addressInputs, {Map<String, dynamic>? existingAddress, int? index}) {
+  void _showAddressDialog(
+    List<RegisterInput>? addressInputs, {
+    Map<String, dynamic>? existingAddress,
+    int? index,
+  }) {
     Get.bottomSheet(
       AddressDialog(
         addressInputs: addressInputs,
@@ -916,7 +1088,12 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  void _showGenericEntryDialog(int stepIndex, List<RegisterInput>? inputs, {Map<String, dynamic>? existingData, int? index}) {
+  void _showGenericEntryDialog(
+    int stepIndex,
+    List<RegisterInput>? inputs, {
+    Map<String, dynamic>? existingData,
+    int? index,
+  }) {
     Get.bottomSheet(
       GenericMultiEntryDialog(
         inputs: inputs,
@@ -935,7 +1112,11 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     );
   }
 
-  Widget _buildActionButtons(ProfileFormPage profileForm, double screenHeight, BuildContext context) {
+  Widget _buildActionButtons(
+    ProfileFormPage profileForm,
+    double screenHeight,
+    BuildContext context,
+  ) {
     return Obx(() {
       final currentStep = controller.currentStep.value;
       final addresses = controller.addresses;
@@ -951,9 +1132,18 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
         for (final b in buttons) {
           final a = (b.action ?? '').toLowerCase();
           if (a != action) continue;
-          if (action == 'prev_step' && (b.visibleFromStep == null || currentStepOneBased >= b.visibleFromStep!)) return b.label;
-          if (action == 'next_step' && (b.visibleUntilStep == null || currentStepOneBased <= b.visibleUntilStep!)) return b.label;
-          if (action == 'submit_form' && (b.visibleOnStep != null && currentStepOneBased == b.visibleOnStep!)) return b.label;
+          if (action == 'prev_step' &&
+              (b.visibleFromStep == null ||
+                  currentStepOneBased >= b.visibleFromStep!))
+            return b.label;
+          if (action == 'next_step' &&
+              (b.visibleUntilStep == null ||
+                  currentStepOneBased <= b.visibleUntilStep!))
+            return b.label;
+          if (action == 'submit_form' &&
+              (b.visibleOnStep != null &&
+                  currentStepOneBased == b.visibleOnStep!))
+            return b.label;
         }
         return null;
       }
@@ -963,29 +1153,48 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
       final submitLabel = labelForAction('submit_form') ?? AppStrings.submit;
 
       return Padding(
-        padding: EdgeInsets.only(top: kIsWeb ? 50 : 30),
+        padding: EdgeInsets.only(
+          top:
+              (kIsWeb ||
+                  GetPlatform.isDesktop ||
+                  MediaQuery.of(context).size.width > 800)
+              ? 50
+              : 30,
+        ),
         child: Row(
           children: [
             if (controller.showPreviousButton.value) ...[
               Expanded(
                 child: CustomButton(
                   text: prevLabel,
-                  onTap: controller.isLoading.value ? null : controller.previousStep,
+                  onTap: controller.isLoading.value
+                      ? null
+                      : controller.previousStep,
                   isLoading: false,
                 ),
               ),
-              SizedBox(width: kIsWeb ? 30 : 16),
+              SizedBox(
+                width:
+                    (kIsWeb ||
+                        GetPlatform.isDesktop ||
+                        MediaQuery.of(context).size.width > 800)
+                    ? 30
+                    : 16,
+              ),
             ],
 
-            if (controller.showNextButton.value || controller.showSubmitButton.value)
+            if (controller.showNextButton.value ||
+                controller.showSubmitButton.value)
               Expanded(
                 child: CustomButton(
-                  text: controller.showSubmitButton.value ? submitLabel : nextLabel,
+                  text: controller.showSubmitButton.value
+                      ? submitLabel
+                      : nextLabel,
                   onTap: controller.isLoading.value
                       ? null
                       : () => controller.showSubmitButton.value
-                          ? controller.submitForm(context)
-                          : controller.nextStep(),
+                            ? controller.submitForm(context)
+                            : controller.nextStep(),
                   isLoading: controller.isLoading.value,
                 ),
               ),
@@ -1007,7 +1216,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             child: Container(
               height: 20,
               width: double.infinity,
-              decoration: BoxDecoration(color: AppColors.appWhite, borderRadius: BorderRadius.circular(4)),
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -1017,7 +1229,10 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             child: Container(
               height: 8,
               width: double.infinity,
-              decoration: BoxDecoration(color: AppColors.appWhite, borderRadius: BorderRadius.circular(4)),
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -1027,42 +1242,54 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
             child: Container(
               height: 24,
               width: 200,
-              decoration: BoxDecoration(color: AppColors.appWhite, borderRadius: BorderRadius.circular(4)),
+              decoration: BoxDecoration(
+                color: AppColors.appWhite,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
           const SizedBox(height: 30),
-          ...List.generate(5, (index) => Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Shimmer.fromColors(
-                  baseColor: AppColors.appMutedColor,
-                  highlightColor: AppColors.appMutedTextColor,
-                  child: Container(
-                    height: 16,
-                    width: 120,
-                    decoration: BoxDecoration(color: AppColors.appWhite, borderRadius: BorderRadius.circular(4)),
+          ...List.generate(
+            5,
+            (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Shimmer.fromColors(
+                    baseColor: AppColors.appMutedColor,
+                    highlightColor: AppColors.appMutedTextColor,
+                    child: Container(
+                      height: 16,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: AppColors.appWhite,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Shimmer.fromColors(
-                  baseColor: AppColors.appMutedColor,
-                  highlightColor: AppColors.appMutedTextColor,
-                  child: Container(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(color: AppColors.appWhite, borderRadius: BorderRadius.circular(8)),
+                  const SizedBox(height: 8),
+                  Shimmer.fromColors(
+                    baseColor: AppColors.appMutedColor,
+                    highlightColor: AppColors.appMutedTextColor,
+                    child: Container(
+                      height: 50,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.appWhite,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
 
-    if (kIsWeb) {
+    if (kIsWeb || GetPlatform.isDesktop || Get.width > 800) {
       return Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800),
@@ -1072,18 +1299,21 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
     }
     return content;
   }
-
-
 }
 
-Future<void> _openInGoogleMaps({double? lat, double? lng, String? queryAddress}) async {
+Future<void> _openInGoogleMaps({
+  double? lat,
+  double? lng,
+  String? queryAddress,
+}) async {
   try {
     Uri? uri;
     if (lat != null && lng != null) {
       // Use coordinates if available
-      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
-    } else
-      if (queryAddress != null && queryAddress.trim().isNotEmpty) {
+      uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      );
+    } else if (queryAddress != null && queryAddress.trim().isNotEmpty) {
       // Fallback to address text search
       final q = Uri.encodeComponent(queryAddress);
       uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$q');
@@ -1130,7 +1360,8 @@ class GenericMultiEntryDialog extends StatefulWidget {
   });
 
   @override
-  State<GenericMultiEntryDialog> createState() => _GenericMultiEntryDialogState();
+  State<GenericMultiEntryDialog> createState() =>
+      _GenericMultiEntryDialogState();
 }
 
 class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
@@ -1223,10 +1454,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
                       ),
                       GestureDetector(
                         onTap: () => Get.back(),
-                        child: const Icon(
-                          FeatherIcons.x,
-                          size: 24,
-                        ),
+                        child: const Icon(FeatherIcons.x, size: 24),
                       ),
                     ],
                   ),
@@ -1249,10 +1477,7 @@ class _GenericMultiEntryDialogState extends State<GenericMultiEntryDialog> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: CustomButton(
-                          text: 'Save',
-                          onTap: _save,
-                        ),
+                        child: CustomButton(text: 'Save', onTap: _save),
                       ),
                     ],
                   ),
@@ -1334,14 +1559,14 @@ class _AddressDialogState extends State<AddressDialog> {
 
   Future<void> _openLocationPicker() async {
     final homeController = Get.find<ClientHomeController>();
-    
+
     // Try to get existing lat/lng from _addressData (for editing existing address)
     double initialLat;
     double initialLng;
-    
+
     final existingLat = _addressData['latitude'];
     final existingLng = _addressData['longitude'];
-    
+
     if (existingLat != null && existingLng != null) {
       // Use existing address coordinates if available
       final lat = double.tryParse(existingLat.toString());
@@ -1373,18 +1598,20 @@ class _AddressDialogState extends State<AddressDialog> {
       }
     }
 
-    await Get.to(() => ReusableLocationPickerScreen(
-      initialLat: initialLat,
-      initialLng: initialLng,
-      onLocationSelected: (latLng, address, landmark) {
-        setState(() {
-          _addressData['latitude'] = latLng.latitude.toString();
-          _addressData['longitude'] = latLng.longitude.toString();
-          _addressData['address'] = address;
-          _addressData['landmark'] = landmark;
-        });
-      },
-    ));
+    await Get.to(
+      () => ReusableLocationPickerScreen(
+        initialLat: initialLat,
+        initialLng: initialLng,
+        onLocationSelected: (latLng, address, landmark) {
+          setState(() {
+            _addressData['latitude'] = latLng.latitude.toString();
+            _addressData['longitude'] = latLng.longitude.toString();
+            _addressData['address'] = address;
+            _addressData['landmark'] = landmark;
+          });
+        },
+      ),
+    );
   }
 
   /// Try to convert a free-text address into coordinates using geocoding.
@@ -1420,21 +1647,30 @@ class _AddressDialogState extends State<AddressDialog> {
         // Try to extract landmark from the address string
         final parts = currentAddress.split(',');
         if (parts.length > 1) {
-          landmark = parts[1].trim(); // Usually the second part is landmark/area
+          landmark = parts[1]
+              .trim(); // Usually the second part is landmark/area
         }
       }
 
       if (mounted) {
         setState(() {
-          _addressData['latitude'] = homeController.currentLatLng.value.latitude.toString();
-          _addressData['longitude'] = homeController.currentLatLng.value.longitude.toString();
+          _addressData['latitude'] = homeController.currentLatLng.value.latitude
+              .toString();
+          _addressData['longitude'] = homeController
+              .currentLatLng
+              .value
+              .longitude
+              .toString();
           _addressData['address'] = homeController.currentLocation.value;
           _addressData['landmark'] = landmark;
         });
       }
     } catch (e) {
-      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to get current location: $e');
-
+      Utils.showSnackbar(
+        isSuccess: false,
+        title: 'Error',
+        message: 'Failed to get current location: $e',
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -1450,7 +1686,7 @@ class _AddressDialogState extends State<AddressDialog> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.9,
       ),
-      decoration:  BoxDecoration(
+      decoration: BoxDecoration(
         gradient: AppColors.appPagecolor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
@@ -1482,16 +1718,17 @@ class _AddressDialogState extends State<AddressDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.index != null ? 'Edit Address' : 'Add New Address',
+                        widget.index != null
+                            ? 'Edit Address'
+                            : 'Add New Address',
                         style: AppTextStyle.title(
-
                           fontWeight: FontWeight.bold,
-                          color: AppColors.appTitleColor
+                          color: AppColors.appTitleColor,
                         ),
                       ),
                       GestureDetector(
                         onTap: () => Get.back(),
-                        child:  Icon(
+                        child: Icon(
                           FeatherIcons.x,
                           size: 24,
                           color: AppColors.appIconColor,
@@ -1528,8 +1765,6 @@ class _AddressDialogState extends State<AddressDialog> {
                       // ],
                     ],
                   ),
-
-
 
                   const SizedBox(height: 20),
 
