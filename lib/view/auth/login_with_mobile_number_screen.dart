@@ -19,14 +19,19 @@ import '../../widget/form_widgets/app_textfield.dart';
 import '../../widget/form_widgets/custom_mobile_number_textfield.dart';
 import 'create_account_screen.dart';
 import 'login_screen.dart';
+
 class LoginWithMobileNoScreen extends StatelessWidget {
-   LoginWithMobileNoScreen({super.key});
+  LoginWithMobileNoScreen({super.key});
 
   final AuthController controller = Get.put(AuthController());
-   static final controllerApp = Get.put(AppSettingsController());
+  static final controllerApp = Get.put(AppSettingsController());
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
+    bool isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    if (isWeb) {
       return _buildWebUI(context);
     }
     return _buildMobileUI(context);
@@ -56,15 +61,13 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2), // shadow color
                   spreadRadius: 2, // how much the shadow spreads
-                  blurRadius: 6,   // blur effect
+                  blurRadius: 6, // blur effect
                   offset: Offset(0, 3), // x, y offset
                 ),
               ],
               gradient: AppColors.appbarColor,
-
             ),
             child: Column(
-
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -82,7 +85,6 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
               ],
             ),
           ),
@@ -100,7 +102,7 @@ class LoginWithMobileNoScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: screenHeight*0.02),
+                  SizedBox(height: screenHeight * 0.02),
                   Center(
                     child: Obx(() {
                       final v = controllerApp.loginWithOtpPage.value;
@@ -108,33 +110,42 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                       return Text(
                         title,
                         style: AppTextStyle.title(
-                            color: AppColors.appTitleColor,
-                            fontWeight: FontWeight.bold,
-                            ),
+                          color: AppColors.appTitleColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       );
                     }),
                   ),
-                  SizedBox(height: screenHeight*0.04),
+                  SizedBox(height: screenHeight * 0.04),
                   Obx(() {
                     final page = controllerApp.loginWithOtpPage.value;
                     final inputs = page?.inputs ?? [];
                     final List<Widget> fields = [];
                     if ((page?.pageDescription ?? '').isNotEmpty) {
-                      fields.add(Text(page!.pageDescription!, style: AppTextStyle.description(color: AppColors.appDescriptionColor)));
+                      fields.add(
+                        Text(
+                          page!.pageDescription!,
+                          style: AppTextStyle.description(
+                            color: AppColors.appDescriptionColor,
+                          ),
+                        ),
+                      );
                       fields.add(SizedBox(height: screenHeight * 0.02));
                     }
                     for (final field in inputs) {
                       final label = field.label ?? '';
                       final hint = field.placeholder ?? '';
-                      fields.add(CustomMobileNumberTextField(
-                        label: label,
-                        hintText: hint,
-                        controller: controller.mobileController,
-                        onChanged: (v) => controller.mobile.value = v,
-                        onCountryChanged: (code) {
-                          controller.countryCode.value = code;
-                        },
-                      ));
+                      fields.add(
+                        CustomMobileNumberTextField(
+                          label: label,
+                          hintText: hint,
+                          controller: controller.mobileController,
+                          onChanged: (v) => controller.mobile.value = v,
+                          onCountryChanged: (code) {
+                            controller.countryCode.value = code;
+                          },
+                        ),
+                      );
                       fields.add(SizedBox(height: screenHeight * 0.02));
                     }
                     return AutofillGroup(child: Column(children: fields));
@@ -143,56 +154,91 @@ class LoginWithMobileNoScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       GestureDetector(
-                        onTap: () =>Utils.gotoNextPage(() => LoginScreen()),
+                        onTap: () => Utils.gotoNextPage(() => LoginScreen()),
                         child: Text(
                           AppStrings.loginwitPassword,
-                          style: AppTextStyle.description(color: AppColors.appLinkColor),
+                          style: AppTextStyle.description(
+                            color: AppColors.appLinkColor,
+                          ),
                           textAlign: TextAlign.end,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: screenHeight*0.06),
+                  SizedBox(height: screenHeight * 0.06),
 
                   // Login button NEEDS Obx for isLoading state
-                  Obx(() => CustomButton(
-                    text: controller.isLoading.value ? "${AppStrings.loggingIn}..." : AppStrings.loggingIn,
-                    onTap: () {
-                      // Dynamic validation from login_with_otp
-                      final page = controllerApp.loginWithOtpPage.value;
-                      final inputs = page?.inputs ?? [];
-                      String? firstError;
-                      final value = controller.mobileController.text.trim();
-                      for (final field in inputs) {
-                        if ((field.required ?? false) && value.isEmpty) { firstError = '${field.label ?? 'Mobile'} is required'; break; }
-                        for (final v in (field.validations ?? [])) {
-                          final t = (v.type ?? '').toLowerCase();
-                          if (t == 'numeric' && !RegExp(r'^\d+$').hasMatch(value)) { firstError = v.errorMessage ?? 'Mobile must be numeric'; break; }
-                          if (t == 'exact_length' && (v.value ?? 0) != value.length) { firstError = v.errorMessage ?? 'Mobile must be exactly ${v.value} digits'; break; }
+                  Obx(
+                    () => CustomButton(
+                      text: controller.isLoading.value
+                          ? "${AppStrings.loggingIn}..."
+                          : AppStrings.loggingIn,
+                      onTap: () {
+                        // Dynamic validation from login_with_otp
+                        final page = controllerApp.loginWithOtpPage.value;
+                        final inputs = page?.inputs ?? [];
+                        String? firstError;
+                        final value = controller.mobileController.text.trim();
+                        for (final field in inputs) {
+                          if ((field.required ?? false) && value.isEmpty) {
+                            firstError =
+                                '${field.label ?? 'Mobile'} is required';
+                            break;
+                          }
+                          for (final v in (field.validations ?? [])) {
+                            final t = (v.type ?? '').toLowerCase();
+                            if (t == 'numeric' &&
+                                !RegExp(r'^\d+$').hasMatch(value)) {
+                              firstError =
+                                  v.errorMessage ?? 'Mobile must be numeric';
+                              break;
+                            }
+                            if (t == 'exact_length' &&
+                                (v.value ?? 0) != value.length) {
+                              firstError =
+                                  v.errorMessage ??
+                                  'Mobile must be exactly ${v.value} digits';
+                              break;
+                            }
+                          }
+                          if (firstError != null) break;
                         }
-                        if (firstError != null) break;
-                      }
-                      if (firstError != null) { Utils.showSnackbar(isSuccess: false, title: AppStrings.alert, message: firstError!); return; }
-                      controller.loginWithOtp(context, controller.mobileController.text.trim());
-                    },
-                  )),
+                        if (firstError != null) {
+                          Utils.showSnackbar(
+                            isSuccess: false,
+                            title: AppStrings.alert,
+                            message: firstError!,
+                          );
+                          return;
+                        }
+                        controller.loginWithOtp(
+                          context,
+                          controller.mobileController.text.trim(),
+                        );
+                      },
+                    ),
+                  ),
 
-                  SizedBox(height: screenHeight*0.02),
+                  SizedBox(height: screenHeight * 0.02),
                   Divider(thickness: 1.0, color: AppColors.textgrey),
-                  SizedBox(height: screenHeight*0.02),
+                  SizedBox(height: screenHeight * 0.02),
                   Center(
                     child: GestureDetector(
-                      onTap: () => Utils.gotoNextPage(() => CreateAccountScreen(),),
+                      onTap: () =>
+                          Utils.gotoNextPage(() => CreateAccountScreen()),
                       child: RichText(
                         text: TextSpan(
-                          text:AppStrings.donthaveanaccount,
-                          style: AppTextStyle.description(color: AppColors.appBodyTextColor),
+                          text: AppStrings.donthaveanaccount,
+                          style: AppTextStyle.description(
+                            color: AppColors.appBodyTextColor,
+                          ),
                           children: [
                             TextSpan(
                               text: AppStrings.createNewAccount,
                               style: AppTextStyle.description(
-                                  color: AppColors.appLinkColor,
-                                  fontWeight: FontWeight.bold),
+                                color: AppColors.appLinkColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -239,21 +285,30 @@ class LoginWithMobileNoScreen extends StatelessWidget {
           final inputs = page?.inputs ?? [];
           final List<Widget> fields = [];
           if ((page?.pageDescription ?? '').isNotEmpty) {
-            fields.add(Text(page!.pageDescription!, style: AppTextStyle.description(color: AppColors.appDescriptionColor)));
+            fields.add(
+              Text(
+                page!.pageDescription!,
+                style: AppTextStyle.description(
+                  color: AppColors.appDescriptionColor,
+                ),
+              ),
+            );
             fields.add(const SizedBox(height: 15));
           }
           for (final field in inputs) {
             final label = field.label ?? '';
             final hint = field.placeholder ?? '';
-            fields.add(CustomMobileNumberTextField(
-              label: label,
-              hintText: hint,
-              controller: controller.mobileController,
-              onChanged: (v) => controller.mobile.value = v,
-              onCountryChanged: (code) {
-                controller.countryCode.value = code;
-              },
-            ));
+            fields.add(
+              CustomMobileNumberTextField(
+                label: label,
+                hintText: hint,
+                controller: controller.mobileController,
+                onChanged: (v) => controller.mobile.value = v,
+                onCountryChanged: (code) {
+                  controller.countryCode.value = code;
+                },
+              ),
+            );
             fields.add(const SizedBox(height: 15));
           }
           return AutofillGroup(child: Column(children: fields));
@@ -272,26 +327,51 @@ class LoginWithMobileNoScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 25),
-        Obx(() => CustomButton(
-          text: controller.isLoading.value ? "${AppStrings.loggingIn}..." : AppStrings.loggingIn,
-          onTap: () {
-            final page = controllerApp.loginWithOtpPage.value;
-            final inputs = page?.inputs ?? [];
-            String? firstError;
-            final value = controller.mobileController.text.trim();
-            for (final field in inputs) {
-              if ((field.required ?? false) && value.isEmpty) { firstError = '${field.label ?? 'Mobile'} is required'; break; }
-              for (final v in (field.validations ?? [])) {
-                final t = (v.type ?? '').toLowerCase();
-                if (t == 'numeric' && !RegExp(r'^\d+$').hasMatch(value)) { firstError = v.errorMessage ?? 'Mobile must be numeric'; break; }
-                if (t == 'exact_length' && (v.value ?? 0) != value.length) { firstError = v.errorMessage ?? 'Mobile must be exactly ${v.value} digits'; break; }
+        Obx(
+          () => CustomButton(
+            text: controller.isLoading.value
+                ? "${AppStrings.loggingIn}..."
+                : AppStrings.loggingIn,
+            onTap: () {
+              final page = controllerApp.loginWithOtpPage.value;
+              final inputs = page?.inputs ?? [];
+              String? firstError;
+              final value = controller.mobileController.text.trim();
+              for (final field in inputs) {
+                if ((field.required ?? false) && value.isEmpty) {
+                  firstError = '${field.label ?? 'Mobile'} is required';
+                  break;
+                }
+                for (final v in (field.validations ?? [])) {
+                  final t = (v.type ?? '').toLowerCase();
+                  if (t == 'numeric' && !RegExp(r'^\d+$').hasMatch(value)) {
+                    firstError = v.errorMessage ?? 'Mobile must be numeric';
+                    break;
+                  }
+                  if (t == 'exact_length' && (v.value ?? 0) != value.length) {
+                    firstError =
+                        v.errorMessage ??
+                        'Mobile must be exactly ${v.value} digits';
+                    break;
+                  }
+                }
+                if (firstError != null) break;
               }
-              if (firstError != null) break;
-            }
-            if (firstError != null) { Utils.showSnackbar(isSuccess: false, title: AppStrings.alert, message: firstError!); return; }
-            controller.loginWithOtp(context, controller.mobileController.text.trim());
-          },
-        )),
+              if (firstError != null) {
+                Utils.showSnackbar(
+                  isSuccess: false,
+                  title: AppStrings.alert,
+                  message: firstError!,
+                );
+                return;
+              }
+              controller.loginWithOtp(
+                context,
+                controller.mobileController.text.trim(),
+              );
+            },
+          ),
+        ),
         SizedBox(height: 20.h),
         Divider(thickness: 1.0, color: AppColors.textgrey),
         SizedBox(height: 20.h),
@@ -301,13 +381,16 @@ class LoginWithMobileNoScreen extends StatelessWidget {
             child: RichText(
               text: TextSpan(
                 text: AppStrings.donthaveanaccount,
-                style: AppTextStyle.description(color: AppColors.appBodyTextColor),
+                style: AppTextStyle.description(
+                  color: AppColors.appBodyTextColor,
+                ),
                 children: [
                   TextSpan(
                     text: AppStrings.createNewAccount,
                     style: AppTextStyle.description(
-                        color: AppColors.appLinkColor,
-                        fontWeight: FontWeight.bold),
+                      color: AppColors.appLinkColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),

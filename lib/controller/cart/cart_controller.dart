@@ -751,8 +751,10 @@ class CartController extends GetxController {
           
           if (onlinePaymentGetDetailsResponseModel.value?.result != null) {
             final result = onlinePaymentGetDetailsResponseModel.value!.result!;
+            debugPrint('🔑 Razorpay Key from backend: ${result.pgKey}');
             _razorpayService.openCheckout(
               amount: (result.totalAmount ?? 0).toDouble(),
+              razorpayKey: result.pgKey,  // ← pass backend key
               description: result.description,
               prefillContact: result.contactNumber,
               prefillEmail: result.emailId,

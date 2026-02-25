@@ -14,6 +14,7 @@ import 'Notifications Services/notifications_services.dart';
 import 'package:libdding/controller/network_controller.dart';
 import 'package:libdding/view/widgets/no_internet_widget.dart';
 import 'package:libdding/core/app_routes.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 void main() async {
@@ -25,6 +26,12 @@ void main() async {
   // 🎨 App settings controller
   final appController = Get.put(AppSettingsController());
   await appController.fetchAllData();
+  
+  final prefsMain = await SharedPreferences.getInstance();
+  final isLanguageSelectedMain = prefsMain.getBool('is_language_selected') ?? false;
+  if (isLanguageSelectedMain) {
+    await appController.fetchAppContent();
+  }
 
   if (!kIsWeb) {
     // 🔥 Firebase (Mobile Only)
@@ -45,7 +52,6 @@ void main() async {
   } else {
     debugPrint("⚠️ Firebase & Notifications skipped on Web (Configuration missing)");
   }
-  #test
 
   // 🔌 SOCKET INIT (LOCAL + GLOBAL)
   final socketService = Get.put<SocketService>(
@@ -103,6 +109,15 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) => _buildApp(),
+    );
+  }
+
+  Widget _buildApp() {
     return Obx(() {
       return GetMaterialApp(
         debugShowCheckedModeBanner: false,
@@ -116,10 +131,10 @@ class _MyAppState extends State<MyApp> {
             : ThemeMode.light,
         initialRoute: AppPages.initial,
         getPages: AppPages.routes,
-        builder: (context, child) {
+        builder: (context, materialChild) {
           return Stack(
             children: [
-              child!,
+              materialChild!,
               Obx(() {
                 final networkController = Get.find<NetworkController>();
                 if (!networkController.isConnected.value) {
@@ -131,7 +146,6 @@ class _MyAppState extends State<MyApp> {
           );
         },
       );
-
     });
   }
 }

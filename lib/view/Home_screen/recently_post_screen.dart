@@ -78,12 +78,12 @@ class _RecentlyPostState extends State<RecentlyPost> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final isWeb = kIsWeb || screenWidth > 800;
+    final isWeb = kIsWeb || GetPlatform.isDesktop || screenWidth > 800;
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        automaticallyImplyLeading: !isWeb,
+        automaticallyImplyLeading: true,
         iconTheme: IconThemeData(color: AppColors.appTextColor),
         flexibleSpace: Container(
           decoration: BoxDecoration(

@@ -538,6 +538,7 @@ class _CartPreviewState extends State<CartPreview> {
           type: item.viewType!,
           itemDataList: fetchedItems.map((e) => e.toJson()).toList(),
           isFromCartScreen: false,
+          showWebVerticalList: true,
           onActionTap: (btn, userKey) async {
              // Handle action taps
           },

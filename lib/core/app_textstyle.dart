@@ -49,9 +49,10 @@ class AppTextStyle {
   static TextStyle title({
     Color? color,
     FontWeight fontWeight = FontWeight.bold,
+    double? fontSize,
   }) {
     return dynamicFont(
-      fontSize: settings.fontTitleSize.value,
+      fontSize: fontSize ?? settings.fontTitleSize.value,
       fontWeight: fontWeight,
       color: color ?? AppColors.appTitleColor,
     );
@@ -60,9 +61,10 @@ class AppTextStyle {
   static TextStyle description({
     Color? color,
     FontWeight fontWeight = regular,
+    double? fontSize,
   }) {
     return dynamicFont(
-      fontSize: settings.fontDescriptionSize.value,
+      fontSize: fontSize ?? settings.fontDescriptionSize.value,
       fontWeight: fontWeight,
       color: color ?? AppColors.appDescriptionColor,
     );

@@ -23,11 +23,13 @@ class PostNewScreen extends StatefulWidget {
   State<PostNewScreen> createState() => _PostNewScreenState();
 }
 
-class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserver {
+class _PostNewScreenState extends State<PostNewScreen>
+    with WidgetsBindingObserver {
   late PostFormController controller;
   bool _hasInitialized = false;
   DateTime? _lastRefreshTime;
-  bool _isUserInteracting = false; // Track if user is actively interacting with form
+  bool _isUserInteracting =
+      false; // Track if user is actively interacting with form
 
   @override
   void initState() {
@@ -92,7 +94,11 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
+    bool isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    if (isWeb) {
       return _buildWebUI(context);
     }
     return _buildMobileUI(context);
@@ -115,9 +121,7 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
           centerTitle: true,
           backgroundColor: Colors.transparent,
           flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: AppColors.appbarColor,
-            ),
+            decoration: BoxDecoration(gradient: AppColors.appbarColor),
           ),
           title: Text(
             postForm?.pageTitle ?? '',
@@ -159,7 +163,9 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
           return Container(
             padding: const EdgeInsets.all(16.0),
             color: Colors.transparent,
-            child: SafeArea(child: _buildActionButtons(postForm, screenHeight, context)),
+            child: SafeArea(
+              child: _buildActionButtons(postForm, screenHeight, context),
+            ),
           );
         }),
       ),
@@ -212,7 +218,7 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
                 Expanded(
                   child: WebFormContainer(
                     widthFactor: 0.9,
-                    heightFactor: 1.0, 
+                    heightFactor: 1.0,
                     htmlContent: """
                       <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
                         <h4 style="color: #1A73E8;">Bidding Guidelines</h4>
@@ -228,8 +234,15 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
                         </div>
                       </div>
                     """,
-                    footer: _buildActionButtons(postForm, screenHeight, context),
-                    child: _buildFormContentWithPageView(postForm, screenHeight),
+                    footer: _buildActionButtons(
+                      postForm,
+                      screenHeight,
+                      context,
+                    ),
+                    child: _buildFormContentWithPageView(
+                      postForm,
+                      screenHeight,
+                    ),
                   ),
                 ),
               ],
@@ -322,9 +335,9 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   // ------------------------- FORM CONTENT WITH PAGEVIEW -------------------------
 
   Widget _buildFormContentWithPageView(
-      PostModel.PostForm postForm,
-      double screenHeight,
-      ) {
+    PostModel.PostForm postForm,
+    double screenHeight,
+  ) {
     final totalSteps = postForm.totalSteps ?? 26;
 
     // Ensure PageController is initialized (should be done in onInit, but check here)
@@ -373,9 +386,14 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
         final padding = mediaQuery.padding;
 
         // Calculate available height dynamically
-        final viewportHeight = kIsWeb
+        bool isWeb = kIsWeb || GetPlatform.isDesktop || screenSize.width > 800;
+        final viewportHeight = isWeb
             ? (screenSize.height * 0.5) // Adaptive height for web content area
-            : (screenSize.height - padding.top - padding.bottom - (80.0 + 60.0 + 40.0 + 80.0 + 32.0) - keyboardHeight);
+            : (screenSize.height -
+                  padding.top -
+                  padding.bottom -
+                  (80.0 + 60.0 + 40.0 + 80.0 + 32.0) -
+                  keyboardHeight);
 
         // Ensure minimum height for proper rendering
         final height = (viewportHeight > 300 ? viewportHeight : 300.0);
@@ -400,14 +418,19 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
               ).viewInsets.bottom;
               return SingleChildScrollView(
                 physics:
-                const AlwaysScrollableScrollPhysics(), // Ensure scrollable even when content fits
+                    const AlwaysScrollableScrollPhysics(), // Ensure scrollable even when content fits
                 padding: EdgeInsets.only(
                   top: 8.0,
                   bottom: currentKeyboardHeight > 0
                       ? 20.0
                       : 8.0, // Extra bottom padding when keyboard is visible
                 ),
-                child: _buildFormContentForStep(postForm, index, screenHeight,context),
+                child: _buildFormContentForStep(
+                  postForm,
+                  index,
+                  screenHeight,
+                  context,
+                ),
               );
             },
           ),
@@ -417,11 +440,11 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   }
 
   Widget _buildFormContentForStep(
-      PostModel.PostForm postForm,
-      int stepIndex,
-      double screenHeight,
-      BuildContext context
-      ) {
+    PostModel.PostForm postForm,
+    int stepIndex,
+    double screenHeight,
+    BuildContext context,
+  ) {
     List<RegisterInput>? currentStepInputs;
 
     final totalSteps = postForm.totalSteps ?? 26;
@@ -442,7 +465,7 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
     final currentStepTitle = _getCurrentStepTitle(postForm, stepIndex);
 
     final hasMultipleMarker = currentStepInputs.any(
-          (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
+      (e) => (e.inputType ?? '').toLowerCase() == 'multiple',
     );
 
     final filteredInputs = currentStepInputs
@@ -473,7 +496,9 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
             )
           else
             DynamicFormBuilder(
-              key: ValueKey('form_${controller.currentStep.value}_${controller.formData.length}'),
+              key: ValueKey(
+                'form_${controller.currentStep.value}_${controller.formData.length}',
+              ),
               inputs: filteredInputs,
               formData: controller.formData,
               onFieldChanged: (fieldName, value) {
@@ -514,9 +539,9 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   }
 
   List<RegisterInput>? _getStepInputs(
-      PostModel.PostForm postForm,
-      int stepIndex,
-      ) {
+    PostModel.PostForm postForm,
+    int stepIndex,
+  ) {
     if (postForm.inputs == null) return null;
 
     // Get StepInput from PostForm and convert to RegisterInput
@@ -542,10 +567,10 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   // ------------------------- MULTI ENTRY STEP -------------------------
 
   Widget _buildGenericMultipleStep(
-      int stepIndex,
-      List<RegisterInput>? inputs, {
-        String? title,
-      }) {
+    int stepIndex,
+    List<RegisterInput>? inputs, {
+    String? title,
+  }) {
     return Obx(() {
       final list = controller.getEntriesForStep(stepIndex);
 
@@ -637,11 +662,11 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
   }
 
   void _showGenericEntryDialog(
-      int stepIndex,
-      List<RegisterInput>? inputs, {
-        Map<String, dynamic>? existingData,
-        int? index,
-      }) {
+    int stepIndex,
+    List<RegisterInput>? inputs, {
+    Map<String, dynamic>? existingData,
+    int? index,
+  }) {
     Get.bottomSheet(
       GenericMultiEntryDialog(
         inputs: inputs,
@@ -662,7 +687,11 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
 
   // ------------------------- ACTION BUTTONS -------------------------
 
-  Widget _buildActionButtons(PostModel.PostForm postForm, double screenHeight,BuildContext context) {
+  Widget _buildActionButtons(
+    PostModel.PostForm postForm,
+    double screenHeight,
+    BuildContext context,
+  ) {
     return Obx(() {
       final currentStep = controller.currentStep.value;
 
@@ -732,8 +761,8 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
                 onTap: controller.isLoading.value
                     ? null
                     : () => controller.showSubmitButton.value
-                    ? controller.submitForm(context)
-                    : controller.nextStep(),
+                          ? controller.submitForm(context)
+                          : controller.nextStep(),
                 isLoading: controller.isLoading.value,
               ),
             ),
@@ -795,7 +824,7 @@ class _PostNewScreenState extends State<PostNewScreen> with WidgetsBindingObserv
           // Form Fields Shimmer (5 fields)
           ...List.generate(
             5,
-                (index) => Padding(
+            (index) => Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

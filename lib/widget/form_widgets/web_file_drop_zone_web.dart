@@ -28,6 +28,7 @@ class WebFileDropZone extends StatefulWidget {
   final bool isDragging;
   final Function(bool) onDragStateChanged;
   final Function(List<File>) onFilesDropped;
+  final VoidCallback? onTap;
 
   const WebFileDropZone({
     super.key,
@@ -35,6 +36,7 @@ class WebFileDropZone extends StatefulWidget {
     required this.isDragging,
     required this.onDragStateChanged,
     required this.onFilesDropped,
+    this.onTap,
   });
 
   @override
@@ -60,6 +62,13 @@ class _WebFileDropZoneState extends State<WebFileDropZone> {
       ..style.width = '100%'
       ..style.height = '100%'
       ..style.pointerEvents = 'auto';
+
+    // Forward clicks if onTap is provided
+    _dropZoneElement!.onClick.listen((e) {
+      if (widget.onTap != null) {
+        widget.onTap!();
+      }
+    });
 
     // Prevent default drag behaviors
     _dropZoneElement!.onDragOver.listen((e) {
@@ -115,13 +124,6 @@ class _WebFileDropZoneState extends State<WebFileDropZone> {
             
             if (bytes != null) {
               // Create a PlatformFile from the dropped file
-              final platformFile = PlatformFile(
-                name: htmlFile.name,
-                size: htmlFile.size,
-                bytes: bytes,
-                path: null, // Web doesn't have file paths
-              );
-              
               // For web, we need to create a File object that can be used
               // Since dart:io File doesn't work on web, we'll use a workaround
               // by creating a File with a special path that indicates it's from web
@@ -132,7 +134,7 @@ class _WebFileDropZoneState extends State<WebFileDropZone> {
               storeWebFileBytes(webFilePath, bytes);
               
               final webFile = File(webFilePath);
-              widget.onFilesDropped([webFile] as List<File>);
+              widget.onFilesDropped([webFile]);
             }
           }
         });

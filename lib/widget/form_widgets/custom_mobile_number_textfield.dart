@@ -29,10 +29,14 @@ class CustomMobileNumberTextField extends StatefulWidget {
   });
 
   @override
-  State<CustomMobileNumberTextField> createState() => _CustomMobileNumberTextFieldState();
+  State<CustomMobileNumberTextField> createState() =>
+      _CustomMobileNumberTextFieldState();
 }
-class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextField> {
-  final AppSettingsController _settingsController = Get.find<AppSettingsController>();
+
+class _CustomMobileNumberTextFieldState
+    extends State<CustomMobileNumberTextField> {
+  final AppSettingsController _settingsController =
+      Get.find<AppSettingsController>();
   late String _selectedCountryCode;
   final TextEditingController _searchController = TextEditingController();
   final RxList<Country> _filteredCountries = <Country>[].obs;
@@ -40,11 +44,14 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
   String _getFlagEmoji(String? flagCode) {
     if (flagCode == null || flagCode.isEmpty) return '🌍';
     if (flagCode.length != 2) return flagCode;
-    
+
     try {
-      final int firstLetter = flagCode.toUpperCase().codeUnitAt(0) - 0x41 + 0x1F1E6;
-      final int secondLetter = flagCode.toUpperCase().codeUnitAt(1) - 0x41 + 0x1F1E6;
-      return String.fromCharCode(firstLetter) + String.fromCharCode(secondLetter);
+      final int firstLetter =
+          flagCode.toUpperCase().codeUnitAt(0) - 0x41 + 0x1F1E6;
+      final int secondLetter =
+          flagCode.toUpperCase().codeUnitAt(1) - 0x41 + 0x1F1E6;
+      return String.fromCharCode(firstLetter) +
+          String.fromCharCode(secondLetter);
     } catch (e) {
       return '🌍';
     }
@@ -53,17 +60,18 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize with dynamic default from settings if available and no override provided
-    if (widget.initialCountryCode == '+91' && _settingsController.country.value != null) {
+    if (widget.initialCountryCode == '+91' &&
+        _settingsController.country.value != null) {
       _selectedCountryCode = _settingsController.country.value!.code ?? '+91';
     } else {
       _selectedCountryCode = widget.initialCountryCode;
     }
-    
+
     // Notify parent of initial selection
     if (widget.onCountryChanged != null) {
-       widget.onCountryChanged!(_selectedCountryCode);
+      widget.onCountryChanged!(_selectedCountryCode);
     }
   }
 
@@ -73,16 +81,16 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
     } else {
       final lowercaseQuery = query.toLowerCase();
       final cleanQuery = query.replaceAll('+', '').toLowerCase();
-      
+
       _filteredCountries.assignAll(
         _settingsController.availableCountries.where((country) {
           final name = country.name?.toLowerCase() ?? '';
           final code = country.code?.toLowerCase() ?? '';
           final cleanCode = code.replaceAll('+', '').toLowerCase();
-          
-          return name.contains(lowercaseQuery) || 
-                 code.contains(lowercaseQuery) ||
-                 (cleanQuery.isNotEmpty && cleanCode.contains(cleanQuery));
+
+          return name.contains(lowercaseQuery) ||
+              code.contains(lowercaseQuery) ||
+              (cleanQuery.isNotEmpty && cleanCode.contains(cleanQuery));
         }).toList(),
       );
     }
@@ -94,7 +102,11 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
     final countries = _settingsController.availableCountries;
     if (countries.isEmpty) return;
 
-    if (kIsWeb) {
+    bool isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    if (isWeb) {
       _showWebCountryPicker();
     } else {
       _showMobileCountryPicker();
@@ -106,7 +118,9 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Container(
             width: 500,
             constraints: BoxConstraints(
@@ -122,7 +136,7 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                   child: Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
@@ -147,11 +161,18 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
                     style: AppTextStyle.body(color: AppColors.appTitleColor),
                     decoration: InputDecoration(
                       hintText: 'Search country...',
-                      hintStyle: AppTextStyle.description(color: AppColors.appDescriptionColor),
-                      prefixIcon: Icon(Icons.search, color: AppColors.appDescriptionColor),
+                      hintStyle: AppTextStyle.description(
+                        color: AppColors.appDescriptionColor,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: AppColors.appDescriptionColor,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: AppColors.appBodyTextColor),
+                        borderSide: BorderSide(
+                          color: AppColors.appBodyTextColor,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -161,40 +182,44 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
                   ),
                 ),
                 Flexible(
-                  child: Obx(() => ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    shrinkWrap: true,
-                    itemCount: _filteredCountries.length,
-                    itemBuilder: (context, index) {
-                      final country = _filteredCountries[index];
-                      return ListTile(
-                        leading: Text(
-                          _getFlagEmoji(country.flag),
-                          style: const TextStyle(fontSize: 24),
-                        ),
-                        title: Text(
-                          country.name ?? '',
-                          style: AppTextStyle.body(color: AppColors.appTitleColor),
-                        ),
-                        trailing: Text(
-                          country.code ?? '',
-                          style: AppTextStyle.body(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.appDescriptionColor,
+                  child: Obx(
+                    () => ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shrinkWrap: true,
+                      itemCount: _filteredCountries.length,
+                      itemBuilder: (context, index) {
+                        final country = _filteredCountries[index];
+                        return ListTile(
+                          leading: Text(
+                            _getFlagEmoji(country.flag),
+                            style: const TextStyle(fontSize: 24),
                           ),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            _selectedCountryCode = country.code ?? '';
-                          });
-                          if (widget.onCountryChanged != null) {
-                            widget.onCountryChanged!(_selectedCountryCode);
-                          }
-                          Navigator.pop(context);
-                        },
-                      );
-                    },
-                  )),
+                          title: Text(
+                            country.name ?? '',
+                            style: AppTextStyle.body(
+                              color: AppColors.appTitleColor,
+                            ),
+                          ),
+                          trailing: Text(
+                            country.code ?? '',
+                            style: AppTextStyle.body(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.appDescriptionColor,
+                            ),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              _selectedCountryCode = country.code ?? '';
+                            });
+                            if (widget.onCountryChanged != null) {
+                              widget.onCountryChanged!(_selectedCountryCode);
+                            }
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -220,7 +245,9 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
             ),
             decoration: BoxDecoration(
               gradient: AppColors.appPagecolor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -236,8 +263,10 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
                   ),
                 ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: TextField(
                     controller: _searchController,
                     onChanged: _filterCountries,
@@ -245,12 +274,17 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
                     decoration: InputDecoration(
                       hintText: 'Search country...',
                       hintStyle: AppTextStyle.description(
-                          color: AppColors.appDescriptionColor),
-                      prefixIcon:
-                          Icon(Icons.search, color: AppColors.appDescriptionColor),
+                        color: AppColors.appDescriptionColor,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: AppColors.appDescriptionColor,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: AppColors.appBodyTextColor),
+                        borderSide: BorderSide(
+                          color: AppColors.appBodyTextColor,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -260,40 +294,43 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
                   ),
                 ),
                 Flexible(
-                  child: Obx(() => ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _filteredCountries.length,
-                        itemBuilder: (context, index) {
-                          final country = _filteredCountries[index];
-                          return ListTile(
-                            leading: Text(
-                              _getFlagEmoji(country.flag),
-                              style: const TextStyle(fontSize: 24),
+                  child: Obx(
+                    () => ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _filteredCountries.length,
+                      itemBuilder: (context, index) {
+                        final country = _filteredCountries[index];
+                        return ListTile(
+                          leading: Text(
+                            _getFlagEmoji(country.flag),
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                          title: Text(
+                            country.name ?? '',
+                            style: AppTextStyle.body(
+                              color: AppColors.appTitleColor,
                             ),
-                            title: Text(
-                              country.name ?? '',
-                              style:
-                                  AppTextStyle.body(color: AppColors.appTitleColor),
+                          ),
+                          trailing: Text(
+                            country.code ?? '',
+                            style: AppTextStyle.body(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.appDescriptionColor,
                             ),
-                            trailing: Text(
-                              country.code ?? '',
-                              style: AppTextStyle.body(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.appDescriptionColor,
-                              ),
-                            ),
-                            onTap: () {
-                              setState(() {
-                                _selectedCountryCode = country.code ?? '';
-                              });
-                              if (widget.onCountryChanged != null) {
-                                widget.onCountryChanged!(_selectedCountryCode);
-                              }
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                      )),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              _selectedCountryCode = country.code ?? '';
+                            });
+                            if (widget.onCountryChanged != null) {
+                              widget.onCountryChanged!(_selectedCountryCode);
+                            }
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -303,7 +340,6 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -320,83 +356,94 @@ class _CustomMobileNumberTextFieldState extends State<CustomMobileNumberTextFiel
       }
 
       return Theme(
-      data: Theme.of(context).copyWith(
-        textSelectionTheme: TextSelectionThemeData(
-          selectionColor: AppColors.appColor,
-          selectionHandleColor: AppColors.appColor,
-        ),
-      ),
-      child: TextField(
-        controller: widget.controller,
-        style: TextStyle(color: AppColors.appTitleColor),
-        keyboardType: TextInputType.phone,
-        cursorColor: AppColors.appColor,
-        inputFormatters: [
-          PhoneNumberFormatter(
-            availableCountryCodes: _settingsController.availableCountries
-                .map((e) => e.code ?? '')
-                .where((code) => code.isNotEmpty)
-                .toList(),
-            onCountryCodeDetected: (code) {
-              setState(() {
-                _selectedCountryCode = code;
-              });
-              if (widget.onCountryChanged != null) {
-                widget.onCountryChanged!(code);
-              }
-            },
-          ), // Use the formatter we created
-          LengthLimitingTextInputFormatter(10),
-        ],
-        onChanged: widget.onChanged,
-        decoration: InputDecoration(
-          label: Text(
-            widget.label,
-            style: AppTextStyle.description(color: AppColors.appDescriptionColor),
+        data: Theme.of(context).copyWith(
+          textSelectionTheme: TextSelectionThemeData(
+            selectionColor: AppColors.appColor,
+            selectionHandleColor: AppColors.appColor,
           ),
-          hintText: widget.hintText,
-          hintStyle: AppTextStyle.description(color: AppColors.appDescriptionColor),
-          // Country Picker Button
-          prefixIcon: GestureDetector(
-            onTap: _showCountryPicker,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              // Ensure background is transparent so hit test works
-              color: Colors.transparent, 
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(flag, style: const TextStyle(fontSize: 22)),
-                  const SizedBox(width: 8),
-                  Text(
-                    _selectedCountryCode,
-                    style: AppTextStyle.body(
-                      color: AppColors.appTitleColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.arrow_drop_down, color: AppColors.appDescriptionColor),
-                  const SizedBox(width: 8),
-                  // Vertical divider to separate code from input
-                  Container(
-                    height: 24,
-                    width: 1,
-                    color: AppColors.appDescriptionColor.withOpacity(0.5),
-                  ),
-                ],
+        ),
+        child: TextField(
+          controller: widget.controller,
+          style: TextStyle(color: AppColors.appTitleColor),
+          keyboardType: TextInputType.phone,
+          cursorColor: AppColors.appColor,
+          inputFormatters: [
+            PhoneNumberFormatter(
+              availableCountryCodes: _settingsController.availableCountries
+                  .map((e) => e.code ?? '')
+                  .where((code) => code.isNotEmpty)
+                  .toList(),
+              onCountryCodeDetected: (code) {
+                setState(() {
+                  _selectedCountryCode = code;
+                });
+                if (widget.onCountryChanged != null) {
+                  widget.onCountryChanged!(code);
+                }
+              },
+            ), // Use the formatter we created
+            LengthLimitingTextInputFormatter(10),
+          ],
+          onChanged: widget.onChanged,
+          decoration: InputDecoration(
+            label: Text(
+              widget.label,
+              style: AppTextStyle.description(
+                color: AppColors.appDescriptionColor,
               ),
             ),
-          ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appBodyTextColor),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.appDescriptionColor),
+            hintText: widget.hintText,
+            hintStyle: AppTextStyle.description(
+              color: AppColors.appDescriptionColor,
+            ),
+            // Country Picker Button
+            prefixIcon: GestureDetector(
+              onTap: _showCountryPicker,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                // Ensure background is transparent so hit test works
+                color: Colors.transparent,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(flag, style: const TextStyle(fontSize: 22)),
+                    const SizedBox(width: 8),
+                    Text(
+                      _selectedCountryCode,
+                      style: AppTextStyle.body(
+                        color: AppColors.appTitleColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: AppColors.appDescriptionColor,
+                    ),
+                    const SizedBox(width: 8),
+                    // Vertical divider to separate code from input
+                    Container(
+                      height: 24,
+                      width: 1,
+                      color: AppColors.appDescriptionColor.withOpacity(0.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.appBodyTextColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.appDescriptionColor),
+            ),
           ),
         ),
-      ));
+      );
     });
   }
 }

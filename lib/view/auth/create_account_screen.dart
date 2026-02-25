@@ -61,7 +61,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
+    bool isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    if (isWeb) {
       return _buildWebUI(context);
     }
     return _buildMobileUI(context);
@@ -69,7 +73,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   Widget _buildMobileUI(BuildContext context) {
     // Initialize ScreenUtil with a reference design size (375x812 for mobile)
-    ScreenUtil.init(context, designSize: const Size(375, 812), minTextAdapt: true);
+    ScreenUtil.init(
+      context,
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+    );
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
@@ -118,8 +126,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                           fit: BoxFit.contain,
                         ),
                       ),
-
-
                     ],
                   ),
                 ),
@@ -133,9 +139,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             child: Container(
               height: screenHeight,
               width: screenWidth,
-              decoration: BoxDecoration(
-                gradient: AppColors.appPagecolor,
-              ),
+              decoration: BoxDecoration(gradient: AppColors.appPagecolor),
               child: Padding(
                 padding: EdgeInsets.all(10.w),
                 child: SingleChildScrollView(
@@ -183,10 +187,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           final inputs = reg?.inputs ?? [];
           List<Widget> widgets = [];
           if ((reg?.pageDescription ?? '').isNotEmpty) {
-            widgets.add(Text(
-              reg!.pageDescription!,
-              style: AppTextStyle.description(color: AppColors.appDescriptionColor),
-            ));
+            widgets.add(
+              Text(
+                reg!.pageDescription!,
+                style: AppTextStyle.description(
+                  color: AppColors.appDescriptionColor,
+                ),
+              ),
+            );
             widgets.add(SizedBox(height: isWeb ? 10 : 16.h));
           }
           for (final field in inputs) {
@@ -200,14 +208,20 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 // Choose controller: map dynamic fields to existing auth controllers when matching names
                 TextEditingController selectedController;
                 final lname = name.toLowerCase();
-                if (lname == 'username' || lname.contains('mobile') || lname.contains('phone')) {
+                if (lname == 'username' ||
+                    lname.contains('mobile') ||
+                    lname.contains('phone')) {
                   selectedController = controller.mobileController;
                 } else if (lname == 'password') {
                   selectedController = controller.passwordController;
-                } else if (lname == 'confirm_password' || lname.contains('confirm')) {
+                } else if (lname == 'confirm_password' ||
+                    lname.contains('confirm')) {
                   selectedController = controller.confirmPasswordController;
                 } else {
-                  _textControllers.putIfAbsent(name, () => TextEditingController());
+                  _textControllers.putIfAbsent(
+                    name,
+                    () => TextEditingController(),
+                  );
                   selectedController = _textControllers[name]!;
                 }
 
@@ -217,133 +231,170 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
                 // Detect mobile and apply numeric+length restrictions (prefer validations exact_length)
                 int? exactLen;
-                final hasNumeric = (field.validations ?? []).any((v) => (v.type ?? '') == 'numeric');
+                final hasNumeric = (field.validations ?? []).any(
+                  (v) => (v.type ?? '') == 'numeric',
+                );
                 for (final v in (field.validations ?? [])) {
                   if ((v.type ?? '') == 'exact_length' && v.value != null) {
                     exactLen = v.value;
                   }
                 }
-                final isMobile = lname == 'username' || lname.contains('mobile') || lname.contains('phone');
+                final isMobile =
+                    lname == 'username' ||
+                    lname.contains('mobile') ||
+                    lname.contains('phone');
 
                 if (isMobile) {
-                  widgets.add(CustomMobileNumberTextField(
-                    label: label,
-                    hintText: hint,
-                    controller: selectedController,
-                    isRequired: field.required ?? false,
-                    onCountryChanged: (code) => controller.countryCode.value = code,
-                  ));
+                  widgets.add(
+                    CustomMobileNumberTextField(
+                      label: label,
+                      hintText: hint,
+                      controller: selectedController,
+                      isRequired: field.required ?? false,
+                      onCountryChanged: (code) =>
+                          controller.countryCode.value = code,
+                    ),
+                  );
                 } else {
-                  widgets.add(CustomTextfield(
-                    label: label,
-                    hintText: hint,
-                    controller: selectedController,
-                    obscureText: type == 'password' ? (_passwordObscure[name] ?? true) : false,
-                    isRequired: field.required ?? false,
-                    keyboardType: hasNumeric ? TextInputType.number : TextInputType.text,
-                    maxLength: exactLen,
-                    inputFormatters: hasNumeric
-                        ? [FilteringTextInputFormatter.digitsOnly]
-                        : null,
-                    suffixIcon: type == 'password'
-                        ? IconButton(
-                            onPressed: () {
-                              setState(() => _passwordObscure[name] = !(_passwordObscure[name] ?? true));
-                            },
-                            icon: Icon(
-                              (_passwordObscure[name] ?? true) ? Icons.visibility_off : Icons.visibility,
-                              color: AppColors.appIconColor,
-                            ),
-                          )
-                        : null,
-                  ));
+                  widgets.add(
+                    CustomTextfield(
+                      label: label,
+                      hintText: hint,
+                      controller: selectedController,
+                      obscureText: type == 'password'
+                          ? (_passwordObscure[name] ?? true)
+                          : false,
+                      isRequired: field.required ?? false,
+                      keyboardType: hasNumeric
+                          ? TextInputType.number
+                          : TextInputType.text,
+                      maxLength: exactLen,
+                      inputFormatters: hasNumeric
+                          ? [FilteringTextInputFormatter.digitsOnly]
+                          : null,
+                      suffixIcon: type == 'password'
+                          ? IconButton(
+                              onPressed: () {
+                                setState(
+                                  () => _passwordObscure[name] =
+                                      !(_passwordObscure[name] ?? true),
+                                );
+                              },
+                              icon: Icon(
+                                (_passwordObscure[name] ?? true)
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: AppColors.appIconColor,
+                              ),
+                            )
+                          : null,
+                    ),
+                  );
                 }
                 widgets.add(SizedBox(height: isWeb ? 10 : 16.h));
                 break;
               case 'textarea':
-                _textControllers.putIfAbsent(name, () => TextEditingController());
-                widgets.add(CustomTextarea(
-                  label: label,
-                  hintText: hint,
-                  controller: _textControllers[name],
-                  isRequired: field.required ?? false,
-                ));
+                _textControllers.putIfAbsent(
+                  name,
+                  () => TextEditingController(),
+                );
+                widgets.add(
+                  CustomTextarea(
+                    label: label,
+                    hintText: hint,
+                    controller: _textControllers[name],
+                    isRequired: field.required ?? false,
+                  ),
+                );
                 widgets.add(SizedBox(height: isWeb ? 10 : 16.h));
                 break;
               case 'toggle':
                 _toggleValues.putIfAbsent(name, () => false);
-                widgets.add(CustomToggle(
-                  label: label,
-                  value: _toggleValues[name]!,
-                  onChanged: (v) => setState(() => _toggleValues[name] = v),
-                  isRequired: field.required ?? false,
-                ));
+                widgets.add(
+                  CustomToggle(
+                    label: label,
+                    value: _toggleValues[name]!,
+                    onChanged: (v) => setState(() => _toggleValues[name] = v),
+                    isRequired: field.required ?? false,
+                  ),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'radio':
                 _radioValues.putIfAbsent(name, () => null);
-                widgets.add(CustomRadioGroup(
-                  label: label,
-                  options: field.options ?? [],
-                  value: _radioValues[name],
-                  onChanged: (v) => setState(() => _radioValues[name] = v),
-                ));
+                widgets.add(
+                  CustomRadioGroup(
+                    label: label,
+                    options: field.options ?? [],
+                    value: _radioValues[name],
+                    onChanged: (v) => setState(() => _radioValues[name] = v),
+                  ),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'check':
                 _checkValues.putIfAbsent(name, () => <String>{});
-                widgets.add(CustomCheckboxGroup(
-                  label: label,
-                  options: field.options ?? [],
-                  values: _checkValues[name]!,
-                  onChanged: (v) => setState(() => _checkValues[name] = v),
-                ));
+                widgets.add(
+                  CustomCheckboxGroup(
+                    label: label,
+                    options: field.options ?? [],
+                    values: _checkValues[name]!,
+                    onChanged: (v) => setState(() => _checkValues[name] = v),
+                  ),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'file':
-                widgets.add(CustomFilePicker(
-                  label: label,
-                  value: null,
-                  onPicked: (f) {},
-                ));
+                widgets.add(
+                  CustomFilePicker(label: label, value: null, onPicked: (f) {}),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'dropdown':
                 _dropdownValues.putIfAbsent(name, () => null);
-                widgets.add(CustomDropdown(
-                  label: label,
-                  hintText: hint,
-                  options: field.options ?? [],
-                  value: _dropdownValues[name],
-                  onChanged: (v) => setState(() => _dropdownValues[name] = v),
-                ));
+                widgets.add(
+                  CustomDropdown(
+                    label: label,
+                    hintText: hint,
+                    options: field.options ?? [],
+                    value: _dropdownValues[name],
+                    onChanged: (v) => setState(() => _dropdownValues[name] = v),
+                  ),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'date_time':
                 _dateTimeValues.putIfAbsent(name, () => null);
-                widgets.add(CustomDateTimePicker(
-                  label: label,
-                  value: _dateTimeValues[name],
-                  onChanged: (v) => setState(() => _dateTimeValues[name] = v),
-                ));
+                widgets.add(
+                  CustomDateTimePicker(
+                    label: label,
+                    value: _dateTimeValues[name],
+                    onChanged: (v) => setState(() => _dateTimeValues[name] = v),
+                  ),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'date_picker':
                 _dateTimeValues.putIfAbsent(name, () => null);
-                widgets.add(CustomDatePicker(
-                  label: label,
-                  value: _dateTimeValues[name],
-                  onChanged: (v) => setState(() => _dateTimeValues[name] = v),
-                ));
+                widgets.add(
+                  CustomDatePicker(
+                    label: label,
+                    value: _dateTimeValues[name],
+                    onChanged: (v) => setState(() => _dateTimeValues[name] = v),
+                  ),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'date_range':
                 _dateRangeValues.putIfAbsent(name, () => null);
-                widgets.add(CustomDateRangePicker(
-                  label: label,
-                  value: _dateRangeValues[name],
-                  onChanged: (v) => setState(() => _dateRangeValues[name] = v),
-                ));
+                widgets.add(
+                  CustomDateRangePicker(
+                    label: label,
+                    value: _dateRangeValues[name],
+                    onChanged: (v) =>
+                        setState(() => _dateRangeValues[name] = v),
+                  ),
+                );
                 widgets.add(const SizedBox(height: 8));
                 break;
               case 'address':
@@ -351,17 +402,31 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(label, style: AppTextStyle.title(color: AppColors.appTextColor)),
+                      Text(
+                        label,
+                        style: AppTextStyle.title(
+                          color: AppColors.appTextColor,
+                        ),
+                      ),
                       SizedBox(height: isWeb ? 5 : 8.h),
                       CustomButton(
                         text: 'Pick Location',
                         onTap: () async {
-                          await Utils.gotoNextPage(() => const LocationPickerScreen(initialLat: 20.5937, initialLng: 78.9629));
+                          await Utils.gotoNextPage(
+                            () => const LocationPickerScreen(
+                              initialLat: 20.5937,
+                              initialLng: 78.9629,
+                            ),
+                          );
                           // Using home controller to fetch last selected address
                           final hc = Get.find<ClientHomeController>();
                           setState(() {
-                            _textControllers.putIfAbsent(name, () => TextEditingController());
-                            _textControllers[name]!.text = hc.currentLocation.value;
+                            _textControllers.putIfAbsent(
+                              name,
+                              () => TextEditingController(),
+                            );
+                            _textControllers[name]!.text =
+                                hc.currentLocation.value;
                           });
                         },
                       ),
@@ -369,7 +434,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       CustomTextarea(
                         label: 'Selected Address',
                         hintText: hint,
-                        controller: _textControllers.putIfAbsent(name, () => TextEditingController()),
+                        controller: _textControllers.putIfAbsent(
+                          name,
+                          () => TextEditingController(),
+                        ),
                         isRequired: field.required ?? false,
                       ),
                     ],
@@ -378,13 +446,18 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 widgets.add(const SizedBox(height: 8));
                 break;
               default:
-                _textControllers.putIfAbsent(name, () => TextEditingController());
-                widgets.add(CustomTextfield(
-                  label: label,
-                  hintText: hint,
-                  controller: _textControllers[name],
-                  isRequired: field.required ?? false,
-                ));
+                _textControllers.putIfAbsent(
+                  name,
+                  () => TextEditingController(),
+                );
+                widgets.add(
+                  CustomTextfield(
+                    label: label,
+                    hintText: hint,
+                    controller: _textControllers[name],
+                    isRequired: field.required ?? false,
+                  ),
+                );
                 widgets.add(SizedBox(height: isWeb ? 10 : 16.h));
             }
           }
@@ -405,7 +478,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
-                      color: controller.isCheck.value ? AppColors.appButtonColor :AppColors.appTitleColor,
+                      color: controller.isCheck.value
+                          ? AppColors.appButtonColor
+                          : AppColors.appTitleColor,
                       width: 2,
                     ),
                     color: controller.isCheck.value
@@ -413,11 +488,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         : Colors.transparent,
                   ),
                   child: controller.isCheck.value
-                      ? const Icon(
-                    Icons.check,
-                    size: 16,
-                    color: Colors.white,
-                  )
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
                       : null,
                 ),
               ),
@@ -428,9 +499,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               child: RichText(
                 text: TextSpan(
                   text: AppStrings.yesIunderstandandagreetothe,
-                  style: AppTextStyle.body(
-                    color: AppColors.appBodyTextColor,
-                  ),
+                  style: AppTextStyle.body(color: AppColors.appBodyTextColor),
                   children: [
                     TextSpan(
                       text: AppStrings.termsofService,
@@ -455,7 +524,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             onTap: () {
               // Terms check
               if (!controller.isCheck.value) {
-                Utils.showSnackbar(isSuccess: false, title: AppStrings.alert, message: AppStrings.pleaseAcceptTerms);
+                Utils.showSnackbar(
+                  isSuccess: false,
+                  title: AppStrings.alert,
+                  message: AppStrings.pleaseAcceptTerms,
+                );
                 return;
               }
 
@@ -465,11 +538,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
               String? getFieldValue(String name) {
                 final lname = name.toLowerCase();
-                if (lname == 'username' || lname.contains('mobile') || lname.contains('phone')) {
+                if (lname == 'username' ||
+                    lname.contains('mobile') ||
+                    lname.contains('phone')) {
                   return controller.mobileController.text.trim();
                 } else if (lname == 'password') {
                   return controller.passwordController.text.trim();
-                } else if (lname == 'confirm_password' || lname.contains('confirm')) {
+                } else if (lname == 'confirm_password' ||
+                    lname.contains('confirm')) {
                   return controller.confirmPasswordController.text.trim();
                 }
                 return _textControllers[name]?.text.trim();
@@ -491,7 +567,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       case 'check':
                         return ((_checkValues[name] ?? <String>{}).isEmpty);
                       case 'dropdown':
-                        return (_dropdownValues[name] == null || (_dropdownValues[name] ?? '').isEmpty);
+                        return (_dropdownValues[name] == null ||
+                            (_dropdownValues[name] ?? '').isEmpty);
                       case 'date_time':
                       case 'date_picker':
                         return _dateTimeValues[name] == null;
@@ -512,47 +589,67 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                   final vtype = (v.type ?? '').toLowerCase();
                   if (vtype == 'numeric') {
                     if (!RegExp(r'^\d+$').hasMatch(value)) {
-                      firstError ??= v.errorMessage ?? '${field.label ?? name} must be numeric';
+                      firstError ??=
+                          v.errorMessage ??
+                          '${field.label ?? name} must be numeric';
                       break;
                     }
                   } else if (vtype == 'exact_length') {
                     final len = v.value ?? 0;
                     if (value.length != len) {
-                      firstError ??= v.errorMessage ?? '${field.label ?? name} must be exactly $len characters';
+                      firstError ??=
+                          v.errorMessage ??
+                          '${field.label ?? name} must be exactly $len characters';
                       break;
                     }
                   } else if (vtype == 'min_length') {
                     final len = v.value ?? v.minLength ?? 0;
                     if (value.length < len) {
-                      firstError ??= v.errorMessage ?? v.minLengthError ?? '${field.label ?? name} must be at least $len characters';
+                      firstError ??=
+                          v.errorMessage ??
+                          v.minLengthError ??
+                          '${field.label ?? name} must be at least $len characters';
                       break;
                     }
                   } else if (vtype == 'max_length') {
                     final len = v.value ?? v.maxLength ?? 999999;
                     if (value.length > len) {
-                      firstError ??= v.errorMessage ?? v.maxLengthError ?? '${field.label ?? name} must be at most $len characters';
+                      firstError ??=
+                          v.errorMessage ??
+                          v.maxLengthError ??
+                          '${field.label ?? name} must be at most $len characters';
                       break;
                     }
                   } else if (vtype == 'pattern') {
                     final pat = v.pattern;
                     if (pat != null && !RegExp(pat).hasMatch(value)) {
-                      firstError ??= v.errorMessage ?? v.patternErrorMessage ?? '${field.label ?? name} format is invalid';
+                      firstError ??=
+                          v.errorMessage ??
+                          v.patternErrorMessage ??
+                          '${field.label ?? name} format is invalid';
                       break;
                     }
                   } else if (vtype == 'matches') {
                     final other = getFieldValue(v.field ?? '') ?? '';
                     if (value != other) {
-                      firstError ??= v.errorMessage ?? '${field.label ?? name} does not match';
+                      firstError ??=
+                          v.errorMessage ??
+                          '${field.label ?? name} does not match';
                       break;
                     }
                   } else if (vtype == 'password') {
                     final min = v.minLength ?? 8;
                     if (value.length < min) {
-                      firstError ??= v.minLengthError ?? 'Password must be at least $min characters';
+                      firstError ??=
+                          v.minLengthError ??
+                          'Password must be at least $min characters';
                       break;
                     }
-                    if (v.pattern != null && !RegExp(v.pattern!).hasMatch(value)) {
-                      firstError ??= v.patternErrorMessage ?? 'Password does not meet complexity requirements';
+                    if (v.pattern != null &&
+                        !RegExp(v.pattern!).hasMatch(value)) {
+                      firstError ??=
+                          v.patternErrorMessage ??
+                          'Password does not meet complexity requirements';
                       break;
                     }
                   }
@@ -562,7 +659,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               }
 
               if (firstError != null) {
-                Utils.showSnackbar(isSuccess: false, title: AppStrings.alert, message: firstError!);
+                Utils.showSnackbar(
+                  isSuccess: false,
+                  title: AppStrings.alert,
+                  message: firstError!,
+                );
                 return;
               }
 
@@ -572,65 +673,66 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         }),
         SizedBox(height: isWeb ? 15 : 20.h),
         Obx(() {
-          return controllerApp.socialLoginRequired.value ? Column(
-            children: [
-              // Divider and "Or Sign up with" text
-              Row(
-                children: [
-                  Expanded(
-                    child: Divider(
-                      thickness: 1,
-                      color: AppColors.appTextColor,
+          return controllerApp.socialLoginRequired.value
+              ? Column(
+                  children: [
+                    // Divider and "Or Sign up with" text
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            thickness: 1,
+                            color: AppColors.appTextColor,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Text(
+                            'Or Sign up with',
+                            style: AppTextStyle.description(
+                              color: AppColors.appMutedTextColor,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      'Or Sign up with',
-                      style: AppTextStyle.description(
-                        color: AppColors.appMutedTextColor,
+                    const SizedBox(height: 15),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SocialIcon(
+                            bgColor: AppColors.appTextColor,
+                            iconColor: AppColors.appWhite,
+                            icon: FontAwesomeIcons.facebookF,
+                            borderColor: Colors.transparent,
+                          ),
+                          SocialIcon(
+                            bgColor: AppColors.appWhite,
+                            iconColor: AppColors.appTextColor,
+                            icon: FontAwesomeIcons.google,
+                            borderColor: AppColors.appColor,
+                          ),
+                          SocialIcon(
+                            bgColor: AppColors.appWhite,
+                            iconColor: const Color(0xFF76A9EA),
+                            icon: FontAwesomeIcons.twitter,
+                            borderColor: AppColors.appTextColor,
+                          ),
+                          SocialIcon(
+                            bgColor: AppColors.appWhite,
+                            iconColor: const Color(0xFFFF554A),
+                            icon: FontAwesomeIcons.instagram,
+                            borderColor: AppColors.appTextColor,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-
-                ],
-              ),
-              const SizedBox(height: 15),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SocialIcon(
-                      bgColor: AppColors.appTextColor,
-                      iconColor: AppColors.appWhite,
-                      icon: FontAwesomeIcons.facebookF,
-                      borderColor: Colors.transparent,
-                    ),
-                    SocialIcon(
-                      bgColor: AppColors.appWhite,
-                      iconColor: AppColors.appTextColor,
-                      icon: FontAwesomeIcons.google,
-                      borderColor: AppColors.appColor,
-                    ),
-                    SocialIcon(
-                      bgColor: AppColors.appWhite,
-                      iconColor: const Color(0xFF76A9EA),
-                      icon: FontAwesomeIcons.twitter,
-                      borderColor: AppColors.appTextColor,
-                    ),
-                    SocialIcon(
-                      bgColor: AppColors.appWhite,
-                      iconColor: const Color(0xFFFF554A),
-                      icon: FontAwesomeIcons.instagram,
-                      borderColor: AppColors.appTextColor,
-                    ),
+                    const SizedBox(height: 15),
                   ],
-                ),
-              ),
-              const SizedBox(height: 15),
-            ],
-          ) : const SizedBox.shrink();
+                )
+              : const SizedBox.shrink();
         }),
         Obx(() {
           final reg = controllerApp.registerPage.value;

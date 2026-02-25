@@ -37,6 +37,118 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   Worker? _cartWorker;
 
+  Widget _buildWebLayout(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(gradient: AppColors.appbarColor),
+        ),
+        elevation: 0,
+        centerTitle: true,
+        automaticallyImplyLeading: true,
+        iconTheme: IconThemeData(color: AppColors.appTextColor),
+        title: Text(
+          "Order Details Screen",
+          style: AppTextStyle.title(color: AppColors.appTextColor, fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+        child: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Obx(() {
+                  final cartResult = controller.getOrderDetailsResponseModel.value?.result?.firstOrNull;
+                  if (cartResult == null) return const SizedBox.shrink();
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // LEFT COLUMN (Items & Address)
+                      Expanded(
+                        flex: 7,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Address Section
+                            if (cartResult.address != null)
+                              _buildAddressCard({
+                                'label': cartResult.address!.label,
+                                'title': cartResult.address!.title,
+                                'address_lat': cartResult.address!.addressLat,
+                                'address_long': cartResult.address!.addressLong,
+                                'description': tempAddress?['description'] ?? cartResult.address!.description,
+                                'edit': cartResult.address!.edit
+                              }, 0),
+
+                            const SizedBox(height: 24),
+
+                            // Items Section
+                            if (cartResult.detailsItems != null && cartResult.detailsItems!.isNotEmpty)
+                              ...cartResult.detailsItems!.map((item) => _buildItemsSection(item)).toList(),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 32),
+
+                      // RIGHT COLUMN (Summary & Buttons)
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Order Summary", style: AppTextStyle.title(fontWeight: FontWeight.bold).copyWith(fontSize: 20)),
+                                  const SizedBox(height: 24),
+
+                                  // Pricing Info
+                                  if (cartResult.info != null) _buildInfoSection(cartResult.info!),
+
+                                  const Divider(),
+                                  const SizedBox(height: 24),
+
+                                  // Action Buttons
+                                  if (cartResult.submitButton != null && cartResult.submitButton!.isNotEmpty)
+                                    Column(
+                                      children: _generateButtonRows(cartResult.submitButton!),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -157,6 +269,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (MediaQuery.of(context).size.width > 900) {
+      return _buildWebLayout(context);
+    }
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -497,6 +612,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           type: item.viewType!,
           itemDataList: controller.fetchedItems.map((e) => e.toJson()).toList(),
           isFromCartScreen: true,
+          showWebVerticalList: true,
           onActionTap: (btn, userKey) async {
             // 'btn' is Map<String, dynamic>
             String? apiEndpoint = btn['api_endpoint']?.toString();

@@ -13,10 +13,12 @@ import 'package:libdding/widget/custom_vertical_listview_list.dart';
 import 'package:libdding/widget/form_widgets/app_button.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../controller/home/home_controller.dart';
+import '../../controller/cart/cart_controller.dart';
 import '../../controller/post/app_post_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../models/home/banner_response_model.dart';
+import '../../service/cashfree_service.dart';
 import '../search_filter_post/search_filter_screen.dart';
 import 'search_history_screen.dart';
 import '../../widget/custom_banner.dart';
@@ -42,12 +44,16 @@ class HomeScreen extends StatelessWidget {
     final ClientHomeController controller = Get.put(ClientHomeController());
     final AppSettingsController appController = Get.put(
       AppSettingsController(),
+
     );
+    final PaymentController paymentController =
+    Get.put(PaymentController());
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
     final search = homePage?.design?.searchBar?.title;
-    final AppPostController appPostController = Get.isRegistered<AppPostController>() 
-        ? Get.find<AppPostController>() 
+    final AppPostController appPostController =
+        Get.isRegistered<AppPostController>()
+        ? Get.find<AppPostController>()
         : Get.put(AppPostController());
     // appPostController.getPostList();
 
@@ -136,260 +142,245 @@ class HomeScreen extends StatelessWidget {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    bool isWeb = kIsWeb || screenWidth > 800;
+    bool isWeb = kIsWeb || GetPlatform.isDesktop || screenWidth > 800;
 
     return SafeArea(
       top: false,
       child: Scaffold(
-        appBar: isWeb ? null : AppBar(
-          backgroundColor: parseColor(headerConfig?.bgColor),
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          toolbarHeight: screenHeight * 0.085,
-          flexibleSpace: Container(
-            decoration: BoxDecoration(gradient: AppColors.appbarColor),
-            padding: EdgeInsets.only(
-              top: screenHeight * 0.045,
-              left: 10,
-              right: 10,
-            ),
+        appBar: isWeb
+            ? null
+            : AppBar(
+                backgroundColor: parseColor(headerConfig?.bgColor),
+                elevation: 0,
+                automaticallyImplyLeading: false,
+                toolbarHeight: screenHeight * 0.085,
+                flexibleSpace: Container(
+                  decoration: BoxDecoration(gradient: AppColors.appbarColor),
+                  padding: EdgeInsets.only(
+                    top: screenHeight * 0.045,
+                    left: 10,
+                    right: 10,
+                  ),
 
-            child: Obx(() {
-              // ============================
-              // 🔥 SHIMMER LOADING UI
-              // ============================
-              if (profilecontroller.isLoading.value) {
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    shimmerCircle(44),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
+                  child: Obx(() {
+                    // ============================
+                    // 🔥 SHIMMER LOADING UI
+                    // ============================
+                    if (profilecontroller.isLoading.value) {
+                      return Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          shimmerLine(width: 150, height: 16),
-                          const SizedBox(height: 6),
-                          shimmerLine(width: 200, height: 12),
+                          shimmerCircle(44),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                shimmerLine(width: 150, height: 16),
+                                const SizedBox(height: 6),
+                                shimmerLine(width: 200, height: 12),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              shimmerCircle(36),
+                              const SizedBox(width: 6),
+                              shimmerCircle(36),
+                            ],
+                          ),
                         ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        shimmerCircle(36),
-                        const SizedBox(width: 6),
-                        shimmerCircle(36),
-                      ],
-                    ),
-                  ],
-                );
-              }
+                      );
+                    }
 
-              // ============================
-              // 🔥 MAIN UI
-              // ============================
-              final dpUrl =
-                  profilecontroller
-                      .profileDetailsResponeModel
-                      .value
-                      ?.result
-                      ?.dp
-                      ?.dp ??
-                  "";
-              print(headerConfig?.userInfo);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // PROFILE IMAGE with shimmer
-                    GestureDetector(
-                      onTap: () => controller.handleRestrictedFeature(() {}),
-                      child: headerConfig?.userInfo == true
-                          ? ClipOval(
-                              child: Image.network(
-                                dpUrl,
-                                height: 44,
-                                width: 44,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return shimmerCircle(
-                                        44,
-                                      ); // shimmer until loaded
-                                    },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Image.asset(
-                                    AppImage.profile,
-                                    height: 44,
-                                    width: 44,
-                                    fit: BoxFit.cover,
-                                  );
-                                },
-                              ),
-                            )
-                          : SizedBox.shrink(),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    // USER NAME + LOCATION
-                    Expanded(
-                      child: Column(
+                    // ============================
+                    // 🔥 MAIN UI
+                    // ============================
+                    final dpUrl =
+                        profilecontroller
+                            .profileDetailsResponeModel
+                            .value
+                            ?.result
+                            ?.dp
+                            ?.dp ??
+                        "";
+                    print(headerConfig?.userInfo);
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          headerConfig?.userInfo == true
-                              ? Text(
-                                  profilecontroller
-                                          .profileDetailsResponeModel
-                                          .value
-                                          ?.result
-                                          ?.basicInfo
-                                          ?.name ??
-                                      "User",
-                                  style: AppTextStyle.title(
-                                    color: AppColors.appTextColor,
-                                  ),
-                                  // style: AppTextStyle.kTextStyle.copyWith(
-                                  //   color: AppColors.appTextColor,
-                                  //   fontWeight: FontWeight.bold,
-                                  //   fontSize: 16,
-                                  // ),
-                                )
-                              : SizedBox.shrink(),
-
+                          // PROFILE IMAGE with shimmer
                           GestureDetector(
-                            onTap: () => controller.changeLocation(),
-                            child: headerConfig?.currentLocation == true
-                                ? Row(
-                                    children: [
-                                      Icon(
-                                        Icons.place_outlined,
-                                        color: AppColors.appTextColor,
-                                      ),
-                                      Obx(
-                                        () => SizedBox(
-                                          width: screenWidth * 0.45,
-                                          child: Marquee(
-                                            child: Text(
-                                              controller
-                                                      .currentLocation
-                                                      .value
-                                                      .isEmpty
-                                                  ? 'Fetching location...'
-                                                  : controller
-                                                        .currentLocation
-                                                        .value,
-                                              style: AppTextStyle.description(
-                                                color: AppColors.appTextColor,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                            onTap: () =>
+                                controller.handleRestrictedFeature(() {}),
+                            child: headerConfig?.userInfo == true
+                                ? ClipOval(
+                                    child: Image.network(
+                                      dpUrl,
+                                      height: 44,
+                                      width: 44,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return shimmerCircle(
+                                              44,
+                                            ); // shimmer until loaded
+                                          },
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return Image.asset(
+                                              AppImage.profile,
+                                              height: 44,
+                                              width: 44,
+                                              fit: BoxFit.cover,
+                                            );
+                                          },
+                                    ),
                                   )
                                 : SizedBox.shrink(),
                           ),
+
+                          const SizedBox(width: 12),
+
+                          // USER NAME + LOCATION
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                headerConfig?.userInfo == true
+                                    ? Text(
+                                        profilecontroller
+                                                .profileDetailsResponeModel
+                                                .value
+                                                ?.result
+                                                ?.basicInfo
+                                                ?.name ??
+                                            "User",
+                                        style: AppTextStyle.title(
+                                          color: AppColors.appTextColor,
+                                        ),
+                                        // style: AppTextStyle.kTextStyle.copyWith(
+                                        //   color: AppColors.appTextColor,
+                                        //   fontWeight: FontWeight.bold,
+                                        //   fontSize: 16,
+                                        // ),
+                                      )
+                                    : SizedBox.shrink(),
+
+                                GestureDetector(
+                                  onTap: () => controller.changeLocation(),
+                                  child: headerConfig?.currentLocation == true
+                                      ? Row(
+                                          children: [
+                                            Icon(
+                                              Icons.place_outlined,
+                                              color: AppColors.appTextColor,
+                                            ),
+                                            Obx(
+                                              () => SizedBox(
+                                                width: screenWidth * 0.41,
+                                                child: Marquee(
+                                                  child: Text(
+                                                    controller
+                                                            .currentLocation
+                                                            .value
+                                                            .isEmpty
+                                                        ? 'Fetching location...'
+                                                        : controller
+                                                              .currentLocation
+                                                              .value,
+                                                    style:
+                                                        AppTextStyle.description(
+                                                          color: AppColors
+                                                              .appTextColor,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : SizedBox.shrink(),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // RIGHT SIDE ICONS WITH SHIMMER
+                          if (headerConfig?.headerMenu != null)
+                            Row(
+                              children: headerConfig!.headerMenu!.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                var menu = entry.value;
+                                return Padding(
+                                  padding: EdgeInsets.only(left: index != 0 ? 6.0 : 0.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (menu.nextPageName == "cart_screen") {
+                                        final CartController cartController = Get.put(CartController());
+                                        cartController.fetchCartDetails(
+                                          cartEndpoint: menu.nextPageApiEndpoint ?? "",
+                                          nextPageName: menu.nextPageName,
+                                        );
+                                      } else {
+                                        CustomNavigator.navigate(
+                                          menu.nextPageName,
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: AppColors.appColor.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      child: ClipOval(
+                                        child: Image.network(
+                                          menu.icon ?? "",
+                                          height: 25,
+                                          width: 25,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder:
+                                              (context, child, loadingProgress) {
+                                                if (loadingProgress == null)
+                                                  return child;
+                                                return shimmerCircle(25);
+                                              },
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Icon(
+                                                  IconlyLight.notification,
+                                                  color: AppColors.appTextColor,
+                                                );
+                                              },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
                         ],
                       ),
-                    ),
-
-                    // RIGHT SIDE ICONS WITH SHIMMER
-                    Row(
-                      children: [
-                        // 🔔 ICON 1
-                        GestureDetector(
-                          onTap: () {
-                            CustomNavigator.navigate(
-                              headerConfig?.headerMenu?[0].nextPageName,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.appColor.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: ClipOval(
-                              child: Image.network(
-                                headerConfig?.headerMenu?[0].icon ?? "",
-                                height: 25,
-                                width: 25,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return shimmerCircle(25);
-                                    },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
-                                    IconlyLight.notification,
-                                    color: AppColors.appTextColor,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: 6),
-
-                        // ℹ️ ICON 2
-                        GestureDetector(
-                          onTap: () {
-                            CustomNavigator.navigate(
-                              headerConfig?.headerMenu?[1].nextPageName,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.appColor.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: ClipOval(
-                              child: Image.network(
-                                headerConfig?.headerMenu?[1].icon ?? "",
-                                height: 25,
-                                width: 25,
-                                fit: BoxFit.cover,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return shimmerCircle(25);
-                                    },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(
-                                    IconlyLight.infoSquare,
-                                    color: AppColors.appTextColor,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    );
+                  }),
                 ),
-              );
-            }),
-          ),
 
-          // bottom:Size.fromHeight(70.0)
-            // bottom: homePage?.design?.searchBar?.isActive == true
-          //     ? PreferredSize(
-          //         preferredSize: Size.fromHeight(70.0),
-          //         child: buildSearchBar(),
-          //       )
-          //     : null,
-        ),
+                // bottom:Size.fromHeight(70.0)
+                // bottom: homePage?.design?.searchBar?.isActive == true
+                //     ? PreferredSize(
+                //         preferredSize: Size.fromHeight(70.0),
+                //         child: buildSearchBar(),
+                //       )
+                //     : null,
+              ),
 
         body: Container(
           height: screenHeight,
@@ -466,14 +457,16 @@ class HomeScreen extends StatelessWidget {
                             );
                             Future.microtask(() {
                               sectionController
-                                  .getPostListForHomeScreen(endpoint: rawEndpoint)
+                                  .getPostListForHomeScreen(
+                                    endpoint: rawEndpoint,
+                                  )
                                   .then((_) {
-                                print(
-                                  "✅ Data fetched for $rawEndpoint, result length: ${sectionController.getPostForHomeResponseModel.value?.result?.length}",
-                                );
-                                // Force UI update after data is fetched
-                                sectionController.update();
-                              });
+                                    print(
+                                      "✅ Data fetched for $rawEndpoint, result length: ${sectionController.getPostForHomeResponseModel.value?.result?.length}",
+                                    );
+                                    // Force UI update after data is fetched
+                                    sectionController.update();
+                                  });
                             });
                           }
                         }
@@ -481,6 +474,7 @@ class HomeScreen extends StatelessWidget {
 
                       // 🔹 Search Bar
                       if (viewType == 'search_bar') {
+                        if (isWeb) return const SizedBox.shrink();
                         return CustomViewWidget(
                           type: 'search_bar',
                           title: section.title,
@@ -610,7 +604,6 @@ class HomeScreen extends StatelessWidget {
                           viewType == 'custom_horizontal_listview_list' ||
                           viewType == 'custom_vertical_gridview_list' ||
                           viewType == 'custom_horizontal_gridview_list') {
-                        
                         // 🔹 Create unique controller for this section if it has an endpoint
                         AppPostController? sectionController;
                         if (section.apiEndpoint != null &&
@@ -633,34 +626,40 @@ class HomeScreen extends StatelessWidget {
                           // Watch for data changes in the section controller
                           final controllerToWatch =
                               sectionController ?? appPostController;
-                          
+
                           // Access the data to make Obx reactive
                           final isLoading = controllerToWatch.isLoading.value;
                           final model = sectionController != null
-                              ? controllerToWatch.getPostForHomeResponseModel.value
-                              : controllerToWatch.getPostListResponseModel.value;
+                              ? controllerToWatch
+                                    .getPostForHomeResponseModel
+                                    .value
+                              : controllerToWatch
+                                    .getPostListResponseModel
+                                    .value;
 
                           // 🛑 User Request: If loading, show UI (shimmer). If NOT loading and empty, hide UI.
-                          if (!isLoading && (model?.result == null || (model?.result?.isEmpty ?? true))) {
+                          if (!isLoading &&
+                              (model?.result == null ||
+                                  (model?.result?.isEmpty ?? true))) {
                             return const SizedBox.shrink();
                           }
 
                           return CustomViewWidget(
-                                type: viewType,
-                                controller: controllerToWatch,
-                                useHomeModel: sectionController != null,
-                                // onItemTap handled by CustomViewWidget default or passed if needed in future
-                                onFavoriteToggle: (index, isFav) {
-                                  // Favorite logic
-                                },
-                                bgColor: section.bgColor,
-                                bgImg: section.bgImg,
-                                label: section.label,
-                                viewAllLabel: section.viewAllLabel,
-                                viewAllNextPage: section.viewAllNextPage,
-                                nextPageName: section.nextPageName, // Added
-                                nextPageViewType: section.nextPageViewType, // Added
-                              );
+                            type: viewType,
+                            controller: controllerToWatch,
+                            useHomeModel: sectionController != null,
+                            // onItemTap handled by CustomViewWidget default or passed if needed in future
+                            onFavoriteToggle: (index, isFav) {
+                              // Favorite logic
+                            },
+                            bgColor: section.bgColor,
+                            bgImg: section.bgImg,
+                            label: section.label,
+                            viewAllLabel: section.viewAllLabel,
+                            viewAllNextPage: section.viewAllNextPage,
+                            nextPageName: section.nextPageName, // Added
+                            nextPageViewType: section.nextPageViewType, // Added
+                          );
                         });
                       }
 
@@ -686,6 +685,9 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
+        // floatingActionButton: FloatingActionButton(onPressed: () {
+        //       paymentController.createOrder();
+        // },),
       ),
     );
   }

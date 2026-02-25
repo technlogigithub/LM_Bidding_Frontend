@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -185,6 +186,32 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return Wrap(
+        spacing: 40,
+        runSpacing: 0,
+        crossAxisAlignment: WrapCrossAlignment.start,
+        children: widget.inputs.map((input) {
+          final fieldType = (input.inputType ?? '').toLowerCase();
+          final fieldName = (input.name ?? '').toLowerCase();
+
+          // Determine if field should be full width on Web
+          final bool isFullWidth = fieldType == 'textarea' ||
+              fieldType == 'file' ||
+              fieldType == 'files' ||
+              fieldType == 'address' ||
+              fieldName.contains('address') ||
+              fieldName.contains('description') ||
+              fieldName.contains('about');
+
+          return SizedBox(
+            width: isFullWidth ? double.infinity : 540, // Fits 2 columns in the 1200px constrained card
+            child: _buildFormField(input),
+          );
+        }).toList(),
+      );
+    }
+
     return Column(
       children: widget.inputs.map((input) => _buildFormField(input)).toList(),
     );

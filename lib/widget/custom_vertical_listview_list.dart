@@ -35,6 +35,7 @@ class CustomVerticalListviewList extends StatelessWidget {
   final String? nextPageName; // Added
   final String? nextPageViewType; // Added
   final Function(Map<String, dynamic> buttonData, String userKey)? onActionTap;
+  final bool showWebVerticalList; // Added
 
   const CustomVerticalListviewList({
     super.key,
@@ -54,14 +55,13 @@ class CustomVerticalListviewList extends StatelessWidget {
     this.viewAllNextPage,
     this.nextPageName,
     this.nextPageViewType,
+    this.showWebVerticalList = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Obx(
-          () => isLoading.value
-          ? _buildShimmerList()
-          : _buildPostList(context),
+      () => isLoading.value ? _buildShimmerList() : _buildPostList(context),
     );
   }
 
@@ -74,24 +74,21 @@ class CustomVerticalListviewList extends StatelessWidget {
         children: [
           Text(
             label!,
-            style: AppTextStyle.title(
-              color: AppColors.appTitleColor,
-            ),
+            style: AppTextStyle.title(color: AppColors.appTitleColor),
           ),
           const Spacer(),
           if (viewAllLabel != null && viewAllLabel!.isNotEmpty)
             GestureDetector(
               onTap: () {
                 CustomNavigator.navigate(
-                    viewAllNextPage?.isNotEmpty == true
-                        ? viewAllNextPage
-                        : nextPageName);
+                  viewAllNextPage?.isNotEmpty == true
+                      ? viewAllNextPage
+                      : nextPageName,
+                );
               },
               child: Text(
                 viewAllLabel!,
-                style: AppTextStyle.description(
-                  color: AppColors.appLinkColor,
-                ),
+                style: AppTextStyle.description(color: AppColors.appLinkColor),
               ),
             ),
         ],
@@ -116,50 +113,86 @@ class CustomVerticalListviewList extends StatelessWidget {
       );
     }
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWeb = kIsWeb || screenWidth > 800;
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
 
-    Widget contentList = ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: EdgeInsets.only(
-        bottom: 20,
-        left: isWeb ? 0 : 15.0,
-        right: isWeb ? 0 : 15.0,
-      ),
-      scrollDirection: Axis.vertical,
-      itemCount: results.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10.0),
-      itemBuilder: (_, index) {
-        final result = results[index];
-        return Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: _buildItemCard(context, result, index),
-        );
-      },
-    );
+    Widget contentList;
+
+    if (isWeb && !showWebVerticalList) {
+      contentList = GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(bottom: 20),
+        itemCount: results.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, // ✅ 1 Row me 3 items (Image 2)
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 20,
+          mainAxisExtent: 130.0, // Fixed height to match card
+        ),
+        itemBuilder: (_, index) {
+          final result = results[index];
+          return _buildItemCard(context, result, index);
+        },
+      );
+    } else {
+      // ✅ Normal vertical list (Mobile always, Web if showWebVerticalList is true)
+      contentList = ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        padding: EdgeInsets.only(
+          bottom: 20,
+          left: isWeb ? 0 : 15.0,
+          right: isWeb ? 0 : 15.0,
+        ),
+        scrollDirection: Axis.vertical,
+        itemCount: results.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+        itemBuilder: (_, index) {
+          final result = results[index];
+          return Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: _buildItemCard(context, result, index),
+          );
+        },
+      );
+    }
+
+    // Widget contentList = ListView.separated(
+    //   physics: const NeverScrollableScrollPhysics(),
+    //   shrinkWrap: true,
+    //   padding: EdgeInsets.only(
+    //     bottom: 20,
+    //     left: isWeb ? 0 : 15.0,
+    //     right: isWeb ? 0 : 15.0,
+    //   ),
+    //   scrollDirection: Axis.vertical,
+    //   itemCount: results.length,
+    //   separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+    //   itemBuilder: (_, index) {
+    //     final result = results[index];
+    //     return Padding(
+    //       padding: const EdgeInsets.only(top: 10),
+    //       child: _buildItemCard(context, result, index),
+    //     );
+    //   },
+    // );
 
     Widget contentWithHeader = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeader(),
-        contentList,
-      ],
+      children: [_buildHeader(), contentList],
     );
 
     return Stack(
       children: [
         if (ImageTypeHelper.isImage(bgImg))
-          Positioned.fill(
-            child: AutoNetworkImage(imageUrl: bgImg),
-          ),
+          Positioned.fill(child: AutoNetworkImage(imageUrl: bgImg)),
         Container(
           decoration: BoxDecoration(
             gradient: !ImageTypeHelper.isImage(bgImg)
                 ? (bgColor != null && bgColor!.isNotEmpty
-                    ? parseLinearGradient(bgColor)
-                    : AppColors.appPagecolor)
+                      ? parseLinearGradient(bgColor)
+                      : AppColors.appPagecolor)
                 : null,
           ),
           child: contentWithHeader,
@@ -168,27 +201,42 @@ class CustomVerticalListviewList extends StatelessWidget {
     );
   }
 
-  // Shimmer effect for the list
   Widget _buildShimmerList() {
-    return SizedBox(
-      height: 160 * 3,
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        scrollDirection: Axis.vertical,
-        itemCount: 3, // Number of shimmer placeholders
-        separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-        itemBuilder: (_, __) => Column(
-          children: [
-            Shimmer.fromColors(
-              baseColor: AppColors.appMutedColor,
-              highlightColor: AppColors.appMutedTextColor,
-              child: _buildShimmerItemCard(),
-            ),
-            SizedBox(height: 10.h,)
-          ],
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
+
+    if (isWeb && !showWebVerticalList) {
+      return GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: 6,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 20,
+          mainAxisExtent: 130.0,
         ),
-      ),
-    );
+        itemBuilder: (_, __) {
+          return Shimmer.fromColors(
+            baseColor: AppColors.appMutedColor,
+            highlightColor: AppColors.appMutedTextColor,
+            child: _buildShimmerItemCard(),
+          );
+        },
+      );
+    } else {
+      return ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        scrollDirection: Axis.vertical,
+        itemCount: 3,
+        separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+        itemBuilder: (_, __) => Shimmer.fromColors(
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
+          child: _buildShimmerItemCard(),
+        ),
+      );
+    }
   }
 
   // Shimmer placeholder for a single card
@@ -273,8 +321,11 @@ class CustomVerticalListviewList extends StatelessWidget {
   }
 
   Widget _buildItemCard(BuildContext context, Result result, int index) {
-    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
-    final cardHeight = isWeb ? (isFromCartScreen ? 160.0 : 130.0) : (isFromCartScreen ? 185.h : 140.h);
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
+    // Fix: Use fixed pixel values for Web/Desktop to avoid scaling issues (185.h/140.h can be too large)
+    final double cardHeight = isWeb 
+        ? (isFromCartScreen ? 190.0 : 130.0) 
+        : (isFromCartScreen ? 185.h : 140.h);
 
     return GestureDetector(
       onTap: () {
@@ -283,7 +334,7 @@ class CustomVerticalListviewList extends StatelessWidget {
         }
       },
       child: Container(
-        width: double.infinity,
+        width: (isWeb && !showWebVerticalList) ? null : double.infinity,
         height: cardHeight,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
@@ -311,50 +362,58 @@ class CustomVerticalListviewList extends StatelessWidget {
                 ],
               ),
             ),
-            if (isFromCartScreen)
+            if (isFromCartScreen && (!isWeb || showWebVerticalList))
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 2.0,
                   vertical: 8.0,
                 ),
-                child: result.actionButton != null && result.actionButton!.isNotEmpty
+                child:
+                    result.actionButton != null &&
+                        result.actionButton!.isNotEmpty
                     ? CustomTabBar(
                         tabs: result.actionButton!.map<String>((e) {
                           if (e is Map<String, dynamic>) {
                             return e['label']?.toString() ?? '';
                           }
-                           // Fallback for unexpected types (though parsing logic in model makes it dynamic/Map usually, 
-                           // unless we strictly typed it later)
-                           // The model uses json['action_button'] which is List<dynamic> of Maps usually.
-                           try {
-                             return (e as dynamic)['label']?.toString() ?? '';
-                           } catch (err) {
-                             return '';
-                           }
+                          // Fallback for unexpected types (though parsing logic in model makes it dynamic/Map usually,
+                          // unless we strictly typed it later)
+                          // The model uses json['action_button'] which is List<dynamic> of Maps usually.
+                          try {
+                            return (e as dynamic)['label']?.toString() ?? '';
+                          } catch (err) {
+                            return '';
+                          }
                         }).toList(),
                         textStyle: AppTextStyle.body(),
                         onTap: (index) {
-                          if (index >= 0 && index < result.actionButton!.length) {
-                             final btnData = result.actionButton![index];
-                             final ukey = result.hidden?.ukey ?? "";
-                             
-                             if (onActionTap != null && btnData is Map<String, dynamic>) {
-                                onActionTap!(btnData, ukey);
-                             }
+                          if (index >= 0 &&
+                              index < result.actionButton!.length) {
+                            final btnData = result.actionButton![index];
+                            final ukey = result.hidden?.ukey ?? "";
+
+                            if (onActionTap != null &&
+                                btnData is Map<String, dynamic>) {
+                              onActionTap!(btnData, ukey);
+                            }
                           }
                         },
                       )
-                    : SizedBox()
-              )
-
+                    : SizedBox(),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImageSection(BuildContext context, Result result, int index, bool isFromCart) {
-    // Get first image from media list
+  Widget _buildImageSection(
+      BuildContext context,
+      Result result,
+      int index,
+      bool isFromCart,
+      ) {
+    /// Get first image safely
     String? imageUrl;
     if (result.media != null && result.media!.isNotEmpty) {
       final firstImage = result.media!.firstWhere(
@@ -364,12 +423,14 @@ class CustomVerticalListviewList extends StatelessWidget {
       imageUrl = firstImage.url;
     }
 
-    // Extract badge from result
+    /// Badge
     final badge = result.info?['badge'];
 
-    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
-    final imgWidth = isWeb ? 130.0 : 120.w;
-    final imgHeight = isWeb ? (isFromCart ? 140.0 : 130.0) : (isFromCart ? 120.h : 140.h);
+    /// Platform sizing
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
+    // Fix: Always use fixed size (130.0) on Web/Desktop to match Image 1 and avoid stretching (120.w is huge on web)
+    final double imgWidth = isWeb ? 130.0 : 120.w;
+    final double imgHeight = isWeb ? 130.0 : (isFromCart ? 120.h : 140.h);
 
     return Stack(
       alignment: Alignment.topLeft,
@@ -377,112 +438,104 @@ class CustomVerticalListviewList extends StatelessWidget {
         Container(
           height: imgHeight,
           width: imgWidth,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(8.0),
-              topLeft: Radius.circular(8.0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(8),
+              bottomLeft: Radius.circular(8),
             ),
-            color: AppColors.appWhite,
           ),
-          child: imageUrl != null
-              ? ClipRRect(
+          child: ClipRRect(
             borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(8.0),
-              topLeft: Radius.circular(8.0),
+              topLeft: Radius.circular(8),
+              bottomLeft: Radius.circular(8),
             ),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.appMutedColor,
-                highlightColor: AppColors.appMutedTextColor,
-                child: Container(
-                  height: imgHeight,
-                  width: imgWidth,
+            child: SizedBox(
+              height: imgHeight,
+              width: imgWidth,
+              child: imageUrl != null && imageUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                imageUrl: imageUrl!,
+                fit: BoxFit.cover,
+                fadeInDuration: Duration.zero,
+                placeholderFadeInDuration: Duration.zero,
+                placeholder: (_, __) => Container(
                   color: AppColors.appMutedColor,
                 ),
-              ),
-              errorWidget: (context, url, error) => Image.asset(
+                errorWidget: (_, __, ___) => Image.asset(
+                  AppImage.placeholder,
+                  fit: BoxFit.cover,
+                ),
+              )
+                  : Image.asset(
                 AppImage.placeholder,
-                height: imgHeight,
-                width: imgWidth,
                 fit: BoxFit.cover,
               ),
             ),
-          )
-              : Image.asset(
-            AppImage.placeholder,
-            height: imgHeight,
-            width: imgWidth,
-            fit: BoxFit.cover,
           ),
         ),
-        // Always show favorite icon - filled when true, outline when false
+
+        /// Favorite Icon
         Obx(() {
-          // Watch the model to get reactive updates
           final currentResult = model.value?.result?[index];
-          final isFavorite = currentResult?.info?['favorite'] ?? result.info?['favorite'] ?? false;
+          final bool isFavorite =
+              currentResult?.info?['favorite'] ??
+                  result.info?['favorite'] ??
+                  false;
+
           return GestureDetector(
             onTap: () {
-              // Toggle favorite state
               final newValue = !isFavorite;
-              // Update the model immediately for better UX
+
               if (result.info != null) {
                 result.info!['favorite'] = newValue;
               }
-              // Defer refresh to avoid setState during build error
+
               Future.microtask(() {
                 model.refresh();
               });
-              // Call the callback to handle API call if needed
+
               onFavoriteToggle(index, newValue);
             },
             child: Padding(
-              padding: const EdgeInsets.all(5.0),
+              padding: const EdgeInsets.all(6),
               child: Container(
-                height: 25,
-                width: 25,
+                height: 26,
+                width: 26,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black12,
-                      blurRadius: 10.0,
-                      spreadRadius: 1.0,
+                      blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : AppColors.appIconColor,
-                    size: 16.0,
-                  ),
+                child: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  size: 16,
+                  color: isFavorite ? Colors.red : AppColors.appIconColor,
                 ),
               ),
             ),
           );
         }),
-        // Badge - show only if available
+
+        /// Badge
         if (badge != null && badge.isNotEmpty)
           Positioned(
-            top: 3,
-            right: 2,
+            top: 4,
+            right: 4,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
               decoration: BoxDecoration(
                 gradient: AppColors.appPagecolor,
                 borderRadius: BorderRadius.circular(5),
               ),
-              alignment: Alignment.center,
               child: Text(
                 badge,
-                textAlign: TextAlign.center,
                 style: AppTextStyle.body(),
               ),
             ),
@@ -496,7 +549,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     final ratingReview = result.info?['rating_review'];
     final price = result.info?['price'];
 
-    final isWeb = kIsWeb || MediaQuery.of(context).size.width > 800;
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -510,9 +563,7 @@ class CustomVerticalListviewList extends StatelessWidget {
             style: AppTextStyle.description(
               color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
-            ).copyWith(
-              fontSize: isWeb ? 16 : null,
-            ),
+            ).copyWith(fontSize: isWeb ? 16 : null),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -545,7 +596,6 @@ class CustomVerticalListviewList extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
               ],
             ],
           ),
@@ -676,7 +726,7 @@ class CartActionButtons extends StatelessWidget {
         child: Column(
           children: [
             _actionButton(
-                title: AppStrings.remove,
+              title: AppStrings.remove,
               textColor: AppColors.appBodyTextColor,
               borderColor: AppColors.appMutedTextColor,
               onTap: onRemoveTap,

@@ -15,17 +15,21 @@ import '../../core/utils.dart';
 import '../../models/App_moduls/AppResponseModel.dart';
 
 class InviteScreen extends StatelessWidget {
-  final String referralCode;  // <-- Your referral code from previous screen
+  final String referralCode; // <-- Your referral code from previous screen
   final AppMenuItem? menuItem;
 
   InviteScreen({super.key, required this.referralCode, this.menuItem});
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
+    bool isWeb =
+        kIsWeb ||
+        GetPlatform.isDesktop ||
+        MediaQuery.of(context).size.width > 800;
+    if (isWeb) {
       return _buildWebLayout(context);
     }
-    
+
     print(" refer code : $referralCode");
     final profilecontroller = Get.put(ProfileController());
     final screenHeight = MediaQuery.of(context).size.height;
@@ -35,15 +39,13 @@ class InviteScreen extends StatelessWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             elevation: 0,
             automaticallyImplyLeading: true,
-            iconTheme:  IconThemeData(color: AppColors.appTextColor,),
+            iconTheme: IconThemeData(color: AppColors.appTextColor),
             flexibleSpace: Container(
               decoration: BoxDecoration(
                 gradient: AppColors.appbarColor,
@@ -57,10 +59,9 @@ class InviteScreen extends StatelessWidget {
             centerTitle: true,
             title: Text(
               menuItem?.label ?? '',
-              style:  AppTextStyle.title(
+              style: AppTextStyle.title(
                 color: AppColors.appTextColor,
                 fontWeight: FontWeight.bold,
-
               ),
             ),
           ),
@@ -68,7 +69,9 @@ class InviteScreen extends StatelessWidget {
           body: actualUI(
             screenHeight,
             screenWidth,
-            menuItem != null ? ReferralMenuItem.fromJson(menuItem!.toJson()) : null,
+            menuItem != null
+                ? ReferralMenuItem.fromJson(menuItem!.toJson())
+                : null,
             referralCode,
           ),
         ),
@@ -113,44 +116,47 @@ class InviteScreen extends StatelessWidget {
   // ---------------------------------------------------------------------------
   // ⭐ FINAL UI
   // ---------------------------------------------------------------------------
-  Widget actualUI(double screenHeight, double screenWidth, referral, String referralCode) {
+  Widget actualUI(
+    double screenHeight,
+    double screenWidth,
+    referral,
+    String referralCode,
+  ) {
     return SingleChildScrollView(
       child: Column(
         children: [
           // SizedBox(height: screenHeight * 0.03),
           Container(
             decoration: BoxDecoration(
-
               color: AppColors.appColor.withOpacity(0.15),
             ),
             clipBehavior: Clip.antiAlias,
-            child: (referral?.pageImage != null &&
-                referral!.pageImage!.isNotEmpty)
+            child:
+                (referral?.pageImage != null && referral!.pageImage!.isNotEmpty)
                 ? CachedNetworkImage(
-              imageUrl: referral.pageImage!,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Shimmer.fromColors(
-                baseColor: AppColors.appMutedColor,
-                highlightColor: AppColors.appMutedTextColor,
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: AppColors.appWhite,
-                ),
-              ),
-              errorWidget: (context, url, error) => Icon(
-                Icons.group_add_outlined,
-                size: screenHeight * 0.1,
-                color: AppColors.appColor,
-              ),
-            )
+                    imageUrl: referral.pageImage!,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: AppColors.appMutedColor,
+                      highlightColor: AppColors.appMutedTextColor,
+                      child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: AppColors.appWhite,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Icon(
+                      Icons.group_add_outlined,
+                      size: screenHeight * 0.1,
+                      color: AppColors.appColor,
+                    ),
+                  )
                 : Icon(
-              Icons.group_add_outlined,
-              size: screenHeight * 0.1,
-              color: AppColors.appColor,
-            ),
+                    Icons.group_add_outlined,
+                    size: screenHeight * 0.1,
+                    color: AppColors.appColor,
+                  ),
           ),
-
 
           // Page Icon
           // CircleAvatar(
@@ -177,7 +183,7 @@ class InviteScreen extends StatelessWidget {
 
                 Text(
                   referral?.title ?? "Invite & Earn",
-                  style:  AppTextStyle.title(
+                  style: AppTextStyle.title(
                     fontWeight: FontWeight.bold,
                     color: AppColors.appTitleColor,
                   ),
@@ -186,11 +192,9 @@ class InviteScreen extends StatelessWidget {
                 SizedBox(height: 10),
 
                 Text(
-                  referral?.description ??
-                      "",
+                  referral?.description ?? "",
                   textAlign: TextAlign.center,
-                  style:  AppTextStyle.description(
-
+                  style: AppTextStyle.description(
                     color: AppColors.appDescriptionColor,
                   ),
                 ),
@@ -205,20 +209,22 @@ class InviteScreen extends StatelessWidget {
                     children: [
                       Text(
                         "Your Referral Code",
-                        style:  AppTextStyle.title(
+                        style: AppTextStyle.title(
                           fontWeight: FontWeight.w600,
                           color: AppColors.appBodyTextColor,
                         ),
                       ),
                       SizedBox(height: 12),
                       Container(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           gradient: AppColors.appPagecolor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.appDescriptionColor
+                            color: AppColors.appDescriptionColor,
                           ),
                         ),
                         child: Row(
@@ -226,7 +232,7 @@ class InviteScreen extends StatelessWidget {
                           children: [
                             Text(
                               referralCode,
-                              style:  AppTextStyle.title(
+                              style: AppTextStyle.title(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.appDescriptionColor,
                               ),
@@ -234,9 +240,16 @@ class InviteScreen extends StatelessWidget {
                             const SizedBox(width: 10),
                             GestureDetector(
                               onTap: () {
-                                copyToClipboard(referralCode, referral != null ? ReferralMenuItem.fromJson(referral!.toJson()) : null);
+                                copyToClipboard(
+                                  referralCode,
+                                  referral != null
+                                      ? ReferralMenuItem.fromJson(
+                                          referral!.toJson(),
+                                        )
+                                      : null,
+                                );
                               },
-                              child:  Icon(
+                              child: Icon(
                                 Icons.copy,
                                 size: 22,
                                 color: AppColors.appIconColor,
@@ -251,13 +264,17 @@ class InviteScreen extends StatelessWidget {
                 SizedBox(height: 35),
 
                 Row(
-                  children:  [
-                    Expanded(child: Divider(color: AppColors.appDescriptionColor,)),
+                  children: [
+                    Expanded(
+                      child: Divider(color: AppColors.appDescriptionColor),
+                    ),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text("OR",style:AppTextStyle.title(),),
+                      child: Text("OR", style: AppTextStyle.title()),
                     ),
-                    Expanded(child: Divider(color: AppColors.appDescriptionColor,)),
+                    Expanded(
+                      child: Divider(color: AppColors.appDescriptionColor),
+                    ),
                   ],
                 ),
 
@@ -270,13 +287,15 @@ class InviteScreen extends StatelessWidget {
                   Wrap(
                     spacing: 9,
                     alignment: WrapAlignment.center,
-                    children: buildSocialIcons(screenHeight, screenWidth, referral),
+                    children: buildSocialIcons(
+                      screenHeight,
+                      screenWidth,
+                      referral,
+                    ),
                   ),
               ],
             ),
-          )
-
-
+          ),
         ],
       ),
     );
@@ -288,9 +307,11 @@ class InviteScreen extends StatelessWidget {
 
     void addIcon(model) {
       if (model != null) {
-        icons.add(helpBoxWithImage(sh, sw, model.icon, () {
-          openSocialUrl(model.url!);
-        }));
+        icons.add(
+          helpBoxWithImage(sh, sw, model.icon, () {
+            openSocialUrl(model.url!);
+          }),
+        );
       }
     }
 
@@ -306,7 +327,12 @@ class InviteScreen extends StatelessWidget {
   // ---------------------------------------------------------------------------
   // ⭐ SOCIAL ICON BOX
   // ---------------------------------------------------------------------------
-  Widget helpBoxWithImage(double sh, double sw, String? iconUrl, VoidCallback onTap) {
+  Widget helpBoxWithImage(
+    double sh,
+    double sw,
+    String? iconUrl,
+    VoidCallback onTap,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: GestureDetector(
@@ -317,9 +343,7 @@ class InviteScreen extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppColors.appPagecolor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-                color: AppColors.appDescriptionColor
-            ),
+            border: Border.all(color: AppColors.appDescriptionColor),
           ),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -368,22 +392,19 @@ class InviteScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: AppColors.appPagecolor,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
         child: Column(
           children: [
             // Hero Section: Premium Banner
             Container(
               width: double.infinity,
               height: screenHeight * 0.4,
-              decoration: BoxDecoration(
-                gradient: AppColors.appbarColor,
-              ),
+              decoration: BoxDecoration(gradient: AppColors.appbarColor),
               child: Stack(
                 children: [
                   // Banner Background Image
-                  if (referral?.pageImage != null && (referral?.pageImage?.isNotEmpty ?? false))
+                  if (referral?.pageImage != null &&
+                      (referral?.pageImage?.isNotEmpty ?? false))
                     Positioned.fill(
                       child: Opacity(
                         opacity: 0.2,
@@ -393,7 +414,7 @@ class InviteScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  
+
                   // Banner Text
                   Center(
                     child: Container(
@@ -405,10 +426,14 @@ class InviteScreen extends StatelessWidget {
                           Text(
                             referral?.title ?? "",
                             textAlign: TextAlign.center,
-                            style: AppTextStyle.title(
-                              color: AppColors.appWhite,
-                              fontWeight: FontWeight.bold,
-                            ).copyWith(fontSize: screenWidth < 800 ? 32 : 44, letterSpacing: -1),
+                            style:
+                                AppTextStyle.title(
+                                  color: AppColors.appWhite,
+                                  fontWeight: FontWeight.bold,
+                                ).copyWith(
+                                  fontSize: screenWidth < 800 ? 32 : 44,
+                                  letterSpacing: -1,
+                                ),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -440,11 +465,16 @@ class InviteScreen extends StatelessWidget {
                         // Referral Code Display
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 30),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 40,
+                            horizontal: 30,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.appWhite,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: AppColors.appMutedColor.withOpacity(0.3)),
+                            border: Border.all(
+                              color: AppColors.appMutedColor.withOpacity(0.3),
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: AppColors.appMutedColor.withOpacity(0.1),
@@ -464,11 +494,16 @@ class InviteScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 16),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.appColor.withOpacity(0.05),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: AppColors.appColor.withOpacity(0.1)),
+                                  border: Border.all(
+                                    color: AppColors.appColor.withOpacity(0.1),
+                                  ),
                                 ),
                                 child: IntrinsicHeight(
                                   child: Row(
@@ -476,18 +511,32 @@ class InviteScreen extends StatelessWidget {
                                     children: [
                                       Text(
                                         referralCode,
-                                        style: AppTextStyle.title(
-                                          color: AppColors.appColor,
-                                          fontWeight: FontWeight.bold,
-                                        ).copyWith(fontSize: 24, letterSpacing: 2),
+                                        style:
+                                            AppTextStyle.title(
+                                              color: AppColors.appColor,
+                                              fontWeight: FontWeight.bold,
+                                            ).copyWith(
+                                              fontSize: 24,
+                                              letterSpacing: 2,
+                                            ),
                                       ),
                                       const SizedBox(width: 20),
-                                      VerticalDivider(color: AppColors.appColor.withOpacity(0.2), width: 1, indent: 5, endIndent: 5),
+                                      VerticalDivider(
+                                        color: AppColors.appColor.withOpacity(
+                                          0.2,
+                                        ),
+                                        width: 1,
+                                        indent: 5,
+                                        endIndent: 5,
+                                      ),
                                       const SizedBox(width: 20),
                                       MouseRegion(
                                         cursor: SystemMouseCursors.click,
                                         child: GestureDetector(
-                                          onTap: () => copyToClipboard(referralCode, referral),
+                                          onTap: () => copyToClipboard(
+                                            referralCode,
+                                            referral,
+                                          ),
                                           child: Icon(
                                             Icons.copy_rounded,
                                             color: AppColors.appColor,
@@ -511,16 +560,31 @@ class InviteScreen extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  Expanded(child: Divider(color: AppColors.appMutedColor.withOpacity(0.5))),
+                                  Expanded(
+                                    child: Divider(
+                                      color: AppColors.appMutedColor
+                                          .withOpacity(0.5),
+                                    ),
+                                  ),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                    ),
                                     child: Container(
                                       width: 8,
                                       height: 8,
-                                      decoration: BoxDecoration(color: AppColors.appMutedColor, shape: BoxShape.circle),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.appMutedColor,
+                                        shape: BoxShape.circle,
+                                      ),
                                     ),
                                   ),
-                                  Expanded(child: Divider(color: AppColors.appMutedColor.withOpacity(0.5))),
+                                  Expanded(
+                                    child: Divider(
+                                      color: AppColors.appMutedColor
+                                          .withOpacity(0.5),
+                                    ),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 40),
@@ -550,9 +614,11 @@ class InviteScreen extends StatelessWidget {
 
     void addIcon(model) {
       if (model != null) {
-        icons.add(_webSocialIcon(model.icon, () {
-          openSocialUrl(model.url!);
-        }));
+        icons.add(
+          _webSocialIcon(model.icon, () {
+            openSocialUrl(model.url!);
+          }),
+        );
       }
     }
 
@@ -594,11 +660,8 @@ class InviteScreen extends StatelessWidget {
           child: CachedNetworkImage(
             imageUrl: hasUrl ? iconUrl! : '',
             fit: BoxFit.contain,
-            errorWidget: (context, url, error) => Icon(
-              Icons.link_rounded,
-              color: AppColors.appColor,
-              size: 24,
-            ),
+            errorWidget: (context, url, error) =>
+                Icon(Icons.link_rounded, color: AppColors.appColor, size: 24),
           ),
         ),
       ),
@@ -617,7 +680,9 @@ class InviteScreen extends StatelessWidget {
     Utils.showSnackbar(
       isSuccess: true,
       title: referral?.label ?? "Copied!",
-      message: referral?.design?.code?.message ?? "Referral code copied to clipboard.",
+      message:
+          referral?.design?.code?.message ??
+          "Referral code copied to clipboard.",
     );
   }
 }
