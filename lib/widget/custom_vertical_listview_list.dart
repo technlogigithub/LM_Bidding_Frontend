@@ -35,6 +35,7 @@ class CustomVerticalListviewList extends StatelessWidget {
   final String? nextPageName; // Added
   final String? nextPageViewType; // Added
   final Function(Map<String, dynamic> buttonData, String userKey)? onActionTap;
+  final bool showWebVerticalList; // Added
 
   const CustomVerticalListviewList({
     super.key,
@@ -54,6 +55,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     this.viewAllNextPage,
     this.nextPageName,
     this.nextPageViewType,
+    this.showWebVerticalList = false,
   });
 
   @override
@@ -111,19 +113,18 @@ class CustomVerticalListviewList extends StatelessWidget {
       );
     }
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWeb = kIsWeb || GetPlatform.isDesktop || screenWidth > 800;
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
 
     Widget contentList;
 
-    if (isWeb) {
+    if (isWeb && !showWebVerticalList) {
       contentList = GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         padding: const EdgeInsets.only(bottom: 20),
         itemCount: results.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, // ✅ 1 Row me 3 items
+          crossAxisCount: 3, // ✅ 1 Row me 3 items (Image 2)
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
           mainAxisExtent: 130.0, // Fixed height to match card
@@ -134,11 +135,15 @@ class CustomVerticalListviewList extends StatelessWidget {
         },
       );
     } else {
-      // ✅ Mobile same rahega
+      // ✅ Normal vertical list (Mobile always, Web if showWebVerticalList is true)
       contentList = ListView.separated(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        padding: const EdgeInsets.only(bottom: 20, left: 15.0, right: 15.0),
+        padding: EdgeInsets.only(
+          bottom: 20,
+          left: isWeb ? 0 : 15.0,
+          right: isWeb ? 0 : 15.0,
+        ),
         scrollDirection: Axis.vertical,
         itemCount: results.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10.0),
@@ -196,11 +201,10 @@ class CustomVerticalListviewList extends StatelessWidget {
     );
   }
 
-  // Shimmer effect for the list
   Widget _buildShimmerList() {
     final isWeb = kIsWeb || GetPlatform.isDesktop;
 
-    if (isWeb) {
+    if (isWeb && !showWebVerticalList) {
       return GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
@@ -220,18 +224,16 @@ class CustomVerticalListviewList extends StatelessWidget {
         },
       );
     } else {
-      return SizedBox(
-        height: 160 * 3,
-        child: ListView.separated(
-          physics: const NeverScrollableScrollPhysics(),
-          scrollDirection: Axis.vertical,
-          itemCount: 3,
-          separatorBuilder: (_, __) => const SizedBox(height: 10.0),
-          itemBuilder: (_, __) => Shimmer.fromColors(
-            baseColor: AppColors.appMutedColor,
-            highlightColor: AppColors.appMutedTextColor,
-            child: _buildShimmerItemCard(),
-          ),
+      return ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        scrollDirection: Axis.vertical,
+        itemCount: 3,
+        separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+        itemBuilder: (_, __) => Shimmer.fromColors(
+          baseColor: AppColors.appMutedColor,
+          highlightColor: AppColors.appMutedTextColor,
+          child: _buildShimmerItemCard(),
         ),
       );
     }
@@ -319,11 +321,11 @@ class CustomVerticalListviewList extends StatelessWidget {
   }
 
   Widget _buildItemCard(BuildContext context, Result result, int index) {
-    final isWeb =
-        kIsWeb ||
-        GetPlatform.isDesktop ||
-        MediaQuery.of(context).size.width > 800;
-    final cardHeight = isWeb ? 130.0 : (isFromCartScreen ? 185.h : 140.h);
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
+    // Fix: Use fixed pixel values for Web/Desktop to avoid scaling issues (185.h/140.h can be too large)
+    final double cardHeight = isWeb 
+        ? (isFromCartScreen ? 190.0 : 130.0) 
+        : (isFromCartScreen ? 185.h : 140.h);
 
     return GestureDetector(
       onTap: () {
@@ -332,7 +334,7 @@ class CustomVerticalListviewList extends StatelessWidget {
         }
       },
       child: Container(
-        width: isWeb ? null : double.infinity,
+        width: (isWeb && !showWebVerticalList) ? null : double.infinity,
         height: cardHeight,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
@@ -360,7 +362,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                 ],
               ),
             ),
-            if (isFromCartScreen && !isWeb)
+            if (isFromCartScreen && (!isWeb || showWebVerticalList))
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 2.0,
@@ -406,30 +408,29 @@ class CustomVerticalListviewList extends StatelessWidget {
   }
 
   Widget _buildImageSection(
-    BuildContext context,
-    Result result,
-    int index,
-    bool isFromCart,
-  ) {
-    // Get first image from media list
+      BuildContext context,
+      Result result,
+      int index,
+      bool isFromCart,
+      ) {
+    /// Get first image safely
     String? imageUrl;
     if (result.media != null && result.media!.isNotEmpty) {
       final firstImage = result.media!.firstWhere(
-        (media) => media.mediaType == 'image',
+            (media) => media.mediaType == 'image',
         orElse: () => result.media!.first,
       );
       imageUrl = firstImage.url;
     }
 
-    // Extract badge from result
+    /// Badge
     final badge = result.info?['badge'];
 
-    final isWeb =
-        kIsWeb ||
-        GetPlatform.isDesktop ||
-        MediaQuery.of(context).size.width > 800;
-    final imgWidth = isWeb ? 130.0 : 120.w;
-    final imgHeight = isWeb ? 130.0 : (isFromCart ? 120.h : 140.h);
+    /// Platform sizing
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
+    // Fix: Always use fixed size (130.0) on Web/Desktop to match Image 1 and avoid stretching (120.w is huge on web)
+    final double imgWidth = isWeb ? 130.0 : 120.w;
+    final double imgHeight = isWeb ? 130.0 : (isFromCart ? 120.h : 140.h);
 
     return Stack(
       alignment: Alignment.topLeft,
@@ -437,112 +438,104 @@ class CustomVerticalListviewList extends StatelessWidget {
         Container(
           height: imgHeight,
           width: imgWidth,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(8.0),
-              topLeft: Radius.circular(8.0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(8),
+              bottomLeft: Radius.circular(8),
             ),
-            color: AppColors.appWhite,
           ),
-          child: imageUrl != null
-              ? ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(8.0),
-                    topLeft: Radius.circular(8.0),
-                  ),
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Shimmer.fromColors(
-                      baseColor: AppColors.appMutedColor,
-                      highlightColor: AppColors.appMutedTextColor,
-                      child: Container(
-                        height: imgHeight,
-                        width: imgWidth,
-                        color: AppColors.appMutedColor,
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Image.asset(
-                      AppImage.placeholder,
-                      height: imgHeight,
-                      width: imgWidth,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                )
-              : Image.asset(
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(8),
+              bottomLeft: Radius.circular(8),
+            ),
+            child: SizedBox(
+              height: imgHeight,
+              width: imgWidth,
+              child: imageUrl != null && imageUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                imageUrl: imageUrl!,
+                fit: BoxFit.cover,
+                fadeInDuration: Duration.zero,
+                placeholderFadeInDuration: Duration.zero,
+                placeholder: (_, __) => Container(
+                  color: AppColors.appMutedColor,
+                ),
+                errorWidget: (_, __, ___) => Image.asset(
                   AppImage.placeholder,
-                  height: imgHeight,
-                  width: imgWidth,
                   fit: BoxFit.cover,
                 ),
+              )
+                  : Image.asset(
+                AppImage.placeholder,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
         ),
-        // Always show favorite icon - filled when true, outline when false
+
+        /// Favorite Icon
         Obx(() {
-          // Watch the model to get reactive updates
           final currentResult = model.value?.result?[index];
-          final isFavorite =
+          final bool isFavorite =
               currentResult?.info?['favorite'] ??
-              result.info?['favorite'] ??
-              false;
+                  result.info?['favorite'] ??
+                  false;
+
           return GestureDetector(
             onTap: () {
-              // Toggle favorite state
               final newValue = !isFavorite;
-              // Update the model immediately for better UX
+
               if (result.info != null) {
                 result.info!['favorite'] = newValue;
               }
-              // Defer refresh to avoid setState during build error
+
               Future.microtask(() {
                 model.refresh();
               });
-              // Call the callback to handle API call if needed
+
               onFavoriteToggle(index, newValue);
             },
             child: Padding(
-              padding: const EdgeInsets.all(5.0),
+              padding: const EdgeInsets.all(6),
               child: Container(
-                height: 25,
-                width: 25,
+                height: 26,
+                width: 26,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black12,
-                      blurRadius: 10.0,
-                      spreadRadius: 1.0,
+                      blurRadius: 8,
                       offset: Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : AppColors.appIconColor,
-                    size: 16.0,
-                  ),
+                child: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  size: 16,
+                  color: isFavorite ? Colors.red : AppColors.appIconColor,
                 ),
               ),
             ),
           );
         }),
-        // Badge - show only if available
+
+        /// Badge
         if (badge != null && badge.isNotEmpty)
           Positioned(
-            top: 3,
-            right: 2,
+            top: 4,
+            right: 4,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
               decoration: BoxDecoration(
                 gradient: AppColors.appPagecolor,
                 borderRadius: BorderRadius.circular(5),
               ),
-              alignment: Alignment.center,
               child: Text(
                 badge,
-                textAlign: TextAlign.center,
                 style: AppTextStyle.body(),
               ),
             ),
@@ -556,10 +549,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     final ratingReview = result.info?['rating_review'];
     final price = result.info?['price'];
 
-    final isWeb =
-        kIsWeb ||
-        GetPlatform.isDesktop ||
-        MediaQuery.of(context).size.width > 800;
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),

@@ -55,12 +55,13 @@ class CustomViewWidget extends StatelessWidget {
     this.nextPageViewType,
     this.itemData,
     this.itemDataList,
+    this.showWebVerticalList = false,
   });
 
   final String type;
   final Function(Map<String, dynamic> buttonData, String userKey)? onActionTap;
 
-  final AppPostController? controller;
+  final dynamic controller;
 
   // Common callbacks
   final Function(String)? onItemTap;
@@ -104,6 +105,7 @@ class CustomViewWidget extends StatelessWidget {
   final String? nextPageViewType;
   final Map<String, dynamic>? itemData;
   final List<dynamic>? itemDataList;
+  final bool showWebVerticalList;
 
   @override
   Widget build(BuildContext context) {
@@ -138,9 +140,9 @@ class CustomViewWidget extends StatelessWidget {
           isLoading = false.obs;
         } else {
           model = useHomeModel
-              ? postController.getPostForHomeResponseModel
-              : postController.getPostListResponseModel;
-          isLoading = postController.isLoading;
+              ? postController!.getPostForHomeResponseModel
+              : postController!.getPostListResponseModel;
+          isLoading = postController!.isLoading;
         }
       } catch (e) {
         debugPrint("❌ CustomViewWidget: controller is null for type: ${type}");
@@ -231,6 +233,7 @@ class CustomViewWidget extends StatelessWidget {
             viewAllNextPage: viewAllNextPage,
             nextPageName: nextPageName,
             nextPageViewType: nextPageViewType,
+            showWebVerticalList: showWebVerticalList,
           );
         });
 
@@ -340,6 +343,7 @@ class CustomViewWidget extends StatelessWidget {
             viewAllNextPage: viewAllNextPage,
             nextPageName: nextPageName,
             nextPageViewType: nextPageViewType,
+            showWebVerticalList: showWebVerticalList,
           );
         });
 

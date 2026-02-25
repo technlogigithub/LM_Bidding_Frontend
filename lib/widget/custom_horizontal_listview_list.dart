@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ import '../core/app_images.dart';
 import '../../view/Home_screen/search_history_screen.dart';
 import '../../view/Home_screen/select_categories_screen.dart';
 import 'custom_navigator.dart';
+import 'package:flutter/foundation.dart';
 
 class CustomHorizontalListViewList extends StatelessWidget {
   final Rx<GetPostListResponseModel?> model;
@@ -28,6 +30,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
   final String? viewAllNextPage;
   final String? nextPageName; // Added
   final String? nextPageViewType; // Added
+  final bool showWebVerticalList; // Added
 
   const CustomHorizontalListViewList({
     super.key,
@@ -42,6 +45,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
     this.viewAllNextPage,
     this.nextPageName,
     this.nextPageViewType,
+    this.showWebVerticalList = false,
   });
 
   Widget _buildHeader() {
@@ -102,28 +106,49 @@ class CustomHorizontalListViewList extends StatelessWidget {
       }
 
       final bool hasValidImage = ImageTypeHelper.isImage(bgImg);
+      final bool isWeb = kIsWeb || GetPlatform.isDesktop;
 
-      Widget contentList = ListView.separated(
-        padding: const EdgeInsets.only(
-            top: 20, bottom: 20, left: 15.0, right: 15.0),
-        scrollDirection: Axis.horizontal,
-        itemCount: results.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10.0),
-        itemBuilder: (_, index) {
-          final result = results[index];
-          return _buildItemCard(context, result, index);
-        },
-      );
+      Widget contentList;
+      if (isWeb && showWebVerticalList) {
+        // Simple vertical layout for Web/Desktop as requested
+        contentList = ListView.separated(
+          padding: const EdgeInsets.all(15.0),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: results.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10.0),
+          itemBuilder: (_, index) {
+            final result = results[index];
+            return _buildItemCard(context, result, index);
+          },
+        );
+      } else {
+        // Normal horizontal layout
+        contentList = ListView.separated(
+          padding: const EdgeInsets.only(
+              top: 20, bottom: 20, left: 15.0, right: 15.0),
+          scrollDirection: Axis.horizontal,
+          itemCount: results.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10.0),
+          itemBuilder: (_, index) {
+            final result = results[index];
+            return _buildItemCard(context, result, index);
+          },
+        );
+      }
 
       Widget contentWithHeader = Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          SizedBox(
-            height: 160.h,
-            child: contentList,
-          ),
+          if (isWeb && showWebVerticalList)
+            contentList
+          else
+            SizedBox(
+              height: 180.h,
+              child: contentList,
+            ),
         ],
       );
 
@@ -268,24 +293,25 @@ class CustomHorizontalListViewList extends StatelessWidget {
             ),
           ),
         ],
-      ),
+  ),
     );
   }
 
   Widget _buildItemCard(BuildContext context, Result result, int index) {
+    final bool isWeb = kIsWeb || GetPlatform.isDesktop;
     return GestureDetector(
       onTap: () {
         if (onItemTap != null) {
           onItemTap!(result.hidden?.ukey ?? '');
         } else {
-             Get.to(() => PostDetailScreen(
-               ukey: result.hidden?.ukey,
-             ));
+          Get.to(() => PostDetailScreen(
+                ukey: result.hidden?.ukey,
+              ));
         }
       },
       child: Container(
-        width: 330.w,
-        height: 150.h,
+        width: (isWeb && showWebVerticalList) ? double.infinity : (isWeb ? 330.0 : 330.w),
+        height: isWeb ? 150.0 : 150.h,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
           boxShadow: [
@@ -293,16 +319,19 @@ class CustomHorizontalListViewList extends StatelessWidget {
               color: AppColors.appMutedColor,
               blurRadius: 5,
               spreadRadius: 1,
-              offset: Offset(0, 10),
+              offset: const Offset(0, 10),
             ),
           ],
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: (isWeb && showWebVerticalList) ? MainAxisSize.max : MainAxisSize.min,
           children: [
             _buildImageSection(result, index),
-            _buildContentSection(result),
+            if (isWeb && showWebVerticalList)
+              Expanded(child: _buildContentSection(result))
+            else
+              _buildContentSection(result),
           ],
         ),
       ),
@@ -320,12 +349,13 @@ class CustomHorizontalListViewList extends StatelessWidget {
       imageUrl = firstImage.url;
     }
     final badge = result.info?['badge'];
+    final isWeb = kIsWeb || GetPlatform.isDesktop;
     return Stack(
       alignment: Alignment.topLeft,
       children: [
         Container(
-          height: 135.h,
-          width: 120.w,
+          height: isWeb ? 135.0 : 135.h,
+          width: isWeb ? 120.0 : 120.w,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(8.0),
@@ -346,23 +376,23 @@ class CustomHorizontalListViewList extends StatelessWidget {
                 baseColor: AppColors.appMutedColor,
                 highlightColor: AppColors.appMutedTextColor,
                 child: Container(
-                  height: 135.h,
-                  width: 120.w,
+                  height: isWeb ? 135.0 : 135.h,
+                  width: isWeb ? 120.0 : 120.w,
                   color: AppColors.appMutedColor,
                 ),
               ),
               errorWidget: (context, url, error) => Image.asset(
                 AppImage.placeholder,
-                height: 135.h,
-                width: 120.w,
+                height: isWeb ? 135.0 : 135.h,
+                width: isWeb ? 120.0 : 120.w,
                 fit: BoxFit.cover,
               ),
             ),
           )
               : Image.asset(
             AppImage.placeholder,
-            height: 135.h,
-            width: 120.w,
+            height: isWeb ? 135.0 : 135.h,
+            width: isWeb ? 120.0 : 120.w,
             fit: BoxFit.cover,
           ),
         ),
@@ -464,7 +494,7 @@ class CustomHorizontalListViewList extends StatelessWidget {
         children: [
           Flexible(
             child: SizedBox(
-              width: 190,
+              width: ((kIsWeb || GetPlatform.isDesktop) && showWebVerticalList) ? null : 190,
               child: Text(
                 title,
                 style: AppTextStyle.description(

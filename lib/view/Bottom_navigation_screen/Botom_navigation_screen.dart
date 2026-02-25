@@ -9,6 +9,7 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../controller/app_main/App_main_controller.dart';
 import '../../controller/bottom/bottom_bar_controller.dart';
 import '../../controller/home/home_controller.dart';
+import '../../controller/cart/cart_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_textstyle.dart';
 import '../../widget/custom_navigator.dart'; // Added import
@@ -358,11 +359,21 @@ class BottomNavigationScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     /// 1. LOGO
-                    UniversalImage(
-                      url: appSettingsController.logoNameWhite.toString(),
-                      height: screenHeight * 0.05,
-                      width: 130,
-                      fit: BoxFit.contain,
+                    InkWell(
+                      onTap: () {
+                        int homeIndex = menuList.indexWhere((item) => item.nextPageName == "home_screen");
+                        if (homeIndex != -1) {
+                          controller.onItemTapped(homeIndex);
+                        } else {
+                          controller.currentPage.value = 0;
+                        }
+                      },
+                      child: UniversalImage(
+                        url: appSettingsController.logoNameWhite.toString(),
+                        height: screenHeight * 0.05,
+                        width: 130,
+                        fit: BoxFit.contain,
+                      ),
                     ),
 
                     const SizedBox(width: 20),
@@ -595,7 +606,13 @@ class BottomNavigationScreen extends StatelessWidget {
                                 .toList();
                           },
                           onSelected: (item) {
-                            if (item.nextPageName == "invite_screen") {
+                            if (item.nextPageName == "cart_screen") {
+                              final CartController cartController = Get.put(CartController());
+                              cartController.fetchCartDetails(
+                                cartEndpoint: item.nextPageApiEndpoint ?? "",
+                                nextPageName: item.nextPageName,
+                              );
+                            } else if (item.nextPageName == "invite_screen") {
                               final profileController = Get.put(
                                 ProfileController(),
                               );

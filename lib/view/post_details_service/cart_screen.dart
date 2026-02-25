@@ -764,6 +764,7 @@ class _CartScreenState extends State<CartScreen> {
           type: item.viewType!,
           itemDataList: fetchedItems.map((e) => e.toJson()).toList(),
           isFromCartScreen: true,
+          showWebVerticalList: true,
           onActionTap: (btn, userKey) async {
             String? apiEndpoint = btn['api_endpoint']?.toString();
             String? nextPageName = btn['next_page_name']?.toString();

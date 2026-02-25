@@ -13,10 +13,12 @@ import 'package:libdding/widget/custom_vertical_listview_list.dart';
 import 'package:libdding/widget/form_widgets/app_button.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../controller/home/home_controller.dart';
+import '../../controller/cart/cart_controller.dart';
 import '../../controller/post/app_post_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../models/home/banner_response_model.dart';
+import '../../service/cashfree_service.dart';
 import '../search_filter_post/search_filter_screen.dart';
 import 'search_history_screen.dart';
 import '../../widget/custom_banner.dart';
@@ -42,7 +44,10 @@ class HomeScreen extends StatelessWidget {
     final ClientHomeController controller = Get.put(ClientHomeController());
     final AppSettingsController appController = Get.put(
       AppSettingsController(),
+
     );
+    final PaymentController paymentController =
+    Get.put(PaymentController());
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
     final search = homePage?.design?.searchBar?.title;
@@ -276,7 +281,7 @@ class HomeScreen extends StatelessWidget {
                                             ),
                                             Obx(
                                               () => SizedBox(
-                                                width: screenWidth * 0.45,
+                                                width: screenWidth * 0.41,
                                                 child: Marquee(
                                                   child: Text(
                                                     controller
@@ -305,93 +310,63 @@ class HomeScreen extends StatelessWidget {
                           ),
 
                           // RIGHT SIDE ICONS WITH SHIMMER
-                          Row(
-                            children: [
-                              // 🔔 ICON 1
-                              GestureDetector(
-                                onTap: () {
-                                  CustomNavigator.navigate(
-                                    headerConfig?.headerMenu?[0].nextPageName,
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.appColor.withValues(
-                                        alpha: 0.2,
+                          if (headerConfig?.headerMenu != null)
+                            Row(
+                              children: headerConfig!.headerMenu!.asMap().entries.map((entry) {
+                                int index = entry.key;
+                                var menu = entry.value;
+                                return Padding(
+                                  padding: EdgeInsets.only(left: index != 0 ? 6.0 : 0.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (menu.nextPageName == "cart_screen") {
+                                        final CartController cartController = Get.put(CartController());
+                                        cartController.fetchCartDetails(
+                                          cartEndpoint: menu.nextPageApiEndpoint ?? "",
+                                          nextPageName: menu.nextPageName,
+                                        );
+                                      } else {
+                                        CustomNavigator.navigate(
+                                          menu.nextPageName,
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: AppColors.appColor.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      child: ClipOval(
+                                        child: Image.network(
+                                          menu.icon ?? "",
+                                          height: 25,
+                                          width: 25,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder:
+                                              (context, child, loadingProgress) {
+                                                if (loadingProgress == null)
+                                                  return child;
+                                                return shimmerCircle(25);
+                                              },
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Icon(
+                                                  IconlyLight.notification,
+                                                  color: AppColors.appTextColor,
+                                                );
+                                              },
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  child: ClipOval(
-                                    child: Image.network(
-                                      headerConfig?.headerMenu?[0].icon ?? "",
-                                      height: 25,
-                                      width: 25,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                            if (loadingProgress == null)
-                                              return child;
-                                            return shimmerCircle(25);
-                                          },
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Icon(
-                                              IconlyLight.notification,
-                                              color: AppColors.appTextColor,
-                                            );
-                                          },
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(width: 6),
-
-                              // ℹ️ ICON 2
-                              GestureDetector(
-                                onTap: () {
-                                  CustomNavigator.navigate(
-                                    headerConfig?.headerMenu?[1].nextPageName,
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.appColor.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                  child: ClipOval(
-                                    child: Image.network(
-                                      headerConfig?.headerMenu?[1].icon ?? "",
-                                      height: 25,
-                                      width: 25,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                            if (loadingProgress == null)
-                                              return child;
-                                            return shimmerCircle(25);
-                                          },
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Icon(
-                                              IconlyLight.infoSquare,
-                                              color: AppColors.appTextColor,
-                                            );
-                                          },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                                );
+                              }).toList(),
+                            ),
                         ],
                       ),
                     );
@@ -710,6 +685,9 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
+        // floatingActionButton: FloatingActionButton(onPressed: () {
+        //       paymentController.createOrder();
+        // },),
       ),
     );
   }
