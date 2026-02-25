@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_string.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:webview_windows/webview_windows.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../controller/home/home_controller.dart';
 import '../../core/app_config.dart';
 import '../../core/app_textstyle.dart';
@@ -38,6 +40,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool isLoadingAddress = false;
   Timer? _debounce;
+  final _webViewController = WebviewController();
+  bool _isWebviewInitialized = false;
+
   @override
   final String _darkMapStyle = '''[{"elementType":"geometry","stylers":[{"color":"#242f3e"}]},{"elementType":"labels.text.fill","stylers":[{"color":"#746855"}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#242f3e"}]},{"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#263c3f"}]},{"featureType":"poi.park","elementType":"labels.text.fill","stylers":[{"color":"#6b9a76"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#38414e"}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#212a37"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#9ca5b3"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#746855"}]},{"featureType":"road.highway","elementType":"geometry.stroke","stylers":[{"color":"#1f2835"}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#f3d19c"}]},{"featureType":"transit","elementType":"geometry","stylers":[{"color":"#2f3948"}]},{"featureType":"transit.station","elementType":"labels.text.fill","stylers":[{"color":"#d59563"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#17263c"}]},{"featureType":"water","elementType":"labels.text.fill","stylers":[{"color":"#515c6d"}]},{"featureType":"water","elementType":"labels.text.stroke","stylers":[{"color":"#17263c"}]}]''';
 
@@ -46,6 +51,26 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     super.initState();
     selectedLocation = LatLng(widget.initialLat, widget.initialLng);
     _getAddressFromLatLng(selectedLocation!);
+    _initDesktopMap();
+  }
+
+  Future<void> _initDesktopMap() async {
+    if (!kIsWeb && GetPlatform.isWindows) {
+      try {
+        await _webViewController.initialize();
+        await _webViewController.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
+        await _webViewController.loadUrl(_getMapUrl(selectedLocation!));
+        setState(() {
+          _isWebviewInitialized = true;
+        });
+      } catch (e) {
+        print("Webview initialize failed: $e");
+      }
+    }
+  }
+
+  String _getMapUrl(LatLng location) {
+    return "https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}";
   }
 
   Future<void> _getAddressFromLatLng(LatLng location) async {
@@ -113,11 +138,17 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
             selectedAddress = data['result']['formatted_address'];
           });
           
-          mapController?.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(target: newLocation, zoom: 15),
-            ),
-          );
+          if (!kIsWeb && GetPlatform.isWindows) {
+            if (_isWebviewInitialized) {
+              _webViewController.loadUrl(_getMapUrl(newLocation));
+            }
+          } else {
+            mapController?.animateCamera(
+              CameraUpdate.newCameraPosition(
+                CameraPosition(target: newLocation, zoom: 15),
+              ),
+            );
+          }
         } else {
           print("Place details API error: ${data['status']}, ${data['error_message']}");
         }
@@ -139,6 +170,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     _debounce?.cancel();
     _searchController.dispose();
     mapController?.dispose();
+    if (!kIsWeb && GetPlatform.isWindows) {
+      _webViewController.dispose();
+    }
     super.dispose();
   }
 
@@ -164,31 +198,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           child: Stack(
             children: [
               // Google Map
-              GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: selectedLocation!,
-                  zoom: 15,
-                ),
-                onMapCreated: (controller) {
-                  if (mounted) mapController = controller;
-                  if (Get.isDarkMode) {
-                    controller.setMapStyle(_darkMapStyle);
-                  }
-                },
-                onTap: _onMapTap,
-                markers: selectedLocation != null
-                    ? {
-                  Marker(
-                    markerId: const MarkerId('selected'),
-                    position: selectedLocation!,
-                  ),
-                }
-                    : {},
-                zoomGesturesEnabled: true,
-                scrollGesturesEnabled: true,
-                tiltGesturesEnabled: false,
-                rotateGesturesEnabled: false,
-              ),
+              _buildMapWidget(),
 
               // Search TextField
               Positioned(
@@ -321,6 +331,41 @@ decoration: BoxDecoration(
         ),
       )
           : null,
+    );
+  }
+
+  Widget _buildMapWidget() {
+    if (!kIsWeb && GetPlatform.isWindows) {
+      if (!_isWebviewInitialized) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return Webview(_webViewController);
+    }
+    
+    return GoogleMap(
+      initialCameraPosition: CameraPosition(
+        target: selectedLocation!,
+        zoom: 15,
+      ),
+      onMapCreated: (controller) {
+        if (mounted) mapController = controller;
+        if (Get.isDarkMode) {
+          controller.setMapStyle(_darkMapStyle);
+        }
+      },
+      onTap: _onMapTap,
+      markers: selectedLocation != null
+          ? {
+              Marker(
+                markerId: const MarkerId('selected'),
+                position: selectedLocation!,
+              ),
+            }
+          : {},
+      zoomGesturesEnabled: true,
+      scrollGesturesEnabled: true,
+      tiltGesturesEnabled: false,
+      rotateGesturesEnabled: false,
     );
   }
 }

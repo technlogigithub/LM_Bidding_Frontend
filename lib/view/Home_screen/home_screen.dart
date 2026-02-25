@@ -46,8 +46,8 @@ class HomeScreen extends StatelessWidget {
       AppSettingsController(),
 
     );
-    final PaymentController paymentController =
-    Get.put(PaymentController());
+    // final PaymentController paymentController =
+    // Get.put(PaymentController());
     final homePage = appController.homePage.value; // <-- HomePage? model
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
     final search = homePage?.design?.searchBar?.title;
