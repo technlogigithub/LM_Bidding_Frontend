@@ -8,7 +8,7 @@ class SocketServiceImpl implements SocketService {
 
   @override
   Future<void> connect(String userId) async {
-    const url = 'ws://143.110.183.169:9001';
+    const url = 'wss://phplaravel-1517766-5835172.cloudwaysapps.com:9001';
     print('🌐 Connecting to $url...');
     _socket = WebSocket(url);
 

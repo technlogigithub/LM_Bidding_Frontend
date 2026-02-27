@@ -37,9 +37,11 @@ class SocketServiceImpl implements SocketService {
   String _getServerUrl() {
     if (defaultTargetPlatform == TargetPlatform.android) {
       // ✅ REAL ANDROID PHONE
-      return 'ws://143.110.183.169:9001';
+      return 'wss://phplaravel-1517766-5835172.cloudwaysapps.com:9001';
+      // return 'ws://143.110.183.169:9001';
     }
-    return 'ws://143.110.183.169:9001';
+    return 'wss://phplaravel-1517766-5835172.cloudwaysapps.com:9001';
+    // return 'ws://143.110.183.169:9001';
   }
 
 

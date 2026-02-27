@@ -27,11 +27,6 @@ void main() async {
   final appController = Get.put(AppSettingsController());
   await appController.fetchAllData();
   
-  final prefsMain = await SharedPreferences.getInstance();
-  final isLanguageSelectedMain = prefsMain.getBool('is_language_selected') ?? false;
-  if (isLanguageSelectedMain) {
-    await appController.fetchAppContent();
-  }
 
   if (!kIsWeb) {
     // 🔥 Firebase (Mobile Only)
@@ -61,6 +56,19 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final ukey = prefs.getString('ukey');
+
+  // Skip splash, language, and onboarding on Web and Desktop
+  if (kIsWeb || GetPlatform.isDesktop) {
+    await prefs.setBool('is_language_selected', true);
+    await prefs.setBool('is_onboarding_completed', true);
+    // Explicitly fetch app content to ensure UI labels are loaded
+    await appController.fetchAppContent();
+  } else {
+    final isLanguageSelectedMain = prefs.getBool('is_language_selected') ?? false;
+    if (isLanguageSelectedMain) {
+      await appController.fetchAppContent();
+    }
+  }
   
   if (ukey != null) {
     debugPrint("🔌 Connected with ukey: $ukey");
@@ -129,7 +137,7 @@ class _MyAppState extends State<MyApp> {
         themeMode: appController.isDarkMode.value
             ? ThemeMode.dark
             : ThemeMode.light,
-        initialRoute: AppPages.initial,
+        initialRoute: (kIsWeb || GetPlatform.isDesktop) ? AppRoutes.bottomNav : AppPages.initial,
         getPages: AppPages.routes,
         builder: (context, materialChild) {
           return Stack(

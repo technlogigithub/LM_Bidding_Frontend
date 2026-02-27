@@ -1,0 +1,301 @@
+Custom Widgets Documentation
+============================
+
+This document provides a summary of the custom widgets used in the project, explaining their purpose and usage.
+
+1. DynamicFormBuilder
+---------------------
+- Purpose: Automatically generates a complex Flutter form based on a JSON-like configuration (List of Field models).
+- Usage: Used in the 'Add Post' and 'Project Bidding' screens to dynamically render fields sent from the backend.
+- Key Features: Supports validation, conditional visibility, and various field types.
+- File: lib/widget/form_widgets/dynamic_form_builder.dart
+
+2. CustomButton
+---------------
+- Purpose: A stylized button widget with consistent app theme.
+- Usage: Used for primary actions like 'Submit', 'Login', etc.
+- File: lib/widget/form_widgets/app_button.dart
+
+3. CustomCheckbox
+-----------------
+- Purpose: A single checkbox with a label.
+- Usage: Used for 'Terms and Conditions' or simple boolean selections.
+- File: lib/widget/form_widgets/app_checkbox.dart
+
+4. CustomCheckboxGroup
+----------------------
+- Purpose: A group of checkboxes allowing multiple selections.
+- Usage: Used for selecting multiple tags, categories, or options in a form.
+- File: lib/widget/form_widgets/custom_checkbox_group.dart
+
+5. CustomDatePickerForm
+-----------------------
+- Purpose: A text field that opens a date picker dialog.
+- Usage: Used for selecting a single date (e.g., Anniversary, Birth Date).
+- File: lib/widget/form_widgets/app_date_picker.dart
+
+6. CustomDateTimePicker
+-----------------------
+- Purpose: Allows picking both date and time.
+- Usage: Used for scheduling tasks or setting deadlines in forms.
+- File: lib/widget/form_widgets/custom_date_time.dart
+
+7. CustomDateRangePicker
+------------------------
+- Purpose: Allows selecting a start and end date.
+- Usage: Used for filtering results by date range or selecting duration.
+- File: lib/widget/form_widgets/app_date_range.dart & custom_date_time.dart
+
+8. CustomToggle
+---------------
+- Purpose: A stylized switch/toggle button.
+- Usage: Used for binary settings (e.g., Enable/Disable Notifications).
+- File: lib/widget/form_widgets/custom_toggle.dart
+
+9. CustomDatePicker
+-------------------
+- Purpose: A standalone date picker component.
+- Usage: Embedded in other complex date selection widgets.
+- File: lib/widget/form_widgets/custom_date_time.dart
+
+10. CustomDateTimeRangePicker
+-----------------------------
+- Purpose: Picks a range of dates and times.
+- Usage: Used for precise duration scheduling.
+- File: lib/widget/form_widgets/custom_date_time.dart
+
+11. DateTimeRangeResult
+-----------------------
+- Purpose: A helper model to store results from date range pickers.
+- File: lib/widget/form_widgets/custom_date_time.dart
+
+12. CustomDropdown
+------------------
+- Purpose: A stylized dropdown/select field.
+- Usage: Used for selecting one option from a fixed list (e.g., Gender, City).
+- File: lib/widget/form_widgets/app_dropdown.dart & custom_dropdown.dart
+
+13. CustomRadioButton
+---------------------
+- Purpose: A single radio button component.
+- Usage: Used as a building block for groups.
+- File: lib/widget/form_widgets/app_radiobutton.dart
+
+14. CustomRadioGroup
+--------------------
+- Purpose: A group of radio buttons for single selection.
+- Usage: Used for selecting one option among several (e.g., Payment Method).
+- File: lib/widget/form_widgets/custom_radio_group.dart
+
+15. CustomTextfield
+-------------------
+- Purpose: The standard text entry field for the app.
+- Usage: General inputs like Name, Email, Title.
+- File: lib/widget/form_widgets/app_textfield.dart
+
+16. CustomMobileNumberTextField
+-------------------------------
+- Purpose: A complex text field for phone numbers with country code selection.
+- Usage: Used in registration and profile update screens.
+- File: lib/widget/form_widgets/custom_mobile_number_textfield.dart
+
+17. CustomTextarea
+------------------
+- Purpose: A multi-line text input field.
+- Usage: Used for project descriptions, reviews, or comments.
+- File: lib/widget/form_widgets/custom_textarea.dart
+
+18. CustomTextfieldForAddress
+-----------------------------
+- Purpose: A specialized text field that integrates with map/location services.
+- Usage: Used for picking addresses in forms.
+- File: lib/widget/form_widgets/custom_textfield_address.dart
+
+19. LocationPickerScreen
+------------------------
+- Purpose: A full-screen map interface for selecting a location pin.
+- File: lib/widget/form_widgets/location_picker.dart
+
+20. CustomFilePicker
+--------------------
+- Purpose: Allows picking a single file (image, video, document).
+- File: lib/widget/form_widgets/custom_file_picker.dart
+
+21. CustomMultipleFilePicker
+----------------------------
+- Purpose: Allows selecting and managing multiple files at once.
+- Usage: Used for uploading multiple project images or documents.
+- File: lib/widget/form_widgets/custom_multiple_file_picker.dart
+
+22. CustomHeader
+----------------
+- Purpose: App bar component displaying user profile info and wallet balance.
+- Usage: Displayed at the top of the home screen and profile page.
+- File: lib/widget/app_appbar.dart
+
+23. UniversalImage
+------------------
+- Purpose: A flexible image handler that detects asset vs network images automatically.
+- File: lib/widget/app_image_handle.dart
+
+24. AppRecentlyPostCard
+-----------------------
+- Purpose: Displays a list of recent bidding posts in a stylized card format.
+- File: lib/widget/app_recently_post_card.dart
+
+25. SocialIcon
+--------------
+- Purpose: Stylized circular icons for social media links.
+- File: lib/widget/app_social_icons.dart
+
+26. InfoShowCase
+----------------
+- Purpose: Displays detailed info blocks with edit/delete actions.
+- File: lib/widget/appInfo.dart
+
+27. CustomSearchDelegate
+------------------------
+- Purpose: Implements the Flutter search flow with the app's custom theme.
+- File: lib/widget/appSearchDelegate.dart
+
+28. ButtonGlobalWithoutIcon
+---------------------------
+- Purpose: A generic button that doesn't include an icon.
+- File: lib/widget/button_global.dart
+
+29. CategoryVerticalListWidget
+------------------------------
+- Purpose: A vertical list of categories with support for nested subcategories.
+- File: lib/widget/category_vertical_list_widget.dart
+
+30. RecordStatistics
+--------------------
+- Purpose: Displays dynamic data in a pie chart format.
+- Usage: Used in dashboards to show project status or earnings.
+- File: lib/widget/chart.dart
+
+31. CustomAlertDialog
+---------------------
+- Purpose: A customizable dialog box with gradient buttons and optional images.
+- File: lib/widget/custom_alert_dialog.dart
+
+32. AutoNetworkImage
+--------------------
+- Purpose: Network image loader with an integrated shimmer placeholder.
+- File: lib/widget/custom_auto_image_handle.dart
+
+33. CustomBanner
+----------------
+- Purpose: A horizontal banner carousel for advertisements or featured content.
+- File: lib/widget/custom_banner.dart
+
+34. CustomBannerWithVideo
+-------------------------
+- Purpose: A carousel that supports both images and video playback.
+- File: lib/widget/custom_banner_with_video.dart
+
+35. CustomCategoryHorizontalList
+--------------------------------
+- Purpose: A horizontal scrollable list of categories with icons.
+- File: lib/widget/custom_category_horizontal_list.dart
+
+36. CustomCouponApplyField
+--------------------------
+- Purpose: A specialized text field with an 'APPLY' button for coupon codes.
+- File: lib/widget/custom_coupon_apply_field.dart
+
+37. DepositCard
+---------------
+- Purpose: Displays details of a wallet deposit or transaction.
+- File: lib/widget/custom_deposit_card.dart
+
+38. CustomHorizontalBullets
+---------------------------
+- Purpose: Horizontal scrollable chips for tags or quick filters.
+- File: lib/widget/custom_horizontal_bullets.dart
+
+39. CustomHorizontalGridViewList
+--------------------------------
+- Purpose: Displays posts in a horizontal grid layout.
+- File: lib/widget/custom_horizontal_gridview_list.dart
+
+40. CustomHorizontalListViewList
+--------------------------------
+- Purpose: Displays posts in a horizontal list/row layout.
+- File: lib/widget/custom_horizontal_listview_list.dart
+
+41. CustomHtmlViewer
+--------------------
+- Purpose: Renders HTML content (e.g., terms, descriptions) within the app.
+- File: lib/widget/custom_html_viewer.dart
+
+42. CustomInputIncreaseDecrease
+-------------------------------
+- Purpose: Numeric input field with Up/Down buttons for incrementing values.
+- File: lib/widget/custom_input_increase_decrease.dart
+
+43. CustomInputPlusMinus
+------------------------
+- Purpose: Numeric input field with side-by-side Plus/Minus buttons.
+- File: lib/widget/custom_input_plus_minus.dart
+
+44. CustomPaymentRadioButton
+----------------------------
+- Purpose: Specialized radio button for selecting payment gateways with icons.
+- File: lib/widget/custom_payment_radio_button.dart
+
+45. CustomNavigator
+-------------------
+- Purpose: A helper class for centralized navigation and routing management.
+- File: lib/widget/custom_navigator.dart
+
+46. SearchBarWidget (CustomSearchBar)
+--------------------------------------
+- Purpose: A stylized search box that opens the search history screen.
+- File: lib/widget/custom_searchbar.dart
+
+47. CustomTabBar (CustomTapBar)
+-------------------------------
+- Purpose: A highly customizable tab selector with image backgrounds and animations.
+- File: lib/widget/custom_tapbar.dart
+
+48. CustomVerticalGridViewList
+------------------------------
+- Purpose: Displays a scrollable 2-column grid of posts.
+- File: lib/widget/custom_vertical_gridview_list.dart
+
+49. CustomVerticalListViewList
+------------------------------
+- Purpose: Displays a vertical list of post cards (often used for search results).
+- File: lib/widget/custom_vertical_listview_list.dart
+
+50. CustomViewWidget
+--------------------
+- Purpose: A factory/wrapper widget that dynamically loads different list layouts based on a 'type' string.
+- Usage: Essential for modular home screen sections.
+- File: lib/widget/custom_view_widget.dart
+
+51. SuccessDialog
+-----------------
+- Purpose: A celebratory dialog shown after successful project submission or review.
+- File: lib/widget/success_dialog.dart
+
+52. MypostListCustomWidget
+--------------------------
+- Purpose: Specialized vertical list for managing the current user's own posts/bids.
+- File: lib/widget/my_post_list_custom.dart
+
+53. OTPInputField
+-----------------
+- Purpose: Stylized individual input boxes for entering verification codes (OTP).
+- File: lib/widget/otp_input_field.dart
+
+54. CustomOTPInputField (Pinput)
+--------------------------------
+- Purpose: Advanced OTP input using the pinput library for better UX.
+- File: lib/widget/pinput.dart
+
+55. UniversalSelectorForm
+-------------------------
+- Purpose: A dropdown-like selector that opens a dialog or sheet for selection.
+- File: lib/widget/universal_selector_form.dart

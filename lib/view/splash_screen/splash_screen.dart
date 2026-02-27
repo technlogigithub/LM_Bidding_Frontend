@@ -29,6 +29,10 @@ class SplashScreenState extends State<SplashScreen> {
   String appVersion = "";
 
   void whereToGo() async {
+    if (kIsWeb || GetPlatform.isDesktop) {
+      Get.offAllNamed(AppRoutes.bottomNav);
+      return;
+    }
     await Future.delayed(const Duration(seconds: 3));
 
     final updateRequired = await controller.isUpdateRequired();

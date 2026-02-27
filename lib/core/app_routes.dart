@@ -76,9 +76,12 @@ import 'package:libdding/view/splash_screen/splash_screen.dart';
 import 'package:libdding/view/transaction/transaction_screen.dart';
 import 'package:libdding/view/video_view_screen/video_view_screen.dart';
 
+import '../view/Home_screen/search_history_screen.dart';
+
 class AppRoutes {
   static const String splash = '/splash';
   static const String home = '/home';
+  static const String searchHistory  = '/search_history';
   static const String profile = '/profile';
   static const String login = '/login';
   static const String createAccount = '/create_account';
@@ -164,6 +167,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.home,
       page: () => HomeScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.searchHistory,
+      page: () => SearchHistoryScreen(),
     ),
     GetPage(
       name: AppRoutes.profile,

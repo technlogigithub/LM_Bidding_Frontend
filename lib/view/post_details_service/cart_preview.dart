@@ -22,7 +22,7 @@ import '../../widget/custom_view_widget.dart';
 import '../../widget/form_widgets/location_picker.dart';
 import '../../widget/dynamic_bottom_sheet.dart';
 
-class CartPreview extends StatefulWidget {
+  class CartPreview extends StatefulWidget {
   const CartPreview({super.key});
 
   @override
