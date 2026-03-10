@@ -28,6 +28,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
   final String? viewAllNextPage;
   final String? nextPageName; // Added
   final String? nextPageViewType; // Added
+  final String? nextPageApiEndpoint; // Added
 
   const CustomHorizontalGridViewList({
     super.key,
@@ -43,6 +44,7 @@ class CustomHorizontalGridViewList extends StatelessWidget {
     this.viewAllNextPage,
     this.nextPageName,
     this.nextPageViewType,
+    this.nextPageApiEndpoint,
   });
 
   @override
@@ -321,6 +323,8 @@ class CustomHorizontalGridViewList extends StatelessWidget {
       onTap: () {
         if (onItemTap != null) {
           onItemTap!(result.hidden?.ukey ?? '');
+        } else if (nextPageName != null && nextPageName!.isNotEmpty) {
+          CustomNavigator.navigate(nextPageName!, arguments: result.hidden?.ukey ?? '');
         }
       },
       child: Container(

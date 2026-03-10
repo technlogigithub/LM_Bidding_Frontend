@@ -151,7 +151,7 @@ class CustomNavigator {
         break;
 
       case "favorite_screen":
-        Get.toNamed(AppRoutes.favorite);
+        Get.toNamed(AppRoutes.favorite, arguments: arguments is AppMenuItem ? arguments : null);
         break;
 
       case "seller_request_screen":
@@ -178,6 +178,7 @@ class CustomNavigator {
         break;
 
       case "post_detail_screen":
+      case "custom_detail_screen": // Alias added
         String? ukey;
         if (arguments is String) {
           ukey = arguments;

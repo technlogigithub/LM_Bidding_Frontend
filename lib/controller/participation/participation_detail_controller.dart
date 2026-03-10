@@ -1,167 +1,224 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_textstyle.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
 
+import '../../core/api_config.dart';
 import '../../core/app_constant.dart';
-import '../../models/static models/participation_detail_model.dart';
+import '../../models/Participate/participate_details_model.dart';
 import '../../widget/app_social_icons.dart';
 import '../../widget/form_widgets/app_button.dart';
 import '../../widget/form_widgets/app_textfield.dart';
+import '../../core/network.dart';
+import '../../core/utils.dart';
+import '../../widget/custom_navigator.dart';
 
 class ParticipationDetailController extends GetxController {
   var isLoading = true.obs;
-  var detail = Rxn<ParticipationDetailModel>();
+  var detailResponse = Rxn<ParticipateDetaislResponseModel>();
+  var isLoadingForm = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadStaticData();
+    // In a real scenario, we would call getParticipationDetails with an endpoint
+    // but here we wait for the screen to trigger it.
   }
 
-  void loadStaticData() {
-    Future.delayed(const Duration(seconds: 2), () {
-      detail.value = ParticipationDetailModel(
-        orderId: 'F025E15',
-        sellerName: 'Shaidul Islam',
-        orderDate: '24 Jun 2023',
-        title: 'Mobile UI UX design or app UI UX design',
-        serviceInfo: 'Lorem ipsum dolor sit amet consectetur. Tortor sapien aliquam amet elit. Quis varius amet grav ida molestie rhoncus. Lorem ipsum dolor sit amet consectetur. Tortor sapien aliquam amet elit. Quis varius amet grav ida molestie rhoncus.',
-        duration: '3 Days',
-        amount: '5.00',
-        status: 'Active',
-        countdownDuration: const Duration(days: 3),
-        revisions: 'Unlimited Revisions',
-        fileTypes: 'Source file, JPG, PNG, ZIP',
-        resolution: 'High resolution',
-        package: 'Basic',
-        subtotal: '5.00',
-        serviceFee: '2.00',
-        total: '7.00',
-        deliveryDate: 'Thursday, 24 Jun 2023',
-        deliveryFileName: 'UI UX Design Mobile app...',
-        deliveryFileSubtitle: 'Figma file 23564 25452...',
-        deliveryImagePath: 'assets/images/file.png',
-        showDeliverySection: true,
+  Future<Map<String, dynamic>> getBaseBody() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? ukey = prefs.getString('ukey');
+    String lat = '';
+    String long = '';
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(const Duration(seconds: 5));
+        lat = position.latitude.toString();
+        long = position.longitude.toString();
+      }
+    } catch (e) {
+      debugPrint("❌ Error getting location: $e");
+    }
+
+    return {
+      if (ukey != null) "user_key": ukey,
+      if (lat.isNotEmpty) "gps_lat": lat,
+      if (long.isNotEmpty) "gps_long": long,
+    };
+  }
+
+  Future<void> getParticipationDetails(String endpoint) async {
+    if (endpoint.isEmpty) return;
+    isLoading.value = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      final body = await getBaseBody();
+
+      final headers = {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token'
+      };
+
+      final response = await ApiServices().makeRequestFormData(
+        endPoint: endpoint,
+        method: 'POST',
+        body: body,
+        headers: headers,
       );
-      isLoading.value = false;
-    });
-  }
 
-  void cancelOrderPopUp(BuildContext context) {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, void Function(void Function()) setState) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20.0),
-              ),
-              backgroundColor: Colors.transparent, // IMPORTANT for gradient
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: AppColors.appPagecolor, // ✅ Your gradient here
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                child: const CancelOrderPopUp(),
-              ),
-            );
-
-          },
+      if (response != null && response['success'] == true) {
+        detailResponse.value = ParticipateDetaislResponseModel.fromJson(response);
+      } else {
+        detailResponse.value = null; // Reset if failed
+        debugPrint("⚠️ API returned success=false or null: $response");
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: "Error",
+          message: response != null ? response['message'] ?? "Failed to fetch details" : "Failed to fetch details",
         );
-      },
-    );
+      }
+    } catch (e) {
+      detailResponse.value = null;
+      debugPrint("❌ Error fetching participation details: $e");
+      Utils.showSnackbar(
+        isSuccess: false,
+        title: "Error",
+        message: "An error occurred while fetching details",
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
-}
-class CancelOrderPopUp extends StatefulWidget {
-  const CancelOrderPopUp({super.key});
 
-  @override
-  State<CancelOrderPopUp> createState() => _CancelOrderPopUpState();
-}
+  Future<List<dynamic>> fetchSectionItems(String endpoint) async {
+    if (endpoint.isEmpty) return [];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
 
-class _CancelOrderPopUpState extends State<CancelOrderPopUp> {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(15.0),
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Why are you Cancelling?',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyle.title( fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10.0),
-             Divider(
-              height: 1.0,
-              thickness: 1.0,
-              color: AppColors.appMutedColor,
-            ),
-            const SizedBox(height: 20.0),
-            CustomTextfield(
-              label: 'Enter Reason',
-              hintText: 'Lorem ipsum dolor sit amet, cons lecture adipiscing elit.',
-              keyboardType: TextInputType.multiline,
-              lines: 2, // same as maxLines: 2
-              textInputAction: TextInputAction.next,
-              // controller: yourController, // optional
-              onChanged: (value) {
-                // handle change
-              },
-            ),
-            //
-            // TextFormField(
-            //   keyboardType: TextInputType.multiline,
-            //   maxLines: 2,
-            //   cursorColor: kNeutralColor,
-            //   textInputAction: TextInputAction.next,
-            //   decoration: kInputDecoration.copyWith(
-            //       labelText: 'Enter Reason',
-            //       labelStyle: kTextStyle.copyWith(color: kNeutralColor),
-            //       hintText: 'Lorem ipsum dolor sit amet, cons lecture adipiscing elit.',
-            //       hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-            //       focusColor: kNeutralColor,
-            //       border: const OutlineInputBorder(),
-            //       floatingLabelBehavior: FloatingLabelBehavior.always
-            //   ),
-            // ),
-            const SizedBox(height: 10.0),
-            Row(
-              children: [
-                Expanded(
-                  child: CustomButton(
-                    text: 'Cancel',
-                    backgroundColor: AppColors.appButtonColor,
-                    onTap: () {
-                      finish(context);
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12), // spacing between buttons
-                Expanded(
-                  child: CustomButton(
-                    text: 'Confirm',
-                    backgroundColor:  AppColors.appButtonColor,
-                    onTap: () {
-                      finish(context);
-                    },
-                  ),
-                ),
-              ],
-            )
+      final body = await getBaseBody();
 
-          ],
-        ),
-      ),
-    );
+      final headers = {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token'
+      };
+
+      final response = await ApiServices().makeRequestFormData(
+        endPoint: endpoint,
+        method: 'POST',
+        body: body,
+        headers: headers,
+      );
+
+      if (response != null && response['success'] == true && response['result'] != null) {
+        if (response['result'] is List) {
+          return response['result'];
+        } else if (response['result'] is Map && response['result']['items'] != null) {
+          return response['result']['items'];
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching section items: $e");
+    }
+    return [];
+  }
+
+  Future<void> submitSubmitButtonAction({
+    required String endpoint,
+    required Map<String, dynamic> formData,
+  }) async {
+    if (endpoint.isEmpty) return;
+    isLoadingForm.value = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      final body = await getBaseBody();
+      body.addAll(formData);
+
+      final headers = {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token'
+      };
+
+      final response = await ApiServices().makeRequestFormData(
+        endPoint: endpoint,
+        method: 'POST',
+        body: body,
+        headers: headers,
+      );
+
+      if (response != null && (response['success'] == true || response['response_code'] == 200)) {
+        Utils.showSnackbar(
+          isSuccess: true,
+          title: "Success",
+          message: response['message'] ?? "Action completed successfully",
+        );
+        Get.back();
+      } else {
+        Utils.showSnackbar(
+          isSuccess: false,
+          title: "Error",
+          message: response != null ? response['message'] ?? "Something went wrong" : "Something went wrong",
+        );
+      }
+    } catch (e) {
+      debugPrint("❌ Error submitting action: $e");
+      Utils.showSnackbar(
+        isSuccess: false,
+        title: "Error",
+        message: "Failed to perform action",
+      );
+    } finally {
+      isLoadingForm.value = false;
+    }
+  }
+
+  Future<void> executeGeneralAction(String endpoint, String nextPageName, String nextPageViewType) async {
+    if (endpoint.isEmpty) {
+      if (nextPageName.isNotEmpty) {
+        CustomNavigator.navigate(nextPageName);
+      }
+      return;
+    }
+
+    isLoading.value = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('auth_token');
+
+      final body = await getBaseBody();
+
+      final headers = {
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token'
+      };
+
+      final response = await ApiServices().makeRequestFormData(
+        endPoint: endpoint,
+        method: 'POST',
+        body: body,
+        headers: headers,
+      );
+
+      if (response != null && (response['success'] == true || response['response_code'] == 200)) {
+        if (nextPageName.isNotEmpty) {
+           CustomNavigator.navigate(nextPageName);
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Error executing action: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

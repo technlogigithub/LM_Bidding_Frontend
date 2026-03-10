@@ -28,7 +28,7 @@ class WebFormContainer extends StatelessWidget {
         width: screenWidth * widthFactor,
         height: screenHeight * heightFactor,
         decoration: BoxDecoration(
-          color: AppColors.appWhite,
+          gradient: AppColors.appPagecolor,
           boxShadow: [
             BoxShadow(
               color: AppColors.appMutedColor,
@@ -87,11 +87,12 @@ class WebFormContainer extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "Preview & Details",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.appTitleColor,
                         ),
                       ),
                       const SizedBox(height: 15),

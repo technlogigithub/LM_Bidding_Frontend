@@ -52,7 +52,7 @@ class HomeScreen extends StatelessWidget {
     final headerConfig = homePage?.design?.headerMenu; // <-- HeaderMenuSection?
     final search = homePage?.design?.searchBar?.title;
     final AppPostController appPostController =
-        Get.isRegistered<AppPostController>()
+    Get.isRegistered<AppPostController>()
         ? Get.find<AppPostController>()
         : Get.put(AppPostController());
     // appPostController.getPostList();
@@ -110,8 +110,8 @@ class HomeScreen extends StatelessWidget {
     }
 
     List<Map<String, dynamic>> buildMediaItemsFromVideoList(
-      List<BannerVidepResult> banners,
-    ) {
+        List<BannerVidepResult> banners,
+        ) {
       return banners.map((banner) {
         // Filter based on media_type
         if (banner.mediaType == 'video' &&
@@ -150,237 +150,237 @@ class HomeScreen extends StatelessWidget {
         appBar: isWeb
             ? null
             : AppBar(
-                backgroundColor: parseColor(headerConfig?.bgColor),
-                elevation: 0,
-                automaticallyImplyLeading: false,
-                toolbarHeight: screenHeight * 0.085,
-                flexibleSpace: Container(
-                  decoration: BoxDecoration(gradient: AppColors.appbarColor),
-                  padding: EdgeInsets.only(
-                    top: screenHeight * 0.045,
-                    left: 10,
-                    right: 10,
-                  ),
+          backgroundColor: parseColor(headerConfig?.bgColor),
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          toolbarHeight: screenHeight * 0.085,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(gradient: AppColors.appbarColor),
+            padding: EdgeInsets.only(
+              top: screenHeight * 0.045,
+              left: 10,
+              right: 10,
+            ),
 
-                  child: Obx(() {
-                    // ============================
-                    // 🔥 SHIMMER LOADING UI
-                    // ============================
-                    if (profilecontroller.isLoading.value) {
-                      return Row(
+            child: Obx(() {
+              // ============================
+              // 🔥 SHIMMER LOADING UI
+              // ============================
+              if (profilecontroller.isLoading.value) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    shimmerCircle(44),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          shimmerCircle(44),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                shimmerLine(width: 150, height: 16),
-                                const SizedBox(height: 6),
-                                shimmerLine(width: 200, height: 12),
-                              ],
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              shimmerCircle(36),
-                              const SizedBox(width: 6),
-                              shimmerCircle(36),
-                            ],
-                          ),
+                          shimmerLine(width: 150, height: 16),
+                          const SizedBox(height: 6),
+                          shimmerLine(width: 200, height: 12),
                         ],
-                      );
-                    }
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        shimmerCircle(36),
+                        const SizedBox(width: 6),
+                        shimmerCircle(36),
+                      ],
+                    ),
+                  ],
+                );
+              }
 
-                    // ============================
-                    // 🔥 MAIN UI
-                    // ============================
-                    final dpUrl =
-                        profilecontroller
-                            .profileDetailsResponeModel
-                            .value
-                            ?.result
-                            ?.dp
-                            ?.dp ??
-                        "";
-                    print(headerConfig?.userInfo);
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
+              // ============================
+              // 🔥 MAIN UI
+              // ============================
+              final dpUrl =
+                  profilecontroller
+                      .profileDetailsResponeModel
+                      .value
+                      ?.result
+                      ?.dp
+                      ?.dp ??
+                      "";
+              print(headerConfig?.userInfo);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // PROFILE IMAGE with shimmer
+                    GestureDetector(
+                      onTap: () =>
+                          controller.handleRestrictedFeature(() {}),
+                      child: headerConfig?.userInfo == true
+                          ? ClipOval(
+                        child: Image.network(
+                          dpUrl,
+                          height: 44,
+                          width: 44,
+                          fit: BoxFit.cover,
+                          loadingBuilder:
+                              (context, child, loadingProgress) {
+                            if (loadingProgress == null)
+                              return child;
+                            return shimmerCircle(
+                              44,
+                            ); // shimmer until loaded
+                          },
+                          errorBuilder:
+                              (context, error, stackTrace) {
+                            return Image.asset(
+                              AppImage.profile,
+                              height: 44,
+                              width: 44,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        ),
+                      )
+                          : SizedBox.shrink(),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    // USER NAME + LOCATION
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // PROFILE IMAGE with shimmer
-                          GestureDetector(
-                            onTap: () =>
-                                controller.handleRestrictedFeature(() {}),
-                            child: headerConfig?.userInfo == true
-                                ? ClipOval(
-                                    child: Image.network(
-                                      dpUrl,
-                                      height: 44,
-                                      width: 44,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                            if (loadingProgress == null)
-                                              return child;
-                                            return shimmerCircle(
-                                              44,
-                                            ); // shimmer until loaded
-                                          },
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Image.asset(
-                                              AppImage.profile,
-                                              height: 44,
-                                              width: 44,
-                                              fit: BoxFit.cover,
-                                            );
-                                          },
-                                    ),
-                                  )
-                                : SizedBox.shrink(),
-                          ),
-
-                          const SizedBox(width: 12),
-
-                          // USER NAME + LOCATION
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                headerConfig?.userInfo == true
-                                    ? Text(
-                                        profilecontroller
-                                                .profileDetailsResponeModel
-                                                .value
-                                                ?.result
-                                                ?.basicInfo
-                                                ?.name ??
-                                            "User",
-                                        style: AppTextStyle.title(
-                                          color: AppColors.appTextColor,
-                                        ),
-                                        // style: AppTextStyle.kTextStyle.copyWith(
-                                        //   color: AppColors.appTextColor,
-                                        //   fontWeight: FontWeight.bold,
-                                        //   fontSize: 16,
-                                        // ),
-                                      )
-                                    : SizedBox.shrink(),
-
-                                GestureDetector(
-                                  onTap: () => controller.changeLocation(),
-                                  child: headerConfig?.currentLocation == true
-                                      ? Row(
-                                          children: [
-                                            Icon(
-                                              Icons.place_outlined,
-                                              color: AppColors.appTextColor,
-                                            ),
-                                            Obx(
-                                              () => SizedBox(
-                                                width: screenWidth * 0.41,
-                                                child: Marquee(
-                                                  child: Text(
-                                                    controller
-                                                            .currentLocation
-                                                            .value
-                                                            .isEmpty
-                                                        ? 'Fetching location...'
-                                                        : controller
-                                                              .currentLocation
-                                                              .value,
-                                                    style:
-                                                        AppTextStyle.description(
-                                                          color: AppColors
-                                                              .appTextColor,
-                                                        ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : SizedBox.shrink(),
-                                ),
-                              ],
+                          headerConfig?.userInfo == true
+                              ? Text(
+                            profilecontroller
+                                .profileDetailsResponeModel
+                                .value
+                                ?.result
+                                ?.basicInfo
+                                ?.name ??
+                                "User",
+                            style: AppTextStyle.title(
+                              color: AppColors.appTextColor,
                             ),
-                          ),
+                            // style: AppTextStyle.kTextStyle.copyWith(
+                            //   color: AppColors.appTextColor,
+                            //   fontWeight: FontWeight.bold,
+                            //   fontSize: 16,
+                            // ),
+                          )
+                              : SizedBox.shrink(),
 
-                          // RIGHT SIDE ICONS WITH SHIMMER
-                          if (headerConfig?.headerMenu != null)
-                            Row(
-                              children: headerConfig!.headerMenu!.asMap().entries.map((entry) {
-                                int index = entry.key;
-                                var menu = entry.value;
-                                return Padding(
-                                  padding: EdgeInsets.only(left: index != 0 ? 6.0 : 0.0),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      if (menu.nextPageName == "cart_screen") {
-                                        final CartController cartController = Get.put(CartController());
-                                        cartController.fetchCartDetails(
-                                          cartEndpoint: menu.nextPageApiEndpoint ?? "",
-                                          nextPageName: menu.nextPageName,
-                                        );
-                                      } else {
-                                        CustomNavigator.navigate(
-                                          menu.nextPageName,
-                                        );
-                                      }
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8.0),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: AppColors.appColor.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                        ),
-                                      ),
-                                      child: ClipOval(
-                                        child: Image.network(
-                                          menu.icon ?? "",
-                                          height: 25,
-                                          width: 25,
-                                          fit: BoxFit.cover,
-                                          loadingBuilder:
-                                              (context, child, loadingProgress) {
-                                                if (loadingProgress == null)
-                                                  return child;
-                                                return shimmerCircle(25);
-                                              },
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return Icon(
-                                                  IconlyLight.notification,
-                                                  color: AppColors.appTextColor,
-                                                );
-                                              },
+                          GestureDetector(
+                            onTap: () => controller.changeLocation(),
+                            child: headerConfig?.currentLocation == true
+                                ? Row(
+                              children: [
+                                Icon(
+                                  Icons.place_outlined,
+                                  color: AppColors.appTextColor,
+                                ),
+                                Obx(
+                                      () => SizedBox(
+                                    width: screenWidth * 0.41,
+                                    child: Marquee(
+                                      child: Text(
+                                        controller
+                                            .currentLocation
+                                            .value
+                                            .isEmpty
+                                            ? 'Fetching location...'
+                                            : controller
+                                            .currentLocation
+                                            .value,
+                                        style:
+                                        AppTextStyle.description(
+                                          color: AppColors
+                                              .appTextColor,
                                         ),
                                       ),
                                     ),
                                   ),
-                                );
-                              }).toList(),
-                            ),
+                                ),
+                              ],
+                            )
+                                : SizedBox.shrink(),
+                          ),
                         ],
                       ),
-                    );
-                  }),
-                ),
+                    ),
 
-                // bottom:Size.fromHeight(70.0)
-                // bottom: homePage?.design?.searchBar?.isActive == true
-                //     ? PreferredSize(
-                //         preferredSize: Size.fromHeight(70.0),
-                //         child: buildSearchBar(),
-                //       )
-                //     : null,
-              ),
+                    // RIGHT SIDE ICONS WITH SHIMMER
+                    if (headerConfig?.headerMenu != null)
+                      Row(
+                        children: headerConfig!.headerMenu!.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          var menu = entry.value;
+                          return Padding(
+                            padding: EdgeInsets.only(left: index != 0 ? 6.0 : 0.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                if (menu.nextPageName == "cart_screen") {
+                                  final CartController cartController = Get.put(CartController());
+                                  cartController.fetchCartDetails(
+                                    cartEndpoint: menu.nextPageApiEndpoint ?? "",
+                                    nextPageName: menu.nextPageName,
+                                  );
+                                } else {
+                                  CustomNavigator.navigate(
+                                    menu.nextPageName,
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.appColor.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: Image.network(
+                                    menu.icon ?? "",
+                                    height: 25,
+                                    width: 25,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null)
+                                        return child;
+                                      return shimmerCircle(25);
+                                    },
+                                    errorBuilder:
+                                        (context, error, stackTrace) {
+                                      return Icon(
+                                        IconlyLight.notification,
+                                        color: AppColors.appTextColor,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                  ],
+                ),
+              );
+            }),
+          ),
+
+          // bottom:Size.fromHeight(70.0)
+          // bottom: homePage?.design?.searchBar?.isActive == true
+          //     ? PreferredSize(
+          //         preferredSize: Size.fromHeight(70.0),
+          //         child: buildSearchBar(),
+          //       )
+          //     : null,
+        ),
 
         body: Container(
           height: screenHeight,
@@ -418,7 +418,7 @@ class HomeScreen extends StatelessWidget {
                             !controller.isCategoryFetched.value &&
                             !controller.categoryLoading.value) {
                           Future.microtask(
-                            () => controller.fetchCategory(rawEndpoint),
+                                () => controller.fetchCategory(rawEndpoint),
                           );
                         }
                       } else if (viewType == 'custom_banner') {
@@ -427,7 +427,7 @@ class HomeScreen extends StatelessWidget {
                             !controller.isBannerFetched.value &&
                             !controller.bannerLoading.value) {
                           Future.microtask(
-                            () => controller.fetchBanner(rawEndpoint),
+                                () => controller.fetchBanner(rawEndpoint),
                           );
                         }
                       } else if (viewType == 'custom_banner_with_video') {
@@ -436,7 +436,7 @@ class HomeScreen extends StatelessWidget {
                             !controller.isVideoBannerFetched.value &&
                             !controller.bannerVideoLoading.value) {
                           Future.microtask(
-                            () => controller.fetchBannerForVideo(rawEndpoint),
+                                () => controller.fetchBannerForVideo(rawEndpoint),
                           );
                         }
                       } else {
@@ -447,9 +447,9 @@ class HomeScreen extends StatelessWidget {
                           );
 
                           if (sectionController
-                                      .getPostForHomeResponseModel
-                                      .value ==
-                                  null &&
+                              .getPostForHomeResponseModel
+                              .value ==
+                              null &&
                               !sectionController.isLoading.value) {
                             // Fetch data immediately for this section
                             print(
@@ -458,15 +458,15 @@ class HomeScreen extends StatelessWidget {
                             Future.microtask(() {
                               sectionController
                                   .getPostListForHomeScreen(
-                                    endpoint: rawEndpoint,
-                                  )
+                                endpoint: rawEndpoint,
+                              )
                                   .then((_) {
-                                    print(
-                                      "✅ Data fetched for $rawEndpoint, result length: ${sectionController.getPostForHomeResponseModel.value?.result?.length}",
-                                    );
-                                    // Force UI update after data is fetched
-                                    sectionController.update();
-                                  });
+                                print(
+                                  "✅ Data fetched for $rawEndpoint, result length: ${sectionController.getPostForHomeResponseModel.value?.result?.length}",
+                                );
+                                // Force UI update after data is fetched
+                                sectionController.update();
+                              });
                             });
                           }
                         }
@@ -492,10 +492,10 @@ class HomeScreen extends StatelessWidget {
                           categories: controller.categoryList
                               .map(
                                 (category) => {
-                                  'image': category.image ?? '',
-                                  'name': category.title ?? '',
-                                },
-                              )
+                              'image': category.image ?? '',
+                              'name': category.title ?? '',
+                            },
+                          )
                               .toList(),
                           categoryLoading: controller.categoryLoading,
                           bgColor: section.bgColor,
@@ -524,10 +524,10 @@ class HomeScreen extends StatelessWidget {
                             bannerItems: controller.bannerList
                                 .map(
                                   (banner) => {
-                                    'image': banner.filePath ?? '',
-                                    'redirectUrl': banner.actionUrl ?? '',
-                                  },
-                                )
+                                'image': banner.filePath ?? '',
+                                'redirectUrl': banner.actionUrl ?? '',
+                              },
+                            )
                                 .toList(),
                             bannerLoading: controller.bannerLoading,
                           );
@@ -631,11 +631,11 @@ class HomeScreen extends StatelessWidget {
                           final isLoading = controllerToWatch.isLoading.value;
                           final model = sectionController != null
                               ? controllerToWatch
-                                    .getPostForHomeResponseModel
-                                    .value
+                              .getPostForHomeResponseModel
+                              .value
                               : controllerToWatch
-                                    .getPostListResponseModel
-                                    .value;
+                              .getPostListResponseModel
+                              .value;
 
                           // 🛑 User Request: If loading, show UI (shimmer). If NOT loading and empty, hide UI.
                           if (!isLoading &&

@@ -58,9 +58,13 @@ class BottomNavigationScreen extends StatelessWidget {
 
   /// Helper to build the icon widget (SVG or Network Image)
   Widget _buildIcon(String? imageUrl, bool isActive) {
+    final Color iconColor = isActive
+        ? AppColors.appTitleColor
+        : AppColors.appMutedTextColor;
+
     if (imageUrl == null || imageUrl.isEmpty) {
       // Fallback icon if no image provided
-      return const Icon(Icons.error);
+      return Icon(Icons.error,color: iconColor,);
     }
 
     // Check file extension (basic check)
@@ -69,6 +73,7 @@ class BottomNavigationScreen extends StatelessWidget {
         imageUrl,
         width: 24,
         height: 24,
+        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         placeholderBuilder: (BuildContext context) => const UnconstrainedBox(
           child: SizedBox(
             width: 20,
@@ -83,6 +88,7 @@ class BottomNavigationScreen extends StatelessWidget {
         imageUrl,
         width: 24,
         height: 24,
+        color: iconColor,
         errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
       );
     }
@@ -521,26 +527,27 @@ class BottomNavigationScreen extends StatelessWidget {
                     const SizedBox(width: 8),
 
                     /// 6. LOGIN
-                    InkWell(
-                      onTap: () => Get.to(() => LoginScreen()),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 1.5),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          "Login",
-                          style: AppTextStyle.description(
-                            color: AppColors.appTextColor,
-                            fontWeight: FontWeight.bold,
+                    if (!homeController.isLoggedIn.value)
+                      InkWell(
+                        onTap: () => Get.to(() => LoginScreen()),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white, width: 1.5),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "Login",
+                            style: AppTextStyle.description(
+                              color: AppColors.appTextColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
 
                     const SizedBox(width: 10),
 
@@ -556,7 +563,7 @@ class BottomNavigationScreen extends StatelessWidget {
                             Icons.more_vert,
                             color: AppColors.appTextColor,
                           ),
-                          color: Colors.white,
+                          color: AppColors.appPagecolor.colors.first,
                           offset: const Offset(0, 45),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -593,9 +600,9 @@ class BottomNavigationScreen extends StatelessWidget {
                                         const SizedBox(width: 12),
                                         Text(
                                           label,
-                                          style: const TextStyle(
-                                            color: Colors.black87,
-                                            fontSize: 14,
+                                          style: AppTextStyle.description(
+                                            color: AppColors.appTitleColor,
+                                          ).copyWith(
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -658,7 +665,8 @@ class BottomNavigationScreen extends StatelessWidget {
           body: bodyContent,
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              // color: Colors.white,
+              gradient: AppColors.appPagecolor,
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.1),
@@ -673,13 +681,13 @@ class BottomNavigationScreen extends StatelessWidget {
               type: BottomNavigationBarType.fixed,
               currentIndex: controller.currentPage.value,
               onTap: controller.onItemTapped,
-              selectedItemColor: AppColors.appColor,
-              unselectedItemColor: AppColors.textgrey,
+              selectedItemColor: AppColors.appTitleColor,
+              unselectedItemColor: AppColors.appMutedTextColor,
               selectedLabelStyle: AppTextStyle.description(
-                color: AppColors.appColor,
+                color: AppColors.appTitleColor,
               ),
               unselectedLabelStyle: AppTextStyle.description(
-                color: AppColors.textgrey,
+                color: AppColors.appMutedTextColor,
               ),
               showUnselectedLabels: true,
               items: menuList.map((item) {

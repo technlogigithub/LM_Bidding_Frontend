@@ -122,5 +122,11 @@ Color parseRgba(String? rgba) {
   return Color.fromRGBO(r, g, b, a);
 }
 
+extension ColorExtension on Color {
+  String toHex() {
+    return '#${(value & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+  }
+}
+
 
 

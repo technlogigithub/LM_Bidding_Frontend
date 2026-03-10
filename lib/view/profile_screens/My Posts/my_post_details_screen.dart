@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:libdding/view/review_screen/review_screen.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
-import '../../../controller/participation/participation_detail_controller.dart';
+import '../../../controller/post/Post_details_controller.dart';
 import '../../../core/app_color.dart';
 import '../../../core/app_textstyle.dart';
 import '../../../models/static models/participation_detail_model.dart';
@@ -16,7 +16,7 @@ class MyPostDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(ParticipationDetailController());
+    final controller = Get.put(PostDetailController());
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 

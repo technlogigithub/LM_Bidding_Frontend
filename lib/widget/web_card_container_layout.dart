@@ -68,7 +68,7 @@ class WebCardContainerLayout extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 25),
                     decoration: BoxDecoration(
-                      color: AppColors.appWhite,
+                     gradient: AppColors.appPagecolor,
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(12),
                         bottomRight: Radius.circular(12),

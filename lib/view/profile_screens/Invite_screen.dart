@@ -470,7 +470,7 @@ class InviteScreen extends StatelessWidget {
                             horizontal: 30,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.appWhite,
+                            gradient: AppColors.appPagecolor,
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(
                               color: AppColors.appMutedColor.withOpacity(0.3),
@@ -499,11 +499,11 @@ class InviteScreen extends StatelessWidget {
                                   vertical: 16,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.appColor.withOpacity(0.05),
+                                 gradient: AppColors.appPagecolor,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: AppColors.appColor.withOpacity(0.1),
-                                  ),
+                                  border: Border.all(color: AppColors.appMutedColor.withOpacity(0.2)),
+                                  boxShadow: [BoxShadow(color: AppColors.appMutedColor, blurRadius: 5, spreadRadius: 1, offset: const Offset(0, 10))],
+
                                 ),
                                 child: IntrinsicHeight(
                                   child: Row(
@@ -513,8 +513,6 @@ class InviteScreen extends StatelessWidget {
                                         referralCode,
                                         style:
                                             AppTextStyle.title(
-                                              color: AppColors.appColor,
-                                              fontWeight: FontWeight.bold,
                                             ).copyWith(
                                               fontSize: 24,
                                               letterSpacing: 2,
@@ -539,7 +537,7 @@ class InviteScreen extends StatelessWidget {
                                           ),
                                           child: Icon(
                                             Icons.copy_rounded,
-                                            color: AppColors.appColor,
+                                            color: AppColors.appIconColor,
                                             size: 24,
                                           ),
                                         ),
@@ -646,22 +644,16 @@ class InviteScreen extends StatelessWidget {
           width: 54,
           padding: EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.appWhite,
+         gradient: AppColors.appPagecolor,
             borderRadius: BorderRadius.circular(15),
             border: Border.all(color: AppColors.appMutedColor.withOpacity(0.2)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.appMutedColor.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: AppColors.appMutedColor, blurRadius: 5, spreadRadius: 1, offset: const Offset(0, 10))],
           ),
           child: CachedNetworkImage(
             imageUrl: hasUrl ? iconUrl! : '',
             fit: BoxFit.contain,
             errorWidget: (context, url, error) =>
-                Icon(Icons.link_rounded, color: AppColors.appColor, size: 24),
+                Icon(Icons.link_rounded, color: AppColors.appIconColor, size: 24),
           ),
         ),
       ),

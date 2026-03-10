@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
 import '../../core/app_textstyle.dart';
@@ -73,7 +75,9 @@ class _CustomCouponApplyFieldState extends State<CustomCouponApplyField> {
               : Text(
             "APPLY",
             style: AppTextStyle.title(
-              color: AppColors.appColor,
+              color: (kIsWeb || GetPlatform.isDesktop)
+                  ? AppColors.appTitleColor
+                  : AppColors.appColor,
             ),
           ),
         ),

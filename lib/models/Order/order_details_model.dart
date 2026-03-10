@@ -41,8 +41,9 @@ class Result {
   List<DetailsItems>? detailsItems;
   Info? info;
   List<SubmitButton>? submitButton;
+  Details? details;
 
-  Result({this.hidden, this.address, this.detailsItems, this.info, this.submitButton});
+  Result({this.hidden, this.address, this.detailsItems, this.info, this.submitButton, this.details});
 
   Result.fromJson(Map<String, dynamic> json) {
     hidden =
@@ -56,6 +57,7 @@ class Result {
       });
     }
     info = json['info'] != null ? new Info.fromJson(json['info']) : null;
+    details = json['details'] != null ? new Details.fromJson(json['details']) : null;
     if (json['submit_button'] != null) {
       submitButton = <SubmitButton>[];
       json['submit_button'].forEach((v) {
@@ -77,6 +79,9 @@ class Result {
     }
     if (this.info != null) {
       data['info'] = this.info!.toJson();
+    }
+    if (this.details != null) {
+      data['details'] = this.details!.toJson();
     }
     if (this.submitButton != null) {
       data['submit_button'] =
@@ -326,5 +331,23 @@ class SubmitButton {
       data['design'] = this.design;
     }
     return data;
+  }
+}
+
+class Details {
+  dynamic title;
+  dynamic description;
+  Map<String, dynamic>? rawData;
+
+  Details({this.title, this.description, this.rawData});
+
+  Details.fromJson(Map<String, dynamic> json) {
+    title = json['title'];
+    description = json['description'];
+    rawData = json;
+  }
+
+  Map<String, dynamic> toJson() {
+    return rawData ?? {};
   }
 }

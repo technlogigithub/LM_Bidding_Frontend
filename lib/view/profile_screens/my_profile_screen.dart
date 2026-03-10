@@ -1139,13 +1139,14 @@ class MyProfileScreen extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
-              color: AppColors.appWhite,
+              gradient: AppColors.appPagecolor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.appBlack.withValues(alpha: 0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, 5),
+                  color: AppColors.appMutedColor,
+                  blurRadius: 5,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
@@ -1329,13 +1330,14 @@ class MyProfileScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(30),
               decoration: BoxDecoration(
-                color: AppColors.appWhite,
+                gradient: AppColors.appPagecolor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.appBlack.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 5),
+                    color: AppColors.appMutedColor,
+                    blurRadius: 5,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
@@ -1400,14 +1402,15 @@ class MyProfileScreen extends StatelessWidget {
       width: 300,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.appWhite,
+        gradient: AppColors.appPagecolor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.kBorderColorTextField),
+        border: Border.all(color: AppColors.appMutedColor.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.appBlack.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AppColors.appMutedColor,
+            blurRadius: 5,
+            spreadRadius: 1,
+            offset: const Offset(0, 10),
           ),
         ],
       ),

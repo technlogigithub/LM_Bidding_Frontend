@@ -41,8 +41,8 @@ class ParticipationCardUiModel {
 }
 
 class ParticipationListCustomWidget extends StatelessWidget {
-  final List<ParticipationCardUiModel> items;
-  final Function(ParticipationCardUiModel)? onItemTap;
+  final List<dynamic> items;
+  final Function(String)? onItemTap;
   final RxBool isLoading;
 
   const ParticipationListCustomWidget({
@@ -180,11 +180,29 @@ class ParticipationListCustomWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, ParticipationCardUiModel item) {
+  Widget _buildOrderCard(BuildContext context, dynamic item) {
+    final String title = item is ParticipationCardUiModel ? (item.title ?? "") : (item.info?.title ?? "");
+    final String? countdownDt = item is ParticipationCardUiModel ? item.countdownDt : item.info?.countdownDt;
+    final List<dynamic>? media = item is ParticipationCardUiModel ? item.media : item.media;
+    final dynamic actionButtons = item is ParticipationCardUiModel ? item.actionButtons : item.actionButton;
+
     return GestureDetector(
-      onTap: () => onItemTap?.call(item),
+      onTap: () {
+        String id = "";
+        if (item is ParticipationCardUiModel) {
+          id = item.orderId;
+        } else {
+          try {
+             // For Items or OrderItem, extract ukey or orderId
+             id = item.hidden?.ukey ?? item.hidden?.orderId?.toString() ?? "";
+          } catch (e) {
+             id = "";
+          }
+        }
+        onItemTap?.call(id);
+      },
       child: Container(
-        padding: const EdgeInsets.all(15.0), // increased padding slightly for better desktop feel
+        padding: const EdgeInsets.all(15.0),
         width: double.infinity,
         decoration: BoxDecoration(
           gradient: AppColors.appPagecolor,
@@ -201,43 +219,35 @@ class ParticipationListCustomWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (item.media != null && item.media!.isNotEmpty) ...[
+            if (media != null && media.isNotEmpty) ...[
               const SizedBox(height: 12),
-              _buildMediaViewer(item.media!),
+              _buildMediaViewer(media),
               const SizedBox(height: 12),
             ],
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${item.title}',
-                  style: AppTextStyle.title(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextStyle.title(fontWeight: FontWeight.bold),
+                  ),
                 ),
-                if (item.countdownDt != null && item.countdownDt!.isNotEmpty)
+                if (countdownDt != null && countdownDt.isNotEmpty)
                   Builder(
                     builder: (context) {
-                      String? countdownStr = item.countdownDt;
                       Duration remaining = Duration.zero;
-
-                      if (countdownStr != null && countdownStr.isNotEmpty) {
-                        try {
-                           // Try parsing manually first if format is known (e.g. HH:mm:ss or similar), 
-                           // otherwise DateTime.parse expects ISO 8601 usually.
-                           // Assuming countdownDt is absolute date string for now.
-                          final target = DateTime.tryParse(countdownStr);
-                           if (target != null) {
-                             final now = DateTime.now();
-                             final diff = target.difference(now);
-                             if (!diff.isNegative) {
-                               remaining = diff;
-                             }
-                           } else {
-                              // If it's a duration string like "3 days", logic would be different.
-                              // For now, if parsing fails, remaining is zero.
-                           }
-                        } catch (e) {
-                          debugPrint("Error parsing countdown date: $e");
+                      try {
+                        final target = DateTime.tryParse(countdownDt);
+                        if (target != null) {
+                          final now = DateTime.now();
+                          final diff = target.difference(now);
+                          if (!diff.isNegative) {
+                            remaining = diff;
+                          }
                         }
+                      } catch (e) {
+                         debugPrint("Error parsing countdown date: $e");
                       }
 
                       if (remaining.inSeconds > 0) {
@@ -256,36 +266,70 @@ class ParticipationListCustomWidget extends StatelessWidget {
                   ),
               ],
             ),
+            if (item is! ParticipationCardUiModel && item.info != null) ...[
+              const SizedBox(height: 4.0),
+              ...item.info!.toJson().entries.where((e) {
+                const standardKeys = ['favorite', 'badge', 'price', 'title', 'rating_review', 'countdown_dt', 'category', 'created_at', 'extraInfo'];
+                return !standardKeys.contains(e.key) && e.value != null && e.value.toString().isNotEmpty;
+              }).map((e) => Padding(
+                padding: const EdgeInsets.only(top: 2.0),
+                child: Text(
+                  e.value.toString(),
+                  style: AppTextStyle.description(color: AppColors.appDescriptionColor),
+                ),
+              )),
+            ],
             const SizedBox(height: 10.0),
-
-            // Date
-            // if (item.date != null)
-            //  Text("${item.date}",style: AppTextStyle.description(color: AppColors.appDescriptionColor),),
-            // const SizedBox(height: 8.0),
             Divider(thickness: 1.0, color: AppColors.appMutedColor, height: 1.0),
             const SizedBox(height: 8.0),
 
-            // Dynamic Details Section
-            ...item.dynamicDetails.entries.map((entry) {
-              if (entry.value != null && entry.value.toString().isNotEmpty) {
-                 // Format key: "payment_status" -> "Payment Status"
-                String label = entry.key.split('_').map((word) => word.capitalizeFirstLetter()).join(' ');
-                
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: _buildInfoRow(label, entry.value.toString()),
-                );
-              }
-              return const SizedBox.shrink();
-            }).toList(),
+            // Details/Dynamic Section
+            _buildDynamicFields(item),
 
-            if (item.actionButtons != null && item.actionButtons!.isNotEmpty) ...[
-               const SizedBox(height: 10.0),
-              _buildActionButtons(item.actionButtons!),
+            if (actionButtons != null && actionButtons.isNotEmpty) ...[
+              const SizedBox(height: 10.0),
+              _buildActionButtons(List<ActionButton>.from(actionButtons)),
             ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDynamicFields(dynamic item) {
+    List<Widget> fields = [];
+
+    if (item is ParticipationCardUiModel) {
+      // Legacy support for ParticipationCardUiModel
+      item.dynamicDetails.forEach((key, value) {
+        if (value != null && value.toString().isNotEmpty) {
+           String label = key.split('_').map((word) => word.isNotEmpty ? "${word[0].toUpperCase()}${word.substring(1).toLowerCase()}" : word).join(' ');
+           fields.add(Padding(
+             padding: const EdgeInsets.only(bottom: 8.0),
+             child: _buildInfoRow(label, value.toString()),
+           ));
+        }
+      });
+    } else {
+      // Direct support for OrderItem or similar models
+      // 1. Process 'details'
+      if (item.details != null) {
+        final detailsMap = item.details!.toJson();
+        detailsMap.forEach((key, value) {
+          if (value != null && value.toString().isNotEmpty) {
+            String label = key.split('_').map((word) => word.isNotEmpty ? "${word[0].toUpperCase()}${word.substring(1).toLowerCase()}" : word).join(' ');
+            fields.add(Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: _buildInfoRow(label, value.toString()),
+            ));
+          }
+        });
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: fields,
     );
   }
 
@@ -322,13 +366,13 @@ class ParticipationListCustomWidget extends StatelessWidget {
       if (media is Map) {
          type = media['media_type'] ?? 'image';
          url = media['url'] ?? '';
-      } 
+      }
       // Add other checks if media can be a class
 
       return {
-        'type': type, 
+        'type': type,
         'url': url,
-        'redirectUrl': null, 
+        'redirectUrl': null,
       };
     }).toList();
 
@@ -377,13 +421,13 @@ class ParticipationListCustomWidget extends StatelessWidget {
         buttonWidgets.add(_buildSingleButton(buttons[i]));
         i++;
       }
-      
+
       // Add spacing between rows
       if (i < buttons.length) {
         buttonWidgets.add(const SizedBox(height: 10));
       }
     }
-    
+
     return Column(
       children: buttonWidgets,
     );

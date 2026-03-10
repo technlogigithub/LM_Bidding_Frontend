@@ -34,6 +34,7 @@ class CustomVerticalListviewList extends StatelessWidget {
   final String? viewAllNextPage;
   final String? nextPageName; // Added
   final String? nextPageViewType; // Added
+  final String? nextPageApiEndpoint; // Added
   final Function(Map<String, dynamic> buttonData, String userKey)? onActionTap;
   final bool showWebVerticalList; // Added
 
@@ -55,6 +56,7 @@ class CustomVerticalListviewList extends StatelessWidget {
     this.viewAllNextPage,
     this.nextPageName,
     this.nextPageViewType,
+    this.nextPageApiEndpoint,
     this.showWebVerticalList = false,
   });
 
@@ -331,6 +333,8 @@ class CustomVerticalListviewList extends StatelessWidget {
       onTap: () {
         if (onItemTap != null) {
           onItemTap!(result.hidden?.ukey ?? '');
+        } else if (nextPageName != null && nextPageName!.isNotEmpty) {
+          CustomNavigator.navigate(nextPageName!, arguments: result.hidden?.ukey ?? '');
         }
       },
       child: Container(
@@ -524,7 +528,7 @@ class CustomVerticalListviewList extends StatelessWidget {
         }),
 
         /// Badge
-        if (badge != null && badge.isNotEmpty)
+        if (badge != null && badge.toString().isNotEmpty)
           Positioned(
             top: 4,
             right: 4,
@@ -535,7 +539,7 @@ class CustomVerticalListviewList extends StatelessWidget {
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Text(
-                badge,
+                badge.toString(),
                 style: AppTextStyle.body(),
               ),
             ),
@@ -559,7 +563,7 @@ class CustomVerticalListviewList extends StatelessWidget {
         children: [
           // Title
           Text(
-            title,
+            title.toString(),
             style: AppTextStyle.description(
               color: AppColors.appTitleColor,
               fontWeight: FontWeight.bold,
@@ -573,12 +577,12 @@ class CustomVerticalListviewList extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               // Rating Review - show if available
-              if (ratingReview != null && ratingReview.isNotEmpty) ...[
+              if (ratingReview != null && ratingReview.toString().isNotEmpty) ...[
                 const Icon(Icons.star, color: Colors.amber, size: 18.0),
                 const SizedBox(width: 2.0),
                 Flexible(
                   child: Text(
-                    ratingReview,
+                    ratingReview.toString(),
                     style: AppTextStyle.body(color: AppColors.appTitleColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -586,8 +590,8 @@ class CustomVerticalListviewList extends StatelessWidget {
                 ),
               ],
               // Price - show only if not null
-              if (price != null && price.isNotEmpty) ...[
-                if (ratingReview != null && ratingReview.isNotEmpty)
+              if (price != null && price.toString().isNotEmpty) ...[
+                if (ratingReview != null && ratingReview.toString().isNotEmpty)
                   const SizedBox(width: 20),
                 Text(
                   "₹$price",

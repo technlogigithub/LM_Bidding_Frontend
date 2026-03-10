@@ -34,6 +34,7 @@ class Result {
   String? emailId;
   String? contactNumber;
   String? pgKey; // Razorpay key returned by backend
+  String? orderId; // Razorpay key returned by backend
 
   Result(
       {this.totalAmount,
@@ -41,6 +42,7 @@ class Result {
         this.description,
         this.emailId,
         this.contactNumber,
+        this.orderId,
         this.pgKey});
 
   Result.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,7 @@ class Result {
     description = json['description'];
     emailId = json['email_id'];
     contactNumber = json['contact_number'];
+    orderId = json['order_id'];
     pgKey = json['pg_key']?.toString();
   }
 
@@ -59,6 +62,7 @@ class Result {
     data['description'] = this.description;
     data['email_id'] = this.emailId;
     data['contact_number'] = this.contactNumber;
+    data['order_id'] = this.orderId;
     data['pg_key'] = this.pgKey;
     return data;
   }

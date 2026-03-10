@@ -8,92 +8,92 @@
 // import 'package:flutter_cashfree_pg_sdk/utils/cfexceptions.dart';
 // import 'package:get/get.dart';
 // import 'package:http/http.dart' as http;
-// //
-// // class PaymentController extends GetxController {
-// //
-// //   final CFPaymentGatewayService cfService = CFPaymentGatewayService();
-// //
-// //   @override
-// //   void onInit() {
-// //     super.onInit();
-// //     cfService.setCallback(onPaymentVerify, onPaymentError);
-// //   }
-// //
-// //   // ===============================
-// //   // STEP 1 : CREATE ORDER (Laravel)
-// //   // ===============================
-// //   Future<void> createOrder() async {
-// //
-// //     final response = await http.post(
-// //       Uri.parse("https://yourdomain.com/api/cashfree/create-order"),
-// //     );
-// //
-// //     final data = jsonDecode(response.body);
-// //
-// //     startPayment(
-// //       orderId: data['orderId'],
-// //       paymentSessionId: data['paymentSessionId'],
-// //     );
-// //   }
-// //
-// //   // ===============================
-// //   // STEP 2 : START CASHFREE UI
-// //   // ===============================
-// //   Future<void> startPayment({
-// //     required String orderId,
-// //     required String paymentSessionId,
-// //   }) async {
-// //
-// //     try {
-// //
-// //       CFSession session = CFSessionBuilder()
-// //           .setEnvironment(CFEnvironment.SANDBOX) // change to PRODUCTION later
-// //           .setOrderId(orderId)
-// //           .setPaymentSessionId(paymentSessionId)
-// //           .build();
-// //
-// //       CFWebCheckoutPayment payment =
-// //       CFWebCheckoutPaymentBuilder()
-// //           .setSession(session)
-// //           .build();
-// //
-// //       cfService.doPayment(payment);
-// //
-// //     } on CFException catch (e) {
-// //       debugPrint("Cashfree Error: ${e.message}");
-// //     }
-// //   }
-// //
-// //   // ===============================
-// //   // STEP 3 : CASHFREE CALLBACK
-// //   // ===============================
-// //   void onPaymentVerify(String orderId) {
-// //     debugPrint("✅ PAYMENT SUCCESS: $orderId");
-// //     verifyFromServer(orderId);
-// //   }
-// //
-// //   void onPaymentError(CFErrorResponse error, String orderId) {
-// //     debugPrint("❌ PAYMENT FAILED: ${error.getMessage()}");
-// //   }
-// //
-// //   // ===============================
-// //   // STEP 4 : VERIFY FROM BACKEND
-// //   // ===============================
-// //   Future<void> verifyFromServer(String orderId) async {
-// //
-// //     final response = await http.post(
-// //       Uri.parse("https://yourdomain.com/api/cashfree/verify-payment"),
-// //       body: {
-// //         "orderId": orderId
-// //       },
-// //     );
-// //
-// //     debugPrint("SERVER VERIFY RESULT:");
-// //     debugPrint(response.body);
-// //   }
-// // }
 //
+// class PaymentController extends GetxController {
 //
+//   final CFPaymentGatewayService cfService = CFPaymentGatewayService();
+//
+//   @override
+//   void onInit() {
+//     super.onInit();
+//     cfService.setCallback(onPaymentVerify, onPaymentError);
+//   }
+//
+//   // ===============================
+//   // STEP 1 : CREATE ORDER (Laravel)
+//   // ===============================
+//   Future<void> createOrder() async {
+//
+//     final response = await http.post(
+//       Uri.parse("https://yourdomain.com/api/cashfree/create-order"),
+//     );
+//
+//     final data = jsonDecode(response.body);
+//
+//     startPayment(
+//       orderId: data['orderId'],
+//       paymentSessionId: data['paymentSessionId'],
+//     );
+//   }
+//
+//   // ===============================
+//   // STEP 2 : START CASHFREE UI
+//   // ===============================
+//   Future<void> startPayment({
+//     required String orderId,
+//     required String paymentSessionId,
+//   }) async {
+//
+//     try {
+//
+//       CFSession session = CFSessionBuilder()
+//           .setEnvironment(CFEnvironment.SANDBOX) // change to PRODUCTION later
+//           .setOrderId(orderId)
+//           .setPaymentSessionId(paymentSessionId)
+//           .build();
+//
+//       CFWebCheckoutPayment payment =
+//       CFWebCheckoutPaymentBuilder()
+//           .setSession(session)
+//           .build();
+//
+//       cfService.doPayment(payment);
+//
+//     } on CFException catch (e) {
+//       debugPrint("Cashfree Error: ${e.message}");
+//     }
+//   }
+//
+//   // ===============================
+//   // STEP 3 : CASHFREE CALLBACK
+//   // ===============================
+//   void onPaymentVerify(String orderId) {
+//     debugPrint("✅ PAYMENT SUCCESS: $orderId");
+//     verifyFromServer(orderId);
+//   }
+//
+//   void onPaymentError(CFErrorResponse error, String orderId) {
+//     debugPrint("❌ PAYMENT FAILED: ${error.getMessage()}");
+//   }
+//
+//   // ===============================
+//   // STEP 4 : VERIFY FROM BACKEND
+//   // ===============================
+//   Future<void> verifyFromServer(String orderId) async {
+//
+//     final response = await http.post(
+//       Uri.parse("https://yourdomain.com/api/cashfree/verify-payment"),
+//       body: {
+//         "orderId": orderId
+//       },
+//     );
+//
+//     debugPrint("SERVER VERIFY RESULT:");
+//     debugPrint(response.body);
+//   }
+// }
+
+
 // class PaymentController extends GetxController {
 //
 //   final CFPaymentGatewayService cfService = CFPaymentGatewayService();

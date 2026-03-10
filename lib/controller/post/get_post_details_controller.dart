@@ -286,7 +286,7 @@ class GetPostDetailsController extends GetxController {
 
       var response = await apiService.makeRequestRaw(
         endPoint: cleanEndpoint,
-        method: 'GET', // Defaulting to GET based on usual REST or user cURL which didn't specify POST. Adjust if needed.
+        method: 'POST', // Defaulting to GET based on usual REST or user cURL which didn't specify POST. Adjust if needed.
         body: {}, 
         headers: headers,
       );
@@ -380,7 +380,7 @@ class GetPostDetailsController extends GetxController {
 
       var response = await apiService.makeRequestRaw(
         endPoint: endpoint,
-        method: 'GET',
+        method: 'POST',
         body: body,
         headers: headers,
       );
@@ -459,10 +459,6 @@ class GetPostDetailsController extends GetxController {
         }
 
         if (isSuccess) {
-          // Get.find<SocketService>().sendMessage({
-          //   'event': 'dynamic_form_submit',
-          //   'data': formData,
-          // });
           Utils.showSnackbar(
             isSuccess: true,
             title: "Success",

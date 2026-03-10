@@ -185,7 +185,7 @@ class MyPostController extends GetxController {
     // Get endpoint from myPostModel
     final endpoint = dynamicEndpoint.value.isNotEmpty
         ? dynamicEndpoint.value
-        : myPostModel?.apiEndpoint;
+        : myPostModel?.nextPageApiEndpoint;
     
     // Get page_name from myPostModel
     // final pageName = myPostModel?.pageName;

@@ -11,7 +11,8 @@ class RazorpayService {
   late Razorpay _razorpay;
 
   // Fallback key — override via openCheckout(razorpayKey: ...)
-  static const String _fallbackKey = 'rzp_test_1DP5mmOlF5G5ag';
+  static const String _fallbackKey = 'TEST_KEY';
+  // static const String _fallbackKey = 'rzp_test_SDBDmIgeiPX7v0';
   String _razorpayKey = _fallbackKey;
 
   AppSettingsController appController = Get.find<AppSettingsController>();
@@ -42,6 +43,7 @@ class RazorpayService {
     String? description,
     String? prefillEmail,
     String? prefillContact,
+    String? orderId,
   }) {
     // Use backend-provided key, fall back to constant if absent
     _razorpayKey = (razorpayKey != null && razorpayKey.isNotEmpty)
@@ -54,6 +56,8 @@ class RazorpayService {
       'image': appSettingsController.logoSplash.value,
       'name': appSettingsController.appName.value,
       'description': description ?? '',
+      'order_id': orderId ?? '',
+
       'prefill': {
         'contact': prefillContact ?? '',
         'email': prefillEmail ?? ''
@@ -145,15 +149,15 @@ class RazorpayService {
     debugPrint('================ RAZORPAY PAYMENT SUCCESS ================');
     debugPrint(const JsonEncoder.withIndent('  ').convert(fullResponse));
     debugPrint('==========================================================');
-
-    Get.snackbar(
-      'Payment Success',
-      'Payment ID: ${response.paymentId}',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
-    );
+    //
+    // Get.snackbar(
+    //   'Payment Success',
+    //   'Payment ID: ${response.paymentId}',
+    //   backgroundColor: Colors.green,
+    //   colorText: Colors.white,
+    //   snackPosition: SnackPosition.BOTTOM,
+    //   duration: const Duration(seconds: 3),
+    // );
 
     if (onSuccess != null) onSuccess!(response);
   }

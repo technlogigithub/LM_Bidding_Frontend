@@ -220,15 +220,15 @@ class _PostNewScreenState extends State<PostNewScreen>
                     widthFactor: 0.9,
                     heightFactor: 1.0,
                     htmlContent: """
-                      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-                        <h4 style="color: #1A73E8;">Bidding Guidelines</h4>
+                      <div style="font-family: Arial, sans-serif; color: ${AppColors.appDescriptionColor.toHex()}; line-height: 1.6;">
+                        <h4 style="color: ${AppColors.appColor.toHex()};">Bidding Guidelines</h4>
                         <p>Welcome to the Post Form. Please follow these steps to ensure your post is approved quickly:</p>
                         <ul style="padding-left: 20px;">
                           <li><b>Accuracy:</b> Enter precise details for your item or service.</li>
                           <li><b>Media:</b> Upload clear photos. Posts with images get 3x more visibility.</li>
                           <li><b>Bidding Mode:</b> Choose the mode that best fits your requirements.</li>
                         </ul>
-                        <div style="background: #F8F9FA; padding: 10px; border-left: 4px solid #1A73E8; margin-top: 20px;">
+                        <div style="background: ${AppColors.appMutedColor.withOpacity(0.1).toHex()}; padding: 10px; border-left: 4px solid ${AppColors.appColor.toHex()}; margin-top: 20px;">
                           <b>Need Help?</b><br>
                           Contact our 24/7 support team if you encounter any issues while filling the form.
                         </div>

@@ -184,12 +184,13 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(40),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          gradient: AppColors.appPagecolor,
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 30,
+                              color: AppColors.appMutedColor,
+                              blurRadius: 5,
+                              spreadRadius: 1,
                               offset: const Offset(0, 10),
                             ),
                           ],
@@ -841,14 +842,15 @@ class DynamicProfileFormScreen extends GetView<SetupProfileController> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: AppColors.appPagecolor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: AppColors.appMutedColor.withOpacity(0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+              color: AppColors.appMutedColor,
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: const Offset(0, 10),
             ),
           ],
         ),

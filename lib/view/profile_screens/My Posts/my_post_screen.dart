@@ -152,16 +152,15 @@ class MyPostScreen extends StatelessWidget {
                       );
                     }
 
-                    final viewType = effectiveMenuItem?.viewType ?? '';
+                    final viewType = effectiveMenuItem?.nextPageViewType ?? '';
                     print(" View type is $viewType");
                     return CustomViewWidget(
                       type: viewType,
                       controller: controller.appPostController,
                       statusValue: controller.selectedStatusValue.value,
                       onItemTap: (String ukey) {
-                        Get.to(() => const MyPostDetailsScreen());
-                        // Get.find<GetPostDetailsController>().getPostDetails(ukey); Here Not Need to Call API Directly
-                        // CustomNavigator.navigate("post_detail_screen",arguments: ukey,);
+                        final item = controller.getPostListResponseModel.value?.result?.firstWhereOrNull((e) => e.hidden?.ukey == ukey);
+                        CustomNavigator.navigate(item?.hidden?.viewType ?? "post_detail_screen", arguments: ukey);
                       },
                       // Optional callbacks for other view types
                       onFavoriteToggle: (index, isFavorite) {

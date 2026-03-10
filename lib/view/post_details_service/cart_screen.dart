@@ -1017,7 +1017,6 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildWebLayout(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -1036,107 +1035,106 @@ class _CartScreenState extends State<CartScreen> {
           );
         }),
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Obx(() {
-                 final cartResult = controller.cartResponseModel.value?.result?.firstOrNull;
-                 if (cartResult == null) {
-                   if (controller.isLoadingGetFunction.value) {
-                     return const Center(child: CircularProgressIndicator());
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(gradient: AppColors.appPagecolor),
+        child: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Obx(() {
+                   final cartResult = controller.cartResponseModel.value?.result?.firstOrNull;
+                   if (cartResult == null) {
+                     if (controller.isLoadingGetFunction.value) {
+                       return const Center(child: CircularProgressIndicator());
+                     }
+                     return const SizedBox.shrink();
                    }
-                   return const SizedBox.shrink(); 
-                 }
 
-                 return Row(
-                   crossAxisAlignment: CrossAxisAlignment.start,
-                   children: [
-                     // LEFT COLUMN (Items & Address)
-                     Expanded(
-                       flex: 7,
-                       child: Column(
-                         crossAxisAlignment: CrossAxisAlignment.start,
-                         children: [
-                           // Address Section
-                           if (cartResult.address != null)
-                             _buildAddressCard({
-                               'label': cartResult.address!.label,
-                               'title': cartResult.address!.title,
-                               'address_lat': cartResult.address!.addressLat,
-                               'address_long': cartResult.address!.addressLong,
-                               'description': tempAddress?['description'] ?? cartResult.address!.description,
-                               'edit': cartResult.address!.edit
-                             }, 0),
-                           
-                           const SizedBox(height: 24),
-                           
-                           // Items Section
-                           if (cartResult.items != null && cartResult.items!.isNotEmpty)
-                             ...cartResult.items!.map((item) => _buildItemsSection(item)).toList(),
-                         ],
+                   return Row(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       // LEFT COLUMN (Items & Address)
+                       Expanded(
+                         flex: 7,
+                         child: Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+                             // Address Section
+                             if (cartResult.address != null)
+                               _buildAddressCard({
+                                 'label': cartResult.address!.label,
+                                 'title': cartResult.address!.title,
+                                 'address_lat': cartResult.address!.addressLat,
+                                 'address_long': cartResult.address!.addressLong,
+                                 'description': tempAddress?['description'] ?? cartResult.address!.description,
+                                 'edit': cartResult.address!.edit
+                               }, 0),
+
+                             const SizedBox(height: 24),
+
+                             // Items Section
+                             if (cartResult.items != null && cartResult.items!.isNotEmpty)
+                               ...cartResult.items!.map((item) => _buildItemsSection(item)).toList(),
+                           ],
+                         ),
                        ),
-                     ),
-                     const SizedBox(width: 32),
-                     
-                     // RIGHT COLUMN (Summary & Payment)
-                     Expanded(
-                       flex: 5,
-                       child: Column(
-                         children: [
-                           Container(
-                             padding: const EdgeInsets.all(24),
-                             decoration: BoxDecoration(
-                               color: Colors.white,
-                               borderRadius: BorderRadius.circular(16),
-                               boxShadow: [
-                                 BoxShadow(
-                                   color: Colors.black.withOpacity(0.05),
-                                   blurRadius: 20,
-                                   offset: const Offset(0, 10),
-                                 ),
-                               ],
-                             ),
-                             child: Column(
-                               crossAxisAlignment: CrossAxisAlignment.start,
-                               children: [
-                                 Text("Order Summary", style: AppTextStyle.title(fontWeight: FontWeight.bold).copyWith(fontSize: 20)),
-                                 const SizedBox(height: 24),
-                                 
-                                 // Coupon
-                                 if (cartResult.coupon != null) ...[
-                                   _buildCouponSection(cartResult.coupon!),
+                       const SizedBox(width: 32),
+
+                       // RIGHT COLUMN (Summary & Payment)
+                       Expanded(
+                         flex: 5,
+                         child: Column(
+                           children: [
+                             Container(
+                               padding: const EdgeInsets.all(24),
+                               decoration: BoxDecoration(
+                                gradient: AppColors.appPagecolor,
+                                 borderRadius: BorderRadius.circular(16),
+                                 boxShadow: [BoxShadow(color: AppColors.appMutedColor, blurRadius: 5, spreadRadius: 1, offset: const Offset(0, 10))],
+                               ),
+                               child: Column(
+                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                 children: [
+                                   Text("Order Summary", style: AppTextStyle.title(fontWeight: FontWeight.bold).copyWith(fontSize: 20)),
                                    const SizedBox(height: 24),
+
+                                   // Coupon
+                                   if (cartResult.coupon != null) ...[
+                                     _buildCouponSection(cartResult.coupon!),
+                                     const SizedBox(height: 24),
+                                   ],
+
+                                   // Wallet Usage
+                                   if (cartResult.walletUse != null) ...[
+                                     _buildWalletUseSection(cartResult.walletUse!),
+                                     const SizedBox(height: 24),
+                                   ],
+
+                                   const Divider(),
+                                   const SizedBox(height: 16),
+
+                                   // Pricing Info
+                                   if (cartResult.info != null) _buildInfoSection(cartResult.info!),
+
+                                   const SizedBox(height: 32),
+
+                                   // Submit Button
+                                   if (cartResult.submitButton?.isNotEmpty == true)
+                                     _buildWebSubmitButton(cartResult.submitButton!.first),
                                  ],
-                                 
-                                 // Wallet Usage
-                                 if (cartResult.walletUse != null) ...[
-                                   _buildWalletUseSection(cartResult.walletUse!),
-                                   const SizedBox(height: 24),
-                                 ],
-                                 
-                                 const Divider(),
-                                 const SizedBox(height: 16),
-                                 
-                                 // Pricing Info
-                                 if (cartResult.info != null) _buildInfoSection(cartResult.info!),
-                                 
-                                 const SizedBox(height: 32),
-                                 
-                                 // Submit Button
-                                 if (cartResult.submitButton?.isNotEmpty == true)
-                                   _buildWebSubmitButton(cartResult.submitButton!.first),
-                               ],
+                               ),
                              ),
-                           ),
-                         ],
+                           ],
+                         ),
                        ),
-                     ),
-                   ],
-                 );
-              }),
+                     ],
+                   );
+                }),
+              ),
             ),
           ),
         ),

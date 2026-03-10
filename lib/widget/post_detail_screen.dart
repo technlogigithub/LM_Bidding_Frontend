@@ -1189,128 +1189,133 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
     HtmlDetails? htmlDetails,
     List<Map<String, dynamic>> dynamicMediaItems,
   ) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        flexibleSpace: Container(
-             decoration: BoxDecoration(
-               gradient: AppColors.appbarColor,
-             ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(info?.title ?? 'Details', style: AppTextStyle.title(color: AppColors.appWhite)),
-        leading: BackButton(color: AppColors.appWhite),
-        actions: [
-          if (menuButtons != null) _buildWebMenuButton(menuButtons),
-          const SizedBox(width: 20),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.appPagecolor,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // LEFT COLUMN
-                  Expanded(
-                    flex: 7,
-                    child: Column(
-                      children: [
-                        _webCard(
-                          child: Stack(
-                            children: [
-                              CustomViewWidget(
-                                type: media?.viewType ?? '',
-                                bannerItems: dynamicMediaItems,
-                                height: 500,
-                                bannerLoading: false.obs,
-                              ),
-                              if (result.actionButton != null)
-                                Positioned(
-                                  top: 20,
-                                  right: 20,
-                                  child: Column(
-                                    children: result.actionButton!.map((btn) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 15.0),
-                                      child: _buildWebActionButton(context, btn),
-                                    )).toList(),
-                                  ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          flexibleSpace: Container(
+               decoration: BoxDecoration(
+                 gradient: AppColors.appbarColor,
+               ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          title: Text(info?.title ?? 'Details', style: AppTextStyle.title(color: AppColors.appWhite)),
+          leading: BackButton(color: AppColors.appWhite),
+          actions: [
+            if (menuButtons != null) _buildWebMenuButton(menuButtons),
+            const SizedBox(width: 20),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // LEFT COLUMN
+                    Expanded(
+                      flex: 7,
+                      child: Column(
+                        children: [
+                          _webCard(
+                            child: Stack(
+                              children: [
+                                CustomViewWidget(
+                                  type: media?.viewType ?? '',
+                                  bannerItems: dynamicMediaItems,
+                                  height: 500,
+                                  bannerLoading: false.obs,
                                 ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        _webCard(
-                          padding: const EdgeInsets.all(30),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (htmlDetails?.html != null && htmlDetails!.html!.isNotEmpty) ...[
-                                Text(htmlDetails.label ?? 'Description', 
-                                    style: AppTextStyle.title(color: AppColors.appTitleColor, fontWeight: FontWeight.bold).copyWith(fontSize: 22)),
-                                const SizedBox(height: 15),
-                                CustomHtmlViewer(htmlContent: htmlDetails.html!),
-                                const SizedBox(height: 40),
+                                if (result.actionButton != null)
+                                  Positioned(
+                                    top: 20,
+                                    right: 20,
+                                    child: Column(
+                                      children: result.actionButton!.map((btn) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 15.0),
+                                        child: _buildWebActionButton(context, btn),
+                                      )).toList(),
+                                    ),
+                                  ),
                               ],
-                              if (detailsTabs != null && detailsTabs.isNotEmpty) 
-                                _buildWebDetailsTabs(detailsTabs),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 30),
-                  // RIGHT COLUMN
-                  Expanded(
-                    flex: 5,
-                    child: Column(
-                      children: [
-                        _webCard(
-                          padding: const EdgeInsets.all(30),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  if (info?.badge != null) _buildWebBadge(info!.badge!),
+                          const SizedBox(height: 30),
+                          _webCard(
+                            padding: const EdgeInsets.all(30),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (htmlDetails?.html != null && htmlDetails!.html!.isNotEmpty) ...[
+                                  Text(htmlDetails.label ?? 'Description',
+                                      style: AppTextStyle.title(color: AppColors.appTitleColor, fontWeight: FontWeight.bold).copyWith(fontSize: 22)),
+                                  const SizedBox(height: 15),
+                                  CustomHtmlViewer(htmlContent: htmlDetails.html!),
+                                  const SizedBox(height: 40),
                                 ],
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                info?.title ?? '',
-                                style: AppTextStyle.title(color: AppColors.appTitleColor, fontWeight: FontWeight.bold).copyWith(fontSize: 26),
-                              ),
-                              const SizedBox(height: 15),
-                              Row(
-                                children: [
-                                  Icon(IconlyBold.star, color: AppColors.ratingBarColor, size: 18),
-                                  const SizedBox(width: 6),
-                                  Text("${info?.ratingReview ?? 0} Reviews", style: AppTextStyle.description(color: AppColors.appMutedTextColor)),
-                                ],
-                              ),
-                              const SizedBox(height: 25),
-                              Text(
-                                '₹${info?.price ?? ''}',
-                                style: AppTextStyle.title(color: AppColors.appColor).copyWith(fontSize: 32, fontWeight: FontWeight.w900),
-                              ),
-                              const Divider(height: 50),
-                              _buildWebOwnerTile(postOwner),
-                              const SizedBox(height: 40),
-                              if (result.submitButton != null)
-                                _buildWebSubmitButtons(context, result.submitButton!),
-                            ],
+                                if (detailsTabs != null && detailsTabs.isNotEmpty)
+                                  _buildWebDetailsTabs(detailsTabs),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 30),
+                    // RIGHT COLUMN
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        children: [
+                          _webCard(
+                            padding: const EdgeInsets.all(30),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    if (info?.badge != null) _buildWebBadge(info!.badge!),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  info?.title ?? '',
+                                  style: AppTextStyle.title(color: AppColors.appTitleColor, fontWeight: FontWeight.bold).copyWith(fontSize: 26),
+                                ),
+                                const SizedBox(height: 15),
+                                Row(
+                                  children: [
+                                    Icon(IconlyBold.star, color: AppColors.ratingBarColor, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text("${info?.ratingReview ?? 0} Reviews", style: AppTextStyle.description(color: AppColors.appMutedTextColor)),
+                                  ],
+                                ),
+                                const SizedBox(height: 25),
+                                Text(
+                                  '₹${info?.price ?? ''}',
+                                  style: AppTextStyle.title(color: AppColors.appTitleColor).copyWith(fontSize: 32, fontWeight: FontWeight.w900),
+                                ),
+                                const Divider(height: 50),
+                                _buildWebOwnerTile(postOwner),
+                                const SizedBox(height: 40),
+                                if (result.submitButton != null)
+                                  _buildWebSubmitButtons(context, result.submitButton!),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1324,7 +1329,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with TickerProvider
       padding: padding,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: AppColors.appPagecolor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))

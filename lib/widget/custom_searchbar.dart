@@ -43,21 +43,15 @@ class SearchBarWidget extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Stack(
-                alignment: Alignment.bottomCenter,
+                alignment: Alignment.center, // Center content over background
                 children: [
                   if (hasValidImage)
                     AutoNetworkImage(
                       imageUrl: bgImg,
-                      // width: double.infinity,
+                      // Ensure it covers the area
                     ),
-                  hasValidImage
-                      ? Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: _buildSearchContent(context),
-                        )
-                      : _buildSearchContent(context),
+                  // _buildSearchContent is NOT positioned, so it defines the content's size/height
+                  _buildSearchContent(context),
                 ],
               ),
             ),

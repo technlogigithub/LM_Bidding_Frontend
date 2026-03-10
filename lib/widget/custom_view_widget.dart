@@ -22,6 +22,7 @@ import '../core/app_images.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import '../view/Home_screen/search_history_screen.dart';
 import 'custom_tapbar.dart';
+import 'participation_list_custom_widget.dart';
 
 /// Dynamic Post View Widget
 /// This widget displays different post list views based on the provided type.
@@ -53,6 +54,7 @@ class CustomViewWidget extends StatelessWidget {
     this.viewAllNextPage,
     this.nextPageName,
     this.nextPageViewType,
+    this.nextPageApiEndpoint,
     this.itemData,
     this.itemDataList,
     this.showWebVerticalList = false,
@@ -103,13 +105,13 @@ class CustomViewWidget extends StatelessWidget {
   final String? viewAllNextPage;
   final String? nextPageName;
   final String? nextPageViewType;
+  final String? nextPageApiEndpoint;
   final Map<String, dynamic>? itemData;
   final List<dynamic>? itemDataList;
   final bool showWebVerticalList;
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("🟡 Widget type: ${type}");
 
     // Define which widget types need a controller
     const postWidgetTypes = {
@@ -121,36 +123,58 @@ class CustomViewWidget extends StatelessWidget {
     };
 
     // Only get controller for widgets that need it
-    AppPostController? postController;
+    dynamic postController; // Changed to dynamic to support different controller types
     late Rx<GetPostListResponseModel?> model;
     late RxBool isLoading;
 
     if (postWidgetTypes.contains(type)) {
       try {
-        postController = controller ?? Get.find<AppPostController>();
-        
         // If itemDataList is provided, we use it to create a local model.
-        // This prevents showing old data from the global AppPostController.
+        // This handles cases where data comes from a different controller (like FavoritePostsController).
         if (itemDataList != null && itemDataList!.isNotEmpty) {
           final localModel = GetPostListResponseModel(
             success: true,
             result: itemDataList!.map((e) => Result.fromJson(e)).toList(),
           );
           model = Rx<GetPostListResponseModel?>(localModel);
-          isLoading = false.obs;
+          
+          // Use isLoading from the passed controller if it exists, otherwise default to false
+          if (controller != null) {
+            try {
+              isLoading = (controller as dynamic).isLoading;
+            } catch (_) {
+              isLoading = false.obs;
+            }
+          } else {
+            isLoading = false.obs;
+          }
         } else {
+          // Standard case: Data comes from AppPostController
+          postController = controller ?? Get.find<AppPostController>();
           model = useHomeModel
-              ? postController!.getPostForHomeResponseModel
-              : postController!.getPostListResponseModel;
-          isLoading = postController!.isLoading;
+              ? (postController as dynamic).getPostForHomeResponseModel
+              : (postController as dynamic).getPostListResponseModel;
+          isLoading = (postController as dynamic).isLoading;
         }
       } catch (e) {
-        debugPrint("❌ CustomViewWidget: controller is null for type: ${type}");
+        debugPrint("❌ CustomViewWidget error for type '$type': $e");
         return const SizedBox.shrink();
       }
     }
 
-    switch (type) {
+    debugPrint("🟡 Widget type: '${type}' (length: ${type.length})");
+
+    switch (type.trim().toLowerCase()) {
+      case "participation_list_custom_widget":
+        debugPrint("✅ Matched participation_list_custom_widget case");
+        final list = itemDataList ?? [];
+        final loadingState = controller?.isLoading ?? false.obs;
+        return ParticipationListCustomWidget(
+          items: list,
+          isLoading: loadingState,
+          onItemTap: onItemTap,
+        );
+
       case "search_bar":
         // debugPrint("🔍 Search bar title: $title");
         // print(" case in $bgImg");
@@ -233,6 +257,7 @@ class CustomViewWidget extends StatelessWidget {
             viewAllNextPage: viewAllNextPage,
             nextPageName: nextPageName,
             nextPageViewType: nextPageViewType,
+            nextPageApiEndpoint: nextPageApiEndpoint,
             showWebVerticalList: showWebVerticalList,
           );
         });
@@ -267,6 +292,7 @@ class CustomViewWidget extends StatelessWidget {
             viewAllNextPage: viewAllNextPage,
             nextPageName: nextPageName,
             nextPageViewType: nextPageViewType,
+            nextPageApiEndpoint: nextPageApiEndpoint,
           );
         });
 
@@ -304,6 +330,7 @@ class CustomViewWidget extends StatelessWidget {
             viewAllNextPage: viewAllNextPage,
             nextPageName: nextPageName,
             nextPageViewType: nextPageViewType,
+            nextPageApiEndpoint: nextPageApiEndpoint,
           );
         });
 
@@ -343,6 +370,7 @@ class CustomViewWidget extends StatelessWidget {
             viewAllNextPage: viewAllNextPage,
             nextPageName: nextPageName,
             nextPageViewType: nextPageViewType,
+            nextPageApiEndpoint: nextPageApiEndpoint,
             showWebVerticalList: showWebVerticalList,
           );
         });

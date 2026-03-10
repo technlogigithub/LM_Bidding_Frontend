@@ -1,59 +1,49 @@
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 
+import '../../core/api_config.dart';
 import '../../core/network.dart';
-import '../../models/Participate/participate_list_model.dart';
+import '../../models/Post/Get_favorite_post_list_model.dart';
 import '../app_main/App_main_controller.dart';
 
-class ParticipateController extends GetxController {
-  // Tab Index
+class FavoritePostsController extends GetxController {
+  // Filter Status (POSTS, CATEGORIES, USERS)
+  var currentStatus = 'POSTS'.obs; 
   var selectedTabIndex = 0.obs;
-  var currentStatus = "".obs;
-  RxString dynamicEndpoint = "".obs;
+  
   RxBool isLoading = false.obs;
+  bool hasInitiatedFetch = false;
 
-  var participateList = <Items>[].obs;
-  Rx<GetParticipateListResponseModel?> getParticipateListResponseModel = Rx<GetParticipateListResponseModel?>(null);
+  // Favorites List
+  var allFavorites = <Result>[].obs;
+  
+  Rx<FavoriteResponseModel?> favoriteResponseModel = Rx<FavoriteResponseModel?>(null);
 
-
-
+  var dynamicEndpoint = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
   }
 
-
-
-  // Get current list based on tab
-  List<Items> get currentList {
-    if (participateList.isEmpty) return [];
-    return participateList;
-  }
-
-  // Get current loading state
-  bool get currentLoading {
-    return isLoading.value;
-  }
-
-  // Update tab
+  // Update tab and status
   void updateTab(int index, String statusValue) {
     selectedTabIndex.value = index;
     currentStatus.value = statusValue;
-    fetchParticipateList();
+    fetchFavoriteList();
   }
 
-
-  Future<void> fetchParticipateList({String? endpoint}) async {
+  Future<void> fetchFavoriteList() async {
     isLoading.value = true;
-    participateList.clear();
+    allFavorites.clear();
     try {
       final prefs = await SharedPreferences.getInstance();
       String? ukey = prefs.getString('ukey');
       String? token = prefs.getString('auth_token');
 
-      // Get Location
+      // 1. Get Location
       String lat = '';
       String long = '';
       try {
@@ -69,9 +59,19 @@ class ParticipateController extends GetxController {
           long = position.longitude.toString();
         }
       } catch (e) {
-        print("❌ Error getting location for cart: $e");
+        debugPrint("❌ Error getting location: $e");
       }
 
+      // 2. Identify Endpoint
+      String endpoint = dynamicEndpoint.value;
+      debugPrint("🔍 Controller fetchFavoriteList started with endpoint: '$endpoint'");
+
+      if (endpoint.isEmpty) {
+        debugPrint("Favorite endpoint is empty..... inside controller");
+        return;
+      }
+
+      // 3. Setup Request
       final apiService = ApiServices();
       final headers = {
         'Accept': 'application/json',
@@ -85,31 +85,38 @@ class ParticipateController extends GetxController {
         'status': currentStatus.value,
       };
 
-      var apiEndpoint = endpoint ?? dynamicEndpoint.value;
-
+      // 4. Make Request
       var response = await apiService.makeRequestFormData(
-        endPoint: apiEndpoint,
+        endPoint: endpoint, 
         method: 'POST',
         body: body,
         headers: headers,
       );
 
       if (response != null) {
-        getParticipateListResponseModel.value = GetParticipateListResponseModel.fromJson(response);
-
-        if (getParticipateListResponseModel.value?.result != null && getParticipateListResponseModel.value!.result!.items != null) {
-          participateList.assignAll(getParticipateListResponseModel.value!.result!.items!);
+        favoriteResponseModel.value = FavoriteResponseModel.fromJson(response);
+        
+        if (favoriteResponseModel.value?.result != null) {
+          allFavorites.assignAll(favoriteResponseModel.value!.result!);
         } else {
-          participateList.clear();
+          allFavorites.clear();
         }
-      } else {
-        // Handle error or empty response
       }
     } catch (e) {
-      print("Error fetching m order list : $e");
-      // rethrow; // Optional: handle error gracefully in UI
+      debugPrint("Error fetching favorite list: $e");
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Toggle favorite status locally and on server
+  Future<void> toggleFavorite(int index, bool newValue) async {
+    if (index < 0 || index >= allFavorites.length) return;
+    
+    // Locally update
+    allFavorites[index].info?['favorite'] = newValue;
+    allFavorites.refresh();
+
+    // API call can be added here if there's a specific endpoint for toggling from this screen
   }
 }

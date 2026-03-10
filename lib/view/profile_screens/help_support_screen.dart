@@ -28,6 +28,15 @@ class HelpSupportScreen extends StatelessWidget {
     if (menuItem != null) {
       support = SupportMenuItem.fromJson(menuItem!.toJson());
     }
+    else {
+      final AppSettingsController appSettingsController =
+      Get.find<AppSettingsController>();
+
+      if (appSettingsController.support.value != null) {
+        support = SupportMenuItem.fromJson(
+            appSettingsController.support.value!.toJson());
+      }
+    }
 
     return Scaffold(
       body: Container(
@@ -50,7 +59,7 @@ class HelpSupportScreen extends StatelessWidget {
             toolbarHeight: 80,
             centerTitle: true,
             title: Text(
-              support?.label ?? 'Help & Support',
+              support?.label ?? '',
               style: AppTextStyle.title(
                 color: AppColors.appTextColor,
                 fontWeight: FontWeight.bold,
@@ -298,6 +307,15 @@ class HelpSupportScreen extends StatelessWidget {
     if (menuItem != null) {
       support = SupportMenuItem.fromJson(menuItem!.toJson());
     }
+    else {
+      final AppSettingsController appSettingsController =
+      Get.find<AppSettingsController>();
+
+      if (appSettingsController.support.value != null) {
+        support = SupportMenuItem.fromJson(
+            appSettingsController.support.value!.toJson());
+      }
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -527,16 +545,10 @@ class HelpSupportScreen extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 40, horizontal: 20),
           decoration: BoxDecoration(
-            color: AppColors.appWhite,
+            gradient: AppColors.appPagecolor,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.appMutedColor.withOpacity(0.3)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.appMutedColor.withOpacity(0.1),
-                blurRadius: 15,
-                offset: Offset(0, 8),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: AppColors.appMutedColor, blurRadius: 5, spreadRadius: 1, offset: const Offset(0, 10))],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -553,7 +565,7 @@ class HelpSupportScreen extends StatelessWidget {
                   imageUrl: hasUrl ? iconUrl! : '',
                   fit: BoxFit.contain,
                   errorWidget: (context, url, error) =>
-                      Icon(fallbackIcon, color: AppColors.appColor, size: 32),
+                      Icon(fallbackIcon, color: AppColors.appIconColor, size: 32),
                 ),
               ),
               SizedBox(height: 24),
@@ -587,22 +599,16 @@ class HelpSupportScreen extends StatelessWidget {
           width: 54,
           padding: EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.appWhite,
+            gradient: AppColors.appPagecolor,
             borderRadius: BorderRadius.circular(15),
             border: Border.all(color: AppColors.appMutedColor.withOpacity(0.2)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.appMutedColor.withOpacity(0.1),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: AppColors.appMutedColor, blurRadius: 5, spreadRadius: 1, offset: const Offset(0, 10))],
           ),
           child: CachedNetworkImage(
             imageUrl: hasUrl ? iconUrl! : '',
             fit: BoxFit.contain,
             errorWidget: (context, url, error) =>
-                Icon(Icons.link_rounded, color: AppColors.appColor, size: 24),
+                Icon(Icons.link_rounded, color: AppColors.appIconColor, size: 24),
           ),
         ),
       ),

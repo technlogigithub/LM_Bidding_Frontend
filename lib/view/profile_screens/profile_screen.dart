@@ -9,6 +9,7 @@ import 'package:libdding/view/transaction/transaction_screen.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../controller/app_main/App_main_controller.dart';
+import '../../controller/post/favorite_posts_controller.dart';
 import '../../controller/profile/profile_controller.dart';
 import '../../core/app_color.dart';
 import '../../core/app_routes.dart';
@@ -334,6 +335,8 @@ class ProfileScreen extends StatelessWidget {
 
     // 🔐 Login Required Check
     if (item.loginRequired == true) {
+
+      print('Login Required Conditions True ....');
       final prefs = await SharedPreferences.getInstance();
       final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
@@ -382,6 +385,14 @@ class ProfileScreen extends StatelessWidget {
           CustomNavigator.navigate(item.nextPageName!, arguments: item);
           break;
 
+        case 'favorite_screen':
+          Get.delete<FavoritePostsController>(); // Ensure fresh instance
+          final controller = Get.put(FavoritePostsController());
+          // Set the dynamic endpoint passed from the menu
+          controller.dynamicEndpoint.value = item.nextPageApiEndpoint!;
+          CustomNavigator.navigate(item.nextPageName!, arguments: item);
+          break;
+
         default:
           CustomNavigator.navigate(item.nextPageName!, arguments: item);
           break;
@@ -403,6 +414,7 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: AppColors.appPagecolor.colors.first,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -427,7 +439,8 @@ class ProfileScreen extends StatelessWidget {
               ),
               onPressed: () async {
                 final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('isLoggedIn', false);
+                await prefs.clear();
+                // await prefs.setBool('isLoggedIn', false);
 
                 Get.offAllNamed(AppRoutes.login);
 

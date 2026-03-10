@@ -86,20 +86,20 @@ class CustomTextfield extends StatelessWidget {
           suffixIcon: suffixIcon,
           counterText: "",
           filled: kIsWeb,
-          fillColor: kIsWeb ? Colors.grey.shade50 : null,
+          fillColor: kIsWeb ? Colors.transparent : null,
           contentPadding: kIsWeb 
               ? const EdgeInsets.symmetric(horizontal: 20, vertical: 18) 
               : const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: kIsWeb ? Colors.grey.shade300 : AppColors.appBodyTextColor),
-            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 4),
+            borderSide: BorderSide(color: AppColors.appBodyTextColor),
+            borderRadius: BorderRadius.circular(kIsWeb ? 8 : 4),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: kIsWeb ? AppColors.appColor : AppColors.appDescriptionColor, width: kIsWeb ? 2 : 1),
-            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 4),
+            borderSide: BorderSide(color: AppColors.appDescriptionColor, width: kIsWeb ? 2 : 1),
+            borderRadius: BorderRadius.circular(kIsWeb ? 8 : 4),
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(kIsWeb ? 12 : 4),
+            borderRadius: BorderRadius.circular(kIsWeb ? 8 : 4),
           ),
         ),
       ),

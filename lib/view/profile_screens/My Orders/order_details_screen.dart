@@ -3,21 +3,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:libdding/core/app_color.dart';
 import 'package:libdding/core/app_string.dart';
-import 'package:nb_utils/nb_utils.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../../controller/home/home_controller.dart';
 import '../../../controller/my_orders/my_orders_controller.dart';
-import '../../../core/api_config.dart';
-import '../../../core/app_constant.dart';
 import '../../../core/app_textstyle.dart';
-import '../../../models/Cart/Cart_Item_Model.dart';
 import '../../../models/Order/order_details_model.dart';
 import '../../../models/App_moduls/AppResponseModel.dart';
-import '../../../widget/button_global.dart';
 import '../../../widget/custom_navigator.dart';
 import '../../../widget/form_widgets/app_button.dart';
 import '../../../widget/custom_view_widget.dart';
 import '../../../widget/dynamic_bottom_sheet.dart';
+import '../../../widget/dynamic_dialog_box.dart';
 
 
 class OrderDetailsScreen extends StatefulWidget {
@@ -87,11 +82,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                 'edit': cartResult.address!.edit
                               }, 0),
 
-                            const SizedBox(height: 24),
+                  // Items Section
+                  if (cartResult.detailsItems != null && cartResult.detailsItems!.isNotEmpty)
+                    ...cartResult.detailsItems!.map((item) => _buildItemsSection(item)).toList(),
 
-                            // Items Section
-                            if (cartResult.detailsItems != null && cartResult.detailsItems!.isNotEmpty)
-                              ...cartResult.detailsItems!.map((item) => _buildItemsSection(item)).toList(),
+                             const SizedBox(height: 24),
                           ],
                         ),
                       ),
@@ -105,21 +100,18 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                             Container(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                gradient: AppColors.appPagecolor,
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 10),
-                                  ),
-                                ],
+                                boxShadow: [BoxShadow(color: AppColors.appMutedColor, blurRadius: 5, spreadRadius: 1, offset: const Offset(0, 10))],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text("Order Summary", style: AppTextStyle.title(fontWeight: FontWeight.bold).copyWith(fontSize: 20)),
                                   const SizedBox(height: 24),
+
+                                  // Details Section
+                                  if (cartResult.details != null) _buildDetailsSection(cartResult.details!),
 
                                   // Pricing Info
                                   if (cartResult.info != null) _buildInfoSection(cartResult.info!),
@@ -153,14 +145,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   void initState() {
     super.initState();
     _initializeAddress();
-
-    // Listen to cart PREVIEW response changes
-    // _cartWorker = ever(controller.cartPreviewResponse, (model) {
-    //   if (model?.result != null && model!.result!.isNotEmpty) {
-    //     _handleItemFetch(model!);
-    //     _updateAddress(model);
-    //   }
-    // });
 
     // Initial check
     if (controller.getOrderDetailsResponseModel.value?.result != null &&
@@ -295,7 +279,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            gradient: AppColors.appPagecolor,
             boxShadow: [
               BoxShadow(
                 color: Colors.black12,
@@ -340,6 +324,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   // Items Section
                   if (cartResult.detailsItems != null && cartResult.detailsItems!.isNotEmpty)
                     ...cartResult.detailsItems!.map((item) => _buildItemsSection(item)).toList(),
+
+                  // Details Section
+                  if (cartResult.details != null)
+                    _buildDetailsSection(cartResult.details!),
 
                   // Info Section
                   if (cartResult.info != null)
@@ -412,56 +400,52 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           return;
         }
 
-        // RULE 2: Navigate +API
-        if (hasApi && hasNextApi && !hasConfirmData) {
-          print("Rule 2 → Next API + Navigate");
-          await controller.handleActionApiCallAndNavigate(
-            participateEndpoint: apiEndpoint!,
-            cartEndpoint: nextPageApiEndpoint!,
-            nextPageName: nextPageName ?? '',
-            shouldFetchCart: true,
-          );
-          return;
-        }
-
-        // Rule 2b: Simple Navigate
-        if (hasNextPage && !hasNextApi && !hasConfirmData) {
-          print("Rule 2 →  Navigate");
-          // Create AppMenuItem to pass as arguments
-          if(nextPageName== "help_and_support_screen"){
-            AppMenuItem menuItem = AppMenuItem(
-              label: btn.label,
-              nextPageName: nextPageName,
-              nextPageApiEndpoint: nextPageApiEndpoint,
-              pageImage: pageImage,
-              title: title,
-              description: description,
-              design: design, // Parsed map or null
-              viewType: btn.viewType,
-              // Map other fields if necessary
+        // Rule 2 & 2b: Navigate +API or Simple Navigate
+        if ((hasApi && hasNextApi) || (hasNextPage && !hasConfirmData) || (nextPageName == "help_and_support_screen")) {
+          print("Rule 2 → Navigate/API Logic");
+          
+          if (hasApi && hasNextApi && !hasConfirmData) {
+            await controller.handleActionApiCallAndNavigate(
+              participateEndpoint: apiEndpoint!,
+              cartEndpoint: nextPageApiEndpoint!,
+              nextPageName: nextPageName ?? '',
+              shouldFetchCart: true,
             );
-
-            CustomNavigator.navigate(nextPageName, arguments: menuItem);
-          }else{
-            CustomNavigator.navigate(nextPageName);
+            return;
           }
-          return;
+
+          if (hasNextPage) {
+            if (nextPageName == "help_and_support_screen") {
+              AppMenuItem menuItem = AppMenuItem(
+                label: btn.label,
+                nextPageName: nextPageName,
+                nextPageApiEndpoint: nextPageApiEndpoint,
+                pageImage: pageImage,
+                title: title,
+                description: description,
+                design: design,
+                viewType: btn.viewType,
+              );
+              CustomNavigator.navigate(nextPageName, arguments: menuItem);
+            } else {
+              CustomNavigator.navigate(nextPageName);
+            }
+            return;
+          }
         }
 
           // RULE 3: Confirm Data -> Show BidBottomSheet instead of Dialog
         if (!hasNextPage && !hasNextApi && !hasNextView && hasConfirmData) {
           print("Rule 3 → DynamicBottomSheet");
-          var result = await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-            builder: (context) => Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: DynamicBottomSheet(
-                title: title, 
-                description: description, 
-                pageImage: pageImage, 
-                design: design, 
+          var result;
+          if (GetPlatform.isWeb || GetPlatform.isDesktop) {
+            result = await showDialog(
+              context: context,
+              builder: (context) => DynamicDialogBox(
+                title: title,
+                description: description,
+                pageImage: pageImage,
+                design: design,
                 apiEndpoint: apiEndpoint,
                 onSubmit: (endpoint, data) async {
                   bool success = await controller.submitDynamicForm(endpoint: endpoint, formData: data);
@@ -471,8 +455,31 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   return success;
                 },
               ),
-            ),
-          );
+            );
+          } else {
+            result = await showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+              builder: (context) => Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: DynamicBottomSheet(
+                  title: title,
+                  description: description,
+                  pageImage: pageImage,
+                  design: design,
+                  apiEndpoint: apiEndpoint,
+                  onSubmit: (endpoint, data) async {
+                    bool success = await controller.submitDynamicForm(endpoint: endpoint, formData: data);
+                    if (success) {
+                      _refreshOrderItems();
+                    }
+                    return success;
+                  },
+                ),
+              ),
+            );
+          }
 
           if (result == true) {
             if (apiEndpoint != null && apiEndpoint.isNotEmpty) {
@@ -482,6 +489,23 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           return;
         }
       },
+    );
+  }
+
+  Widget _buildDetailsSection(Details details) {
+    if (details.rawData == null || details.rawData!.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 10),
+        ...details.rawData!.entries.where((e) => e.value != null && e.value.toString().isNotEmpty).map((entry) {
+          return customrow(
+            entry.key.toString().replaceAll('_', ' ').capitalizeFirst!,
+            entry.value.toString(),
+          );
+        }).toList(),
+      ],
     );
   }
 
@@ -540,34 +564,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ],
                 ),
               ),
-              // if (address['edit'] == true)
-              //   Row(
-              //     children: [
-              //       const SizedBox(width: 12),
-              //       GestureDetector(
-              //         onTap: () {
-              //            double targetLat = double.tryParse(address['address_lat']?.toString() ?? '0.0') ?? 0.0;
-              //           double targetLng = double.tryParse(address['address_long']?.toString() ?? '0.0') ?? 0.0;
-              //
-              //           Get.to(
-              //             () => LocationPickerScreen(
-              //               initialLat: targetLat,
-              //               initialLng: targetLng,
-              //               onLocationSelected: (LatLng location, String addressName) {
-              //                 setState(() {
-              //                   if (tempAddress == null) {
-              //                     tempAddress = {};
-              //                   }
-              //                   tempAddress!['description'] = addressName;
-              //                 });
-              //               },
-              //             ),
-              //           );
-              //         },
-              //         child: Icon(FeatherIcons.edit, color: AppColors.appButtonColor, size: 21),
-              //       ),
-              //     ],
-              //   ),
             ],
           ),
         ],
@@ -613,12 +609,15 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           itemDataList: controller.fetchedItems.map((e) => e.toJson()).toList(),
           isFromCartScreen: true,
           showWebVerticalList: true,
+          nextPageName: item.nextPageName, // Added for cell navigation
+          nextPageApiEndpoint: item.nextPageApiEndpoint, // Added
+          nextPageViewType: item.nextPageViewType, // Added
           onActionTap: (btn, userKey) async {
             // 'btn' is Map<String, dynamic>
             String? apiEndpoint = btn['api_endpoint']?.toString();
-            String? nextPageName = btn['next_page_name']?.toString();
-            String? nextPageApiEndpoint = btn['next_page_api_endpoint']?.toString();
-            String? nextPageViewType = btn['next_page_view_type']?.toString();
+            String? nextPageName = btn['next_page_name']?.toString() ?? item.nextPageName?.toString();
+            String? nextPageApiEndpoint = btn['next_page_api_endpoint']?.toString() ?? item.nextPageApiEndpoint?.toString();
+            String? nextPageViewType = btn['next_page_view_type']?.toString() ?? item.nextPageViewType?.toString();
             String? title = btn['title']?.toString();
             String? description = btn['description']?.toString();
             String? pageImage = btn['page_image']?.toString();
@@ -662,17 +661,15 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             // RULE 3: Confirm Data -> Show BidBottomSheet instead of Dialog
             if (!hasNextPage && !hasNextApi && !hasNextView && hasConfirmData) {
               print("Rule 3 → BidBottomSheet");
-              var result = await showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                builder: (context) => Padding(
-                  padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-                  child: DynamicBottomSheet(
-                    title: title, 
-                    description: description, 
-                    pageImage: pageImage, 
-                    design: design, 
+              var result;
+              if (GetPlatform.isWeb || GetPlatform.isDesktop) {
+                result = await showDialog(
+                  context: context,
+                  builder: (context) => DynamicDialogBox(
+                    title: title,
+                    description: description,
+                    pageImage: pageImage,
+                    design: design,
                     apiEndpoint: apiEndpoint,
                     onSubmit: (endpoint, data) async {
                       bool success = await controller.submitDynamicForm(endpoint: endpoint, formData: data);
@@ -682,8 +679,31 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       return success;
                     },
                   ),
-                ),
-              );
+                );
+              } else {
+                result = await showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                  builder: (context) => Padding(
+                    padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                    child: DynamicBottomSheet(
+                      title: title,
+                      description: description,
+                      pageImage: pageImage,
+                      design: design,
+                      apiEndpoint: apiEndpoint,
+                      onSubmit: (endpoint, data) async {
+                        bool success = await controller.submitDynamicForm(endpoint: endpoint, formData: data);
+                        if (success) {
+                          _refreshOrderItems();
+                        }
+                        return success;
+                      },
+                    ),
+                  ),
+                );
+              }
 
               if (result == true) {
                 if (apiEndpoint != null && apiEndpoint.isNotEmpty) {

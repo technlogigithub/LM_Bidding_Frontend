@@ -178,6 +178,7 @@ class Info {
   String? countdownDt;
   String? category;
   String? createdAt;
+  Map<String, dynamic>? extraInfo;
 
   Info(
       {this.favorite,
@@ -187,7 +188,8 @@ class Info {
       this.ratingReview,
       this.countdownDt,
       this.category,
-      this.createdAt});
+      this.createdAt,
+      this.extraInfo});
 
   Info.fromJson(Map<String, dynamic> json) {
     favorite = json['favorite'];
@@ -198,6 +200,13 @@ class Info {
     countdownDt = json['countdown_dt'];
     category = json['category'];
     createdAt = json['created_at'];
+    
+    extraInfo = {};
+    json.forEach((key, value) {
+      if (!['favorite', 'badge', 'price', 'title', 'rating_review', 'countdown_dt', 'category', 'created_at'].contains(key)) {
+        extraInfo![key] = value;
+      }
+    });
   }
 
   Map<String, dynamic> toJson() {
@@ -210,6 +219,9 @@ class Info {
     data['countdown_dt'] = this.countdownDt;
     data['category'] = this.category;
     data['created_at'] = this.createdAt;
+    if (extraInfo != null) {
+      data.addAll(extraInfo!);
+    }
     return data;
   }
 }
