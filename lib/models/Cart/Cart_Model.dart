@@ -16,9 +16,11 @@ class CartResponseModel {
     success = json['success'];
     message = json['message'];
     if (json['result'] != null) {
-      result = (json['result'] as List)
-          .map((e) => Result.fromJson(e))
-          .toList();
+      if (json['result'] is List) {
+        result = (json['result'] as List).map((e) => Result.fromJson(e)).toList();
+      } else if (json['result'] is Map<String, dynamic>) {
+        result = [Result.fromJson(json['result'])];
+      }
     }
   }
 }
@@ -76,9 +78,11 @@ class Result {
     info = json['info'] is Map<String, dynamic> ? Info.fromJson(json['info']) : null;
     
     if (json['submit_button'] != null) {
-      submitButton = (json['submit_button'] as List)
-          .map((e) => SubmitButton.fromJson(e))
-          .toList();
+      if (json['submit_button'] is List) {
+        submitButton = (json['submit_button'] as List).map((e) => SubmitButton.fromJson(e)).toList();
+      } else if (json['submit_button'] is Map<String, dynamic>) {
+        submitButton = [SubmitButton.fromJson(json['submit_button'])];
+      }
     }
   }
 }
@@ -159,9 +163,11 @@ class ActionDesign {
 
   ActionDesign.fromJson(Map<String, dynamic> json) {
     if (json['action_button'] != null) {
-      actionButtons = (json['action_button'] as List)
-          .map((e) => ActionButton.fromJson(e))
-          .toList();
+      if (json['action_button'] is List) {
+        actionButtons = (json['action_button'] as List).map((e) => ActionButton.fromJson(e)).toList();
+      } else if (json['action_button'] is Map<String, dynamic>) {
+        actionButtons = [ActionButton.fromJson(json['action_button'])];
+      }
     }
     if (json['inputs'] is Map<String, dynamic>) {
       inputs = InputFields.fromJson(json['inputs']);

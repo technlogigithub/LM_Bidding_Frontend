@@ -186,6 +186,24 @@ class CustomNavigator {
         Get.toNamed(AppRoutes.postDetails, arguments: ukey, parameters: ukey != null ? {'ukey': ukey} : null);
         break;
 
+      case "razorpay_screen":
+        // This is a special trigger rather than a named route
+        try {
+          // Dynamic import or find controller
+          if (Get.isRegistered<dynamic>(tag: null)) {
+             // We can't easily check for CartController type without import, 
+             // but we've already imported it in context or can use dynamic search.
+             // Given the app structure, Get.find should work.
+             final controller = Get.find<dynamic>(tag: null);
+             if (controller.runtimeType.toString() == "CartController") {
+                controller.openRazorpayCheckout();
+             }
+          }
+        } catch (e) {
+          print("⚠️ Error triggering Razorpay from Navigator: $e");
+        }
+        break;
+
       default:
         print("⚠️ Unknown navigation key: $routeKey");
     }

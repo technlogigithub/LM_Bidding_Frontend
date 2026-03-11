@@ -5,6 +5,7 @@ import 'package:nb_utils/nb_utils.dart';
 
 import '../../core/api_config.dart';
 import '../../core/network.dart';
+import '../../models/App_moduls/AppResponseModel.dart';
 import '../../models/Order/my_order_list_model.dart';
 import '../../models/Order/order_details_model.dart';
 import '../../models/Cart/Cart_Item_Model.dart';
@@ -43,10 +44,19 @@ class MyOrdersController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    
+    // Check for arguments from navigation
+    if (Get.arguments is AppMenuItem) {
+      final AppMenuItem args = Get.arguments;
+      if (args.nextPageApiEndpoint != null && args.nextPageApiEndpoint!.isNotEmpty) {
+        dynamicEndpoint.value = args.nextPageApiEndpoint!;
+      }
+      
+      // If we have design data, we might want to set the initial status
+      // but usually the first tab selection triggers this.
+    }
+    
     currentStatus = ''.obs;
-    // Initialize default status from settings if available
-    // We can't easily do it here without context or delay, so we'll rely on the UI 
-    // to set the initial status or default to "All" (empty string).
   }
 
   // Get current list based on filter

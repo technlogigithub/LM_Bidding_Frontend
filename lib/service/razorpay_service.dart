@@ -11,8 +11,7 @@ class RazorpayService {
   late Razorpay _razorpay;
 
   // Fallback key — override via openCheckout(razorpayKey: ...)
-  static const String _fallbackKey = 'TEST_KEY';
-  // static const String _fallbackKey = 'rzp_test_SDBDmIgeiPX7v0';
+  static const String _fallbackKey = 'rzp_test_SDBDmIgeiPX7v0';
   String _razorpayKey = _fallbackKey;
 
   AppSettingsController appController = Get.find<AppSettingsController>();

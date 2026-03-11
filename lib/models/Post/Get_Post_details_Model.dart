@@ -254,6 +254,7 @@ class SubmitButton {
   String? description;
   SubmitButtonDesign? design;
 
+
   SubmitButton({
     this.bgColor,
     this.bgImg,
@@ -271,6 +272,7 @@ class SubmitButton {
     this.title,
     this.description,
     this.design,
+
   });
 
   SubmitButton.fromJson(Map<String, dynamic> json) {
@@ -288,7 +290,6 @@ class SubmitButton {
     nextPageViewType = json['next_page_view_type'];
     pageImage = json['page_image'];
     title = json['title'];
-    description = json['description'];
     description = json['description'];
     if (json['design'] != null && json['design'] is Map<String, dynamic>) {
       design = SubmitButtonDesign.fromJson(json['design']);

@@ -1,3 +1,4 @@
+
 class CartPreviewResponseModel {
   int? responseCode;
   bool? success;
@@ -12,10 +13,14 @@ class CartPreviewResponseModel {
     success = json['success'];
     message = json['message'];
     if (json['result'] != null) {
-      result = <Result>[];
-      json['result'].forEach((v) {
-        result!.add(new Result.fromJson(v));
-      });
+      if (json['result'] is List) {
+        result = <Result>[];
+        json['result'].forEach((v) {
+          result!.add(Result.fromJson(v));
+        });
+      } else if (json['result'] is Map<String, dynamic>) {
+        result = [Result.fromJson(json['result'])];
+      }
     }
   }
 
@@ -47,17 +52,27 @@ class Result {
     address =
     json['address'] != null ? new Address.fromJson(json['address']) : null;
     if (json['items'] != null) {
-      items = <Items>[];
-      json['items'].forEach((v) {
-        items!.add(new Items.fromJson(v));
-      });
+      if (json['items'] is List) {
+        items = <Items>[];
+        json['items'].forEach((v) {
+          items!.add(Items.fromJson(v));
+        });
+      } else if (json['items'] is Map<String, dynamic>) {
+        items = [Items.fromJson(json['items'])];
+      }
     }
-    info = json['info'] != null ? new Info.fromJson(json['info']) : null;
+    
+    info = (json['info'] is Map<String, dynamic>) ? Info.fromJson(json['info']) : null;
+
     if (json['payment_methods'] != null) {
-      paymentMethods = <PaymentMethods>[];
-      json['payment_methods'].forEach((v) {
-        paymentMethods!.add(new PaymentMethods.fromJson(v));
-      });
+      if (json['payment_methods'] is List) {
+        paymentMethods = <PaymentMethods>[];
+        json['payment_methods'].forEach((v) {
+          paymentMethods!.add(PaymentMethods.fromJson(v));
+        });
+      } else if (json['payment_methods'] is Map<String, dynamic>) {
+        paymentMethods = [PaymentMethods.fromJson(json['payment_methods'])];
+      }
     }
   }
 
@@ -88,14 +103,16 @@ class Hidden {
   String? viewType;
   bool? loginRequired;
   bool? isWalletUsed;
+  bool? edit;
 
-  Hidden({this.ukey, this.viewType, this.loginRequired, this.isWalletUsed});
+  Hidden({this.ukey, this.viewType, this.loginRequired, this.isWalletUsed, this.edit});
 
   Hidden.fromJson(Map<String, dynamic> json) {
     ukey = json['ukey'];
     viewType = json['view_type'];
     loginRequired = json['login_required'];
     isWalletUsed = json['is_wallet_used'];
+    edit = json['edit'];
   }
 
   Map<String, dynamic> toJson() {
@@ -104,6 +121,7 @@ class Hidden {
     data['view_type'] = this.viewType;
     data['login_required'] = this.loginRequired;
     data['is_wallet_used'] = this.isWalletUsed;
+    data['edit'] = this.edit;
     return data;
   }
 }
@@ -147,7 +165,7 @@ class Address {
 
 class Items {
   String? bgColor;
-  Null? bgImg;
+  dynamic bgImg;
   String? label;
   bool? isActive;
   bool? loginRequired;
@@ -273,7 +291,7 @@ class Button {
   String? pageImage;
   String? title;
   String? description;
-  List<dynamic>? design; // ✅ FIXED
+  dynamic design;
 
   Button({
     this.bgColor,

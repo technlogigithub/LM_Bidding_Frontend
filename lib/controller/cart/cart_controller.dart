@@ -12,6 +12,9 @@ import '../../models/Post/OnlinePayment_GetDetails_Model.dart';
 import '../../view/post_details_service/coupon_custom_bottom_sheet.dart';
 import '../../view/profile_screens/My Orders/my_orders_screen.dart';
 import '../../widget/custom_navigator.dart';
+import '../../models/Cart/payment_status_model.dart';
+import '../../widget/custom_success_dialog.dart';
+import '../../models/App_moduls/AppResponseModel.dart';
 
 import '../../service/razorpay_service.dart';
 
@@ -687,7 +690,14 @@ class CartController extends GetxController {
       isLoading.value = false;
     }
   }
-  Future<void> paymentMethodCall({required String endpoint,required String nextpagename,required String nextpageapiendpoint}) async {
+  Future<void> paymentMethodCall({
+    required String endpoint,
+    required String nextpagename,
+    required String nextpageapiendpoint,
+    String? nextpagetitle,
+    String? nextpageviewtype,
+    dynamic design,
+  }) async {
     isApplyingCoupon.value = true;
     _currentPaymentApiEndpoint = nextpageapiendpoint; // Store for callback
     try {
@@ -746,23 +756,25 @@ class CartController extends GetxController {
           response['success'] == true) {
 
         print("✅ Payment Method Applied Successfully");
+        
         if (nextpagename == "razorpay_screen") {
+          // For Razorpay, update specific model and open checkout immediately without showing dialog
           onlinePaymentGetDetailsResponseModel.value = OnlinePaymentGetDetailsResponseModel.fromJson(response as Map<String, dynamic>);
-          
-          if (onlinePaymentGetDetailsResponseModel.value?.result != null) {
-            final result = onlinePaymentGetDetailsResponseModel.value!.result!;
-            debugPrint('🔑 Razorpay Key from backend: ${result.pgKey}');
-            _razorpayService.openCheckout(
-              amount: (result.totalAmount ?? 0).toDouble(),
-              razorpayKey: result.pgKey,  // ← pass backend key
-              description: result.description,
-              prefillContact: result.contactNumber,
-              prefillEmail: result.emailId,
-              orderId: result.orderId,
-            );
-          }
-        }else{
-          // Get.to(()=>MyOrdersScreen());
+          openRazorpayCheckout();
+        } else {
+          // For regular flows (like COD), show the success dialog before navigation
+          Get.dialog(
+            CustomSuccessDialog(
+              title: response['title'] ?? "Success",
+              description: response['message'] ?? "Payment Method Applied Successfully",
+              nextPageName: nextpagename,
+              nextPageApiEndpoint: nextpageapiendpoint,
+              nextPageTitle: nextpagetitle,
+              nextPageViewType: nextpageviewtype,
+              design: design,
+            ),
+            barrierDismissible: false,
+          );
         }
         //
         // if (nextpagename == "razorpay_screen") {
@@ -863,17 +875,26 @@ class CartController extends GetxController {
       );
 
       if (response != null && response is Map<String, dynamic>) {
-         if (response['success'] == true) {
-             print("✅ Payment stored successfully");
-             Utils.showSnackbar(isSuccess: true, title: "Success", message: response['message'] ?? "Payment Successful");
-             
-             // Navigate to next page if needed or go back
-             // For now just back to previous screen or cart
-             // You might want to clear cart or navigate to order success page
-             Get.back(); // Close cart preview?
-         } else {
-             Utils.showSnackbar(isSuccess: false, title: "Error", message: response['message'] ?? "Payment Verification Failed");
-         }
+        final paymentModel = PaymentSuccessResponseModel.fromJson(response);
+        if (paymentModel.success == true) {
+          print("✅ Payment stored successfully");
+          final result = paymentModel.result?.firstOrNull;
+
+          Get.dialog(
+            CustomSuccessDialog(
+              title: result?.title,
+              description: result?.description,
+              nextPageName: result?.nextPageName,
+              nextPageApiEndpoint: result?.nextPageApiEndpoint,
+              nextPageTitle: result?.title,
+              nextPageViewType: result?.nextPageViewType,
+              design: result?.design,
+            ),
+            barrierDismissible: false,
+          );
+        } else {
+          Utils.showSnackbar(isSuccess: false, title: "Error", message: paymentModel.message ?? "Payment Verification Failed");
+        }
       }
     } catch (e) {
       print("❌ Error storing payment response: $e");
@@ -884,6 +905,22 @@ class CartController extends GetxController {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+  void openRazorpayCheckout() {
+    if (onlinePaymentGetDetailsResponseModel.value?.result != null) {
+      final result = onlinePaymentGetDetailsResponseModel.value!.result!;
+      debugPrint('🔑 Razorpay Key from backend: ${result.pgKey}');
+      _razorpayService.openCheckout(
+        amount: (result.totalAmount ?? 0).toDouble(),
+        razorpayKey: result.pgKey,
+        description: result.description,
+        prefillContact: result.contactNumber,
+        prefillEmail: result.emailId,
+        orderId: result.orderId,
+      );
+    } else {
+      debugPrint("⚠️ No Razorpay details found to trigger checkout");
     }
   }
 }

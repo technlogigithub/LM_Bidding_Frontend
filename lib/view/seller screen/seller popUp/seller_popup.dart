@@ -14,6 +14,7 @@ import '../../../core/app_constant.dart';
 import '../../../widget/app_social_icons.dart';
 import '../../../widget/button_global.dart';
 import '../../client review/client_review.dart';
+import '../../../widget/custom_navigator.dart';
 import '../buyer request/create_customer_offer.dart';
 import '../profile/seller_profile.dart';
 import '../seller authentication/seller_log_in.dart';
@@ -338,7 +339,11 @@ class _ImportImagePopUpState extends State<ImportImagePopUp> {
 }
 
 class SaveProfilePopUp extends StatefulWidget {
-  const SaveProfilePopUp({super.key});
+  final String? title;
+  final String? description;
+  final String? nextPageName;
+
+  const SaveProfilePopUp({super.key, this.title, this.description, this.nextPageName});
 
   @override
   State<SaveProfilePopUp> createState() => _SaveProfilePopUpState();
@@ -365,12 +370,12 @@ class _SaveProfilePopUpState extends State<SaveProfilePopUp> {
             ),
             const SizedBox(height: 15.0),
             Text(
-              'Congratulations!',
+              widget.title ?? 'Congratulations!',
               style: kTextStyle.copyWith(color: kNeutralColor, fontWeight: FontWeight.bold, fontSize: 18.0),
             ),
             const SizedBox(height: 10.0),
             Text(
-              'Your profile is successfully completed. You can more changes after it\'s live.',
+              widget.description ?? 'Your profile is successfully completed. You can more changes after it\'s live.',
               style: kTextStyle.copyWith(color: kLightNeutralColor),
               textAlign: TextAlign.center,
             ),
@@ -381,10 +386,12 @@ class _SaveProfilePopUpState extends State<SaveProfilePopUp> {
               buttonText: 'Done',
               textColor: kWhite,
               onPressed: () {
-                setState(() {
+                if (widget.nextPageName != null && widget.nextPageName!.isNotEmpty) {
+                  CustomNavigator.navigate(widget.nextPageName);
+                } else {
                   finish(context);
                   isFreelancer ? const SellerLogIn().launch(context) : LoginScreen().launch(context);
-                });
+                }
               },
             )
           ],

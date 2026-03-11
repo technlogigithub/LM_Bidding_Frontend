@@ -28,6 +28,7 @@ import '../../core/app_color.dart';
 import '../custom_horizontal_bullets.dart';
 import '../custom_input_plus_minus.dart';
 import '../custom_input_increase_decrease.dart';
+import 'custom_search_dropdown.dart';
 
 class DynamicFormBuilder extends StatefulWidget {
   final List<RegisterInput> inputs;
@@ -1014,6 +1015,51 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
               },
             ),
           ],
+        );
+        break;
+
+      case 'search_dropdown':
+        List<String> labels = [];
+        List<String> values = [];
+
+        if (input.optionItems != null) {
+          labels = input.optionItems!.map((e) => e.label ?? "").toList();
+          values = input.optionItems!
+              .map((e) => e.value ?? e.label ?? "")
+              .toList();
+        }
+
+        String? selectedValue;
+        if (currentValue != null) {
+          if (values.contains(currentValue.toString())) {
+            selectedValue = currentValue.toString();
+          } else {
+            int index = labels.indexOf(currentValue.toString());
+            if (index != -1) {
+              selectedValue = values[index];
+            }
+          }
+        }
+
+        // For the searchable dropdown, we might want to map values back to labels for display if needed,
+        // but typically the widget handles it. The current CustomSearchDropdown takes String options.
+        // I'll pass labels as options and handle the value mapping on change.
+
+        fieldWidget = CustomSearchDropdown(
+          label: label + (isRequired ? " *" : ""),
+          hintText: placeholder.isNotEmpty ? placeholder : "Select ${label}",
+          options: labels,
+          value: selectedValue != null && values.contains(selectedValue) 
+                ? labels[values.indexOf(selectedValue)] 
+                : selectedValue,
+          onChanged: (val) {
+            if (val != null) {
+              int index = labels.indexOf(val);
+              if (index != -1) {
+                _handleFieldChanged(fieldName, values[index], isUserInteraction: true);
+              }
+            }
+          },
         );
         break;
 

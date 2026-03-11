@@ -205,7 +205,14 @@ class _CartPreviewState extends State<CartPreview> {
             buttonDecoration: kButtonDecoration.copyWith(color: AppColors.appButtonColor, borderRadius: BorderRadius.circular(30.0)),
             onPressed: () async {
                if (btn.apiEndpoint?.isNotEmpty == true) {
-                 controller.paymentMethodCall(endpoint: btn.apiEndpoint!,nextpagename: btn.nextPageName!, nextpageapiendpoint: btn.nextPageApiEndpoint!);
+                  controller.paymentMethodCall(
+                    endpoint: btn.apiEndpoint!,
+                    nextpagename: btn.nextPageName!, 
+                    nextpageapiendpoint: btn.nextPageApiEndpoint!,
+                    nextpagetitle: btn.title,
+                    nextpageviewtype: btn.nextPageViewType,
+                    design: btn.design,
+                  );
                }
             },
             buttonTextColor: AppColors.appButtonTextColor,
@@ -398,7 +405,14 @@ class _CartPreviewState extends State<CartPreview> {
           ),
           onPressed: () async {
              if (btn.apiEndpoint?.isNotEmpty == true) {
-               controller.paymentMethodCall(endpoint: btn.apiEndpoint!,nextpagename: btn.nextPageName!, nextpageapiendpoint: btn.nextPageApiEndpoint!);
+                controller.paymentMethodCall(
+                  endpoint: btn.apiEndpoint!,
+                  nextpagename: btn.nextPageName!, 
+                  nextpageapiendpoint: btn.nextPageApiEndpoint!,
+                  nextpagetitle: btn.title,
+                  nextpageviewtype: btn.nextPageViewType,
+                  design: btn.design,
+                );
              }
           },
           child: Text(
