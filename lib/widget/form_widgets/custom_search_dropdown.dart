@@ -41,6 +41,17 @@ class _CustomSearchDropdownState extends State<CustomSearchDropdown> {
     _displayController.text = widget.value ?? "";
   }
 
+  @override
+  void didUpdateWidget(CustomSearchDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _displayController.text = widget.value ?? "";
+    }
+    if (oldWidget.options != widget.options) {
+      _filteredOptions = widget.options;
+    }
+  }
+
   void _toggleDropdown() {
     if (_isOpen) {
       _closeDropdown();

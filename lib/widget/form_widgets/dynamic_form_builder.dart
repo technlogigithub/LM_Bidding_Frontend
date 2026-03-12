@@ -1022,41 +1022,77 @@ class _DynamicFormBuilderState extends State<DynamicFormBuilder> {
         List<String> labels = [];
         List<String> values = [];
 
-        if (input.optionItems != null) {
-          labels = input.optionItems!.map((e) => e.label ?? "").toList();
+        /// Build options safely - support both optionItems and options list
+        if (input.optionItems != null && input.optionItems!.isNotEmpty) {
+          labels =
+              input.optionItems!.map((e) => (e.label ?? "").trim()).toList();
           values = input.optionItems!
-              .map((e) => e.value ?? e.label ?? "")
+              .map((e) => (e.value != null && e.value!.trim().isNotEmpty)
+                  ? e.value!.trim()
+                  : (e.label ?? '').trim())
               .toList();
+        } else if (input.options != null && input.options!.isNotEmpty) {
+          labels = _extractOptionLabels(input.options!);
+          values = _extractOptionValues(input.options!);
+          if (values.isEmpty || values.every((v) => v.isEmpty)) {
+            values = List<String>.from(labels);
+          }
         }
 
+        // Priority: 1) User interaction (formData) > 2) API value (input.value)
+        dynamic valueToUse = currentValue ?? input.value;
         String? selectedValue;
-        if (currentValue != null) {
-          if (values.contains(currentValue.toString())) {
-            selectedValue = currentValue.toString();
+
+        if (valueToUse != null && valueToUse.toString().trim().isNotEmpty) {
+          String valStr = valueToUse.toString().trim();
+          int idx = values.indexOf(valStr);
+          if (idx != -1) {
+            selectedValue = valStr;
           } else {
-            int index = labels.indexOf(currentValue.toString());
-            if (index != -1) {
-              selectedValue = values[index];
+            idx = labels.indexOf(valStr);
+            if (idx != -1) {
+              selectedValue = values[idx];
             }
           }
         }
 
-        // For the searchable dropdown, we might want to map values back to labels for display if needed,
-        // but typically the widget handles it. The current CustomSearchDropdown takes String options.
-        // I'll pass labels as options and handle the value mapping on change.
+        // Feature request: if nothing matches (or null), show the first option's label
+        // as requested: "list me jo first show wo show hona chaie na"
+        if (selectedValue == null && values.isNotEmpty) {
+          selectedValue = values[0];
+
+          // Auto-sync with formData if it was empty, to ensure "What You See Is What You Submit"
+          if (currentValue == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _handleFieldChanged(fieldName, selectedValue,
+                  isUserInteraction: false, input: input);
+            });
+          }
+        }
+
+        // Determine display text for the search dropdown (expects a label)
+        String? displayLabel;
+        if (selectedValue != null) {
+          int idx = values.indexOf(selectedValue);
+          if (idx != -1) {
+            displayLabel = labels[idx];
+          } else {
+            // Revert to technical value if not found, though defaults should prevent this
+            displayLabel = selectedValue;
+          }
+        }
 
         fieldWidget = CustomSearchDropdown(
           label: label + (isRequired ? " *" : ""),
-          hintText: placeholder.isNotEmpty ? placeholder : "Select ${label}",
+          hintText: placeholder.isNotEmpty ? placeholder : "Select $label",
           options: labels,
-          value: selectedValue != null && values.contains(selectedValue) 
-                ? labels[values.indexOf(selectedValue)] 
-                : selectedValue,
+          value: displayLabel,
           onChanged: (val) {
             if (val != null) {
               int index = labels.indexOf(val);
               if (index != -1) {
-                _handleFieldChanged(fieldName, values[index], isUserInteraction: true);
+                _handleFieldChanged(fieldName, values[index],
+                    isUserInteraction: true, input: input);
               }
             }
           },
