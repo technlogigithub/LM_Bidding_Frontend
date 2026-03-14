@@ -56,10 +56,35 @@ class OtpController extends GetxController {
     });
   }
 
-  void resendOtp() {
+  void resendOtpOld() {
     toast("Resend OTP clicked");
     startTimer();
     // call your API to resend OTP if needed
+  }
+  Future<void> resendOtp() async {
+    try {
+      final apiService = ApiServices();
+
+      var response = await apiService.makeRequestFormData(
+        endPoint: AppConstants.resendOtp,
+        method: "POST",
+        body: {
+          "mobile_no": mobile,
+        },
+      );
+
+      print("Resend OTP Response: $response");
+
+      if (response['success'] == true) {
+        toast(response['message'] ?? "");
+        startTimer(); // restart timer only on success
+        pinController.clear(); // optional but good UX
+      } else {
+        toast(response['message'] ?? "");
+      }
+    } catch (e) {
+      toast("Error: $e");
+    }
   }
 
   Future<void> submitOtp() async {
@@ -134,7 +159,7 @@ class OtpController extends GetxController {
 
       print("OTP Verification Response: $response");
 
-      if (response['success'] == true) {
+      if (response['success'] == true && response['response_code'] == 200) {
         final loginData = response['result'];
         final token = loginData['token'];
         final ukey = loginData['ukey']; // ⬅ ukey
@@ -156,7 +181,7 @@ class OtpController extends GetxController {
         Utils.gotoNextPage(() => BottomNavigationScreen());
         
       } else {
-        toast(response['message'] ?? "OTP verification failed");
+        toast(response['message'] ?? "");
       }
     } catch (e) {
       toast("Error: $e");

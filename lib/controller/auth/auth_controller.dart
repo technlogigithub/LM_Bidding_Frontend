@@ -350,8 +350,8 @@ class AuthController extends GetxController with WidgetsBindingObserver {
       );
       print("Login Response: $response");
       if (response['success'] == true) {
-        final otp = response['result']['otp'];
-        toast("OTP: $otp");
+        // final otp = response['result']['otp'];
+        // toast("OTP: $otp");
         await saveCredentials();
         // final prefs = await SharedPreferences.getInstance();
         // await prefs.setBool('isLoggedIn', true);
@@ -362,7 +362,6 @@ class AuthController extends GetxController with WidgetsBindingObserver {
             AppRoutes.otpVerification,
             arguments: {
               'mobile': mobileNo,
-              'otp': otp.toString()
             }
         );
 

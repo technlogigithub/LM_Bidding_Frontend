@@ -17,6 +17,7 @@ class AppConstants{
   static String register ='register';
   static String loginwithotp ='login';
   static String verifyotp ='verify-otp';
+  static String resendOtp ='resend-otp';
   static String settings ='settings';
   static String appContent ='app_content';
   static String category ='category';

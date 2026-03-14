@@ -107,7 +107,7 @@ class _OtpVarificationScreenState extends State<OtpVarificationScreen> {
       body: SingleChildScrollView(
         child: Container(
           width: width,
-          height: height,
+          height: height - 220,
           decoration: BoxDecoration(gradient: AppColors.appPagecolor),
           child: Padding(
             padding: EdgeInsets.all(width * 0.05),
