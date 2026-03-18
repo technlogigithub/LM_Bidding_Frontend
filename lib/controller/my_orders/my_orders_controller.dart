@@ -274,7 +274,7 @@ class MyOrdersController extends GetxController {
           print("✅ Invoice fetched successfully");
         } else {
           print("❌ API Failed: ${response['message']}");
-          toast(response['message'] ?? "Failed to fetch invoice");
+          toast(response['message'] ?? "");
         }
       }
     } catch (e) {
@@ -345,7 +345,7 @@ class MyOrdersController extends GetxController {
         // }
       } else {
         debugPrint("❌ Action API failed: $response");
-        toast(response?['message'] ?? "Action failed");
+        toast(response?['message'] ?? "");
       }
     } catch (e) {
       debugPrint("❌ Action API Error: $e");
@@ -488,17 +488,17 @@ class MyOrdersController extends GetxController {
           //   'data': formData,
           // });
            print("Response Message ${response['message']}");
-          toast(response['message'] ?? "Action completed successfully");
+          toast(response['message'] ?? "");
           return true;
         } else {
-             toast(response['message'] ?? "Something went wrong");
+             toast(response['message'] ?? "");
           return false;
         }
       }
       return false;
     } catch (e) {
       print("Error submitting form: $e");
-       toast("Failed to submit form");
+       // toast("Failed to submit form");
       return false;
     } finally {
       isLoadingForDetails.value = false;

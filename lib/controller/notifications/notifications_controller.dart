@@ -61,7 +61,7 @@ class NotificationsController extends GetxController {
       }
     } catch (e) {
       notifications.clear();
-      toast("Error loading notifications: $e");
+      // toast("Error loading notifications: $e");
     } finally {
       isLoading.value = false;
     }

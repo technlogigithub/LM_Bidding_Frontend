@@ -201,8 +201,8 @@ class AppPostController extends GetxController {
       } else {
         Utils.showSnackbar(
           isSuccess: false,
-          title: "Error",
-          message: decoded['message'] ?? "Something went wrong",
+          title: "",
+          message: decoded['message'] ?? "",
         );
       }
     } catch (e) {
@@ -271,16 +271,16 @@ class AppPostController extends GetxController {
       } else {
         Utils.showSnackbar(
           isSuccess: false,
-          title: "Error",
-          message: decoded['message'] ?? "Something went wrong",
+          title: "",
+          message: decoded['message'] ?? "",
         );
       }
     } catch (e) {
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: 'Failed to load posts: $e',
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: 'Error',
+      //   message: 'Failed to load posts: $e',
+      // );
     } finally {
       isLoading.value = false;
       resetParameters();

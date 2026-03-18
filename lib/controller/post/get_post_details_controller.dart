@@ -307,7 +307,7 @@ class GetPostDetailsController extends GetxController {
               // Get.snackbar("Success", response['message'] ?? "Action completed successfully");
               return true;
            } else {
-             Utils.showSnackbar(isSuccess: false, title: "Error", message: response['message'] ?? "Something went wrong");
+             Utils.showSnackbar(isSuccess: false, title: "", message: response['message'] ?? "");
              return false;
            }
       }
@@ -315,7 +315,7 @@ class GetPostDetailsController extends GetxController {
 
     } catch (e) {
       print("Error performing action: $e");
-      Get.snackbar("Error", "Failed to perform action");
+      // Get.snackbar("Error", "Failed to perform action");
       return false;
     } finally {
       isLoading.value = false;
@@ -461,15 +461,15 @@ class GetPostDetailsController extends GetxController {
         if (isSuccess) {
           Utils.showSnackbar(
             isSuccess: true,
-            title: "Success",
-            message: response['message'] ?? "Action completed successfully",
+            title: "",
+            message: response['message'] ?? "",
           );
           return true;
         } else {
           Utils.showSnackbar(
             isSuccess: false,
-            title: "Error",
-            message: response['message'] ?? "Something went wrong",
+            title: "",
+            message: response['message'] ?? "",
           );
           return false;
         }
@@ -479,8 +479,8 @@ class GetPostDetailsController extends GetxController {
       print("Error submitting form: $e");
       Utils.showSnackbar(
         isSuccess: false,
-        title: "Error",
-        message: "Failed to submit form",
+        title: "",
+        message: "",
       );
       return false;
     } finally {

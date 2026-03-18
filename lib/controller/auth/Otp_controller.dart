@@ -57,7 +57,7 @@ class OtpController extends GetxController {
   }
 
   void resendOtpOld() {
-    toast("Resend OTP clicked");
+    toast("");
     startTimer();
     // call your API to resend OTP if needed
   }
@@ -83,7 +83,7 @@ class OtpController extends GetxController {
         toast(response['message'] ?? "");
       }
     } catch (e) {
-      toast("Error: $e");
+      toast("");
     }
   }
 
@@ -101,7 +101,7 @@ class OtpController extends GetxController {
         toast(
           field.label != null
               ? "${field.label} is required"
-              : "Please enter OTP",
+              : "",
         );
         return;
       }
@@ -109,13 +109,13 @@ class OtpController extends GetxController {
         final t = (v.type ?? '').toLowerCase();
         if (t == 'numeric') {
           if (!RegExp(r'^\d+$').hasMatch(pin)) {
-            toast(v.errorMessage ?? "OTP must be numeric");
+            toast(v.errorMessage ?? "");
             return;
           }
         } else if (t == 'exact_length') {
           final len = v.value ?? 0;
           if (pin.length != len) {
-            toast(v.errorMessage ?? "OTP must be exactly $len digits");
+            toast(v.errorMessage ?? "");
             return;
           }
         } else if (t == 'min_length') {
@@ -124,7 +124,7 @@ class OtpController extends GetxController {
             toast(
               v.errorMessage ??
                   v.minLengthError ??
-                  "OTP must be at least $len digits",
+                  "",
             );
             return;
           }
@@ -134,7 +134,7 @@ class OtpController extends GetxController {
             toast(
               v.errorMessage ??
                   v.maxLengthError ??
-                  "OTP must be at most $len digits",
+                  "",
             );
             return;
           }
@@ -142,7 +142,7 @@ class OtpController extends GetxController {
       }
     } else {
       if (pin.isEmpty) {
-        toast("Please enter OTP");
+        toast("");
         return;
       }
     }
@@ -171,6 +171,7 @@ class OtpController extends GetxController {
         await prefs.setBool('isLoggedIn', true);
         homecontroller.checkLoginStatus();
         appController.fetchAppContent();
+        appController.fetchAllData();
         profilecontroller.fetchProfileDetails();
         
         // toast("OTP verified successfully");
@@ -184,7 +185,7 @@ class OtpController extends GetxController {
         toast(response['message'] ?? "");
       }
     } catch (e) {
-      toast("Error: $e");
+      toast("");
     } finally {
       isLoading.value = false;
     }

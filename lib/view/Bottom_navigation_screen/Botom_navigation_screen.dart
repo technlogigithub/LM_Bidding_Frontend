@@ -613,6 +613,10 @@ class BottomNavigationScreen extends StatelessWidget {
                                 .toList();
                           },
                           onSelected: (item) {
+                            if (item.loginRequired == true && !homeController.isLoggedIn.value) {
+                              Get.to(() => LoginScreen());
+                              return;
+                            }
                             if (item.nextPageName == "cart_screen") {
                               final CartController cartController = Get.put(CartController());
                               cartController.fetchCartDetails(

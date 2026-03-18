@@ -397,7 +397,7 @@ class _DynamicBottomSheetState extends State<DynamicBottomSheet> {
                              );
                            } else {
                              print("❌ GetPostDetailsController not found and no onSubmit provided");
-                             Utils.showSnackbar(isSuccess: false, title: "Error", message: "Controller not found");
+
                            }
                         }
 
@@ -405,18 +405,18 @@ class _DynamicBottomSheetState extends State<DynamicBottomSheet> {
                           Navigator.pop(context, true);
                         }
                       } else {
-                        Utils.showSnackbar(isSuccess: false, title: " Alert", message: "No targetEndpoint found, popping with true");
+                        // Utils.showSnackbar(isSuccess: false, title: " Alert", message: "No targetEndpoint found, popping with true");
                         print("DEBUG: No targetEndpoint found, popping with true");
                         // Fallback logic if no API endpoint
                         Navigator.pop(context, true);
-                        if (widget.apiEndpoint == null || widget.apiEndpoint!.isEmpty) {
-                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  "Your bid of ₹$bidAmount x $quantity has been placed!"),
-                            ),
-                          );
-                        }
+                        // if (widget.apiEndpoint == null || widget.apiEndpoint!.isEmpty) {
+                        //    ScaffoldMessenger.of(context).showSnackBar(
+                        //     SnackBar(
+                        //       content: Text(
+                        //           "Your bid of ₹$bidAmount x $quantity has been placed!"),
+                        //     ),
+                        //   );
+                        // }
                       }
                     },
                     child: Container(

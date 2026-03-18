@@ -11,7 +11,8 @@ class RazorpayService {
   late Razorpay _razorpay;
 
   // Fallback key — override via openCheckout(razorpayKey: ...)
-  static const String _fallbackKey = 'rzp_test_SDBDmIgeiPX7v0';
+  static const String _fallbackKey = '';
+  // static const String _fallbackKey = 'rzp_test_SDBDmIgeiPX7v0';
   String _razorpayKey = _fallbackKey;
 
   AppSettingsController appController = Get.find<AppSettingsController>();
@@ -100,13 +101,13 @@ class RazorpayService {
       _razorpay.open(options);
     } catch (e) {
       debugPrint('Error opening Razorpay: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to open payment gateway',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      // Get.snackbar(
+      //   'Error',
+      //   'Failed to open payment gateway',
+      //   backgroundColor: Colors.red,
+      //   colorText: Colors.white,
+      //   snackPosition: SnackPosition.BOTTOM,
+      // );
     }
   }
 
@@ -173,14 +174,14 @@ class RazorpayService {
     debugPrint(const JsonEncoder.withIndent('  ').convert(fullErrorResponse));
     debugPrint('==========================================================');
 
-    Get.snackbar(
-      'Payment Failed',
-      response.message ?? 'Payment failed. Please try again.',
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 3),
-    );
+    // Get.snackbar(
+    //   'Payment Failed',
+    //   response.message ?? 'Payment failed. Please try again.',
+    //   backgroundColor: Colors.red,
+    //   colorText: Colors.white,
+    //   snackPosition: SnackPosition.BOTTOM,
+    //   duration: const Duration(seconds: 3),
+    // );
 
     if (onFailure != null) onFailure!(response);
   }
@@ -189,13 +190,13 @@ class RazorpayService {
 
   void _handleExternalWallet(ExternalWalletResponse response) {
     debugPrint('External Wallet: ${response.walletName}');
-    Get.snackbar(
-      'External Wallet',
-      'Selected wallet: ${response.walletName}',
-      backgroundColor: Colors.blue,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    // Get.snackbar(
+    //   'External Wallet',
+    //   'Selected wallet: ${response.walletName}',
+    //   backgroundColor: Colors.blue,
+    //   colorText: Colors.white,
+    //   snackPosition: SnackPosition.BOTTOM,
+    // );
     if (onExternalWallet != null) onExternalWallet!(response);
   }
 

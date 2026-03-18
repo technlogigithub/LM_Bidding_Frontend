@@ -48,6 +48,10 @@ class ProfileController extends GetxController {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool("isLoggedIn", false);
+    await prefs.remove("auth_token");
+    await prefs.remove("ukey");
+    await prefs.remove("user_data");
+    
     isLoggedIn.value = false;
 
     Get.offAll(() => LoginScreen());

@@ -589,7 +589,7 @@ class SetupProfileController extends GetxController {
         }
       } catch (e) {
         isLoading.value = false;
-        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to save step data: $e');
+
 
         return;
       }
@@ -833,7 +833,7 @@ class SetupProfileController extends GetxController {
       print('Step ${step + 1} API Response: $decodedResponse');
 
       if (response.statusCode == 200 && decodedResponse['success'] == true) {
-        Utils.showSnackbar(isSuccess: true, title: 'Success', message: 'Step ${step + 1} data saved successfully');
+        // Utils.showSnackbar(isSuccess: true, title: '', message: 'Step ${step + 1} data saved successfully');
         //
         // if (profileForm?.autoForward == true) {
         //   showNextButtonFromAuto.value = true; // ✅ correct Rx update
@@ -853,12 +853,12 @@ class SetupProfileController extends GetxController {
 
         return true;
       } else {
-        Utils.showSnackbar(isSuccess: false, title: 'Error', message: decodedResponse['message'] ?? 'Failed to save step data');
+        Utils.showSnackbar(isSuccess: false, title: '', message: decodedResponse['message'] ?? '');
         return false;
       }
     } catch (e) {
       print('Step API Error: $e');
-      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to save step data: $e');
+      // Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to save step data: $e');
       return false;
     }
   }
@@ -1001,7 +1001,7 @@ class SetupProfileController extends GetxController {
       // Force UI update to show errors immediately
       formErrors.refresh();
       update(['form_content']);
-      Utils.showSnackbar(isSuccess: false, title: 'Validation Error', message: "Please fix the errors before submitting");
+      // Utils.showSnackbar(isSuccess: false, title: 'Validation Error', message: "Please fix the errors before submitting");
 
       return;
     }
@@ -1016,7 +1016,7 @@ class SetupProfileController extends GetxController {
       // Submit only current step data with step_no formatting like nextStep
       final success = await _callStepApi(submitUrl, currentStep.value);
       if (success) {
-        Utils.showSnackbar(isSuccess: true, title: 'Success', message: 'Profile updated successfully');
+        Utils.showSnackbar(isSuccess: true, title: '', message: '');
 
         profilecontroller.fetchProfileDetails();
         Navigator.pop(context);
@@ -1024,7 +1024,6 @@ class SetupProfileController extends GetxController {
 
       }
     } catch (e) {
-      Utils.showSnackbar(isSuccess: false, title: 'Error', message:'An error occurred: $e');
     } finally {
       isLoading.value = false;
     }
@@ -1144,7 +1143,7 @@ class SetupProfileController extends GetxController {
         imageField.value = File(file.path);
       }
     } catch (e) {
-      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Error picking image: $e');
+
 
     }
   }
@@ -1222,11 +1221,7 @@ class SetupProfileController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
-      if (token == null) {
-        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Authentication token not found');
 
-        return;
-      }
 
       final response = await http.post(
         Uri.parse(apiUrl),
@@ -1243,7 +1238,7 @@ class SetupProfileController extends GetxController {
         }
       }
     } catch (e) {
-      Utils.showSnackbar(isSuccess: false, title: 'Error', message:'Failed to fetch profile: $e');
+
     } finally {
       isLoading.value = false;
     }
@@ -1296,11 +1291,11 @@ class SetupProfileController extends GetxController {
       // Convert to use GetX observables
 
       await Future.delayed(const Duration(seconds: 2)); // Mock API call
-      Utils.showSnackbar(isSuccess: true, title: "Success", message: 'Profile updated successfully');
+      // Utils.showSnackbar(isSuccess: true, title: "Success", message: 'Profile updated successfully');
 
       return true;
     } catch (e) {
-      Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'Failed to submit profile: $e');
+
 
       return false;
     } finally {

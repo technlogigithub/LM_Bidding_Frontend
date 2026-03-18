@@ -28,23 +28,23 @@ class Utils {
   }
   static void showSnackbar({
     required bool isSuccess,
-    required String title,
+    String? title,
     required String message,
     int durationInSeconds = 3,
   }) {
     Get.snackbar(
+      title ?? "",
+      message,
+      titleText: (title == null || title.trim().isEmpty) ? const SizedBox.shrink() : null,
       colorText: AppColors.appWhite,
       backgroundColor: isSuccess ? AppColors.appSuccesses : AppColors.appFail,
-      title,
-      message,
       snackPosition: SnackPosition.BOTTOM,
       duration: Duration(seconds: durationInSeconds),
       margin: const EdgeInsets.all(10),
       borderRadius: 10,
       icon: Icon(
         Icons.info,
-        color: AppColors.appWhite
-        ,
+        color: AppColors.appWhite,
       ),
     );
   }

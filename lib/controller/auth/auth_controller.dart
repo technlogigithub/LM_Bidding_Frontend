@@ -109,6 +109,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
         passwordController.clear();
         homecontroller.checkLoginStatus();
         appController.fetchAppContent();
+        appController.fetchAllData();
         profilecontroller.fetchProfileDetails();
         // homecontroller.fetchBanner();
         // homecontroller.fetchCategory();
@@ -128,12 +129,12 @@ class AuthController extends GetxController with WidgetsBindingObserver {
         //   ClientHome().launch(context);
         // }
       } else {
-        final message = response['message'] ?? "Something went wrong";
+        final message = response['message'] ?? "";
         toast(message);
       }
 
     } catch (e) {
-      toast("Error: $e");
+      toast(" ");
     } finally {
       isLoading.value = false;
     }
@@ -306,7 +307,7 @@ class AuthController extends GetxController with WidgetsBindingObserver {
 
       if (response['success'] == true) {
         final otp = response['result']['otp'];
-        toast("OTP: $otp");
+        toast("$otp");
         print(" Registor Successfull ");
         // Navigate to OTP verification
         // Navigate to OTP verification
@@ -318,12 +319,12 @@ class AuthController extends GetxController with WidgetsBindingObserver {
             }
         );
       } else {
-        final message = response['message'] ?? "Something went wrong";
+        final message = response['message'] ?? "";
         toast(message);
       }
 
     } catch (e) {
-      toast("Error: $e");
+      toast("");
     } finally {
       isLoading.value = false;
     }
@@ -377,12 +378,12 @@ class AuthController extends GetxController with WidgetsBindingObserver {
         //   ClientHome().launch(context);
         // }
       } else {
-        final message = response['message'] ?? "Something went wrong";
+        final message = response['message'] ?? "";
         toast(message);
       }
 
     } catch (e) {
-      toast("Error: $e");
+      toast("");
     } finally {
       isLoading.value = false;
     }

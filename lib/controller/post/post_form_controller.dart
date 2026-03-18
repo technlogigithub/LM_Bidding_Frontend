@@ -543,11 +543,11 @@ class PostFormController extends GetxController {
         }
       } catch (e) {
         isLoading.value = false;
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'Failed to save step data: $e',
-        );
+        // Utils.showSnackbar(
+        //   isSuccess: false,
+        //   title: '',
+        //   message: 'Failed to save step data: $e',
+        // );
         return;
       }
       isLoading.value = false;
@@ -601,11 +601,11 @@ class PostFormController extends GetxController {
         }
       } catch (e) {
         isLoading.value = false;
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'Failed to save step data: $e',
-        );
+        // Utils.showSnackbar(
+        //   isSuccess: false,
+        //   title: 'Error',
+        //   message: 'Failed to save step data: $e',
+        // );
         return;
       }
       isLoading.value = false;
@@ -684,11 +684,11 @@ class PostFormController extends GetxController {
         } catch (e) {
           isLoading.value = false;
           _isPageChanging = false;
-          Utils.showSnackbar(
-            isSuccess: false,
-            title: 'Error',
-            message: 'Failed to save step data: $e',
-          );
+          // Utils.showSnackbar(
+          //   isSuccess: false,
+          //   title: 'Error',
+          //   message: 'Failed to save step data: $e',
+          // );
           // Revert to previous page if API call failed
           if (pageController != null && pageController!.hasClients) {
             pageController!.jumpToPage(previousPage);
@@ -851,11 +851,11 @@ class PostFormController extends GetxController {
       }
 
       if (userKey == null) {
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Error',
-          message: 'User key not found',
-        );
+        // Utils.showSnackbar(
+        //   isSuccess: false,
+        //   title: 'Error',
+        //   message: 'User key not found',
+        // );
 
         return false;
       }
@@ -1042,18 +1042,18 @@ class PostFormController extends GetxController {
 
         Utils.showSnackbar(
           isSuccess: true,
-          title: 'Success',
+          title: '',
           message:
               decodedResponse['message'] ??
-              'Step ${step + 1} data saved successfully',
+              '',
         );
 
         return true;
       } else {
         Utils.showSnackbar(
           isSuccess: false,
-          title: 'Error',
-          message: decodedResponse['message'] ?? 'Failed to save step data',
+          title: '',
+          message: decodedResponse['message'] ?? '',
         );
         return false;
       }
@@ -1061,8 +1061,8 @@ class PostFormController extends GetxController {
       print('Step API Error: $e');
       Utils.showSnackbar(
         isSuccess: false,
-        title: 'Error',
-        message: 'Failed to save step data: $e',
+        title: '',
+        message: '',
       );
 
       return false;
@@ -1184,11 +1184,11 @@ class PostFormController extends GetxController {
     if (hasMultipleMarker) {
       final list = multiStepEntries[currentStep.value] ?? const [];
       if (list.isEmpty) {
-        Utils.showSnackbar(
-          isSuccess: false,
-          title: 'Validation Error',
-          message: 'Please add at least one item before proceeding',
-        );
+        // Utils.showSnackbar(
+        //   isSuccess: false,
+        //   title: 'Validation Error',
+        //   message: 'Please add at least one item before proceeding',
+        // );
 
         return false;
       }
@@ -1269,11 +1269,11 @@ class PostFormController extends GetxController {
     if (!_validateCurrentStep()) {
       formErrors.refresh();
 
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Validation Error',
-        message: 'Please fix the errors before submitting',
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: 'Validation Error',
+      //   message: 'Please fix the errors before submitting',
+      // );
       return;
     }
 
@@ -1300,10 +1300,10 @@ class PostFormController extends GetxController {
 
         Utils.showSnackbar(
           isSuccess: true,
-          title: 'Success',
+          title: '',
           message: apiMessage.value.isNotEmpty
               ? apiMessage.value
-              : 'Post saved successfully',
+              : '',
         );
 
         if (wasEdit) {
@@ -1321,20 +1321,20 @@ class PostFormController extends GetxController {
         // ✅ API Failed Message
         Utils.showSnackbar(
           isSuccess: false,
-          title: 'Failed',
+          title: '',
           message: apiMessage.value.isNotEmpty
               ? apiMessage.value
-              : 'Something went wrong',
+              : '',
         );
       }
     } catch (e) {
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: apiMessage.value.isNotEmpty
-            ? apiMessage.value
-            : 'An error occurred: $e',
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: '',
+      //   message: apiMessage.value.isNotEmpty
+      //       ? apiMessage.value
+      //       : 'An error occurred: $e',
+      // );
     } finally {
       isLoading.value = false;
     }
@@ -1433,7 +1433,7 @@ class PostFormController extends GetxController {
       }
 
       if (userKey == null) {
-        Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'User key not found');
+        // Utils.showSnackbar(isSuccess: false, title: 'Error', message: 'User key not found');
         isLoadingForm.value = false;
         return;
       }
@@ -1524,25 +1524,25 @@ class PostFormController extends GetxController {
         } else {
           Utils.showSnackbar(
             isSuccess: false,
-            title: 'Error',
-            message: postFormResponse.message ?? 'Failed to load post form',
+            title: '',
+            message: postFormResponse.message ?? '',
           );
 
         }
       } else {
         Utils.showSnackbar(
           isSuccess: false,
-          title: 'Error',
-          message: decodedResponse['message'] ?? 'Failed to load post form',
+          title: '',
+          message: decodedResponse['message'] ?? '',
         );
       }
     } catch (e) {
       print('Get Post Form API Error: $e');
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: 'Failed to load post form: $e',
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: 'Error',
+      //   message: 'Failed to load post form: $e',
+      // );
 
     } finally {
       isLoadingForm.value = false;

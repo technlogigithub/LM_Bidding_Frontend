@@ -391,10 +391,10 @@ class AppSettingsController extends GetxController {
             WidgetsBinding.instance.platformDispatcher.platformBrightness;
         updateTheme(systemBrightness == Brightness.dark);
       } else {
-        toast(response['message'] ?? "Something went wrong");
+        toast(response['message'] ?? "");
       }
     } catch (e) {
-      toast("Error: $e");
+      toast("");
     } finally {
       isLoading.value = false;
     }
@@ -521,11 +521,11 @@ class AppSettingsController extends GetxController {
 
         postFormPage.value = parsed.result?.postForm;
       } else {
-        toast(response['message'] ?? 'Failed to fetch app content');
+        toast(response['message'] ?? '');
       }
     } catch (e) {
       print('Error: $e');
-      toast('Error: $e');
+      toast('');
     } finally {
       isLoading.value = false;
     }

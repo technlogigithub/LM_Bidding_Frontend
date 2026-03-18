@@ -671,10 +671,10 @@ class InviteScreen extends StatelessWidget {
     await Clipboard.setData(ClipboardData(text: text));
     Utils.showSnackbar(
       isSuccess: true,
-      title: referral?.label ?? "Copied!",
+      title: referral?.label ?? "",
       message:
           referral?.design?.code?.message ??
-          "Referral code copied to clipboard.",
+          "",
     );
   }
 }

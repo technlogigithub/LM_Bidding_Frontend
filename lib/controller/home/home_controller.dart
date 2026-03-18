@@ -185,11 +185,11 @@ class ClientHomeController extends GetxController {
     } catch (e) {
       print('Error fetching location: $e');
       currentLocation.value = 'Unable to fetch location';
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: 'Failed to fetch location: $e',
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: 'Error',
+      //   message: 'Failed to fetch location: $e',
+      // );
     }
   }
 
@@ -404,20 +404,23 @@ class ClientHomeController extends GetxController {
         print(post);
       }
     } catch (e) {
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: 'Error',
-        message: 'Failed to load live posts: $e',
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: 'Error',
+      //   message: 'Failed to load live posts: $e',
+      // );
     }
   }
 
-  void handleRestrictedFeature(VoidCallback onLoggedIn) {
-    print('Checking value ${isLoggedIn.value}');
-    if (isLoggedIn.value) {
+  Future<void> handleRestrictedFeature(VoidCallback onLoggedIn) async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasToken = prefs.getString('auth_token')?.isNotEmpty ?? false;
+    print('Checking login value -> isLoggedIn: ${isLoggedIn.value}, hasToken: $hasToken');
+    
+    if (isLoggedIn.value || hasToken) {
       onLoggedIn();
     } else {
-      Get.offAll(LoginScreen()); // Replace with actual login route
+      Get.to(() => LoginScreen()); // Use Get.to instead of offAll if user might want to come back
     }
   }
 

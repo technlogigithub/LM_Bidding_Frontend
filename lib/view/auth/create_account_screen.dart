@@ -526,7 +526,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               if (!controller.isCheck.value) {
                 Utils.showSnackbar(
                   isSuccess: false,
-                  title: AppStrings.alert,
+                  title:"",
                   message: AppStrings.pleaseAcceptTerms,
                 );
                 return;
@@ -661,7 +661,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               if (firstError != null) {
                 Utils.showSnackbar(
                   isSuccess: false,
-                  title: AppStrings.alert,
+                  title: "",
                   message: firstError!,
                 );
                 return;

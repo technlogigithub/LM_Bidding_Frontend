@@ -267,7 +267,7 @@ class LoginScreen extends StatelessWidget {
                       if (firstError != null) {
                         Utils.showSnackbar(
                           isSuccess: false,
-                          title: AppStrings.alert,
+                          title: "",
                           message: firstError!,
                         );
                         return;
@@ -475,7 +475,7 @@ class LoginScreen extends StatelessWidget {
               if (firstError != null) {
                 Utils.showSnackbar(
                   isSuccess: false,
-                  title: AppStrings.alert,
+                  title:"",
                   message: firstError!,
                 );
                 return;

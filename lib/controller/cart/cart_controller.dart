@@ -288,14 +288,14 @@ class CartController extends GetxController {
           Utils.showSnackbar(
               isSuccess: false,
               title: "Error",
-              message: response['message'] ?? "Something went wrong");
+              message: response['message'] ?? "");
           return false;
         }
       }
       return false;
     } catch (e) {
       print("Error performing action: $e");
-      Get.snackbar("Error", "Failed to perform action");
+      // Get.snackbar("Error", "Failed to perform action");
       return false;
     } finally {
       isLoading.value = false;
@@ -349,13 +349,13 @@ class CartController extends GetxController {
            Utils.showSnackbar(
               isSuccess: false,
               title: "Error",
-              message: response['message'] ?? "Submission failed");
+              message: response['message'] ?? "");
         }
       }
     } catch (e) {
       print("Error submitting cart: $e");
-      Utils.showSnackbar(
-          isSuccess: false, title: "Error", message: "An error occurred");
+      // Utils.showSnackbar(
+      //     isSuccess: false, title: "Error", message: "An error occurred");
     } finally {
       isLoading.value = false;
     }
@@ -570,22 +570,22 @@ class CartController extends GetxController {
          } else {
            debugPrint("⚠️ Cart refresh endpoint not found");
          }
-         Utils.showSnackbar(isSuccess: true, title: "Success", message: response['message'] ?? "Coupon applied");
+         Utils.showSnackbar(isSuccess: true, title: "", message: response['message'] ?? "");
          
       } else {
-         final msg = (response is Map<String, dynamic>) ? response['message'] : "Failed to apply coupon";
+         final msg = (response is Map<String, dynamic>) ? response['message'] : "";
          print("❌ Coupon Application Failed: $msg");
          Utils.showSnackbar(
               isSuccess: false,
-              title: "Error",
-              message: msg ?? "Failed to apply coupon");
+              title: "",
+              message: msg ?? "");
          // Clear applied coupon if failed
          appliedCouponCode.value = '';
          isCouponApplied.value = false;
       }
     } catch (e) {
       print("Error applying coupon: $e");
-      Utils.showSnackbar(isSuccess: false, title: "Error", message: "An error occurred");
+      // Utils.showSnackbar(isSuccess: false, title: "Error", message: "An error occurred");
     } finally {
       isApplyingCoupon.value = false;
     }
@@ -674,18 +674,18 @@ class CartController extends GetxController {
         } else {
           Utils.showSnackbar(
             isSuccess: false,
-            title: "Error",
-            message: model.message ?? "Cart preview failed",
+            title: "",
+            message: model.message ?? "",
           );
         }
       }
     } catch (e) {
       print("❌ Error fetching cart preview: $e");
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: "Error",
-        message: "An error occurred",
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: "Error",
+      //   message: "An error occurred",
+      // );
     } finally {
       isLoading.value = false;
     }
@@ -793,7 +793,7 @@ class CartController extends GetxController {
         print("❌ Payment Method Failed: $msg");
         Utils.showSnackbar(
             isSuccess: false,
-            title: "Error",
+            title: "",
             message: msg ?? "");
         // Clear applied coupon if failed
         appliedCouponCode.value = '';
@@ -801,7 +801,7 @@ class CartController extends GetxController {
       }
     } catch (e) {
       print("Error applying coupon: $e");
-      Utils.showSnackbar(isSuccess: false, title: "Error", message: "An error occurred");
+      // Utils.showSnackbar(isSuccess: false, title: "Error", message: "An error occurred");
     } finally {
       isApplyingCoupon.value = false;
     }
@@ -893,16 +893,16 @@ class CartController extends GetxController {
             barrierDismissible: false,
           );
         } else {
-          Utils.showSnackbar(isSuccess: false, title: "Error", message: paymentModel.message ?? "Payment Verification Failed");
+          Utils.showSnackbar(isSuccess: false, title: "", message: paymentModel.message ?? "");
         }
       }
     } catch (e) {
       print("❌ Error storing payment response: $e");
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: "Error",
-        message: "An error occurred while storing payment",
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: "Error",
+      //   message: "An error occurred while storing payment",
+      // );
     } finally {
       isLoading.value = false;
     }

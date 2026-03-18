@@ -82,18 +82,18 @@ class ParticipationDetailController extends GetxController {
         debugPrint("⚠️ API returned success=false or null: $response");
         Utils.showSnackbar(
           isSuccess: false,
-          title: "Error",
-          message: response != null ? response['message'] ?? "Failed to fetch details" : "Failed to fetch details",
+          title: "",
+          message: response != null ? response['message'] ?? "" : "",
         );
       }
     } catch (e) {
       detailResponse.value = null;
       debugPrint("❌ Error fetching participation details: $e");
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: "Error",
-        message: "An error occurred while fetching details",
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: "Error",
+      //   message: "An error occurred while fetching details",
+      // );
     } finally {
       isLoading.value = false;
     }
@@ -160,24 +160,24 @@ class ParticipationDetailController extends GetxController {
       if (response != null && (response['success'] == true || response['response_code'] == 200)) {
         Utils.showSnackbar(
           isSuccess: true,
-          title: "Success",
-          message: response['message'] ?? "Action completed successfully",
+          title: "",
+          message: response['message'] ?? "",
         );
         Get.back();
       } else {
         Utils.showSnackbar(
           isSuccess: false,
-          title: "Error",
-          message: response != null ? response['message'] ?? "Something went wrong" : "Something went wrong",
+          title: "",
+          message: response != null ? response['message'] ?? "" : "",
         );
       }
     } catch (e) {
       debugPrint("❌ Error submitting action: $e");
-      Utils.showSnackbar(
-        isSuccess: false,
-        title: "Error",
-        message: "Failed to perform action",
-      );
+      // Utils.showSnackbar(
+      //   isSuccess: false,
+      //   title: "Error",
+      //   message: "Failed to perform action",
+      // );
     } finally {
       isLoadingForm.value = false;
     }
